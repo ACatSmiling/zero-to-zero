@@ -283,7 +283,7 @@ LSM 是将之前使用的一个大的查找结构（造成随机读写，影响�
 创建一个本地目录，作为容器卷，挂在到 InfluxDB 容器上：
 
 ```powershell
-root@DESKTOP-OJKMETJ:/home/xisun/influxdb# mkdir /home/xisun/influxdb/data && cd $_
+root@DESKTOP-OJKMETJ:/home/xisun/influxdb# mkdir -p /home/xisun/influxdb/data && cd $_
 root@DESKTOP-OJKMETJ:/home/xisun/influxdb/data# pwd
 /home/xisun/influxdb/data
 ```
@@ -309,7 +309,9 @@ drwx------ 3 xisun root   4096 Mar 29 10:35 engine/
 - InfluxDB 容器版本为 2.1.1；
 - InfluxDB 容器后台启动；
 - InfluxDB 容器默认映射 8086 端口；
-- 容器内数据位于 `/var/lib/influxdb2` 路径，容器外数据位于 `/home/xisun/influxdb/data`。
+- 容器内数据位于`/var/lib/influxdb2`路径，容器外数据位于`/home/xisun/influxdb/data`。
+
+- 此处启动的 InfluxDB 容器，没有用户信息，使用 UI 界面操作或者命令行操作时，需要自行设置。
 
 如果需要自定义配置文件启动 InfluxDB 容器，可以按如下步骤拿到默认的配置文件：
 
@@ -388,15 +390,17 @@ vault-tls-server-name: ""
 vault-token: ""
 ```
 
-### UI 页面操作
+### UI 界面操作
 
-浏览器访问 `localhost:8086`：
+浏览器访问`localhost:8086`：
 
 ![image-20220329103957029](time-series-data-first-meeting/image-20220329103957029.png)
 
-初始化信息：
+初次登陆时，需要初始化用户信息：
 
 ![image-20220329162638387](time-series-data-first-meeting/image-20220329162638387.png)
+
+- UI 界面和命令行都可以初始化用户信息，如果使用 UI 界面初始化，则命令行操作时需要配置用户的 token 信息，如果使用命令行初始化，则 UI 界面操作时直接用户名密码登录即可。
 
 点击 Quick Start，开启 InfluxDB 探索之旅：
 
@@ -422,8 +426,6 @@ vault-token: ""
 
 ![image-20220329163644645](time-series-data-first-meeting/image-20220329163644645.png)
 
-
-
 ### 命令行操作
 
 进入容器内部：
@@ -437,22 +439,153 @@ root@DESKTOP-OJKMETJ:/home/xisun/influxdb# docker exec -it 861e71bc7f69 /bin/bas
 root@861e71bc7f69:/#
 ```
 
-添加用户的 token 验证信息：
+InfluxDB 命令格式为`influx command`，各命令功能如下：
 
 ```powershell
-root@861e71bc7f69:/# influx config ls
-Active  Name    URL     Org
-root@861e71bc7f69:/# influx config create -n default -u http://localhost:8086 -o xisun_influx -t UjxmPXlTPycyo3WgH1sVzkhELJRw96h0Hkbx8E_OR2e0C9QnhuZ2P0UQr3ALNjkaGqo98LnRymqlAuN7FL5OXQ== -a
-Active  Name    URL                     Org
-*       default http://localhost:8086   xisun_influx
-root@861e71bc7f69:/# influx config ls
-Active  Name    URL                     Org
-*       default http://localhost:8086   xisun_influx
+root@d1c692c2abb9:/# influx --help
+NAME:
+   influx - Influx Client
+
+USAGE:
+   influx [command]
+
+COMMANDS:
+   version              Print the influx CLI version
+   ping                 Check the InfluxDB /health endpoint
+   setup                Setup instance with initial user, org, bucket
+   write                Write points to InfluxDB
+   bucket               Bucket management commands
+   completion           Generates completion scripts
+   bucket-schema        Bucket schema management commands
+   query                Execute a Flux query
+   config               Config management commands
+   org, organization    Organization management commands
+   delete               Delete points from InfluxDB
+   user                 User management commands
+   task                 Task management commands
+   backup               Backup database
+   restore              Restores a backup directory to InfluxDB
+   telegrafs            List Telegraf configuration(s). Subcommands manage Telegraf configurations.
+   dashboards           List Dashboard(s).
+   export               Export existing resources as a template
+   secret               Secret management commands
+   v1                   InfluxDB v1 management commands
+   auth, authorization  Authorization management commands
+   apply                Apply a template to manage resources
+   stacks               List stack(s) and associated templates. Subcommands manage stacks.
+   template             Summarize the provided template
+   help, h              Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h  show help
 ```
 
-- token 信息即为 UI 界面初始化时，创建的 XiSun 用户的 token。
+#### 版本查看
 
-`user 管理`：
+```powershell
+root@d1c692c2abb9:/# influx version
+Influx CLI 2.2.1 (git: 31ac783) build_date: 2021-11-09T21:24:22Z
+```
+
+#### 初始化管理
+
+```powershell
+root@d1c692c2abb9:/# influx setup --help
+NAME:
+    setup - Setup instance with initial user, org, bucket
+
+USAGE:
+    setup [command options] [arguments...]
+
+COMMON OPTIONS:
+   --host value                     HTTP address of InfluxDB [$INFLUX_HOST]
+   --skip-verify                    Skip TLS certificate chain and host name verification [$INFLUX_SKIP_VERIFY]
+   --configs-path value             Path to the influx CLI configurations [$INFLUX_CONFIGS_PATH]
+   --active-config value, -c value  Config name to use for command [$INFLUX_ACTIVE_CONFIG]
+   --http-debug
+   --json                           Output data as JSON [$INFLUX_OUTPUT_JSON]
+   --hide-headers                   Hide the table headers in output data [$INFLUX_HIDE_HEADERS]
+
+OPTIONS:
+   --username value, -u value   Name of initial user to create
+   --password value, -p value   Password to set on initial user
+   --token value, -t value      Auth token to set on the initial user [$INFLUX_TOKEN]
+   --org value, -o value        Name of initial organization to create
+   --bucket value, -b value     Name of initial bucket to create
+   --retention value, -r value  Duration initial bucket will retain data, or 0 for infinite
+   --force, -f                  Skip confirmation prompt
+   --name value, -n value       Name to set on CLI config generated for the InfluxDB instance, required if other configs exist
+```
+
+- 初始化 InfluxDB 的基础信息：
+
+  ```powershell
+  root@d1c692c2abb9:/# influx setup
+  > Welcome to InfluxDB 2.0!
+  ? Please type your primary username xisun
+  ? Please type your password ***************
+  ? Please type your password again ***************
+  ? Please type your primary organization name xisun_influx
+  ? Please type your primary bucket name xisun_bucket
+  ? Please type your retention period in hours, or 0 for infinite 168
+  ? Setup with these parameters?
+    Username:          xisun
+    Organization:      xisun_influx
+    Bucket:            xisun_bucket
+    Retention Period:  168h0m0s
+   Yes
+  User    Organization    Bucket
+  xisun   xisun_influx    xisun_bucket
+  root@d1c692c2abb9:/# influx user list
+  ID                      Name
+  0923b6b20fdd3000        xisun
+  ```
+
+#### token 管理
+
+```powershell
+root@d1c692c2abb9:/# influx auth --help
+NAME:
+   influx auth - Authorization management commands
+
+USAGE:
+   influx auth command [command options] [arguments...]
+
+COMMANDS:
+   create          Create authorization
+   delete          Delete authorization
+   list, find, ls  List authorizations
+   active          Active authorization
+   inactive        Inactive authorization
+
+OPTIONS:
+   --help, -h  show help
+```
+
+- 查看用户的 token 验证信息：
+
+  ```powershell
+  root@d1c692c2abb9:/# influx auth list
+  ID                      Description     Token                                                                                           User Name       User ID                 Permissions
+  0923b6b226dd3000        xisun's Token   4tZsPO2B7aC70yDZY_k2o5yBGxpXGwekJ8ZMfb99Y1oaEdDPDzELVjcxfM78oYMgxXy0Cbr75SSa1LQhsyALIQ==        xisun           0923b6b20fdd3000        [read:/authorizations write:/authorizations read:/buckets write:/buckets read:/dashboards write:/dashboards read:/orgs write:/orgs read:/sources write:/sources read:/tasks write:/tasks read:/telegrafs write:/telegrafs read:/users write:/users read:/variables write:/variables read:/scrapers write:/scrapers read:/secrets write:/secrets read:/labels write:/labels read:/views write:/views read:/documents write:/documents read:/notificationRules write:/notificationRules read:/notificationEndpoints write:/notificationEndpoints read:/checks write:/checks read:/dbrp write:/dbrp read:/notebooks write:/notebooks read:/annotations write:/annotations]
+  ```
+
+- 配置用户的 token 验证信息：
+
+  ```powershell
+  root@861e71bc7f69:/# influx config ls
+  Active  Name    URL     Org
+  root@861e71bc7f69:/# influx config create -n default -u http://localhost:8086 -o xisun_influx -t UjxmPXlTPycyo3WgH1sVzkhELJRw96h0Hkbx8E_OR2e0C9QnhuZ2P0UQr3ALNjkaGqo98LnRymqlAuN7FL5OXQ== -a
+  Active  Name    URL                     Org
+  *       default http://localhost:8086   xisun_influx
+  root@861e71bc7f69:/# influx config ls
+  Active  Name    URL                     Org
+  *       default http://localhost:8086   xisun_influx
+  ```
+
+  - 对于 UI 界面创建的用户，可以在命令行配置一下 token 验证信息，这样就不需要每次执行命令都添加一下 token 验证信息。
+
+#### user 管理
 
 ```powershell
 root@861e71bc7f69:/# influx user --help
@@ -473,7 +606,15 @@ OPTIONS:
    --help, -h  show help
 ```
 
-`organization 管理`：
+- 查看所有的 user：
+
+  ```powershell
+  root@d1c692c2abb9:/# influx user list
+  ID                      Name
+  0923b6b20fdd3000        xisun
+  ```
+
+#### organization 管理
 
 ```powershell
 root@861e71bc7f69:/# influx org --help
@@ -494,7 +635,15 @@ OPTIONS:
    --help, -h  show help
 ```
 
-`bucket 管理`：
+- 查看所有的 organization：
+
+  ```powershell
+  root@d1c692c2abb9:/# influx org list
+  ID                      Name
+  fb7fe3460c56ab3c        xisun_influx
+  ```
+
+#### bucket 管理
 
 ```powershell
 root@861e71bc7f69:/# influx bucket --help
@@ -514,17 +663,34 @@ OPTIONS:
    --help, -h  show help
 ```
 
+- 查看所有的 bucket：
+
+  ```powershell
+  root@d1c692c2abb9:/# influx bucket list
+  ID                      Name            Retention       Shard group duration    Organization ID         Schema Type
+  58ddf440332b69d1        _monitoring     168h0m0s        24h0m0s                 fb7fe3460c56ab3c        implicit
+  0cbaa3dd7c41f12a        _tasks          72h0m0s         24h0m0s                 fb7fe3460c56ab3c        implicit
+  dd10ded92b57aca5        xisun_bucket    168h0m0s        24h0m0s                 fb7fe3460c56ab3c        implicit
+  ```
+
+  - _monitoring 和 _tasks 是系统自带的，xisun_bucket 是自行创建的。
+  - xisun_bucket 创建时 Retention 为 168 h，如果设置为 0，则为 infinite。
+
+#### 写入数据
 
 
-```powershell
-root@861e71bc7f69:/# influx bucket list
-ID                      Name            Retention       Shard group duration    Organization ID         Schema Type
-7e1d97fd1bc2e5b4        _monitoring     168h0m0s        24h0m0s                 a0cd0921909d6bc8        implicit
-6c5e00c9f5712318        _tasks          72h0m0s         24h0m0s                 a0cd0921909d6bc8        implicit
-04c7f58be268f8b3        test            infinite        168h0m0s                a0cd0921909d6bc8        implicit
-```
 
-- _monitoring 和 _tasks 是系统自带的，test 是自行创建的。
+#### 查询数据
+
+
+
+
+
+
+
+
+
+
 
 
 
