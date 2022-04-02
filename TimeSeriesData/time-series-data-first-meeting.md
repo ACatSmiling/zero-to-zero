@@ -428,7 +428,7 @@ vault-token: ""
 
 ### 命令行操作
 
-进入容器内部：
+命令行操作时，需要进入容器内部：
 
 ```powershell
 root@DESKTOP-OJKMETJ:/home/xisun/influxdb# docker ps
