@@ -9,10 +9,10 @@
 * 时序数据
   * [时序数据初识](TimeSeriesData/time-series-data-first-meeting.md)
 
-- 常用工具
-  - [IDEA 的常规设置和快捷操作](Tools/idea.md)
+* 常用工具
+  * [IDEA 的常规设置和快捷操作](Tools/idea.md)
 
-
+* 
 
 
 
