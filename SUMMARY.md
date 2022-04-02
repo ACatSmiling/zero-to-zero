@@ -3,6 +3,9 @@
   * [使用技巧](guide/use-tips.md)
 * Java 基础知识
   * [Java 入门](JavaBase/java-base.md)
+* Linux 和虚拟机
+  * [Linux 虚拟机安装方法](Linux/linux-virtualmachine.md)
+
 * 时序数据
   * [时序数据初识](TimeSeriesData/time-series-data-first-meeting.md)
 
