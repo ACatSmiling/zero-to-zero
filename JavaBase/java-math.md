@@ -1,7 +1,5 @@
 ---
-title: Java 中与数字计算相关的类
-date: 2021-03-18 11:47:03
-tags: java
+date: 2021-03-18
 ---
 
 ## `java.lang.Math` 类

@@ -1,7 +1,5 @@
 ---
-title: Java 中的泛型
-date: 2021-03-26 17:16:16
-tags: java
+date: 2021-03-26
 ---
 
 ## 泛型的设计背景
@@ -55,7 +53,7 @@ tags: java
                 System.out.println(stuScore);
             }
         }
-  }
+    }
     ```
 
     在集合中使用泛型的情况，以 ArrayList 为例：
@@ -87,7 +85,7 @@ tags: java
                 System.out.println(stuScore);
             }
         }
-  }
+    }
     ```
 
     在集合中使用泛型的情况，以 HashMap 为例：

@@ -1,7 +1,5 @@
 ---
-title: Java 中的集合
-date: 2021-03-20 14:51:43
-tags: java
+date: 2021-03-20
 ---
 
 ## Java 集合框架概述

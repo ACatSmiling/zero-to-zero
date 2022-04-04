@@ -1,7 +1,5 @@
 ---
-title: Java String 类
-date: 2021-01-01 19:31:54
-tags: java
+date: 2021-01-01
 ---
 
 ## String 的特性

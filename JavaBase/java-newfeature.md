@@ -1,7 +1,5 @@
 ---
-title: Java 新特性
-date: 2021-04-09 16:16:06
-tags: java
+date: 2021-04-09
 ---
 
 ## Java 8 的新特性

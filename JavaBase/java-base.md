@@ -1,8 +1,6 @@
-`title: Java 的基础知识`
-
-`date: 2021-02-10`
-
-<div align='center'><font size='50'>Java 的基础知识</font></div>
+---
+date: 2021-02-10
+---
 
 # 概述
 

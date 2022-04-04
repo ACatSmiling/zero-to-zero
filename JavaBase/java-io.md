@@ -1,7 +1,5 @@
 ---
-title: Java 的 IO 流
-date: 2020-11-27 11:33:09
-tags: java
+date: 2020-11-27
 ---
 
 ## File 类
