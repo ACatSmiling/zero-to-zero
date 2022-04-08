@@ -1,7 +1,7 @@
 * 文档指南
   * [快速部署](guide/quick-deploy.md)
   * [使用技巧](guide/use-tips.md)
-* Java 基础知识
+* Java 基础知识 
   * [Java 入门](JavaBase/java-base.md)
   * [Java 中的 String 类](JavaBase/java-string.md)
   * [Java 中的集合](JavaBase/java-collectionandmap.md)
@@ -33,6 +33,8 @@
 * 常用工具
   * [IDEA 的常规设置和快捷操作](Tools/idea.md)
   * [优雅的使用 Git](Tools/git.md)
+  * [Maven 是什么](Tools/maven.md)
+  * [Maven 配置文件详解](Tools/maven-configfiles.md)
   
 * 
 
