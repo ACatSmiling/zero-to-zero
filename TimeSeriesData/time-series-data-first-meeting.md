@@ -1,3 +1,7 @@
+---
+date: 2021-03-17
+---
+
 ## 时序数据的基本概念
 
 ### 时序数据的定义
@@ -82,7 +86,7 @@
 
 ![image-20220325093249091](time-series-data-first-meeting/image-20220325093249091.png)
 
-也就是说，机械硬盘是上下盘面同时进数据读取的。目前机械硬盘的常见转速是 `7200 r/min`，所以机械硬盘在读取或写入数据时，非常害怕晃动和磕碰。另外，因为机械硬盘的超高转速，如果内部有灰尘，则会造成磁头或盘片的损坏，所以机械硬盘内部是封闭的，如果不是在无尘环境下，则禁止拆开机械硬盘。
+也就是说，机械硬盘是上下盘面同时进数据读取的。目前机械硬盘的常见转速是`7200 r/min`，所以机械硬盘在读取或写入数据时，非常害怕晃动和磕碰。另外，因为机械硬盘的超高转速，如果内部有灰尘，则会造成磁头或盘片的损坏，所以机械硬盘内部是封闭的，如果不是在无尘环境下，则禁止拆开机械硬盘。
 
 机械硬盘的逻辑结构主要分为`磁道`、`扇区`和`柱面`：
 
@@ -253,14 +257,14 @@ LSM 是将之前使用的一个大的查找结构（造成随机读写，影响�
 
 ##### 分片设计
 
-- 分片设计会直接影响到写入的性能，结合时序数据库的特点，根据 `metric + tags` 分片是比较好的方式。查询大都是按照一个时间范围进行的，这样形同的 metric + tags 数据会被分配到一台机器上连续存放，顺序的磁盘读取是很快的。
+- 分片设计会直接影响到写入的性能，结合时序数据库的特点，根据`metric + tags` 分片是比较好的方式。查询大都是按照一个时间范围进行的，这样形同的 metric + tags 数据会被分配到一台机器上连续存放，顺序的磁盘读取是很快的。
 - 在时间范围很长的情况下，可以根据`时间`访问再进行分段，分别存储到不同的机器上，这样大范围的数据就可以支持并发查询，优化查询速度。
 
 如下图，第一行和第三行都是同样的 tag（sensor=95D8-7913; city=上海），所以分配到同样的分片，而第五行虽然也是同样的 tag，但是间隔时间较长，根据时间范围再次分段，被分到了不同的分片。第二、四、六行这几个同样的 tag（sensor=F3CC-20F3; city=北京），也是一样的道理。
 
 ![image-20220325175443662](time-series-data-first-meeting/image-20220325175443662.png)
 
-## InfluxDB 的初步调研
+## InfluxDB 的搭建和初步使用
 
 ### 基本概念
 
@@ -306,9 +310,9 @@ drwx------ 3 xisun root   4096 Mar 29 10:35 engine/
 -rw-r--r-- 1 xisun xisun 53248 Mar 29 10:35 influxd.sqlite
 ```
 
-- InfluxDB 容器版本为 2.1.1；
+- InfluxDB 容器版本为`2.1.1`，后文内容都建立在此基础上；
 - InfluxDB 容器后台启动；
-- InfluxDB 容器默认映射 8086 端口；
+- InfluxDB 容器默认映射`8086 端口`；
 - 容器内数据位于`/var/lib/influxdb2`路径，容器外数据位于`/home/xisun/influxdb/data`。
 
 - 此处启动的 InfluxDB 容器，没有用户信息，使用 UI 界面操作或者命令行操作时，需要自行设置。
@@ -390,6 +394,12 @@ vault-tls-server-name: ""
 vault-token: ""
 ```
 
+配置文件详解：
+
+https://archive.docs.influxdata.com/influxdb/v1.2/administration/config/#max-connection-limit-0
+
+https://www.cnblogs.com/guyeshanrenshiwoshifu/p/9188368.html
+
 ### UI 界面操作
 
 浏览器访问`localhost:8086`：
@@ -426,9 +436,15 @@ vault-token: ""
 
 ![image-20220329163644645](time-series-data-first-meeting/image-20220329163644645.png)
 
+按条件查询数据：
+
+![image-20220406191603112](time-series-data-first-meeting/image-20220406191603112.png)
+
+其他操作不再赘述，使用时自行查看。
+
 ### 命令行操作
 
-命令行操作时，需要进入容器内部：
+命令行操作时，首先需要进入容器内部：
 
 ```powershell
 root@DESKTOP-OJKMETJ:/home/xisun/influxdb# docker ps
@@ -678,9 +694,935 @@ OPTIONS:
 
 #### 写入数据
 
+```powershell
+root@2530a88ab12c:/# influx write --help
+NAME:
+   influx write - Write data to InfluxDB via stdin, or add an entire file specified with the -f flag
 
+USAGE:
+   influx write command [command options] [arguments...]
+
+COMMANDS:
+   dryrun  Write to stdout instead of InfluxDB
+
+OPTIONS:
+   --host value                     HTTP address of InfluxDB [$INFLUX_HOST]
+   --skip-verify                    Skip TLS certificate chain and host name verification [$INFLUX_SKIP_VERIFY]
+   --configs-path value             Path to the influx CLI configurations [$INFLUX_CONFIGS_PATH]
+   --active-config value, -c value  Config name to use for command [$INFLUX_ACTIVE_CONFIG]
+   --http-debug
+   --token value, -t value          Token to authenticate request [$INFLUX_TOKEN]
+   --bucket-id value                The ID of destination bucket [$INFLUX_BUCKET_ID]
+   --bucket value, -b value         The name of destination bucket [$INFLUX_BUCKET_NAME]
+   --org-id value                   The ID of the organization [$INFLUX_ORG_ID]
+   --org value, -o value            The name of the organization [$INFLUX_ORG]
+   --precision value, -p value      Precision of the timestamps of the lines (default: ns) [$INFLUX_PRECISION]
+   --format value                   Input format, either 'lp' (Line Protocol) or 'csv' (Comma Separated Values)
+   --header value                   Header prepends lines to input data
+   --file value, -f value           The path to the file to import
+   --url value, -u value            The URL to import data from
+   --debug                          Log CSV columns to stderr before reading data rows
+   --skipRowOnError                 Log CSV data errors to stderr and continue with CSV processing
+   --skipHeader value               Skip the first <n> rows from input data (default: 0)
+   --max-line-length value          Specifies the maximum number of bytes that can be read for a single line (default: 16000000)
+   --encoding value                 Character encoding of input files or stdin (default: "UTF-8")
+   --errors-file value              The path to the file to write rejected rows to
+   --rate-limit value               Throttles write, examples: "5 MB / 5 min" , "17kBs" (default: 0E+00)
+   --compression value              Input compression, either 'none' or 'gzip'
+   --help, -h                       show help
+```
+
+- 写入一条 Line Protocol：
+
+  ```powershell
+  influx write \
+    -b bucketName \
+    -o orgName \
+    -p s \
+    'myMeasurement,host=myHost testField="testData" 1556896326'
+  ```
+
+- 写入 Line Protocol 的文件：
+
+  ```powershell
+  influx write \
+    -b bucketName \
+    -o orgName \
+    -p s \
+    --format=lp
+    -f /path/to/line-protocol.txt
+  ```
+
+- 写入 CSV 文件：
+
+  ```powershell
+  influx write \
+    -b bucketName \
+    -o orgName \
+    -p s \
+    --format=csv
+    -f /path/to/data.csv
+  ```
 
 #### 查询数据
+
+```powershell
+root@2530a88ab12c:/# influx query --help
+NAME:
+    query - Execute a Flux query
+
+USAGE:
+    query [command options] [query literal or '-' for stdin]
+
+DESCRIPTION:
+   Execute a Flux query provided via the first argument, a file, or stdin
+
+COMMON OPTIONS:
+   --host value                     HTTP address of InfluxDB [$INFLUX_HOST]
+   --skip-verify                    Skip TLS certificate chain and host name verification [$INFLUX_SKIP_VERIFY]
+   --configs-path value             Path to the influx CLI configurations [$INFLUX_CONFIGS_PATH]
+   --active-config value, -c value  Config name to use for command [$INFLUX_ACTIVE_CONFIG]
+   --http-debug
+   --token value, -t value          Token to authenticate request [$INFLUX_TOKEN]
+
+OPTIONS:
+   --org-id value               The ID of the organization [$INFLUX_ORG_ID]
+   --org value, -o value        The name of the organization [$INFLUX_ORG]
+   --file value, -f value       Path to Flux query file
+   --raw, -r                    Display raw query results
+   --profilers value, -p value  Names of Flux profilers to enable
+```
+
+- 输入`influx query`命令，进入查询交互窗口，然后输入查询条件，`Ctrl + D`提交查询条件，并获得查询结果：
+
+  ```powershell
+  root@2530a88ab12c:/# influx query
+  data = from(bucket: "xisun_influx_bucket") |> range(start: -100d) |> count(column: "_value") |> yield()Result: _result
+  Table: keys: [_start, _stop, _field, _measurement, location]
+                     _start:time                      _stop:time           _field:string     _measurement:string         location:string                  _value:int
+  ------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------  --------------------------
+  2021-12-27T11:04:27.837417638Z  2022-04-06T11:04:27.837417638Z                   value     temperature_collect                    East                       25049
+  Table: keys: [_start, _stop, _field, _measurement, location]
+                     _start:time                      _stop:time           _field:string     _measurement:string         location:string                  _value:int
+  ------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------  --------------------------
+  2021-12-27T11:04:27.837417638Z  2022-04-06T11:04:27.837417638Z                   value     temperature_collect                   North                       24744
+  Table: keys: [_start, _stop, _field, _measurement, location]
+                     _start:time                      _stop:time           _field:string     _measurement:string         location:string                  _value:int
+  ------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------  --------------------------
+  2021-12-27T11:04:27.837417638Z  2022-04-06T11:04:27.837417638Z                   value     temperature_collect                   South                       25243
+  Table: keys: [_start, _stop, _field, _measurement, location]
+                     _start:time                      _stop:time           _field:string     _measurement:string         location:string                  _value:int
+  ------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------  --------------------------
+  2021-12-27T11:04:27.837417638Z  2022-04-06T11:04:27.837417638Z                   value     temperature_collect                    West                       24964
+  ```
+
+#### 删除数据
+
+```powershell
+root@2530a88ab12c:/# influx delete --help
+NAME:
+    delete - Delete points from InfluxDB
+
+USAGE:
+    delete [command options] [arguments...]
+
+DESCRIPTION:
+   Delete points from InfluxDB, by specify start, end time and a sql like predicate string
+
+COMMON OPTIONS:
+   --host value                     HTTP address of InfluxDB [$INFLUX_HOST]
+   --skip-verify                    Skip TLS certificate chain and host name verification [$INFLUX_SKIP_VERIFY]
+   --configs-path value             Path to the influx CLI configurations [$INFLUX_CONFIGS_PATH]
+   --active-config value, -c value  Config name to use for command [$INFLUX_ACTIVE_CONFIG]
+   --http-debug
+   --token value, -t value          Token to authenticate request [$INFLUX_TOKEN]
+
+OPTIONS:
+   --org-id value               The ID of the organization that owns the bucket [$INFLUX_ORG_ID]
+   --org value, -o value        The name of the organization that owns the bucket [$INFLUX_ORG]
+   --bucket-id value            The ID of the bucket to delete from [$INFLUX_BUCKET_ID]
+   --bucket value, -b value     The name of the bucket to delete from [$INFLUX_BUCKET_NAME]
+   --start value                The start time in RFC3339Nano format (ex: '2009-01-02T23:00:00Z')
+   --stop value                 The stop time in RFC3339Nano format (ex: '2009-01-02T23:00:00Z')
+   --predicate value, -p value  sql like predicate string (ex: 'tag1="v1" and (tag2=123)')
+```
+
+- 删除指定 bucket 指定时间范围的数据：
+
+  ```powershell
+  root@2530a88ab12c:/# influx delete --bucket xisun_influx_bucket --start 2018-01-01T00:00:00Z --stop 2022-04-07T00:00:00Z
+  ```
+
+## InfluDB 的 Java 客户端
+
+### Maven 添加依赖
+
+```xml
+<dependency>
+    <groupId>com.influxdb</groupId>
+    <artifactId>influxdb-client-java</artifactId>
+    <version>5.0.0</version>
+</dependency>
+```
+
+### 数据库连接信息
+
+```properties
+influxdb.url=http://localhost:8086
+influxdb.token=duHdNDj7jLm_ocakFjFtHK_JGv_K1DSH-avtJ0DVGQ4Gl7xfVUrv6WndXWRuK-3Rm4_71t4vR444-1_q2gs4uw==
+influxdb.org=xisun_influx_org
+influxdb.bucket=xisun_influx_bucket
+```
+
+### InfluxDBClient
+
+```java
+public class InfluxDBClientUtil {
+    private static volatile InfluxDBClient influxDBClient = null;
+
+    private InfluxDBClientUtil() {
+
+    }
+
+    public static InfluxDBClient getInfluxDBClient() {
+        if (influxDBClient == null) {
+            synchronized (InfluxDBClientUtil.class) {
+                if (influxDBClient == null) {
+                    try {
+                        // 1.加载配置文件
+                        InputStream is = InfluxDBClientUtil.class.getClassLoader().getResourceAsStream("influxdb.properties");
+                        Properties pros = new Properties();
+                        pros.load(is);
+
+                        // 2.读取配置信息
+                        String url = pros.getProperty("influxdb.url");
+                        String token = pros.getProperty("influxdb.token");
+                        String org = pros.getProperty("influxdb.org");
+                        String bucket = pros.getProperty("influxdb.bucket");
+
+                        // 3.创建客户端对象实例
+                        influxDBClient = InfluxDBClientFactory.create(url, token.toCharArray(), org, bucket);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return influxDBClient;
+    }
+}
+```
+
+#### 源码分析
+
+通过`InfluxDBClientFactory`，可以根据不同的配置信息，创建 InfluxDBClient 实例对象，以上面的代码为例：
+
+```java
+/**
+ * Create an instance of the InfluxDB 2.0 client.
+ *
+ * @param url    the url to connect to the InfluxDB
+ * @param token  the token to use for the authorization
+ * @param org    the name of an organization
+ * @param bucket the name of a bucket
+ * @return client
+ * @see InfluxDBClientOptions.Builder#url(String)
+ */
+@Nonnull
+public static InfluxDBClient create(@Nonnull final String url,
+                                    @Nonnull final char[] token,
+                                    @Nullable final String org,
+                                    @Nullable final String bucket) {
+
+    InfluxDBClientOptions options = InfluxDBClientOptions.builder()
+            .url(url)
+            .authenticateToken(token)
+            .org(org)
+            .bucket(bucket)
+            .build();
+
+    return create(options);
+}
+```
+
+将配置信息封装为一个 InfluxDBClientOptions 对象后，调用`create()`创建对象：
+
+```java
+/**
+ * Create an instance of the InfluxDB 2.0 client.
+ *
+ * @param options the connection configuration
+ * @return client
+ */
+@Nonnull
+public static InfluxDBClient create(@Nonnull final InfluxDBClientOptions options) {
+
+    Arguments.checkNotNull(options, "InfluxDBClientOptions");
+
+    return new InfluxDBClientImpl(options);
+}
+```
+
+创建的对象是`InfluxDBClientImpl`实例：
+
+```java
+/**
+ * @author Jakub Bednar (bednar@github) (11/10/2018 09:36)
+ */
+public final class InfluxDBClientImpl extends AbstractInfluxDBClient implements InfluxDBClient {
+
+    private final SetupService setupService;
+    private final ReadyService readyService;
+
+    public InfluxDBClientImpl(@Nonnull final InfluxDBClientOptions options) {
+
+        super(options, "java", Collections.singletonList(RxJava2CallAdapterFactory.create()));
+
+        setupService = retrofit.create(SetupService.class);
+        readyService = retrofit.create(ReadyService.class);
+    }
+}
+```
+
+查看 InfluxDBClientImpl 类图：
+
+![image-20220407112548870](time-series-data-first-meeting/image-20220407112548870.png)
+
+- `AutoCloseable 接口`：使用`try-with-resources`语法安全释放资源。
+
+- `ThreadSafe 接口`：线程安全。
+
+- `AbstractRestClient 抽象类`：定义了发送请求后的响应码和响应规则，发送请求的方法为`execute()`。
+
+  ```java
+  protected <T> T execute(@Nonnull final Call<T> call) throws InfluxException {
+      Arguments.checkNotNull(call, "call");
+  
+      try {
+          Response<T> response = call.execute();
+          if (response.isSuccessful()) {
+              return response.body();
+          } else {
+              throw responseToError(response);
+          }
+      } catch (IOException e) {
+          throw new InfluxException(e);
+      }
+  }
+  ```
+
+  - `Arguments.checkNotNull(call, "call");`使用了 Java 8 中 Objects 的新特性，检查参数不为 null。
+
+    ```java
+    Objects.requireNonNull(obj, () -> "Expecting a not null reference for " + name);
+    ```
+
+  - 通过`call.execute()`发送请求，底层使用`retrofit`网络请求框架。
+
+    - 关于 retrofit，简单参考：https://juejin.cn/post/6978777076073660429，未深入了解。
+
+- `AbstractInfluxDBClient 抽象类`：定义了资源关闭方法`close()`和健康检查方法`health()`，构造方法中对一些属性进行了初始化，具体属性的含义，后面碰上时探究。其主要的属性和构造方法如下：
+
+  ```java
+  /**
+   * @author Jakub Bednar (bednar@github) (20/11/2018 07:13)
+   */
+  public abstract class AbstractInfluxDBClient extends AbstractRestClient {
+      public static final Dialect DEFAULT_DIALECT = new Dialect().header(true)
+              .delimiter(",")
+              .commentPrefix("#")
+              .addAnnotationsItem(Dialect.AnnotationsEnum.DATATYPE)
+              .addAnnotationsItem(Dialect.AnnotationsEnum.GROUP).addAnnotationsItem(Dialect.AnnotationsEnum.DEFAULT);
+  
+      public final HealthService healthService;
+      public final PingService pingService;
+  
+      protected final Retrofit retrofit;
+      protected final InfluxDBClientOptions options;
+  
+      protected final HttpLoggingInterceptor loggingInterceptor;
+      protected final GzipInterceptor gzipInterceptor;
+      private final AuthenticateInterceptor authenticateInterceptor;
+      private final OkHttpClient okHttpClient;
+      protected final Collection<AutoCloseable> autoCloseables = new CopyOnWriteArrayList<>();
+  
+      public AbstractInfluxDBClient(@Nonnull final InfluxDBClientOptions options, @Nonnull final String clientType) {
+          this(options, clientType, Collections.emptyList());
+      }
+  
+      public AbstractInfluxDBClient(@Nonnull final InfluxDBClientOptions options,
+                                    @Nonnull final String clientType,
+                                    @Nonnull final Collection<CallAdapter.Factory> factories) {
+  
+          Arguments.checkNotNull(options, "InfluxDBClientOptions");
+          Arguments.checkNotNull(factories, "factories");
+          Arguments.checkNonEmpty(clientType, "clientType");
+  
+          this.options = options;
+          this.loggingInterceptor = new HttpLoggingInterceptor();
+          setLogLevel(loggingInterceptor, options.getLogLevel());
+          this.authenticateInterceptor = new AuthenticateInterceptor(options);
+          this.gzipInterceptor = new GzipInterceptor();
+  
+          this.okHttpClient = options.getOkHttpClient()
+                  // Connection errors are handled by RetryAttempt in AbstractWriteClient.
+                  .retryOnConnectionFailure(false)
+                  .addInterceptor(new UserAgentInterceptor(clientType))
+                  .addInterceptor(this.loggingInterceptor)
+                  .addInterceptor(this.authenticateInterceptor)
+                  .addInterceptor(this.gzipInterceptor)
+                  .build();
+  
+          this.authenticateInterceptor.initToken(okHttpClient);
+  
+          Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
+                  .baseUrl(options.getUrl())
+                  .client(okHttpClient)
+                  .addConverterFactory(ScalarsConverterFactory.create())
+                  .addConverterFactory(GsonConverterFactory.create(new JSON().getGson()));
+  
+          for (CallAdapter.Factory factory : factories) {
+              retrofitBuilder.addCallAdapterFactory(factory);
+          }
+  
+          this.retrofit = retrofitBuilder.build();
+  
+          this.healthService = retrofit.create(HealthService.class);
+          this.pingService = retrofit.create(PingService.class);
+      }
+  }
+  ```
+
+- `InfluxDBClient 接口`：InfluxDB 2.0 的客户端接口，获取写、查询、删除等 Api 的方法都定义在此处，举例如下：
+
+  ```java
+  /**
+   * The client of theInfluxDB 2.0for Time Series that implements HTTP API defined by
+   * <a href="https://github.com/influxdata/influxdb/blob/master/http/swagger.yml">Influx API Service swagger.yml</a>.
+   *
+   * @author Jakub Bednar (bednar@github) (11/10/2018 08:56)
+   */
+  @ThreadSafe
+  public interface InfluxDBClient extends AutoCloseable { 
+     /**
+       * Create a new Query client.
+       *
+       * @return the new client instance for the Query API
+       */
+      @Nonnull
+      QueryApi getQueryApi();
+      
+     /**
+       * Create a new asynchronous non-blocking Write client.
+       *
+       * <p>
+       * The {@link WriteApi} uses background thread to ingesting data into InfluxDB and is suppose to run as a singleton.
+       * <b>Don't create new instance for every write.</b>
+       * </p>
+       *
+       * @return the new client instance for the Write API
+       */
+      @Nonnull
+      WriteApi makeWriteApi();
+      
+     /**
+       * Create a new synchronous blocking Write client.
+       *
+       * @return the new client instance for the Write API
+       */
+      @Nonnull
+      WriteApiBlocking getWriteApiBlocking();
+      
+     /**
+       * Create a new Delete client.
+       *
+       * @return the new client instance for the Delete API
+       */
+      @Nonnull
+      DeleteApi getDeleteApi();
+  }
+  ```
+
+回到 InfluxDBClientImpl 自身上来，这个是 InfluxDB 2.0 客户端实际上的实现类，线程安全，支持 try-with-resources 语法，在使用时，应创建一个`单例对象`，使用完后，需要及时的关闭数据库连接的资源。
+
+- 私有属性：
+
+  ```java
+  private final SetupService setupService;
+  private final ReadyService readyService;
+  ```
+
+- 构造方法：
+
+  ```java
+  public InfluxDBClientImpl(@Nonnull final InfluxDBClientOptions options) {
+      // 调用父类AbstractInfluxDBClient的构造方法，
+      super(options, "java", Collections.singletonList(RxJava2CallAdapterFactory.create()));
+      // 使用retrofit创建了两个网络连接的服务
+      setupService = retrofit.create(SetupService.class);
+      readyService = retrofit.create(ReadyService.class);
+  }
+  ```
+
+- 获取 Write Api，最终获得一个`WriteApiBlockingImpl`或`WriteApiImpl`实例对象：
+
+  ```java
+  // 获取的是同步写Api
+  @Nonnull
+  @Override
+  public WriteApiBlocking getWriteApiBlocking() {
+      return new WriteApiBlockingImpl(retrofit.create(WriteService.class), options);
+  }
+  
+  // 获取的是异步写Api
+  @Nonnull
+  @Override
+  public WriteApi makeWriteApi() {
+      return makeWriteApi(WriteOptions.DEFAULTS);
+  }
+  
+  @Nonnull
+  @Override
+  @SuppressWarnings("MagicNumber")
+  public WriteApi makeWriteApi(@Nonnull final WriteOptions writeOptions) {
+      Arguments.checkNotNull(writeOptions, "WriteOptions");
+  
+      if (autoCloseables.size() >= 10) {
+          String format = "There is already created %d instances of 'WriteApi'. "
+                  + "The 'WriteApi' is suppose to run as a singleton and should be reused across threads. "
+                  + "Use 'WriteApiBlocking` if you would like to use one-time ingesting.";
+          LOG.warning(String.format(format, autoCloseables.size()));
+      }
+  
+      return new WriteApiImpl(writeOptions, retrofit.create(WriteService.class), options, autoCloseables);
+  }
+  ```
+
+- 获取 Query Api，最终获得一个`QueryApiImpl`实例对象：
+
+  ```java
+  @Nonnull
+  @Override
+  public QueryApi getQueryApi() {
+      return new QueryApiImpl(retrofit.create(QueryService.class), options);
+  }
+  ```
+
+- 获取 Delete Api，最终获得一个`DeleteApiImpl`实例对象：
+
+  ```java
+  @Nonnull
+  @Override
+  public DeleteApi getDeleteApi() {
+      return new DeleteApiImpl(retrofit.create(DeleteService.class));
+  }
+  ```
+
+### Write Api
+
+// TODO
+
+### Query Api
+
+#### 源码分析
+
+通过前面对 InfluxDBClient 的分析，可以看出，InfluxDB 2.0 实际上通过`QueryApiImpl`实现查询操作，QueryApiImpl 实例对象的创建方式如下所示：
+
+```java
+new QueryApiImpl(retrofit.create(QueryService.class), options)
+```
+
+在构造方法中，传入了一个`QueryService`的对象实例，QueryService 接口中的全部方法如下：
+
+```java
+public interface QueryService {
+  /**
+   * Retrieve query suggestions
+   * 
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @return Call&lt;FluxSuggestions&gt;
+   */
+  @GET("api/v2/query/suggestions")
+  Call<FluxSuggestions> getQuerySuggestions(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan
+  );
+
+  /**
+   * Retrieve query suggestions for a branching suggestion
+   * 
+   * @param name The name of the branching suggestion. (required)
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @return Call&lt;FluxSuggestion&gt;
+   */
+  @GET("api/v2/query/suggestions/{name}")
+  Call<FluxSuggestion> getQuerySuggestionsName(
+    @retrofit2.http.Path("name") String name, @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan
+  );
+
+  /**
+   * Query data
+   * Retrieves data from InfluxDB buckets.  To query data, you need the following: - **organization** – _See [View organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/#view-your-organization-id) for instructions on viewing your organization ID._ - **API token** – _See [View tokens](https://docs.influxdata.com/influxdb/v2.1/security/tokens/view-tokens/)  for instructions on viewing your API token._ - **InfluxDB URL** – _See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)_. - **Flux query** – _See [Flux](https://docs.influxdata.com/flux/v0.x/)._  For more information and examples, see [Query with the InfluxDB API](https://docs.influxdata.com/influxdb/v2.1/query-data/execute-queries/influx-api/).
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @param acceptEncoding Indicates the content encoding (usually a compression algorithm) that the client can understand. (optional, default to identity)
+   * @param contentType  (optional)
+   * @param org Specifies the name of the organization executing the query. Takes either the ID or Name. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param orgID Specifies the ID of the organization executing the query. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param query Flux query or specification to execute (optional)
+   * @return Call&lt;String&gt;
+   */
+  @Headers({
+    "Content-Type:application/json"
+  })
+  @POST("api/v2/query")
+  Call<String> postQuery(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Accept-Encoding") String acceptEncoding, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Query("org") String org, @retrofit2.http.Query("orgID") String orgID, @retrofit2.http.Body Query query
+  );
+
+  /**
+   * Query data
+   * Retrieves data from InfluxDB buckets.  To query data, you need the following: - **organization** – _See [View organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/#view-your-organization-id) for instructions on viewing your organization ID._ - **API token** – _See [View tokens](https://docs.influxdata.com/influxdb/v2.1/security/tokens/view-tokens/)  for instructions on viewing your API token._ - **InfluxDB URL** – _See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)_. - **Flux query** – _See [Flux](https://docs.influxdata.com/flux/v0.x/)._  For more information and examples, see [Query with the InfluxDB API](https://docs.influxdata.com/influxdb/v2.1/query-data/execute-queries/influx-api/).
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @param acceptEncoding Indicates the content encoding (usually a compression algorithm) that the client can understand. (optional, default to identity)
+   * @param contentType  (optional)
+   * @param org Specifies the name of the organization executing the query. Takes either the ID or Name. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param orgID Specifies the ID of the organization executing the query. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param query Flux query or specification to execute (optional)
+   * @return Call&lt;ResponseBody&gt;
+   */
+  @POST("api/v2/query")
+  @Streaming
+  Call<ResponseBody> postQueryResponseBody(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Accept-Encoding") String acceptEncoding, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Query("org") String org, @retrofit2.http.Query("orgID") String orgID, @retrofit2.http.Body Query query
+  );
+
+  /**
+   * Query data
+   * Retrieves data from InfluxDB buckets.  To query data, you need the following: - **organization** – _See [View organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/#view-your-organization-id) for instructions on viewing your organization ID._ - **API token** – _See [View tokens](https://docs.influxdata.com/influxdb/v2.1/security/tokens/view-tokens/)  for instructions on viewing your API token._ - **InfluxDB URL** – _See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)_. - **Flux query** – _See [Flux](https://docs.influxdata.com/flux/v0.x/)._  For more information and examples, see [Query with the InfluxDB API](https://docs.influxdata.com/influxdb/v2.1/query-data/execute-queries/influx-api/).
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @param acceptEncoding Indicates the content encoding (usually a compression algorithm) that the client can understand. (optional, default to identity)
+   * @param contentType  (optional)
+   * @param org Specifies the name of the organization executing the query. Takes either the ID or Name. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param orgID Specifies the ID of the organization executing the query. If both &#x60;orgID&#x60; and &#x60;org&#x60; are specified, &#x60;org&#x60; takes precedence. (optional)
+   * @param query Flux query or specification to execute (optional)
+   * @return Call&lt;String&gt;
+   */
+  @POST("api/v2/query")
+  Call<String> postQueryString(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Accept-Encoding") String acceptEncoding, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Query("org") String org, @retrofit2.http.Query("orgID") String orgID, @retrofit2.http.Body Query query
+  );
+
+  /**
+   * Analyze a Flux query
+   * 
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @param contentType  (optional)
+   * @param query Flux query to analyze (optional)
+   * @return Call&lt;AnalyzeQueryResponse&gt;
+   */
+  @Headers({
+    "Content-Type:application/json"
+  })
+  @POST("api/v2/query/analyze")
+  Call<AnalyzeQueryResponse> postQueryAnalyze(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Body Query query
+  );
+
+  /**
+   * Generate an Abstract Syntax Tree (AST) from a query
+   * Analyzes flux query and generates a query specification.
+   * @param zapTraceSpan OpenTracing span context (optional)
+   * @param contentType  (optional)
+   * @param languageRequest Analyzed Flux query to generate abstract syntax tree. (optional)
+   * @return Call&lt;ASTResponse&gt;
+   */
+  @Headers({
+    "Content-Type:application/json"
+  })
+  @POST("api/v2/query/ast")
+  Call<ASTResponse> postQueryAst(
+    @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Body LanguageRequest languageRequest
+  );
+}
+```
+
+至此，我们知道，此 InfluxDB 的 Java 客户端，实际上是**通过发送 Http 连接，访问安装在服务器上的 InfluxDB 数据库所暴露出来的接口，实现了数据的查询操作。**
+
+对于 InfluxDB 数据库内部的存储结构，以及如何实现高效的查询操作，是无法通过此 Java 客户端得知的，这个暂放一边，我们先看一下此 Java 客户端从数据库获取数据后，是如何进一步执行数据分析功能的。
+
+再回到 QueryApiImpl 上来，其类图关系如下：
+
+![image-20220407095448072](time-series-data-first-meeting/image-20220407095448072.png)
+
+- `AbstractRestClient 抽象类`和`ThreadSafe 接口`：同 InfluxDBClientImpl。
+- `AbstractQueryApi 抽象类`：定义了封装查询请求，以及对请求返回结果封装处理的一些方法。
+- `QueryApi 接口`：InfluxDB 2.0 的查询 Api 接口，查询操作的方法都定义在此接口中。
+
+查看 QueryApiImpl 构造方法，只是简单的对两个属性赋值：
+
+```java
+final class QueryApiImpl extends AbstractQueryApi implements QueryApi {
+    // 查询服务
+    private final QueryService service;
+    // 数据库连接参数
+    private final InfluxDBClientOptions options;
+
+    QueryApiImpl(@Nonnull final QueryService service, @Nonnull final InfluxDBClientOptions options) {
+
+        Arguments.checkNotNull(service, "service");
+        Arguments.checkNotNull(options, "options");
+
+        this.service = service;
+        this.options = options;
+    }
+}
+```
+
+再看其方法，QueryApiImpl 除了实现 QueryApi 接口中定义的所有方法以外，多了两个私有方法，而其他各方法执行到最后，实际执行的都是这两个私有方法，如下所示：
+
+```java
+private void query(@Nonnull final Query query,
+                   @Nonnull final String org,
+                   @Nonnull final FluxCsvParser.FluxResponseConsumer responseConsumer,
+                   @Nonnull final Consumer<? super Throwable> onError,
+                   @Nonnull final Runnable onComplete,
+                   @Nonnull final Boolean asynchronously) {
+
+    Call<ResponseBody> queryCall = service
+        .postQueryResponseBody(null, null, null, org, null, query.dialect(AbstractInfluxDBClient.DEFAULT_DIALECT));
+
+
+    LOG.log(Level.FINEST, "Prepare query \"{0}\" with dialect \"{1}\" on organization \"{2}\".",
+            new Object[]{query, query.getDialect(), org});
+
+    query(queryCall, responseConsumer, onError, onComplete, asynchronously);
+}
+
+private void queryRaw(@Nonnull final Query query,
+                      @Nonnull final String org,
+                      @Nonnull final BiConsumer<Cancellable, String> onResponse,
+                      @Nonnull final Consumer<? super Throwable> onError,
+                      @Nonnull final Runnable onComplete,
+                      @Nonnull final Boolean asynchronously) {
+
+    Call<ResponseBody> queryCall = service
+        .postQueryResponseBody(null, null, null, org, null, query);
+
+    LOG.log(Level.FINEST, "Prepare raw query \"{0}\" with dialect \"{1}\" on organization \"{2}\".",
+            new Object[]{query, query.getDialect(), org});
+
+    queryRaw(queryCall, onResponse, onError, onComplete, asynchronously);
+}
+```
+
+可以看出，两个方法都通过 QueryService 发送了一个 Post 请求，这个请求具体创建方法为：
+
+```java
+@POST("api/v2/query")
+@Streaming
+Call<ResponseBody> postQueryResponseBody(
+  @retrofit2.http.Header("Zap-Trace-Span") String zapTraceSpan, @retrofit2.http.Header("Accept-Encoding") String acceptEncoding, @retrofit2.http.Header("Content-Type") String contentType, @retrofit2.http.Query("org") String org, @retrofit2.http.Query("orgID") String orgID, @retrofit2.http.Body Query query
+);
+```
+
+至此，可以得出结论：InfluxDB 的 Java 客户端，将数据库
+
+```java
+private void query(@Nonnull final Call<ResponseBody> query,
+                   @Nonnull final Consumer<ResponseBody> consumer,
+                   @Nonnull final Consumer<? super Throwable> onError,
+                   @Nonnull final Runnable onComplete,
+                   @Nonnull final Boolean asynchronously) {
+
+    Arguments.checkNotNull(query, "query");
+    Arguments.checkNotNull(consumer, "consumer");
+    Arguments.checkNotNull(onError, "onError");
+    Arguments.checkNotNull(onComplete, "onComplete");
+    Arguments.checkNotNull(asynchronously, "asynchronously");
+
+    Callback<ResponseBody> callback = new Callback<ResponseBody>() {
+        @Override
+        public void onResponse(@Nonnull final Call<ResponseBody> call,
+                               @Nonnull final Response<ResponseBody> response) {
+
+            if (!response.isSuccessful()) {
+                onError.accept(responseToError(response));
+                return;
+            }
+
+            ResponseBody body = response.body();
+            if (body == null) {
+                return;
+            }
+
+            consumer.accept(body);
+        }
+
+        @Override
+        public void onFailure(@Nonnull final Call<ResponseBody> call, @Nonnull final Throwable throwable) {
+            onError.accept(throwable);
+        }
+    };
+
+    LOG.log(Level.FINEST, "Prepared query {0}, asynchronously {1}", new Object[]{query, asynchronously});
+
+    if (asynchronously) {
+        query.enqueue(callback);
+    } else {
+
+        Response<ResponseBody> response;
+        try {
+            response = query.execute();
+            callback.onResponse(query, response);
+        } catch (IOException e) {
+            catchOrPropagateException(e, onError);
+        }
+    }
+}
+```
+
+
+
+#### 查询语法
+
+在 QueryApi 接口中，定义了六十多种查询的方法，举例如下：
+
+```java
+/**
+ * The client of the InfluxDB 2.0 that implement Query HTTP API endpoint.
+ *
+ * @author Jakub Bednar (bednar@github) (01/10/2018 12:17)
+ */
+@ThreadSafe
+public interface QueryApi {
+   /**
+     * Executes the Flux query against the InfluxDB 2.0 and synchronously map whole response
+     * to {@code List<FluxTable>}.
+     * <p>
+     * NOTE: This method is not intended for large query results.
+     * Use {@link QueryApi#query(String, String, BiConsumer, Consumer, Runnable)} for large data streaming.
+     *
+     * <p>The {@link InfluxDBClientOptions#getOrg()} will be used as source organization.</p>
+     *
+     * @param query the flux query to execute
+     * @return {@code List<FluxTable>} which are matched the query
+     */
+    @Nonnull
+    List<FluxTable> query(@Nonnull final String query);
+    
+   /**
+     * Executes the Parameterized Flux query against the InfluxDB 2.0 and synchronously map whole response
+     * to {@code List<FluxTable>}. Query parameters currently are supported only in InfluxDB Cloud.
+     * <p>
+     * NOTE: This method is not intended for large query results.
+     * Use {@link QueryApi#query(String, String, BiConsumer, Consumer, Runnable, Map)} for large data streaming.
+     * </p>
+     * Parameterized Flux queries support int, float, and string data types.
+     * To convert the supported data types into other Flux basic data types, use Flux type conversion functions.
+     * <p>
+     *
+     * Example:
+     * </p>
+     * <blockquote>
+     * <pre>{@code
+     * Instant yesterday = Instant.now().minus(Period.ofDays(1));
+     * QueryApi queryApi = client.getQueryApi();
+     * Map<String, Object> params = new HashMap<>();
+     * params.put("bucketParam", bucket);
+     * params.put("startParam", yesterday.toString());
+     * String parametrizedQuery = "from(bucket: params.bucketParam) |> range(start: time(v: params.startParam))";
+     * List<FluxTable> query = queryApi.query(parametrizedQuery, org, params);
+     * }
+     * </pre>
+     * </blockquote>
+     *
+     * @param query the flux query to execute
+     * @param org   specifies the source organization
+     * @param params the map of query parameters.
+     *
+     * @return {@code List<FluxTable>} which are matched the query
+     *
+     * @see <a href="https://docs.influxdata.com/influxdb/cloud/query-data/parameterized-queries/">InfluxDB Cloud
+     * Parametrized Queries</a>
+     */
+    List<FluxTable> query(@Nonnull final String query, @Nonnull final String org,
+                          @Nullable Map<String, Object> params);
+    
+   /**
+     * Executes the Flux query against the InfluxDB 2.0 and synchronously map whole response
+     * to {@code List<FluxTable>}.
+     * <p>
+     * NOTE: This method is not intended for large query results.
+     * Use {@link QueryApi#query(String, String, BiConsumer, Consumer, Runnable)} for large data streaming.
+     *
+     * <p>The {@link InfluxDBClientOptions#getOrg()} will be used as source organization.</p>
+     *
+     * @param query the flux query to execute
+     * @return {@code List<FluxTable>} which are matched the query
+     */
+    @Nonnull
+    List<FluxTable> query(@Nonnull final Query query);
+    
+   /**
+     * Executes the Flux query against the InfluxDB 2.0 and asynchronously stream {@link FluxRecord}s
+     * to {@code onNext} consumer.
+     *
+     * <p>The {@link InfluxDBClientOptions#getOrg()} will be used as source organization.</p>
+     *
+     * @param query      the flux query to execute
+     * @param onNext     the callback to consume FluxRecord result with capability to discontinue a streaming query
+     * @param onError    the callback to consume any error notification
+     * @param onComplete the callback to consume a notification about successfully end of stream
+     */
+    void query(@Nonnull final String query,
+               @Nonnull final BiConsumer<Cancellable, FluxRecord> onNext,
+               @Nonnull final Consumer<? super Throwable> onError,
+               @Nonnull final Runnable onComplete);
+    
+   /**
+     * Executes the Flux query against the InfluxDB 2.0 and asynchronously stream {@link FluxRecord}s
+     * to {@code onNext} consumer.
+     *
+     * <p>The {@link InfluxDBClientOptions#getOrg()} will be used as source organization.</p>
+     *
+     * @param query      the flux query to execute
+     * @param onNext     the callback to consume FluxRecord result with capability to discontinue a streaming query
+     * @param onError    the callback to consume any error notification
+     * @param onComplete the callback to consume a notification about successfully end of stream
+     */
+    void query(@Nonnull final Query query,
+               @Nonnull final BiConsumer<Cancellable, FluxRecord> onNext,
+               @Nonnull final Consumer<? super Throwable> onError,
+               @Nonnull final Runnable onComplete);
+}
+```
+
+QueryApi 的查询参数分为两种类型：
+
+- `String query`：query 字符串需要符合 Flux 语法，参考如下
+
+  ```java
+  String baseMessage = "from(bucket: \"xisun_influx_bucket\")\n" +
+                  " |> range(start: -1d)\n" +
+                  " |> filter(fn: (r) => r[\"_measurement\"] == \"temperature_collect\")";
+  
+  // 统计
+  String flux_count = " |> count(column: \"_value\")";
+  
+  // 排序，根据tags和field
+  String flux_sort = " |> sort(columns: [\"location\", \"_value\"])";
+  
+  // 分页
+  String flux_limit = " |> limit(n:10)";
+  ```
+
+  - `from(bucket: "bucket_name")`：数据源，必需
+  - `range(start: -1d)`：时间范围，必需
+  - `filter(fn: (r) => r["_measurement"] == "measurement_name")`：过滤条件，必需
+  - `count(column: "_value")`：对查询的结果统计
+  - `sort(columns: ["_tag", "_value"])`：对查询的结果排序
+  - `limit(n:10)`：对查询的结果分页
+
+- `Query query`：实际上就是对将一些查询参数封装成一个对象。
 
 
 
@@ -746,7 +1688,6 @@ https://www.cnblogs.com/jpfss/p/12183214.html
 
 https://www.cnblogs.com/xuwc/p/14037750.html
 
+## 声明
 
-
-
-
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
