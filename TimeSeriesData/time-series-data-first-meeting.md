@@ -1220,7 +1220,7 @@ public final class InfluxDBClientImpl extends AbstractInfluxDBClient implements 
 
 ### Write Api
 
-// TODO
+`// TODO`
 
 ### Query Api
 
@@ -1345,11 +1345,9 @@ public interface QueryService {
 }
 ```
 
-至此，我们知道，此 InfluxDB 的 Java 客户端，实际上是**通过发送 Http 连接，访问安装在服务器上的 InfluxDB 数据库所暴露出来的接口，实现了数据的查询操作。**
+至此，我们知道，此 InfluxDB 的 Java 客户端，在查询操作时，实际上应该是`发送了一个 Http 请求`，访问安装在服务器上的 InfluxDB 数据库所暴露出来的接口。那么，当我们写一个查询条件时，是先从数据库拿出原数据然后在客户端分析计算，还是数据库直接根据查询条件返回最终的结果呢？对于这个问题，常理分析应该是后者。
 
-对于 InfluxDB 数据库内部的存储结构，以及如何实现高效的查询操作，是无法通过此 Java 客户端得知的，这个暂放一边，我们先看一下此 Java 客户端从数据库获取数据后，是如何进一步执行数据分析功能的。
-
-再回到 QueryApiImpl 上来，其类图关系如下：
+Ok，再回到 QueryApiImpl 上来，其类图关系如下：
 
 ![image-20220407095448072](time-series-data-first-meeting/image-20220407095448072.png)
 
@@ -1380,6 +1378,7 @@ final class QueryApiImpl extends AbstractQueryApi implements QueryApi {
 再看其方法，QueryApiImpl 除了实现 QueryApi 接口中定义的所有方法以外，多了两个私有方法，而其他各方法执行到最后，实际执行的都是这两个私有方法，如下所示：
 
 ```java
+// 方法一
 private void query(@Nonnull final Query query,
                    @Nonnull final String org,
                    @Nonnull final FluxCsvParser.FluxResponseConsumer responseConsumer,
@@ -1397,6 +1396,7 @@ private void query(@Nonnull final Query query,
     query(queryCall, responseConsumer, onError, onComplete, asynchronously);
 }
 
+// 方法二
 private void queryRaw(@Nonnull final Query query,
                       @Nonnull final String org,
                       @Nonnull final BiConsumer<Cancellable, String> onResponse,
@@ -1414,7 +1414,7 @@ private void queryRaw(@Nonnull final Query query,
 }
 ```
 
-可以看出，两个方法都通过 QueryService 发送了一个 Post 请求，这个请求具体创建方法为：
+可以看出，两个方法都通过 QueryService 发送了一个 Post 请求，这个请求具体创建方法也是相同的，如下所示：
 
 ```java
 @POST("api/v2/query")
@@ -1424,7 +1424,7 @@ Call<ResponseBody> postQueryResponseBody(
 );
 ```
 
-至此，可以得出结论：InfluxDB 的 Java 客户端，将数据库
+进一步的，QueryApiImpl 的两个私有方法，都指向了 AbstractQueryApi 抽象类的以下方法：
 
 ```java
 private void query(@Nonnull final Call<ResponseBody> query,
@@ -1480,7 +1480,11 @@ private void query(@Nonnull final Call<ResponseBody> query,
 }
 ```
 
+从这个方法，也可以看出，并没有对数据的分析计算等操作。
 
+至此，我们可以得出结论：**InfluxDB 的 Java 客户端，不存在数据的分析计算等操作，当我们写好一个查询条件时，客户端只是对其进行必要的封装，然后发送  Http 请求，然后数据库接受请求后，根据查询条件获得结果，然后返回给客户端。**
+
+对于 InfluxDB 数据库内部的存储结构，以及如何实现高效的查询操作，是无法通过此 Java 客户端得知的，这个就需要进一步分析 InfluxDB 源码，才能得到答案。
 
 #### 查询语法
 
@@ -1622,9 +1626,13 @@ QueryApi 的查询参数分为两种类型：
   - `sort(columns: ["_tag", "_value"])`：对查询的结果排序
   - `limit(n:10)`：对查询的结果分页
 
-- `Query query`：实际上就是对将一些查询参数封装成一个对象。
+- `Query query`：实际上就是将查询参数封装成一个对象，即使传入的是 query 字符串，最终也是通过`new Query().query(query)`，封装为 Query 对象。
 
+### Delete Api
 
+`// TODO`
+
+## InfluxDB 的 源码分析
 
 
 
