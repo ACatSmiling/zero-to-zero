@@ -4,24 +4,25 @@
 
 ### Docker 出现的背景
 
-- 一款产品从开发到上线，从操作系统，到运行环境，再到应用配置。作为开发 + 运维之间的协作我们需要关心很多东西，这也是很多互联网公司都不得不面对的问题，特别是各种版本的迭代之后，不同版本环境的兼容，对运维人员都是考验。
+一款产品从开发到上线，从操作系统，到运行环境，再到应用配置。作为开发 + 运维之间的协作我们需要关心很多东西，这也是很多互联网公司都不得不面对的问题，特别是各种版本的迭代之后，不同版本环境的兼容，对运维人员都是考验。环境配置如此麻烦，换一台机器，就要重来一次，费力费时。很多人想到，能不能从根本上解决问题，软件可以带环境安装？也就是说，安装的时候，把原始环境一模一样地复制过来。
 
-- 环境配置如此麻烦，换一台机器，就要重来一次，费力费时。很多人想到，能不能从根本上解决问题，软件可以带环境安装？也就是说，安装的时候，把原始环境一模一样地复制过来。
+Docker 之所以发展如此迅速，也是因为它对此给出了一个标准化的解决方案。开发人员利用 Docker 可以消除协作编码时 "在我的机器上可正常工作" 的问题。之前在服务器配置一个应用的运行环境，要安装各种软件。安装和配置这些东西有多麻烦就不说了，它还不能跨平台。假如我们是在 Windows 上安装的这些环境，到了 Linux 又得重新装。况且就算不跨操作系统，换另一台同样操作系统的服务器，要移植应用也是非常麻烦的。
 
-- Docker 之所以发展如此迅速，也是因为它对此给出了一个标准化的解决方案。开发人员利用 Docker 可以消除协作编码时 "在我的机器上可正常工作" 的问题。
+传统上认为，软件编码开发/测试结束后，所产出的成果即是程序或是能够编译执行的二进制字节码等。而为了让这程序可以顺利执行，开发团队也得准备完整的部署文件，让运维团队得以部署应用程式，开发需要清楚的告诉运维部署团队，用的全部配置文件 + 所有软件环境。不过，即便如此，仍然常常发生部署失败的状况。
 
-- 之前在服务器配置一个应用的运行环境，要安装各种软件。安装和配置这些东西有多麻烦就不说了，它还不能跨平台。假如我们是在 Windows 上安装的这些环境，到了 Linux 又得重新装。况且就算不跨操作系统，换另一台同样操作系统的服务器，要移植应用也是非常麻烦的。
+**Docker 镜像的设计，使得 Docker 得以打破过去「程序即应用」的观念。透过镜像（images）将作业系统核心除外，运作应用程式所需要的系统环境，由下而上打包，达到应用程式跨平台间的无缝接轨运作。**
 
-- 传统上认为，软件编码开发/测试结束后，所产出的成果即是程序或是能够编译执行的二进制字节码等。而为了让这程序可以顺利执行，开发团队也得准备完整的部署文件，让运维团队得以部署应用程式，**开发需要清楚的告诉运维部署团队，用的全部配置文件 + 所有软件环境。不过，即便如此，仍然常常发生部署失败的状况。**Docker 镜像的设计**，使得 Docker 得以打破过去「程序即应用」的观念。透过镜像（images）将作业系统核心除外，运作应用程式所需要的系统环境，由下而上打包，达到应用程式跨平台间的无缝接轨运作。**
-
-  ![image-20210517132812149](docker-base/image-20210517132812149.png)
+![image-20210517132812149](docker-base/image-20210517132812149.png)
 
 ### Docker 的理念
 
-- Docker 是基于 Go 语言实现的云开源项目。
-- Docker 的主要目标是 "**Build, Ship and Run Any App, Anywhere**"，也就是通过对应用组件的封装、分发、部署、运行等生命期的管理，使用户的 APP (可以是一个 WEB 应用或数据库应用等等) 及其运行环境能够做到 "**一次封装，到处运行**"。
-- Linux 容器技术的出现就解决了这样一个问题，而 Docker 就是在它的基础上发展过来的。将应用运行在 Docker 容器上面，而 Docker 容器在任何操作系统上都是一致的，这就实现了跨平台、跨服务器。**只需要一次配置好环境，换到别的机子上就可以一键部署好，大大简化了操作。**
-- 总之，Docker 是一个解决了运行环境和配置问题的软件容器，是方便做持续集成并有助于整体发布的容器虚拟化技术。
+Docker 是基于 Go 语言实现的云开源项目。
+
+Docker 的主要目标是`Build, Ship and Run Any App, Anywhere`，也就是通过对应用组件的封装、分发、部署、运行等生命期的管理，使用户的 APP（可以是一个 WEB 应用或数据库应用等等）及其运行环境能够做到`一次封装，到处运行`。
+
+Linux 容器技术的出现就解决了这样一个问题，而 Docker 就是在它的基础上发展过来的。将应用运行在 Docker 容器上面，而 Docker 容器在任何操作系统上都是一致的，这就实现了跨平台、跨服务器。**只需要一次配置好环境，换到别的机子上就可以一键部署好，大大简化了操作。**
+
+总之，Docker 是一个解决了运行环境和配置问题的软件容器，是方便做持续集成并有助于整体发布的容器虚拟化技术。
 
 ## Docker 的基本组成
 
@@ -31,32 +32,37 @@
 
 ### 镜像（Image）
 
-- Docker 镜像就是一个只读的模板。镜像可以用来创建 Docker 容器，一个镜像可以创建很多容器。
+Docker`镜像`就是一个只读的模板。镜像可以用来创建 Docker 容器，一个镜像可以创建很多容器。
 
-- 镜像与容器的关系类似于面向对象编程中的类与对象：
+镜像与容器的关系类似于面向对象编程中的类与对象：
 
-  | Docker | 面向对象 |
-  | ------ | -------- |
-  | 镜像   | 类       |
-  | 容器   | 对象     |
+| Docker | 面向对象 |
+| ------ | -------- |
+| 镜像   | 类       |
+| 容器   | 对象     |
 
 ### 容器（Container）
 
-- Docker 利用容器独立运行一个或一组应用。**容器是用镜像创建的运行实例。**
+Docker 利用`容器`独立运行一个或一组应用。
+
+- **容器是用镜像创建的运行实例。**
 - 容器可以被启动、开始、停止、删除。每个容器都是相互隔离的、保证安全的平台。
+
 - **容器可以看做是一个简易版的 Linux 环境（包括 root 用户权限、进程空间、用户空间和网络空间等）和运行在其中的应用程序。**
 - 容器的定义和镜像几乎一模一样，也是一堆层的统一视角， 唯一区别在于容器的最上面那一层是可读可写的。
 
 ### 仓库（Repository）
 
-- 仓库是**集中存放镜像**文件的场所。
+`仓库`是集中存放镜像文件的场所。
+
 - 仓库和仓库注册服务器（Registry）是有区别的。仓库注册服务器上往往存放着多个仓库，每个仓库中又包含了多镜像，每个镜像有不同的标签（tag）。
 - 仓库分为公开仓库（Public）和私有仓库（Private）两种形式。
-- **最大的公开仓库是 Docker Hub**（https://hub.docker.com/），存放了数量庞大的镜像供用户下载。国内的公开仓库包括**阿里云**、网易云等。
+- 最大的公开仓库是[`Docker Hub`](https://hub.docker.com/)，存放了数量庞大的镜像供用户下载。国内的公开仓库包括阿里云、网易云等。
 
 ### 总结
 
-- Docker 本身是一个容器运行载体或称之为管理引擎。我们把应用程序和配置依赖打包好形成一个可交付的运行环境，这个打包好的运行环境就是 image 镜像文件。只有通过这个镜像文件才能生成 Docker 容器。image 文件可以看作是容器的模板。Docker 根据 image 文件生成容器的实例。同一个 image 文件，可以生成多个同时运行的容器实例。
+Docker 本身是一个容器运行载体或称之为管理引擎。我们把应用程序和配置依赖打包好形成一个可交付的运行环境，这个打包好的运行环境就是 image 镜像文件。只有通过这个镜像文件才能生成 Docker 容器。image 文件可以看作是容器的模板。Docker 根据 image 文件生成容器的实例。同一个 image 文件，可以生成多个同时运行的容器实例。
+
 - image 文件生成的容器实例，本身也是一个文件，称为镜像文件。
 - 一个容器运行一种服务，当我们需要的时候，就可以通过 Docker 客户端创建一个对应的运行实例，也就是我们的容器。
 - 至于仓储，就是放了一堆镜像的地方，我们可以把镜像发布到仓储中，需要的时候从仓储中拉下来就可以了。
@@ -65,550 +71,207 @@
 
 #### Docker 是怎样工作的
 
-- Docker 是一个 Client-Server 结构的系统，Docker 守护进程运行在主机上，然后通过 Socket 连接从客户端访问，守护进程从客户端接受命令并管理运行在主机上的容器。**容器，是一个运行时环境，就是我们前面说到的集装箱。**
+Docker 是一个`Client-Server`结构的系统，Docker 守护进程运行在主机上，然后通过 Socket 连接从客户端访问，守护进程从客户端接受命令并管理运行在主机上的容器。**容器，是一个运行时环境，就是我们前面说到的集装箱。**
 
-  <img src="docker-base/image-20210518115953156.png" alt="image-20210518115953156" style="zoom:80%;" />
+<img src="docker-base/image-20210518115953156.png" alt="image-20210518115953156" style="zoom:80%;" />
 
 #### Docker 为什么比 VM 快
 
-- Docker 有着比虚拟机更少的抽象层。由于 Docker 不需要 **Hypervisor** 实现硬件资源虚拟化，运行在 Docker 容器上的程序直接使用的都是实际物理机的硬件资源。因此在 CPU、内存利用率上，Docker 将会在效率上有明显优势。
+Docker 有着比虚拟机更少的抽象层。由于 Docker 不需要 **Hypervisor** 实现硬件资源虚拟化，运行在 Docker 容器上的程序直接使用的都是实际物理机的硬件资源。因此在 CPU、内存利用率上，Docker 将会在效率上有明显优势。
 
-- Docker 利用的是宿主机的内核，而不需要 **Guest OS**。因此，当新建一个容器时，Docker 不需要和虚拟机一样重新加载一个操作系统内核，因此可以避免引寻、加载操作系统内核这个比较费时费资源的过程，当新建一个虚拟机时，虚拟机软件需要加载 Guest OS，这个新建过程是分钟级别的。而 Docker 由于直接利用宿主机的操作系统，则省略了返个过程，因此新建一个 Docker 容器只需要几秒钟。
+Docker 利用的是宿主机的内核，而不需要 **Guest OS**。因此，当新建一个容器时，Docker 不需要和虚拟机一样重新加载一个操作系统内核，因此可以避免引寻、加载操作系统内核这个比较费时费资源的过程，当新建一个虚拟机时，虚拟机软件需要加载 Guest OS，这个新建过程是分钟级别的。而 Docker 由于直接利用宿主机的操作系统，则省略了返个过程，因此新建一个 Docker 容器只需要几秒钟。
 
-  ![image-20210518164632786](docker-base/image-20210518164632786.png)
+![image-20210518164632786](docker-base/image-20210518164632786.png)
 
-  <img src="docker-base/image-20210518164700236.png" alt="image-20210518164700236" style="zoom:80%;" />
+<img src="docker-base/image-20210518164700236.png" alt="image-20210518164700236" style="zoom:80%;" />
 
 ## Docker 安装
 
-- Docker 官网：https://hub.docker.com/
-- 不同版本 Linux 安装 Docker 汇总：https://hub.docker.com/search?q=&type=edition&offering=community&operating_system=linux
+Docker 官网：https://hub.docker.com/
+
+不同版本 Linux 安装 Docker 汇总：https://hub.docker.com/search?q=&type=edition&offering=community&operating_system=linux
 
 ### WSL 安装 Docker
 
-- WSL 默认不支持 Docker，需要破解：
+WSL 默认不支持 Docker，需要破解，整体流程如下：
 
-  - 破解步骤：
+![image-20210609105236382](docker-base/image-20210609105236382.png)
 
-    ![image-20210609105236382](docker-base/image-20210609105236382.png)
+> 参考：https://github.com/arkane-systems/genie
 
-    > 参考：https://github.com/arkane-systems/genie
+第一步，以管理员身份打开 Windows PowerShell，输入命令`wsl`进入 WSL 控制台，并切换到 root 用户。
 
-  - 以管理员身份打开 Windows PowerShell，输入命令 `wsl` 进入 WSL 控制台，并切换到 root 用户：
+```powershell
+Windows PowerShell
+版权所有 (C) Microsoft Corporation。保留所有权利。
 
-    ```powershell
-    Windows PowerShell
-    版权所有 (C) Microsoft Corporation。保留所有权利。
-    
-    尝试新的跨平台 PowerShell https://aka.ms/pscore6
-    
-    加载个人及系统配置文件用了 972 毫秒。
-    (base) PS C:\Users\XiSun> wsl
-    (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$ su root
-    Password:
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun#
-    ```
+尝试新的跨平台 PowerShell https://aka.ms/pscore6
 
-    - 如果忘记 root 用户密码，可以如下方式重置：
+加载个人及系统配置文件用了 972 毫秒。
+(base) PS C:\Users\XiSun> wsl
+(base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$ su root
+Password:
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun#
+```
 
-      ```powershell
-      1.以管理员身份打开Windows PowerShell;
-      2.输入命令: wsl.exe --user root;
-      3.输入命令: passwd root, 修改root用户密码。
-      ```
-
-  - 安装 .NET：
-
-    - 查看 Ubuntu 版本：
-
-      - 方式一：
-
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat /proc/version
-        Linux version 5.10.60.1-microsoft-standard-WSL2 (oe-user@oe-host) (x86_64-msft-linux-gcc (GCC) 9.3.0, GNU ld (GNU Binutils) 2.34.0.20200220) #1 SMP Wed Aug 25 23:20:18 UTC 2021
-        ```
-
-      - 方式二：
-
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# lsb_release -a
-        No LSB modules are available.
-        Distributor ID: Ubuntu
-        Description:    Ubuntu 20.04.2 LTS
-        Release:        20.04
-        Codename:       focal
-        ```
-
-        ![image-20210609113128182](docker-base/image-20210609113128182.png)
-
-      - 查看内核版本号：
-
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# uname -r
-        5.10.60.1-microsoft-standard-WSL2
-        ```
-
-    - 安装对应版本的 .NET：
-
-      ![image-20210608214208564](docker-base/image-20210608214208564.png)
-
-      > 参考：https://docs.microsoft.com/zh-cn/dotnet/core/install/linux-ubuntu
-
-      - 将 Microsoft 包签名密钥添加到受信任密钥列表，并添加包存储库。
-
-        ```powershell
-        root@WIN-K11OM3VD9KL:/mnt/c/Windows/system32# wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-        sudo dpkg -i packages-microsoft-prod.deb
-        ```
-
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-        o dpkg -i packages-microsoft-prod.deb--2021-06-08 21:15:31--  https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
-        Resolving packages.microsoft.com (packages.microsoft.com)... 65.52.183.205
-        Connecting to packages.microsoft.com (packages.microsoft.com)|65.52.183.205|:443... connected.
-        HTTP request sent, awaiting response... 200 OK
-        Length: 3124 (3.1K) [application/octet-stream]
-        Saving to: ‘packages-microsoft-prod.deb’
-        
-        packages-microsoft-prod.deb   100%[=================================================>]   3.05K  --.-KB/s    in 0s
-        
-        2021-06-08 21:15:32 (523 MB/s) - ‘packages-microsoft-prod.deb’ saved [3124/3124]
-        
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sudo dpkg -i packages-microsoft-prod.deb
-        Selecting previously unselected package packages-microsoft-prod.
-        (Reading database ... 47281 files and directories currently installed.)
-        Preparing to unpack packages-microsoft-prod.deb ...
-        Unpacking packages-microsoft-prod (1.0-ubuntu20.04.1) ...
-        Setting up packages-microsoft-prod (1.0-ubuntu20.04.1) ...
-        ```
-
-      - 安装 SDK：
-
-        ```powershell
-        sudo apt-get update;
-        sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
-        ```
-        
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sudo apt-get update; \
-        >   sudo apt-get install -y apt-transport-https && \
-        >   sudo apt-get update && \
-        >   sudo apt-get install -y dotnet-sdk-5.0
-        Get:1 https://packages.microsoft.com/ubuntu/20.04/prod focal InRelease [10.5 kB]
-        Get:2 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 Packages [74.9 kB]
-        Hit:3 http://archive.ubuntu.com/ubuntu focal InRelease
-        Get:4 http://security.ubuntu.com/ubuntu focal-security InRelease [114 kB]
-        Get:5 http://archive.ubuntu.com/ubuntu focal-updates InRelease [114 kB]
-        Get:6 http://security.ubuntu.com/ubuntu focal-security/main amd64 Packages [702 kB]
-        Get:7 http://archive.ubuntu.com/ubuntu focal-backports InRelease [101 kB]
-        Get:8 http://security.ubuntu.com/ubuntu focal-security/main Translation-en [141 kB]
-        Get:9 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [1026 kB]
-        Get:10 http://security.ubuntu.com/ubuntu focal-security/main amd64 c-n-f Metadata [7780 B]
-        Get:11 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 Packages [247 kB]
-        Get:12 http://security.ubuntu.com/ubuntu focal-security/restricted Translation-en [36.1 kB]
-        Get:13 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 c-n-f Metadata [456 B]
-        Get:14 http://security.ubuntu.com/ubuntu focal-security/universe amd64 Packages [588 kB]
-        Get:15 http://security.ubuntu.com/ubuntu focal-security/universe Translation-en [94.6 kB]
-        Get:16 http://security.ubuntu.com/ubuntu focal-security/universe amd64 c-n-f Metadata [11.5 kB]
-        Get:17 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 Packages [19.9 kB]
-        Get:18 http://security.ubuntu.com/ubuntu focal-security/multiverse Translation-en [4316 B]
-        Get:19 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 c-n-f Metadata [528 B]
-        Get:20 http://archive.ubuntu.com/ubuntu focal-updates/main Translation-en [229 kB]
-        Get:21 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 c-n-f Metadata [13.5 kB]
-        Get:22 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 Packages [266 kB]
-        Get:23 http://archive.ubuntu.com/ubuntu focal-updates/restricted Translation-en [38.9 kB]
-        Get:24 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 c-n-f Metadata [456 B]
-        Get:25 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 Packages [781 kB]
-        Get:26 http://archive.ubuntu.com/ubuntu focal-updates/universe Translation-en [170 kB]
-        Get:27 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 c-n-f Metadata [17.6 kB]
-        Get:28 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 Packages [23.6 kB]
-        Get:29 http://archive.ubuntu.com/ubuntu focal-updates/multiverse Translation-en [6376 B]
-        Get:30 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 c-n-f Metadata [648 B]
-        Fetched 4840 kB in 4s (1125 kB/s)
-        Reading package lists... Done
-        Reading package lists... Done
-        Building dependency tree
-        Reading state information... Done
-        The following NEW packages will be installed:
-          apt-transport-https
-        0 upgraded, 1 newly installed, 0 to remove and 101 not upgraded.
-        Need to get 1704 B of archives.
-        After this operation, 161 kB of additional disk space will be used.
-        Get:1 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 apt-transport-https all 2.0.5 [1704 B]
-        Fetched 1704 B in 0s (3469 B/s)
-        Selecting previously unselected package apt-transport-https.
-        (Reading database ... 47289 files and directories currently installed.)
-        Preparing to unpack .../apt-transport-https_2.0.5_all.deb ...
-        Unpacking apt-transport-https (2.0.5) ...
-        Setting up apt-transport-https (2.0.5) ...
-        Hit:1 https://packages.microsoft.com/ubuntu/20.04/prod focal InRelease
-        Hit:2 http://security.ubuntu.com/ubuntu focal-security InRelease
-        Hit:3 http://archive.ubuntu.com/ubuntu focal InRelease
-        Hit:4 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-        Hit:5 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-        Reading package lists... Done
-        Reading package lists... Done
-        Building dependency tree
-        Reading state information... Done
-        The following additional packages will be installed:
-          aspnetcore-runtime-5.0 aspnetcore-targeting-pack-5.0 dotnet-apphost-pack-5.0 dotnet-host dotnet-hostfxr-5.0
-          dotnet-runtime-5.0 dotnet-runtime-deps-5.0 dotnet-targeting-pack-5.0 netstandard-targeting-pack-2.1
-        The following NEW packages will be installed:
-          aspnetcore-runtime-5.0 aspnetcore-targeting-pack-5.0 dotnet-apphost-pack-5.0 dotnet-host dotnet-hostfxr-5.0
-          dotnet-runtime-5.0 dotnet-runtime-deps-5.0 dotnet-sdk-5.0 dotnet-targeting-pack-5.0 netstandard-targeting-pack-2.1
-        0 upgraded, 10 newly installed, 0 to remove and 101 not upgraded.
-        Need to get 95.1 MB of archives.
-        After this operation, 396 MB of additional disk space will be used.
-        Get:1 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-runtime-deps-5.0 amd64 5.0.6-1 [2642 B]
-        Get:2 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-host amd64 5.0.6-1 [52.5 kB]
-        Get:3 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-hostfxr-5.0 amd64 5.0.6-1 [140 kB]
-        Get:4 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-runtime-5.0 amd64 5.0.6-1 [22.1 MB]
-        Get:5 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 aspnetcore-runtime-5.0 amd64 5.0.6-1 [6086 kB]
-        Get:6 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-targeting-pack-5.0 amd64 5.0.0-1 [2086 kB]
-        Get:7 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 aspnetcore-targeting-pack-5.0 amd64 5.0.0-1 [1316 kB]
-        Get:8 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-apphost-pack-5.0 amd64 5.0.6-1 [3412 kB]
-        Get:9 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 netstandard-targeting-pack-2.1 amd64 2.1.0-1 [1476 kB]
-        Get:10 https://packages.microsoft.com/ubuntu/20.04/prod focal/main amd64 dotnet-sdk-5.0 amd64 5.0.300-1 [58.4 MB]
-        Fetched 95.1 MB in 1min 11s (1332 kB/s)
-        Selecting previously unselected package dotnet-runtime-deps-5.0.
-        (Reading database ... 47293 files and directories currently installed.)
-        Preparing to unpack .../0-dotnet-runtime-deps-5.0_5.0.6-1_amd64.deb ...
-        Unpacking dotnet-runtime-deps-5.0 (5.0.6-1) ...
-        Selecting previously unselected package dotnet-host.
-        Preparing to unpack .../1-dotnet-host_5.0.6-1_amd64.deb ...
-        Unpacking dotnet-host (5.0.6-1) ...
-        Selecting previously unselected package dotnet-hostfxr-5.0.
-        Preparing to unpack .../2-dotnet-hostfxr-5.0_5.0.6-1_amd64.deb ...
-        Unpacking dotnet-hostfxr-5.0 (5.0.6-1) ...
-        Selecting previously unselected package dotnet-runtime-5.0.
-        Preparing to unpack .../3-dotnet-runtime-5.0_5.0.6-1_amd64.deb ...
-        Unpacking dotnet-runtime-5.0 (5.0.6-1) ...
-        Selecting previously unselected package aspnetcore-runtime-5.0.
-        Preparing to unpack .../4-aspnetcore-runtime-5.0_5.0.6-1_amd64.deb ...
-        Unpacking aspnetcore-runtime-5.0 (5.0.6-1) ...
-        Selecting previously unselected package dotnet-targeting-pack-5.0.
-        Preparing to unpack .../5-dotnet-targeting-pack-5.0_5.0.0-1_amd64.deb ...
-        Unpacking dotnet-targeting-pack-5.0 (5.0.0-1) ...
-        Selecting previously unselected package aspnetcore-targeting-pack-5.0.
-        Preparing to unpack .../6-aspnetcore-targeting-pack-5.0_5.0.0-1_amd64.deb ...
-        Unpacking aspnetcore-targeting-pack-5.0 (5.0.0-1) ...
-        Selecting previously unselected package dotnet-apphost-pack-5.0.
-        Preparing to unpack .../7-dotnet-apphost-pack-5.0_5.0.6-1_amd64.deb ...
-        Unpacking dotnet-apphost-pack-5.0 (5.0.6-1) ...
-        Selecting previously unselected package netstandard-targeting-pack-2.1.
-        Preparing to unpack .../8-netstandard-targeting-pack-2.1_2.1.0-1_amd64.deb ...
-        Unpacking netstandard-targeting-pack-2.1 (2.1.0-1) ...
-        Selecting previously unselected package dotnet-sdk-5.0.
-        Preparing to unpack .../9-dotnet-sdk-5.0_5.0.300-1_amd64.deb ...
-        Unpacking dotnet-sdk-5.0 (5.0.300-1) ...
-        Setting up dotnet-host (5.0.6-1) ...
-        Setting up dotnet-runtime-deps-5.0 (5.0.6-1) ...
-        Setting up netstandard-targeting-pack-2.1 (2.1.0-1) ...
-        Setting up dotnet-hostfxr-5.0 (5.0.6-1) ...
-        Setting up dotnet-apphost-pack-5.0 (5.0.6-1) ...
-        Setting up dotnet-targeting-pack-5.0 (5.0.0-1) ...
-        Setting up aspnetcore-targeting-pack-5.0 (5.0.0-1) ...
-        Setting up dotnet-runtime-5.0 (5.0.6-1) ...
-        Setting up aspnetcore-runtime-5.0 (5.0.6-1) ...
-        Setting up dotnet-sdk-5.0 (5.0.300-1) ...
-        This software may collect information about you and your use of the software, and send that to Microsoft.
-        Please visit http://aka.ms/dotnet-cli-eula for more information.
-        Welcome to .NET!
-        ---------------------
-        Learn more about .NET: https://aka.ms/dotnet-docs
-        Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli-docs
-        
-        Telemetry
-        ---------
-        The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
-        
-        Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry
-        
-        Configuring...
-        --------------
-        A command is running to populate your local package cache to improve restore speed and enable offline access. This command takes up to one minute to complete and only runs once.
-        Processing triggers for man-db (2.9.1-1) ...
-        ```
-        
-      - 安装运行时：
-
-        ```powershell
-        sudo apt-get update; \
-          sudo apt-get install -y apt-transport-https && \
-          sudo apt-get update && \
-          sudo apt-get install -y aspnetcore-runtime-5.0
-        ```
-      
-        >dotnet-sdk-5.0 安装成功后，会一起安装 aspnetcore-runtime-5.0。
-
-      - 检查 .NET 版本：
-
-        ```powershell
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet
-        
-        Usage: dotnet [options]
-        Usage: dotnet [path-to-application]
-        
-        Options:
-          -h|--help         Display help.
-          --info            Display .NET information.
-          --list-sdks       Display the installed SDKs.
-          --list-runtimes   Display the installed runtimes.
-        
-        path-to-application:
-          The path to an application .dll file to execute.
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet --list-sdks
-        5.0.300 [/usr/share/dotnet/sdk]
-        root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet --list-runtimes
-        Microsoft.AspNetCore.App 5.0.6 [/home/xisun/.dotnet/shared/Microsoft.AspNetCore.App]
-        Microsoft.NETCore.App 5.0.6 [/home/xisun/.dotnet/shared/Microsoft.NETCore.App]
-        ```
-    
-  - 安装 wsl-translinux：
-
-    ![image-20210609105418915](docker-base/image-20210609105418915.png)
-
-    > 参考：https://arkane-systems.github.io/wsl-transdebian/
-
-    ```powershell
-    apt install apt-transport-https
-    
-    wget -O /etc/apt/trusted.gpg.d/wsl-transdebian.gpg https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
-    
-    chmod a+r /etc/apt/trusted.gpg.d/wsl-transdebian.gpg
-    
-    cat << EOF > /etc/apt/sources.list.d/wsl-transdebian.list
-    > deb https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    > deb-src https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    > EOF
-    
-    apt update
-    ```
-  
-    ```powershell
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt install apt-transport-https
-    
-    wget -O /etc/apt/trusted.gpg.d/wsl-transdebian.gpg https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
-    
-    chmod a+r /etc/apt/trusted.gpg.d/wsl-transdebian.gpg
-    
-    cat << EOF > /etc/apt/sources.list.d/wsl-transdebian.list
-    deb https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    deb-src https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    EOF
-    
-    Reading package lists... Done
-    Building dependency tree
-    Reading state information... Done
-    apt-transport-https is already the newest version (2.0.5).
-    0 upgraded, 0 newly installed, 0 to remove and 101 not upgraded.
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# wget -O /etc/apt/trusted.gpg.d/wsl-transdebian.gpg https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
-    --2021-06-08 21:23:47--  https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
-    Resolving arkane-systems.github.io (arkane-systems.github.io)... 185.199.109.153, 185.199.108.153, 185.199.110.153, ...
-    Connecting to arkane-systems.github.io (arkane-systems.github.io)|185.199.109.153|:443... connected.
-    HTTP request sent, awaiting response... 200 OK
-    Length: 2280 (2.2K) [application/octet-stream]
-    Saving to: ‘/etc/apt/trusted.gpg.d/wsl-transdebian.gpg’
-    
-    /etc/apt/trusted.gpg.d/wsl-tr 100%[=================================================>]   2.23K  --.-KB/s    in 0s
-    
-    2021-06-08 21:23:49 (36.1 MB/s) - ‘/etc/apt/trusted.gpg.d/wsl-transdebian.gpg’ saved [2280/2280]
-    
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# chmod a+r /etc/apt/trusted.gpg.d/wsl-transdebian.gpg
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat << EOF > /etc/apt/sources.list.d/wsl-transdebian.list
-    > deb https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    > deb-src https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
-    > EOF
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt update
-    Hit:1 https://packages.microsoft.com/ubuntu/20.04/prod focal InRelease
-    Hit:2 http://archive.ubuntu.com/ubuntu focal InRelease
-    Hit:3 http://security.ubuntu.com/ubuntu focal-security InRelease
-    Hit:4 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-    Get:5 https://arkane-systems.github.io/wsl-transdebian/apt focal InRelease [2495 B]
-    Hit:6 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-    Get:7 https://arkane-systems.github.io/wsl-transdebian/apt focal/main Sources [1338 B]
-    Get:8 https://arkane-systems.github.io/wsl-transdebian/apt focal/main amd64 Packages [1897 B]
-    Fetched 5730 B in 2s (3130 B/s)
-    Reading package lists... Done
-    Building dependency tree
-    Reading state information... Done
-    101 packages can be upgraded. Run 'apt list --upgradable' to see them.
-    ```
-  
-  - 安装 genie：
-
-    ```powershell
-    sudo apt update
-    sudo apt install -y systemd-genie
-    ```
-  
-    ```powershell
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sudo apt update
-    Hit:1 https://packages.microsoft.com/ubuntu/20.04/prod focal InRelease
-    Hit:2 http://security.ubuntu.com/ubuntu focal-security InRelease
-    Hit:3 http://archive.ubuntu.com/ubuntu focal InRelease
-    Hit:4 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-    Hit:5 https://arkane-systems.github.io/wsl-transdebian/apt focal InRelease
-    Hit:6 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-    Reading package lists... Done
-    Building dependency tree
-    Reading state information... Done
-    101 packages can be upgraded. Run 'apt list --upgradable' to see them.
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sudo apt install -y systemd-genie
-    Reading package lists... Done
-    Building dependency tree
-    Reading state information... Done
-    The following additional packages will be installed:
-      daemonize libnss-mymachines libnss-systemd libpam-systemd libsystemd0 systemd systemd-container systemd-sysv
-      systemd-timesyncd
-    The following NEW packages will be installed:
-      daemonize libnss-mymachines systemd-container systemd-genie
-    The following packages will be upgraded:
-      libnss-systemd libpam-systemd libsystemd0 systemd systemd-sysv systemd-timesyncd
-    6 upgraded, 4 newly installed, 0 to remove and 95 not upgraded.
-    Need to get 5359 kB of archives.
-    After this operation, 3892 kB of additional disk space will be used.
-    Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libnss-systemd amd64 245.4-4ubuntu3.6 [95.8 kB]
-    Get:2 https://arkane-systems.github.io/wsl-transdebian/apt focal/main amd64 systemd-genie amd64 1.42 [504 kB]
-    Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 systemd-timesyncd amd64 245.4-4ubuntu3.6 [28.1 kB]
-    Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 systemd-sysv amd64 245.4-4ubuntu3.6 [10.3 kB]
-    Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpam-systemd amd64 245.4-4ubuntu3.6 [186 kB]
-    Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 systemd amd64 245.4-4ubuntu3.6 [3805 kB]
-    Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsystemd0 amd64 245.4-4ubuntu3.6 [269 kB]
-    Get:8 http://archive.ubuntu.com/ubuntu focal/universe amd64 daemonize amd64 1.7.8-1 [11.9 kB]
-    Get:9 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 systemd-container amd64 245.4-4ubuntu3.6 [317 kB]
-    Get:10 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libnss-mymachines amd64 245.4-4ubuntu3.6 [131 kB]
-    Fetched 5359 kB in 5s (1137 kB/s)
-    (Reading database ... 50558 files and directories currently installed.)
-    Preparing to unpack .../0-libnss-systemd_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking libnss-systemd:amd64 (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Preparing to unpack .../1-systemd-timesyncd_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking systemd-timesyncd (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Preparing to unpack .../2-systemd-sysv_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking systemd-sysv (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Preparing to unpack .../3-libpam-systemd_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking libpam-systemd:amd64 (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Preparing to unpack .../4-systemd_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking systemd (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Preparing to unpack .../5-libsystemd0_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking libsystemd0:amd64 (245.4-4ubuntu3.6) over (245.4-4ubuntu3.4) ...
-    Setting up libsystemd0:amd64 (245.4-4ubuntu3.6) ...
-    Selecting previously unselected package daemonize.
-    (Reading database ... 50558 files and directories currently installed.)
-    Preparing to unpack .../daemonize_1.7.8-1_amd64.deb ...
-    Unpacking daemonize (1.7.8-1) ...
-    Selecting previously unselected package systemd-container.
-    Preparing to unpack .../systemd-container_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking systemd-container (245.4-4ubuntu3.6) ...
-    Selecting previously unselected package systemd-genie.
-    Preparing to unpack .../systemd-genie_1.42_amd64.deb ...
-    Unpacking systemd-genie (1.42) ...
-    Selecting previously unselected package libnss-mymachines:amd64.
-    Preparing to unpack .../libnss-mymachines_245.4-4ubuntu3.6_amd64.deb ...
-    Unpacking libnss-mymachines:amd64 (245.4-4ubuntu3.6) ...
-    Setting up daemonize (1.7.8-1) ...
-    Setting up systemd (245.4-4ubuntu3.6) ...
-    Initializing machine ID from random generator.
-    Setting up systemd-timesyncd (245.4-4ubuntu3.6) ...
-    Setting up systemd-container (245.4-4ubuntu3.6) ...
-    Created symlink /etc/systemd/system/multi-user.target.wants/machines.target → /lib/systemd/system/machines.target.
-    Setting up systemd-sysv (245.4-4ubuntu3.6) ...
-    Setting up systemd-genie (1.42) ...
-    Created symlink /etc/systemd/system/sockets.target.wants/wslg-xwayland.socket → /lib/systemd/system/wslg-xwayland.socket.
-    Setting up libnss-systemd:amd64 (245.4-4ubuntu3.6) ...
-    Setting up libnss-mymachines:amd64 (245.4-4ubuntu3.6) ...
-    First installation detected...
-    Checking NSS setup...
-    Setting up libpam-systemd:amd64 (245.4-4ubuntu3.6) ...
-    Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
-    Processing triggers for man-db (2.9.1-1) ...
-    Processing triggers for dbus (1.12.16-2ubuntu2.1) ...
-    ```
-  
-- 破解完成之后，即可在 WSL 中安装 Docker (利用脚本安装)：
-
-  ![image-20210610215004640](docker-base/image-20210610215004640.png)
+- 如果忘记 root 用户密码，可以如下方式重置：
 
   ```powershell
-  curl -fsSL https://get.docker.com -o get-docker.sh
-  sh get-docker.sh
+  1. 以管理员身份打开Windows PowerShell;
+  2. 输入命令: wsl.exe --user root;
+  3. 输入命令: passwd root, 修改root用户密码。
   ```
 
-  ```powershell
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# curl -fsSL https://get.docker.com -o get-docker.sh
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sh get-docker.sh
-  # Executing docker install script, commit: 7cae5f8b0decc17d6571f9f52eb840fbc13b2737
-  
-  WSL DETECTED: We recommend using Docker Desktop for Windows.
-  Please get Docker Desktop from https://www.docker.com/products/docker-desktop
-  
-  
-  You may press Ctrl+C now to abort this script.
-  + sleep 20
-  + sh -c apt-get update -qq >/dev/null
-  + sh -c DEBIAN_FRONTEND=noninteractive apt-get install -y -qq apt-transport-https ca-certificates curl >/dev/null
-  + sh -c curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | apt-key add -qq - >/dev/null
-  Warning: apt-key output should not be parsed (stdout is not a terminal)
-  + sh -c echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable" > /etc/apt/sources.list.d/docker.l
-  ist
-  + sh -c apt-get update -qq >/dev/null
-  + [ -n  ]
-  + sh -c apt-get install -y -qq --no-install-recommends docker-ce >/dev/null
-  + [ -n 1 ]
-  + sh -c DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker-ce-rootless-extras >/dev/null
-  
-  ================================================================================
-  
-  To run Docker as a non-privileged user, consider setting up the
-  Docker daemon in rootless mode for your user:
-  
-      dockerd-rootless-setuptool.sh install
-  
-  Visit https://docs.docker.com/go/rootless/ to learn about rootless mode.
-  
-  
-  To run the Docker daemon as a fully privileged service, but granting non-root
-  users access, refer to https://docs.docker.com/go/daemon-access/
-  
-  WARNING: Access to the remote API on a privileged Docker daemon is equivalent
-           to root access on the host. Refer to the 'Docker daemon attack surface'
-           documentation for details: https://docs.docker.com/go/attack-surface/
-  
-  ================================================================================
-  ```
+第二步，安装`.NET`。
 
-  >参考：https://github.com/docker/docker-install
+- 查看 Ubuntu 版本：
 
-- Docker 安装成功后，启动 Docker 服务：
-
-  ```powershell
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker start
-   * Starting Docker: docker                                                                               [ OK ]
-  ```
-
-  - Docker 服务如果没有启动，执行 Docker 的命令时，会提示：`Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?`。
+  - 方式一：
 
     ```powershell
-    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker version
-    Client: Docker Engine - Community
-     Version:           20.10.6
-     API version:       1.41
-     Go version:        go1.13.15
-     Git commit:        370c289
-     Built:             Fri Apr  9 22:47:17 2021
-     OS/Arch:           linux/amd64
-     Context:           default
-     Experimental:      true
-    Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat /proc/version
+    Linux version 5.10.60.1-microsoft-standard-WSL2 (oe-user@oe-host) (x86_64-msft-linux-gcc (GCC) 9.3.0, GNU ld (GNU Binutils) 2.34.0.20200220) #1 SMP Wed Aug 25 23:20:18 UTC 2021
     ```
 
-    - Docker 服务未启动，执行 `docker version` 命令。
+  - 方式二：
 
-  - Docker 服务启动后，如果不手动关闭，会一直运行，即使关闭 Windows PowerShell 也不会关闭。
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# lsb_release -a
+    No LSB modules are available.
+    Distributor ID: Ubuntu
+    Description:    Ubuntu 20.04.2 LTS
+    Release:        20.04
+    Codename:       focal
+    ```
 
-  - 如果关闭电脑，需要重启 Docker 服务。
+    ![image-20210609113128182](docker-base/image-20210609113128182.png)
 
-- 查看 Docker version：
+  - 查看内核版本号：
+
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# uname -r
+    5.10.60.1-microsoft-standard-WSL2
+    ```
+
+- 安装对应版本的 .NET：
+
+  - 整体流程：
+
+    ![image-20210608214208564](docker-base/image-20210608214208564.png)
+
+    >参考：https://docs.microsoft.com/zh-cn/dotnet/core/install/linux-ubuntu
+
+  - 将 Microsoft 包签名密钥添加到受信任密钥列表，并添加包存储库。
+  
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dpkg -i packages-microsoft-prod.deb
+    ```
+    
+  - 安装 SDK：
+  
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get update
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get install -y apt-transport-https
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get update;
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get install -y dotnet-sdk-5.0
+    ```
+    
+  - 安装运行时：
+  
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get update
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get install -y apt-transport-https
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get update
+    
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt-get install -y aspnetcore-runtime-5.0
+    ```
+  
+    >说明：dotnet-sdk-5.0 安装成功后，会一起安装 aspnetcore-runtime-5.0。
+  
+  - 检查 .NET 版本：
+  
+    ```powershell
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet
+    
+    Usage: dotnet [options]
+    Usage: dotnet [path-to-application]
+    
+    Options:
+      -h|--help         Display help.
+      --info            Display .NET information.
+      --list-sdks       Display the installed SDKs.
+      --list-runtimes   Display the installed runtimes.
+    
+    path-to-application:
+      The path to an application .dll file to execute.
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet --list-sdks
+    5.0.300 [/usr/share/dotnet/sdk]
+    root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# dotnet --list-runtimes
+    Microsoft.AspNetCore.App 5.0.6 [/home/xisun/.dotnet/shared/Microsoft.AspNetCore.App]
+    Microsoft.NETCore.App 5.0.6 [/home/xisun/.dotnet/shared/Microsoft.NETCore.App]
+    ```
+
+第三步，安装`wsl-translinux`。
+
+![image-20210609105418915](docker-base/image-20210609105418915.png)
+
+> 参考：https://arkane-systems.github.io/wsl-transdebian/
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt install apt-transport-https
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# wget -O /etc/apt/trusted.gpg.d/wsl-transdebian.gpg https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# chmod a+r /etc/apt/trusted.gpg.d/wsl-transdebian.gpg
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat << EOF > /etc/apt/sources.list.d/wsl-transdebian.list
+> deb https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
+> deb-src https://arkane-systems.github.io/wsl-transdebian/apt/ $(lsb_release -cs) main
+> EOF
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt update
+```
+
+第四步，安装`genie`。
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt update
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# apt install -y systemd-genie
+```
+
+第五步，破解完成之后，即可在 WSL 中安装 Docker（利用脚本安装）。
+
+![image-20210610215004640](docker-base/image-20210610215004640.png)
+
+```powershell
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+```
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# curl -fsSL https://get.docker.com -o get-docker.sh
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# sh get-docker.sh
+```
+
+>参考：https://github.com/docker/docker-install
+
+第六步，Docker 安装成功后，启动 Docker 服务。
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker start
+ * Starting Docker: docker                                                                               [ OK ]
+```
+
+- Docker 服务如果没有启动，执行 Docker 的命令时，会提示：`Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?`。
 
   ```powershell
   root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker version
@@ -621,83 +284,105 @@
    OS/Arch:           linux/amd64
    Context:           default
    Experimental:      true
-  
-  Server: Docker Engine - Community
-   Engine:
-    Version:          20.10.7
-    API version:      1.41 (minimum version 1.12)
-    Go version:       go1.13.15
-    Git commit:       b0f5bc3
-    Built:            Wed Jun  2 11:54:50 2021
-    OS/Arch:          linux/amd64
-    Experimental:     false
-   containerd:
-    Version:          1.4.6
-    GitCommit:        d71fcd7d8303cbf684402823e425e9dd2e99285d
-   runc:
-    Version:          1.0.0-rc95
-    GitCommit:        b9ee9c6314599f1b4a7f497e1f1f856fe433d3b7
-   docker-init:
-    Version:          0.19.0
-    GitCommit:        de40ad0
+  Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
   ```
 
-  - Docker 服务已启动，执行 `docker version` 命令。
+  - Docker 服务未启动的情况下，执行`docker version`命令。
 
-- 设置 Docker 镜像：
+- Docker 服务启动后，如果不手动关闭，会一直运行，即使关闭 Windows PowerShell 也不会关闭。
 
-  ```powershell
-  # 设置镜像
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# vim /etc/docker/daemon.json
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat /etc/docker/daemon.json
-  {
-      "registry-mirrors": ["http://hub-mirror.c.163.com"]
-  }
-  # 重启Docker服务
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker restart
-   * Stopping Docker: docker                                                                                       [ OK ]
-   * Starting Docker: docker                                                                                       [ OK ]
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker status
-   * Docker is running
-  ```
-  
-  - 此处使用的是网易镜像，阿里云镜像需要登陆阿里云，注册新账号获取专属镜像加速地址。
-  
-- 测试 Docker，运行 hello-world：
+- 如果关闭电脑，需要重启 Docker 服务。
 
-  ```powershell
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker run hello-world
-  Unable to find image 'hello-world:latest' locally
-  latest: Pulling from library/hello-world
-  b8dfde127a29: Pull complete
-  Digest: sha256:9f6ad537c5132bcce57f7a0a20e317228d382c3cd61edae14650eec68b2b345c
-  Status: Downloaded newer image for hello-world:latest
-  
-  Hello from Docker!
-  This message shows that your installation appears to be working correctly.
-  
-  To generate this message, Docker took the following steps:
-   1. The Docker client contacted the Docker daemon.
-   2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
-      (amd64)
-   3. The Docker daemon created a new container from that image which runs the
-      executable that produces the output you are currently reading.
-   4. The Docker daemon streamed that output to the Docker client, which sent it
-      to your terminal.
-  
-  To try something more ambitious, you can run an Ubuntu container with:
-   $ docker run -it ubuntu bash
-  
-  Share images, automate workflows, and more with a free Docker ID:
-   https://hub.docker.com/
-  
-  For more examples and ideas, visit:
-   https://docs.docker.com/get-started/
-  
-  root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker images
-  REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
-  hello-world   latest    d1165f221234   3 months ago   13.3kB
-  ```
+第七步，查看 Docker version。
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker version
+Client: Docker Engine - Community
+ Version:           20.10.6
+ API version:       1.41
+ Go version:        go1.13.15
+ Git commit:        370c289
+ Built:             Fri Apr  9 22:47:17 2021
+ OS/Arch:           linux/amd64
+ Context:           default
+ Experimental:      true
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          20.10.7
+  API version:      1.41 (minimum version 1.12)
+  Go version:       go1.13.15
+  Git commit:       b0f5bc3
+  Built:            Wed Jun  2 11:54:50 2021
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          1.4.6
+  GitCommit:        d71fcd7d8303cbf684402823e425e9dd2e99285d
+ runc:
+  Version:          1.0.0-rc95
+  GitCommit:        b9ee9c6314599f1b4a7f497e1f1f856fe433d3b7
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
+
+- Docker 服务已启动的情况下，执行 `docker version` 命令。
+
+第八步，设置 Docker 镜像源。
+
+```powershell
+# 设置镜像源
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# vim /etc/docker/daemon.json
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat /etc/docker/daemon.json
+{
+    "registry-mirrors": ["http://hub-mirror.c.163.com"]
+}
+# 重启Docker服务
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker restart
+ * Stopping Docker: docker                                                                                       [ OK ]
+ * Starting Docker: docker                                                                                       [ OK ]
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# service docker status
+ * Docker is running
+```
+
+- 此处使用的是网易镜像，阿里云镜像需要登陆阿里云，注册新账号获取专属镜像加速地址。
+
+第九步，测试 Docker，运行 hello-world。
+
+```powershell
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+b8dfde127a29: Pull complete
+Digest: sha256:9f6ad537c5132bcce57f7a0a20e317228d382c3cd61edae14650eec68b2b345c
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
+hello-world   latest    d1165f221234   3 months ago   13.3kB
+```
 
 - 关闭 Docker 服务：
 
@@ -710,35 +395,34 @@
 
 ### Ubuntu 安装 Docker
 
-- 参考：https://docs.docker.com/engine/install/ubuntu/
+按照官网指示一步步执行，即可安装 Docker。主要涉及如下命令，各命令的含义参考官网：
 
-- 按照官网指示一步步执行，即可安装 Docker。主要涉及如下命令，各命令的含义参考官网：
+```powershell
+$ sudo apt-get remove docker docker-engine docker.io containerd runc
 
-  ```shell
-  $ sudo apt-get remove docker docker-engine docker.io containerd runc
-  
-  $ sudo apt-get update
-  
-  $ sudo apt-get install apt-transport-https \
-      ca-certificates \
-      curl \
-      gnupg \
-      lsb-release
-      
-  $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-  	sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-  
-  $ echo \
-    "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  
-  $ sudo apt-get update
-  
-  $ sudo apt-get install docker-ce docker-ce-cli containerd.io
-  
-  ```
-  
+$ sudo apt-get update
+
+$ sudo apt-get install apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+    
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+	sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+$ echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+$ sudo apt-get update
+
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+
 > 以上命令默认安装的为 Docker 最新版本，若需要安装特定版本，请参考官网。
+>
+> 参考：https://docs.docker.com/engine/install/ubuntu/
 
 
 ## Docker 常用命令
