@@ -14,6 +14,10 @@
 
 ![image-20220402095038092](idea/image-20220402095038092.png)
 
+### 导出配置
+
+![image-20220419133704108](idea/image-20220419133704108.png)
+
 ### Java Compiler
 
 ![image-20220401102004494](idea/image-20220401102004494.png)
@@ -24,11 +28,45 @@
 
 ![image-20220401103319190](idea/image-20220401103319190.png)
 
-### Lombok 插件
+## 插件管理
+
+参考：https://wcqblog.com/article/detail/262534926061142016
+
+### Lombok
 
 ![image-20220401101309290](idea/image-20220401101309290.png)
 
-## 常规语法
+### Grep Console
+
+![image-20220419134005987](idea/image-20220419134005987.png)
+
+- 可以配置日志输出，调试。
+
+### Maven Helper
+
+![image-20220419134118139](idea/image-20220419134118139.png)
+
+- 帮助优化 Maven 依赖，以及排除不必要的依赖。
+
+### Alibaba Java Coding Guidelines
+
+![image-20220419134320462](idea/image-20220419134320462.png)
+
+- 阿里 Java 开发规范。
+
+### Rainbow Brackets
+
+![image-20220419134635205](idea/image-20220419134635205.png)
+
+- 此插件会将括号变成彩色，同一组括号颜色一样，相邻两个括号颜色不一样。
+
+### Tabnine
+
+![image-20220419143804631](idea/image-20220419143804631.png)
+
+- 此插件提供代码补全功能。
+
+## 快捷方式
 
 `Ctrl + H`：查看类的继承层级关系
 
