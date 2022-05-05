@@ -1,12 +1,10 @@
----
-date: 2021-03-17
----
+*date: 2021-03-17*
 
 ## 时序数据的基本概念
 
 ### 时序数据的定义
 
-`时间序列数据（Time Series Data，TSD）`：从定义上来说，就是一串按时间维度索引的数据。简单的说，就是这类数据描述了某个被测量的主体在一个时间范围内的每个时间点上的测量值。时序数据普遍存在于 IT 基础设施、运维监控系统和物联网中。
+`时间序列数据 (Time Series Data, TSD)`：从定义上来说，就是一串按时间维度索引的数据。简单的说，就是这类数据描述了某个被测量的主体在一个时间范围内的每个时间点上的测量值。时序数据普遍存在于 IT 基础设施、运维监控系统和物联网中。
 
 对时序数据进行建模的话，会包含三个重要部分，分别是：`主体，时间点和测量值`。套用这套模型，你会发现你在日常工作生活中，无时无刻不在接触着这类数据：
 
@@ -266,6 +264,12 @@ LSM 是将之前使用的一个大的查找结构（造成随机读写，影响�
 
 ## InfluxDB 的搭建和初步使用
 
+### 官方资料
+
+文档：https://docs.influxdata.com/influxdb/v2.2/
+
+源码：https://github.com/influxdata/influxdb/tree/2.2
+
 ### 基本概念
 
 `Database`：InfluxDB 可以创建数据库，一个数据库可以包含多个 user、保存策略、schemaless ，支持随时灵活创建 mersurement。
@@ -276,9 +280,9 @@ LSM 是将之前使用的一个大的查找结构（造成随机读写，影响�
 
 `Fields`：是保存真实数据的结构，也是 kv 结构，但是不会被用来建立索引。
 
-`Point`： 代表了一条记录，可以理解为关系型数据库中的一条记录。
+`Timestamp`：时间戳，`每条记录必须要有一个时间戳，同一个时间戳只能对应一条记录，时间戳不能重复`，这点很重要。
 
-`Timestamp`：时间戳，每条记录必须要有一个时间戳。
+`Point`： 代表了一条记录，可以理解为关系型数据库中的一条记录，由 Tages，Fields 和 Timestamp 组成。
 
 `Series`：由 Measurement + Tags 组成。
 
@@ -742,6 +746,8 @@ OPTIONS:
     'myMeasurement,host=myHost testField="testData" 1556896326'
   ```
 
+  - 行协议参考：https://www.alibabacloud.com/help/zh/time-series-database/latest/line-protocol-tutorial
+
 - 写入 Line Protocol 的文件：
 
   ```powershell
@@ -854,6 +860,14 @@ OPTIONS:
   ```
 
 ## InfluDB 的 Java 客户端
+
+### 官方资料
+
+源码：https://github.com/influxdata/influxdb-client-java
+
+示例：https://github.com/influxdata/influxdb-client-java/tree/master/examples/src/main/java/example
+
+示例：https://github.com/influxdata/influxdb2-sample-data
 
 ### Maven 添加依赖
 
@@ -1220,9 +1234,15 @@ public final class InfluxDBClientImpl extends AbstractInfluxDBClient implements 
 
 ### Write Api
 
-`// TODO`
+`// TODO，略，参考 Query Api 部分解析`
 
 ### Query Api
+
+#### 官方资料
+
+文档：https://docs.influxdata.com/influxdb/v2.2/query-data/flux/
+
+flux语法：https://docs.influxdata.com/flux/v0.x/stdlib/universe/
 
 #### 源码分析
 
@@ -1621,70 +1641,609 @@ QueryApi 的查询参数分为两种类型：
 
   - `from(bucket: "bucket_name")`：数据源，必需
   - `range(start: -1d)`：时间范围，必需
+    - 支持`range(start: 2022-03-31T08:18:04Z,stop:2022-04-13T08:19:05Z)`写法
   - `filter(fn: (r) => r["_measurement"] == "measurement_name")`：过滤条件，必需
   - `count(column: "_value")`：对查询的结果统计
   - `sort(columns: ["_tag", "_value"])`：对查询的结果排序
   - `limit(n:10)`：对查询的结果分页
+  - 更多参考：
+    - https://blog.csdn.net/linzhiji/article/details/118947301
+    - https://blog.csdn.net/qq_37822090/article/details/119035422
+    - https://www.jianshu.com/p/268fca65f10e
 
 - `Query query`：实际上就是将查询参数封装成一个对象，即使传入的是 query 字符串，最终也是通过`new Query().query(query)`，封装为 Query 对象。
 
 ### Delete Api
 
-`// TODO`
+`// TODO，略，参考 Query Api 部分解析`
 
 ## InfluxDB 的 源码分析
 
+### 源码下载
 
+```bash
+$ git clone https://github.com/influxdata/influxdb.git
+```
 
+clone 时，注意分支，默认是 master，此处选择 2.2：
 
+![image-20220413170317882](time-series-data-first-meeting/image-20220413170317882.png)
 
+### 源码分析
 
+下载好源码后，打开项目，首先需要知道的是，influxdb 源码使用 Go 语言开发，在分析源码之前，需要对 Go 语言的基本语法等，有一个清晰的认知。Ok，接下来，打开`influxdb/cmd/influxd/main.go`文件，它是 influxdb 服务端程序入口，即服务端`main()`函数所在处，如下所示：
 
+```go
+func main() {
+   if len(date) == 0 {
+      date = time.Now().UTC().Format(time.RFC3339)
+   }
 
+   influxdb.SetBuildInfo(version, commit, date)
 
+   ctx := context.Background()
+   v := viper.New()
 
+   rootCmd, err := launcher.NewInfluxdCommand(ctx, v)
+   if err != nil {
+      handleErr(err.Error())
+   }
+   // upgrade binds options to env variables, so it must be added after rootCmd is initialized
+   upgradeCmd, err := upgrade.NewCommand(ctx, v)
+   if err != nil {
+      handleErr(err.Error())
+   }
+   rootCmd.AddCommand(upgradeCmd)
+   inspectCmd, err := inspect.NewCommand(v)
+   if err != nil {
+      handleErr(err.Error())
+   }
+   rootCmd.AddCommand(inspectCmd)
+   rootCmd.AddCommand(versionCmd())
+   rootCmd.AddCommand(recovery.NewCommand())
+   downgradeCmd, err := downgrade.NewCommand(ctx, v)
+   if err != nil {
+      handleErr(err.Error())
+   }
+   rootCmd.AddCommand(downgradeCmd)
 
-中文文档：https://jasper-zhang1.gitbooks.io/influxdb/content/Introduction/installation.html
+   rootCmd.SilenceUsage = true
+   if err := rootCmd.Execute(); err != nil {
+      handleErr(fmt.Sprintf("See '%s -h' for help", rootCmd.CommandPath()))
+   }
+}
+```
 
+顺着`main()`函数的代码，我们一步一步往下看。
 
+第一步，初始化赋值：
 
-https://www.cnblogs.com/pxza/p/15994917.html
+```go
+var (
+   version = "dev"
+   commit  = "none"
+   date    = ""
+)
+```
 
-https://www.cnblogs.com/takemybreathaway/articles/10774787.html
+```go
+if len(date) == 0 {
+   date = time.Now().UTC().Format(time.RFC3339)
+}
+// 初始化基础信息
+influxdb.SetBuildInfo(version, commit, date)
+```
 
-http://blog.zollty.com/b/archive/getting-start-of-incluxdb.html
+第二步，创建上下文和 Viper 对象：
 
-https://blog.csdn.net/u010597230/article/details/108419717
+```go
+ctx := context.Background()
+v := viper.New()
+```
 
+- `context.Background()`：创建一个空的上下文对象。
 
+  ```go
+  // Background returns a non-nil, empty Context. It is never canceled, has no
+  // values, and has no deadline. It is typically used by the main function,
+  // initialization, and tests, and as the top-level Context for incoming
+  // requests.
+  func Background() Context {
+     return background
+  }
+  ```
 
-https://www.jianshu.com/p/268fca65f10e
+- `viper.New()`：返回一个初始化的 Viper 实例对象。
 
-https://blog.csdn.net/gaowenhui2008/article/details/122817613
+  ```go
+  // New returns an initialized Viper instance.
+  func New() *Viper {
+     v := new(Viper)
+     v.keyDelim = "."
+     v.configName = "config"
+     v.configPermissions = os.FileMode(0644)
+     v.fs = afero.NewOsFs()
+     v.config = make(map[string]interface{})
+     v.override = make(map[string]interface{})
+     v.defaults = make(map[string]interface{})
+     v.kvstore = make(map[string]interface{})
+     v.pflags = make(map[string]FlagValue)
+     v.env = make(map[string]string)
+     v.aliases = make(map[string]string)
+     v.typeByDefValue = false
+  
+     return v
+  }
+  ```
 
-https://www.sunzhongwei.com/influxdb-20-data-query-syntax
+第三步，创建根命令，这是核心步骤：
 
-https://blog.csdn.net/xz_studying/article/details/105176086
+```go
+rootCmd, err := launcher.NewInfluxdCommand(ctx, v)
+if err != nil {
+   handleErr(err.Error())
+}
+```
 
+- 首先，进入 launcher 包下的`NewInfluxdCommand()`函数，通过注释可以知悉，run 子命令被设置为默认执行。
 
+  ```go
+  // NewInfluxdCommand constructs the root of the influxd CLI, along with a `run` subcommand.
+  // The `run` subcommand is set as the default to execute.
+  func NewInfluxdCommand(ctx context.Context, v *viper.Viper) (*cobra.Command, error) {
+     o := NewOpts(v)
+     cliOpts := o.BindCliOpts()
+  
+     prog := cli.Program{
+        Name: "influxd",
+        Run:  cmdRunE(ctx, o),
+     }
+     cmd, err := cli.NewCommand(o.Viper, &prog)
+     if err != nil {
+        return nil, err
+     }
+  
+     // Error out if invalid flags are found in the config file. This may indicate trying to launch 2.x using a 1.x config.
+     if invalidFlags := invalidFlags(v); len(invalidFlags) > 0 {
+        return nil, errInvalidFlags(invalidFlags, v.ConfigFileUsed())
+     }
+  
+     runCmd := &cobra.Command{
+        Use:  "run",
+        RunE: cmd.RunE,
+        Args: cobra.NoArgs,
+     }
+     for _, c := range []*cobra.Command{cmd, runCmd} {
+        setCmdDescriptions(c)
+        if err := cli.BindOptions(o.Viper, c, cliOpts); err != nil {
+           return nil, err
+        }
+     }
+     cmd.AddCommand(runCmd)
+     printCmd, err := NewInfluxdPrintConfigCommand(v, cliOpts)
+     if err != nil {
+        return nil, err
+     }
+     cmd.AddCommand(printCmd)
+  
+     return cmd, nil
+  }
+  ```
 
-监控：
+- 然后，进入 run 子命令。
 
-https://blog.51cto.com/u_15076224/4120553
+  ```go
+  func cmdRunE(ctx context.Context, o *InfluxdOpts) func() error {
+     return func() error {
+        // Set this as early as possible, since it affects global profiling rates.
+        pprof.SetGlobalProfiling(!o.ProfilingDisabled)
+  
+        fluxinit.FluxInit()
+  
+        l := NewLauncher()
+  
+        // Create top level logger
+        logconf := &influxlogger.Config{
+           Format: "auto",
+           Level:  o.LogLevel,
+        }
+        logger, err := logconf.New(os.Stdout)
+        if err != nil {
+           return err
+        }
+        l.log = logger
+  
+        // Start the launcher and wait for it to exit on SIGINT or SIGTERM.
+        if err := l.run(signals.WithStandardSignals(ctx), o); err != nil {
+           return err
+        }
+        <-l.Done()
+  
+        // Tear down the launcher, allowing it a few seconds to finish any
+        // in-progress requests.
+        shutdownCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+        defer cancel()
+        return l.Shutdown(shutdownCtx)
+     }
+  }
+  ```
 
-https://blog.csdn.net/lulongji2035/article/details/109029677
+  - `pprof.SetGlobalProfiling(!o.ProfilingDisabled)`：关于性能方面的一些配置，简单参考 https://www.bitlogs.tech/2019/05/go%E8%AF%AD%E8%A8%80%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/
 
-https://www.cnblogs.com/runzhao/p/15735670.html
+    ```go
+    func SetGlobalProfiling(enabled bool) {
+       if enabled {
+          // Copy the rates used in 1.x.
+          runtime.MemProfileRate = 4096
+          runtime.SetBlockProfileRate(int(1 * time.Second))
+          runtime.SetMutexProfileFraction(1)
+       } else {
+          runtime.MemProfileRate = 0
+          runtime.SetBlockProfileRate(0)
+          runtime.SetMutexProfileFraction(0)
+       }
+    }
+    ```
 
-https://blog.csdn.net/lijiaze_csdn/article/details/49894793
+  - `fluxinit.FluxInit()`：为 Flux 的编译和执行准备运行时，这个步骤开销很大，应在必要的情况下才执行。
 
+    ```go
+    // The FluxInit() function prepares the runtime for compilation and execution
+    // of Flux. This is a costly step and should only be performed if the intention
+    // is to compile and execute flux code.
+    func FluxInit() {
+       runtime.FinalizeBuiltIns()
+    }
+    ```
 
+  - `l := NewLauncher()`：返回一个 Launcher 对象实例。通过查看 Launcher 的结构体，我们可以看到两个很重要的字段，`engine Engine`和`queryController *control.Controller`，此即为本次分析的着重点。
 
+    ```go
+    // NewLauncher returns a new instance of Launcher with a no-op logger.
+    func NewLauncher() *Launcher {
+       return &Launcher{
+          log: zap.NewNop(),
+       }
+    }
+    ```
 
+    ```go
+    // Launcher represents the main program execution.
+    type Launcher struct {
+       wg       sync.WaitGroup
+       cancel   func()
+       doneChan <-chan struct{}
+       closers  []labeledCloser
+       flushers flushers
+    
+       flagger feature.Flagger
+    
+       kvStore   kv.Store
+       kvService *kv.Service
+       sqlStore  *sqlite.SqlStore
+    
+       // storage engine
+       engine Engine
+    
+       // InfluxQL query engine
+       queryController *control.Controller
+    
+       httpPort   int
+       tlsEnabled bool
+    
+       scheduler stoppingScheduler
+       executor  *executor.Executor
+    
+       log *zap.Logger
+       reg *prom.Registry
+    
+       apibackend *http.APIBackend
+    }
+    ```
 
+第四步，因为本次源码分析的主要目的，是探索 InfluxDB 在存储和查询方面的执行逻辑，所以`main()`函数后续的其他 Command 指令的初始化操作，不再分析。（基本上是初始化各类配置的操作，可以点进去简单看看）
 
+#### Engine
 
+首先，Engine 是一个接口，通过注释可以看出，Engine 定义了时间序列存储引擎。
 
+```go
+// Engine defines the time-series storage engine.  Wraps *storage.Engine
+// to facilitate testing.
+type Engine interface {
+   // 嵌套接口
+   influxdb.DeleteService
+   storage.PointsWriter
+   storage.EngineSchema
+   prom.PrometheusCollector
+   influxdb.BackupService
+   influxdb.RestoreService
+
+   // 方法
+   SeriesCardinality(ctx context.Context, bucketID platform.ID) int64
+   TSDBStore() storage.TSDBStore
+   MetaClient() storage.MetaClient
+   WithLogger(log *zap.Logger)
+   Open(context.Context) error
+   Close() error
+}
+```
+
+- `influxdb.DeleteService`：根据某种条件删除 bucket。
+
+  ```go
+  // DeleteService will delete a bucket from the range and predict.
+  type DeleteService interface {
+     DeleteBucketRangePredicate(ctx context.Context, orgID, bucketID platform.ID, min, max int64, pred Predicate) error
+  }
+  ```
+
+- `storage.PointsWriter`：描述了将 Point 写入存储引擎的能力。
+
+  ```go
+  // PointsWriter describes the ability to write points into a storage engine.
+  type PointsWriter interface {
+     WritePoints(ctx context.Context, orgID platform.ID, bucketID platform.ID, points []models.Point) error
+  }
+  ```
+
+- `storage.EngineSchema`：创建、更新和删除 bucket。
+
+  ```go
+  type EngineSchema interface {
+     CreateBucket(context.Context, *influxdb.Bucket) error
+     UpdateBucketRetentionPolicy(context.Context, platform.ID, *influxdb.BucketUpdate) error
+     DeleteBucket(context.Context, platform.ID, platform.ID) error
+  }
+  ```
+
+- `prom.PrometheusCollector`：公开 prometheus 度量的接口。
+
+  ```go
+  // PrometheusCollector is the interface for a type to expose prometheus metrics.
+  // This interface is provided as a convention, so that you can optionally check
+  // if a type implements it and then pass its collectors to (*Registry).MustRegister.
+  type PrometheusCollector interface {
+     // PrometheusCollectors returns a slice of prometheus collectors
+     // containing metrics for the underlying instance.
+     PrometheusCollectors() []prometheus.Collector
+  }
+  ```
+
+- `influxdb.BackupService`：InfluxDB 的数据备份功能。
+
+  ```go
+  // BackupService represents the data backup functions of InfluxDB.
+  type BackupService interface {
+     // BackupKVStore creates a live backup copy of the metadata database.
+     BackupKVStore(ctx context.Context, w io.Writer) error
+  
+     // BackupShard downloads a backup file for a single shard.
+     BackupShard(ctx context.Context, w io.Writer, shardID uint64, since time.Time) error
+  
+     // RLockKVStore locks the database.
+     RLockKVStore()
+  
+     // RUnlockKVStore unlocks the database.
+     RUnlockKVStore()
+  }
+  ```
+
+- `influxdb.RestoreService`：InfluxDB 的数据恢复功能。
+
+  ```go
+  // RestoreService represents the data restore functions of InfluxDB.
+  type RestoreService interface {
+     // RestoreKVStore restores & replaces metadata database.
+     RestoreKVStore(ctx context.Context, r io.Reader) error
+  
+     // RestoreBucket restores storage metadata for a bucket.
+     // TODO(danmoran): As far as I can tell, dbInfo is typed as a []byte because typing it as
+     //  a meta.DatabaseInfo introduces a circular dependency between the root package and `meta`.
+     //  We should refactor to make this signature easier to use. It might be easier to wait
+     //  until we're ready to delete the 2.0.x restore APIs before refactoring.
+     RestoreBucket(ctx context.Context, id platform.ID, dbInfo []byte) (shardIDMap map[uint64]uint64, err error)
+  
+     // RestoreShard uploads a backup file for a single shard.
+     RestoreShard(ctx context.Context, shardID uint64, r io.Reader) error
+  }
+  ```
+
+- `SeriesCardinality()`
+
+- `TSDBStore()`
+
+- `MetaClient()`
+
+- `WithLogger()`
+
+- `Open()`
+
+- `close()`
+
+Engine 接口有两个实现类，我们分别来看：
+
+![image-20220415144704784](time-series-data-first-meeting/image-20220415144704784.png)
+
+##### storage/engine.go/Engine
+
+Engine 结构体：
+
+```go
+type Engine struct {
+   config Config
+   path   string
+
+   mu           sync.RWMutex
+   closing      chan struct{} // closing returns the zero value when the engine is shutting down.
+   tsdbStore    *tsdb.Store
+   metaClient   MetaClient
+   pointsWriter interface {
+      WritePoints(ctx context.Context, database, retentionPolicy string, consistencyLevel models.ConsistencyLevel, user meta.User, points []models.Point) error
+      Close() error
+   }
+
+   retentionService  *retention.Service
+   precreatorService *precreator.Service
+
+   writePointsValidationEnabled bool
+
+   logger          *zap.Logger
+   metricsDisabled bool
+}
+```
+
+Engine 的字段、方法：
+
+![image-20220415150009727](time-series-data-first-meeting/image-20220415150009727.png)
+
+通过方法名，大致可以看出有与 Bucket 相关的创建、更新和删除方法，有备份相关的 BackupXxx 方法，有恢复相关的 RestoreXxx 方法，此处，我们主要看几个最关心的方法。
+
+`open()`：打开存储和所有底层资源。
+
+```go
+// Open opens the store and all underlying resources. It returns an error if
+// any of the underlying systems fail to open.
+func (e *Engine) Open(ctx context.Context) (err error) {
+   e.mu.Lock()
+   defer e.mu.Unlock()
+
+   if e.closing != nil {
+      return nil // Already open
+   }
+
+   span, _ := tracing.StartSpanFromContext(ctx)
+   defer span.Finish()
+
+   if err := e.tsdbStore.Open(ctx); err != nil {
+      return err
+   }
+
+   if err := e.retentionService.Open(ctx); err != nil {
+      return err
+   }
+
+   if err := e.precreatorService.Open(ctx); err != nil {
+      return err
+   }
+
+   e.closing = make(chan struct{})
+
+   return nil
+}
+```
+
+`close()`：关闭存储和所有底层资源。
+
+```go
+// Close closes the store and all underlying resources. It returns an error if
+// any of the underlying systems fail to close.
+func (e *Engine) Close() error {
+   e.mu.RLock()
+   if e.closing == nil {
+      e.mu.RUnlock()
+      // Unusual if an engine is closed more than once, so note it.
+      e.logger.Info("Close() called on already-closed engine")
+      return nil // Already closed
+   }
+
+   close(e.closing)
+   e.mu.RUnlock()
+
+   e.mu.Lock()
+   defer e.mu.Unlock()
+   e.closing = nil
+
+   var retErr error
+   if err := e.precreatorService.Close(); err != nil {
+      retErr = multierr.Append(retErr, fmt.Errorf("error closing shard precreator service: %w", err))
+   }
+
+   if err := e.retentionService.Close(); err != nil {
+      retErr = multierr.Append(retErr, fmt.Errorf("error closing retention service: %w", err))
+   }
+
+   if err := e.tsdbStore.Close(); err != nil {
+      retErr = multierr.Append(retErr, fmt.Errorf("error closing TSDB store: %w", err))
+   }
+
+   if err := e.pointsWriter.Close(); err != nil {
+      retErr = multierr.Append(retErr, fmt.Errorf("error closing points writer: %w", err))
+   }
+   return retErr
+}
+```
+
+`WritePoints()`：此方法实现了将提供的 points 数据点写入 engine 中。
+
+```go
+// WritePoints writes the provided points to the engine.
+//
+// The Engine expects all points to have been correctly validated by the caller.
+// However, WritePoints will determine if any tag key-pairs are missing, or if
+// there are any field type conflicts.
+// Rosalie was here lockdown 2020
+//
+// Appropriate errors are returned in those cases.
+func (e *Engine) WritePoints(ctx context.Context, orgID platform.ID, bucketID platform.ID, points []models.Point) error {
+   span, _ := tracing.StartSpanFromContext(ctx)
+   defer span.Finish()
+
+   //TODO - remember to add back unicode validation...
+
+   e.mu.RLock()
+   defer e.mu.RUnlock()
+
+   if e.closing == nil {
+      return ErrEngineClosed
+   }
+
+   return e.pointsWriter.WritePoints(ctx, bucketID.String(), meta.DefaultRetentionPolicyName, models.ConsistencyLevelAll, &meta.UserInfo{}, points)
+}
+```
+
+在方法体中，我们可以看出，实际上是通过 Engine 结构体中的 pointsWriter 接口的实现写入 points 数据点的（`面向接口编程`）。至此，我们明白了 Engine 是如何定义 points 数据点的写入方式的，至于具体的写入实现过程，需要看 Engine 具体在何处实现以及实现的方式。
+
+##### launcher/engine.go/TemporaryEngine
+
+`// TODO`
+
+#### Controller
+
+Controller 的结构体，通过注释可以看出，Controller 管理所有传入进来的查询，负责编译、排队和执行查询。
+
+```go
+// Controller provides a central location to manage all incoming queries.
+// The controller is responsible for compiling, queueing, and executing queries.
+type Controller struct {
+   config     Config
+   lastID     uint64
+   queriesMu  sync.RWMutex
+   queries    map[QueryID]*Query
+   queryQueue chan *Query
+   wg         sync.WaitGroup
+   shutdown   bool
+   done       chan struct{}
+   abortOnce  sync.Once
+   abort      chan struct{}
+   memory     *memoryManager
+
+   metrics   *controllerMetrics
+   labelKeys []string
+
+   log *zap.Logger
+
+   dependencies []flux.Dependency
+
+   fluxLogEnabled bool
+}
+```
+
+`// TODO`
+
+## 实践项目
+
+地址：https://github.com/ACatSmiling/XiSun_Java_Projects/tree/main/xisun_influxdb
 
 ## 本文参考
 
@@ -1695,6 +2254,20 @@ https://www.cnblogs.com/huangjianping/p/15044759.html
 https://www.cnblogs.com/jpfss/p/12183214.html
 
 https://www.cnblogs.com/xuwc/p/14037750.html
+
+https://www.jianshu.com/p/268fca65f10e
+
+语法：
+
+http://blog.zollty.com/b/archive/getting-start-of-incluxdb.html
+
+监控：
+
+https://blog.csdn.net/lulongji2035/article/details/109029677
+
+https://www.cnblogs.com/runzhao/p/15735670.html
+
+https://blog.csdn.net/lijiaze_csdn/article/details/49894793
 
 ## 声明
 
