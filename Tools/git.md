@@ -1,8 +1,8 @@
 *date: 2022-01-04*
 
-## Gitlab 代码开发的一般流程
+## Github 代码开发的一般流程
 
-1. PM（项目主管/项目经理） 在 Gitlab 创建任务，分配给开发人员；
+1. PM（项目主管/项目经理） 在 Github 创建任务，分配给开发人员；
 
 2. 开发人员领取任务后，在本地使用`git clone <URL>`命令拉取代码库；
 
@@ -10,15 +10,14 @@
 
 4. 开发人员完成代码之后，提交到本地仓库；
 
-5. 开发人员在 Gitlab 界面上申请分支合并请求；
+5. 开发人员在 Github 界面上申请分支合并请求；
 
-6. PM 在 Gitlab 上查看代码提交和修改情况，确认无误后，将开发人员的分支合并到主分支（master/main）。
+6. PM 在 Github 上查看代码提交和修改情况，确认无误后，将开发人员的分支合并到主分支（master/main）。
 
-7. 开发人员在 Gitlab 上 Mark done 确认开发完成，并关闭 issue。这一步在提交合并请求时，可以通过描述中填写“close #1”等字样，直接关闭 issue。
+7. 开发人员在 Github 上 Mark done 确认开发完成，并关闭 issue。这一步在提交合并请求时，可以通过描述中填写“close #1”等字样，直接关闭 issue。
 
-   >因为某些已知的原因，master 分支名更改为 main。
 
-## Gitlab 常用命令
+## Github 常用命令
 
 clone 远程仓库代码到本地：
 
@@ -50,7 +49,7 @@ $ git push origin master
 
 - 不建议使用`git push`这种模糊的命令。
 
-## Gitlab 提交代码到新分支
+## Github 提交代码到新分支
 
 第一步：在新代码路径下右键选择打开 Git Bash，并初始化。
 
@@ -114,6 +113,72 @@ $ git push origin develop
   ```bash
   $ git push origin develop:master
   ```
+
+## Github 修改 master 分支为 main 
+
+因为一些原因，2020年10月1日后，Github 将所有新建的仓库的默认分支从`master`修改为`main`，这种情况下，为了避免麻烦，需要将旧仓库的 master 分支迁移到 main 分支上。
+
+第一步：克隆原仓库到本地。
+
+```bash
+$ git clone <URL>
+```
+
+第二步：创建并切换到 main。
+
+```bash
+$ git checkout -b main
+```
+
+第三步：推送到 main。
+
+```bash
+$ git push origin main
+```
+
+第四步：修改默认分支为 main。
+
+![image-20220425133425473](git/image-20220425133425473.png)
+
+第五步：删除 master。
+
+```bash
+# 删除本地master
+$ git branch -d master
+
+# 删除远程master
+$ git push origin :master
+```
+
+示例：
+
+```bash
+Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
+$ git branch -a
+* main
+  master
+  remotes/origin/main
+  remotes/origin/master
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
+$ git branch -d master
+Deleted branch master (was d638962).
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
+$ git push origin :master
+To https://github.com/ACatSmiling/XiSun_Java_Projects.git
+ - [deleted]         master
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
+$ git branch -a
+* main
+  remotes/origin/main
+
+```
+
+![image-20220425133819982](git/image-20220425133819982.png)
+
+以上，后续修改时，直接推送到 main 分支即可。
 
 ## 本文参考
 
