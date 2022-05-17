@@ -1,6 +1,4 @@
----
-date: 2021-01-01
----
+*date: 2021-01-01*
 
 ## String 的特性
 
@@ -1255,4 +1253,6 @@ String：字符串，使用双引号引起来表示。
 
 https://www.gulixueyuan.com/goods/show/203?targetId=309&preview=0
 
-声明：写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。

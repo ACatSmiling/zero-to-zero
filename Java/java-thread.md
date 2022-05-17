@@ -1,22 +1,20 @@
----
-date: 2021-03-04
----
+*date: 2021-03-04*
 
 ## 程序、进程和线程
 
-`程序（program）`：是为完成特定任务、用某种语言编写的一组指令的集合。即指一段静态的代码，静态对象。
+`程序 (program)`：是为完成特定任务、用某种语言编写的一组指令的集合。即指一段静态的代码，静态对象。
 
-`进程（process）`：是程序的一次执行过程，或是正在运行的一个程序。是一个动态的过程：有它自身的产生、存在和消亡的过程 —— 生命周期。如：运行中的 QQ，运行中的 MP3 播放器。
+`进程 (process)`：是程序的一次执行过程，或是正在运行的一个程序。是一个动态的过程：有它自身的产生、存在和消亡的过程 —— 生命周期。如：运行中的 QQ，运行中的 MP3 播放器。
 
 - 程序是静态的，进程是动态的。
 
 - 进程作为资源分配的单位，系统在运行时会为每个进程分配不同的内存区域。
 
-`线程（thread）`：进程可进一步细化为线程，是一个程序内部的一条执行路径。
+`线程 (thread)`：进程可进一步细化为线程，是一个程序内部的一条执行路径。
 
 - 若一个进程同一时间并行执行多个线程，就是支持多线程的。
-- 线程作为调度和执行的单位，**每个线程拥有独立的运行栈和程序计数器 (pc)**，线程切换的开销小。
-- **一个进程中的多个线程共享相同的内存单元 / 内存地址空间 (方法区、堆)：它们从同一堆中分配对象，可以访问相同的变量和对象。**这就使得线程间通信更简便、高效。但多个线程操作共享的系统资源可能就会带来安全的隐患。
+- 线程作为调度和执行的单位，**每个线程拥有独立的运行栈和程序计数器（pc）**，线程切换的开销小。
+- **一个进程中的多个线程共享相同的内存单元/内存地址空间（方法区、堆）：它们从同一堆中分配对象，可以访问相同的变量和对象。**这就使得线程间通信更简便、高效。但多个线程操作共享的系统资源可能就会带来安全的隐患。
 
 `单核 CPU 和多核 CPU 的理解`：
 
@@ -281,7 +279,7 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
   - 不能再次调用当前对象的`start()`去开启一个新的线程，否则报`java.lang.IllegalThreadStateException`异常 。
   - 如果要启动一个新的线程，需要重新创建一个 Thread 类的子类的对象，并调用其`start()`。
 
-- 实例一：
+实例一：
 
   ```java
   public class Test {
@@ -314,37 +312,37 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
       }
   }
   ```
-  
-- 实例二：
 
-  ```java
-  public class Test {
-      public static void main(String[] args) {
-          // 匿名内部类
-          new Thread(){
-              @Override
-              public void run() {
-                  for (int i = 0; i <= 100; i++) {
-                      if (i % 2 == 0) {
-                          System.out.println(Thread.currentThread().getName() + "：" + i);
-                      }
-                  }
-              }
-          }.start();
-  
-          new Thread(){
-              @Override
-              public void run() {
-                  for (int i = 0; i <= 100; i++) {
-                      if (i % 2 != 0) {
-                          System.out.println(Thread.currentThread().getName() + "：" + i);
-                      }
-                  }
-              }
-          }.start();
-      }
-  }
-  ```
+实例二：
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        // 匿名内部类
+        new Thread(){
+            @Override
+            public void run() {
+                for (int i = 0; i <= 100; i++) {
+                    if (i % 2 == 0) {
+                        System.out.println(Thread.currentThread().getName() + "：" + i);
+                    }
+                }
+            }
+        }.start();
+
+        new Thread(){
+            @Override
+            public void run() {
+                for (int i = 0; i <= 100; i++) {
+                    if (i % 2 != 0) {
+                        System.out.println(Thread.currentThread().getName() + "：" + i);
+                    }
+                }
+            }
+        }.start();
+    }
+}
+```
 
 ### 方式二：实现 Runnable 接口
 
@@ -358,7 +356,7 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 - 通过 Thread 类的对象，调用`start()`，最终执行的是上面重写的`run()`。
 
-- 实例：
+实例：
 
   ```java
   public class Test {
@@ -425,7 +423,7 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 - 根据实际需求，选择是否获得 Callable 中`call()`的返回值。
 
-- 实例：
+实例：
 
   ```java
   public class Test {
@@ -472,20 +470,20 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 ### 方式四：线程池
 
-- 背景： 经常创建和销毁、使用量特别大的资源，比如并发情况下的线程，会对性能影响很大。
+背景： 经常创建和销毁、使用量特别大的资源，比如并发情况下的线程，会对性能影响很大。
 
-- 思路：提前创建好多个线程，放入线程池中，使用时直接获取，使用完放回池中，这样可以避免频繁创建销毁，实现重复利用。类似生活中的公共交通工具。
+思路：提前创建好多个线程，放入线程池中，使用时直接获取，使用完放回池中，这样可以避免频繁创建销毁，实现重复利用。类似生活中的公共交通工具。
 
-- 好处：
+好处：
 
-  - 提高响应速度，减少了创建新线程的时间。
-  - 降低资源消耗，重复利用线程池中线程，不需要每次都创建。
-  - 便于线程管理。
-    - corePoolSize：核心池的大小。
-    - maximumPoolSize：最大线程数。
-    - keepAliveTime：线程没有任务时最多保持多长时间后会终止。
+- 提高响应速度，减少了创建新线程的时间。
+- 降低资源消耗，重复利用线程池中线程，不需要每次都创建。
+- 便于线程管理。
+  - corePoolSize：核心池的大小。
+  - maximumPoolSize：最大线程数。
+  - keepAliveTime：线程没有任务时最多保持多长时间后会终止。
 
-- JDK 5.0 起，提供了线程池相关 API：`ExecutorService`和`Executors`。
+JDK 5.0 起，提供了线程池相关 API：`ExecutorService`和`Executors`。
 
 - **ExecutorService**：真正的线程池接口，常用子类`ThreadPoolExecutor`。
 
@@ -583,93 +581,93 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 多线程安全问题实例，模拟火车站售票程序，开启三个窗口售票。
 
-- 方式一：继承 Thread 类。
+方式一：继承 Thread 类。
 
-  ```java
-  public class TestThread {
-      public static void main(String[] args) {
-          // 启动第一个售票窗口
-          TicketThread thread1 = new TicketThread();
-          thread1.setName("售票窗口一");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          TicketThread thread2 = new TicketThread();
-          thread2.setName("售票窗口二");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          TicketThread thread3 = new TicketThread();
-          thread3.setName("售票窗口三");
-          thread3.start();
-  
-      }
-  }
-  
-  class TicketThread extends Thread {
-      // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
-      private static int ticketNum = 100;
-  
-      @Override
-      public void run() {
-          while (true) {
-              if (ticketNum > 0) {
-                  try {
-                      Thread.sleep(100);
-                  } catch (InterruptedException e) {
-                      e.printStackTrace();
-                  }
-                  System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-              } else {
-                  break;
-              }
-          }
-      }
-  }
-  ```
+```java
+public class TestThread {
+    public static void main(String[] args) {
+        // 启动第一个售票窗口
+        TicketThread thread1 = new TicketThread();
+        thread1.setName("售票窗口一");
+        thread1.start();
 
-- 方式二：实现 Runnable 接口。
+        // 启动第二个售票窗口
+        TicketThread thread2 = new TicketThread();
+        thread2.setName("售票窗口二");
+        thread2.start();
 
-  ```java
-  public class Test {
-      public static void main(String[] args) {
-          TicketRunnable ticket = new TicketRunnable();
-  
-          // 启动第一个售票窗口
-          Thread thread1 = new Thread(ticket, "售票窗口1");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          Thread thread2 = new Thread(ticket, "售票窗口2");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          Thread thread3 = new Thread(ticket, "售票窗口3");
-          thread3.start();
-      }
-  }
-  
-  class TicketRunnable implements Runnable {
-      // 总票数，不必定义为static，因为只需要new一次TicketRunnable
-      private int ticketNum = 100;
-  
-      @Override
-      public void run() {
-          while (true) {
-              if (ticketNum > 0) {
-                  try {
-                      Thread.sleep(100);
-                  } catch (InterruptedException e) {
-                      e.printStackTrace();
-                  }
-                  System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-              } else {
-                  break;
-              }
-          }
-      }
-  }
-  ```
+        // 启动第三个售票窗口
+        TicketThread thread3 = new TicketThread();
+        thread3.setName("售票窗口三");
+        thread3.start();
+
+    }
+}
+
+class TicketThread extends Thread {
+    // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
+    private static int ticketNum = 100;
+
+    @Override
+    public void run() {
+        while (true) {
+            if (ticketNum > 0) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+            } else {
+                break;
+            }
+        }
+    }
+}
+```
+
+方式二：实现 Runnable 接口。
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        TicketRunnable ticket = new TicketRunnable();
+
+        // 启动第一个售票窗口
+        Thread thread1 = new Thread(ticket, "售票窗口1");
+        thread1.start();
+
+        // 启动第二个售票窗口
+        Thread thread2 = new Thread(ticket, "售票窗口2");
+        thread2.start();
+
+        // 启动第三个售票窗口
+        Thread thread3 = new Thread(ticket, "售票窗口3");
+        thread3.start();
+    }
+}
+
+class TicketRunnable implements Runnable {
+    // 总票数，不必定义为static，因为只需要new一次TicketRunnable
+    private int ticketNum = 100;
+
+    @Override
+    public void run() {
+        while (true) {
+            if (ticketNum > 0) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+            } else {
+                break;
+            }
+        }
+    }
+}
+```
 
 说明：
 
@@ -701,20 +699,21 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 #### 同步机制的特点
 
-- 优点：同步的方式，能够解决线程的安全问题。
+优点：同步的方式，能够解决线程的安全问题。
 
-- 局限性：操作同步代码时，只能有一个线程参与，其他线程等待，相当于是一个单线程的过程，效率低。
+局限性：操作同步代码时，只能有一个线程参与，其他线程等待，相当于是一个单线程的过程，效率低。
 
-- **需要被同步的代码：操作共享数据的代码。**
+**需要被同步的代码：操作共享数据的代码。**
 
-- **共享数据：多个线程共同操作的变量。**
-- **`同步监视器，俗称：锁。`任何一个类的对象，都可以充当锁。**
-  - **要求：多个线程必须要公用同一把锁！！！针对不同实现同步机制的方式，都要保证同步监视器是同一个！！！**
+**共享数据：多个线程共同操作的变量。**
+
+**`同步监视器，俗称：锁。`任何一个类的对象，都可以充当锁。**
+
+**要求：多个线程必须要公用同一把锁！！！针对不同实现同步机制的方式，都要保证同步监视器是同一个！！！**
 
 #### 同步机制中的锁
 
-**同步锁机制：**
-在《Thinking in Java》中，是这么说的：对于并发工作，你需要某种方式来防止两个任务访问相同的资源（其实就是共享资源竞争）。防止这种冲突的方法就是当资源被一个任务使用时，在其上加锁。第一个访问某项资源的任务必须锁定这项资源，使其他任务在其被解锁之前，就无法访问它了，而在其被解锁之时，另一个任务就可以锁定并使用它了。
+**同步锁机制：**在《Thinking in Java》中，是这么说的：对于并发工作，你需要某种方式来防止两个任务访问相同的资源（其实就是共享资源竞争）。防止这种冲突的方法就是当资源被一个任务使用时，在其上加锁。第一个访问某项资源的任务必须锁定这项资源，使其他任务在其被解锁之前，就无法访问它了，而在其被解锁之时，另一个任务就可以锁定并使用它了。
 
 **synchronized 的锁是什么：**
 
@@ -749,108 +748,108 @@ synchronized (同步监视器){
 }
 ```
 
-- 继承 Thread 类方式的修正：
+继承 Thread 类方式的修正：
 
-  ```java
-  public class TestThread {
-      public static void main(String[] args) {
-          // 启动第一个售票窗口
-          TicketThread thread1 = new TicketThread();
-          thread1.setName("售票窗口一");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          TicketThread thread2 = new TicketThread();
-          thread2.setName("售票窗口二");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          TicketThread thread3 = new TicketThread();
-          thread3.setName("售票窗口三");
-          thread3.start();
-  
-      }
-  }
-  
-  class TicketThread extends Thread {
-      // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
-      private static int ticketNum = 100;
-  
-      // 锁，必须定义为static
-      private static Object obj = new Object();
-  
-      @Override
-      public void run() {
-          while (true) {
-              synchronized (obj) {// 可以使用：synchronized (TicketThread.class)，不能建议使用：synchronized (this)
-                  if (ticketNum > 0) {
-                      try {
-                          Thread.sleep(100);
-                      } catch (InterruptedException e) {
-                          e.printStackTrace();
-                      }
-                      System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-                  } else {
-                  	break;
-              	}
-              }
-          }
-      }
-  }
-  ```
+```java
+public class TestThread {
+    public static void main(String[] args) {
+        // 启动第一个售票窗口
+        TicketThread thread1 = new TicketThread();
+        thread1.setName("售票窗口一");
+        thread1.start();
 
-  > **obj 可以使用 TicketThread.class（当前类）替代，TicketThread 类只会加载一次，类也是对象。**
+        // 启动第二个售票窗口
+        TicketThread thread2 = new TicketThread();
+        thread2.setName("售票窗口二");
+        thread2.start();
 
-- 实现 Runnable 接口方式的修正：
+        // 启动第三个售票窗口
+        TicketThread thread3 = new TicketThread();
+        thread3.setName("售票窗口三");
+        thread3.start();
 
-  ```java
-  public class TestRunnable {
-      public static void main(String[] args) {
-          TicketRunnable ticket = new TicketRunnable();
-  
-          // 启动第一个售票窗口
-          Thread thread1 = new Thread(ticket, "售票窗口1");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          Thread thread2 = new Thread(ticket, "售票窗口2");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          Thread thread3 = new Thread(ticket, "售票窗口3");
-          thread3.start();
-      }
-  }
-  
-  
-  class TicketRunnable implements Runnable {
-      // 总票数，不必定义为static，因为只需要new一次TicketRunnable
-      private int ticketNum = 100;
-  
-      // 锁，不必定义为static
-      Object obj = new Object();
-  
-      @Override
-      public void run() {
-          while (true) {
-              synchronized (obj) {// 可以使用：synchronized (this)
-                  if (ticketNum > 0) {
-                      try {
-                          Thread.sleep(100);
-                      } catch (InterruptedException e) {
-                          e.printStackTrace();
-                      }
-                      System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-                  } else {
-                      break;
-                  }
-              }
-          }
-      }
-  }
-  ```
+    }
+}
 
-  > **obj 对象可以使用 this 代替，指代唯一的 TicketRunnable 对象。**
+class TicketThread extends Thread {
+    // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
+    private static int ticketNum = 100;
+
+    // 锁，必须定义为static
+    private static Object obj = new Object();
+
+    @Override
+    public void run() {
+        while (true) {
+            synchronized (obj) {// 可以使用：synchronized (TicketThread.class)，不能建议使用：synchronized (this)
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+                } else {
+                	break;
+            	}
+            }
+        }
+    }
+}
+```
+
+> **obj 可以使用 TicketThread.class（当前类）替代，TicketThread 类只会加载一次，类也是对象。**
+
+]实现 Runnable 接口方式的修正：
+
+```java
+public class TestRunnable {
+    public static void main(String[] args) {
+        TicketRunnable ticket = new TicketRunnable();
+
+        // 启动第一个售票窗口
+        Thread thread1 = new Thread(ticket, "售票窗口1");
+        thread1.start();
+
+        // 启动第二个售票窗口
+        Thread thread2 = new Thread(ticket, "售票窗口2");
+        thread2.start();
+
+        // 启动第三个售票窗口
+        Thread thread3 = new Thread(ticket, "售票窗口3");
+        thread3.start();
+    }
+}
+
+
+class TicketRunnable implements Runnable {
+    // 总票数，不必定义为static，因为只需要new一次TicketRunnable
+    private int ticketNum = 100;
+
+    // 锁，不必定义为static
+    Object obj = new Object();
+
+    @Override
+    public void run() {
+        while (true) {
+            synchronized (obj) {// 可以使用：synchronized (this)
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+}
+```
+
+> **obj 对象可以使用 this 代替，指代唯一的 TicketRunnable 对象。**
 
 #### 同步机制二：同步方法
 
@@ -862,227 +861,227 @@ synchronized (同步监视器){
 
 如果操作共享数据的代码，完整的声明在一个方法中，则可以将此方法声明为同步方法。
 
-- **同步方法仍然涉及到同步监视器，只是不需要显示的声明：**
+**同步方法仍然涉及到同步监视器，只是不需要显示的声明：**
 
-  - **非静态的同步方法，同步监视器是：this。**
-  - **静态的同步方法，同步监视器是：当前类本身。**
+- **非静态的同步方法，同步监视器是：this。**
+- **静态的同步方法，同步监视器是：当前类本身。**
 
-- 继承 Thread 类方式的修正：
+继承 Thread 类方式的修正：
 
-  ```java
-  public class TestMethod1 {
-      public static void main(String[] args) {
-          // 启动第一个售票窗口
-          TicketMethod1 thread1 = new TicketMethod1();
-          thread1.setName("售票窗口一");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          TicketMethod1 thread2 = new TicketMethod1();
-          thread2.setName("售票窗口二");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          TicketMethod1 thread3 = new TicketMethod1();
-          thread3.setName("售票窗口三");
-          thread3.start();
-      }
-  }
-  
-  class TicketMethod1 extends Thread {
-      // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
-      private static int ticketNum = 100;
-  
-      @Override
-      public void run() {
-          while (true) {
-              handleTicket();
-          }
-      }
-  
-      // 必须设置成static的，此时的同步监视器是TicketMethod1.class
-      private static synchronized void handleTicket() {
-          if (ticketNum > 0) {
-              try {
-                  Thread.sleep(100);
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-              System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-          } else {
-              break;
-          }
-      }
-  }
-  ```
+```java
+public class TestMethod1 {
+    public static void main(String[] args) {
+        // 启动第一个售票窗口
+        TicketMethod1 thread1 = new TicketMethod1();
+        thread1.setName("售票窗口一");
+        thread1.start();
 
-  > **此时，同步方法要设置成 static 的，此时的同步监视器是 TicketMethod1.class (当前类)。**
+        // 启动第二个售票窗口
+        TicketMethod1 thread2 = new TicketMethod1();
+        thread2.setName("售票窗口二");
+        thread2.start();
 
-- 实现 Runnable 接口方式的修正：
+        // 启动第三个售票窗口
+        TicketMethod1 thread3 = new TicketMethod1();
+        thread3.setName("售票窗口三");
+        thread3.start();
+    }
+}
 
-  ```java
-  public class TestMethod2 {
-      public static void main(String[] args) {
-          TicketMethod2 ticket = new TicketMethod2();
-  
-          // 启动第一个售票窗口
-          Thread thread1 = new Thread(ticket, "售票窗口1");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          Thread thread2 = new Thread(ticket, "售票窗口2");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          Thread thread3 = new Thread(ticket, "售票窗口3");
-          thread3.start();
-      }
-  }
-  
-  class TicketMethod2 implements Runnable {
-      private int ticketNum = 100;
-  
-      @Override
-      public void run() {// 有时可以直接设置run方法为synchronized，但本例不行
-          while (true) {
-              handleTicket();
-          }
-      }
-  
-      // 非静态同步方法中，同步监视器：this
-      private synchronized void handleTicket() {
-          if (ticketNum > 0) {
-              try {
-                  Thread.sleep(100);
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-              System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-          } else {
-              break;
-          }
-      }
-  }
-  ```
+class TicketMethod1 extends Thread {
+    // 总票数，必须定义为static，随类只加载一次，因为每新建一个线程，都需要new一次TicketThread
+    private static int ticketNum = 100;
 
-  > **此时，同步方法中的同步监视器是：this，即当前 TicketMethod2 类的对象。**
+    @Override
+    public void run() {
+        while (true) {
+            handleTicket();
+        }
+    }
+
+    // 必须设置成static的，此时的同步监视器是TicketMethod1.class
+    private static synchronized void handleTicket() {
+        if (ticketNum > 0) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+        } else {
+            break;
+        }
+    }
+}
+```
+
+> **此时，同步方法要设置成 static 的，此时的同步监视器是 TicketMethod1.class (当前类)。**
+
+实现 Runnable 接口方式的修正：
+
+```java
+public class TestMethod2 {
+    public static void main(String[] args) {
+        TicketMethod2 ticket = new TicketMethod2();
+
+        // 启动第一个售票窗口
+        Thread thread1 = new Thread(ticket, "售票窗口1");
+        thread1.start();
+
+        // 启动第二个售票窗口
+        Thread thread2 = new Thread(ticket, "售票窗口2");
+        thread2.start();
+
+        // 启动第三个售票窗口
+        Thread thread3 = new Thread(ticket, "售票窗口3");
+        thread3.start();
+    }
+}
+
+class TicketMethod2 implements Runnable {
+    private int ticketNum = 100;
+
+    @Override
+    public void run() {// 有时可以直接设置run方法为synchronized，但本例不行
+        while (true) {
+            handleTicket();
+        }
+    }
+
+    // 非静态同步方法中，同步监视器：this
+    private synchronized void handleTicket() {
+        if (ticketNum > 0) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+        } else {
+            break;
+        }
+    }
+}
+```
+
+> **此时，同步方法中的同步监视器是：this，即当前 TicketMethod2 类的对象。**
 
 #### 同步机制三：Lock 锁
 
-- 从 JDK 5.0 开始，Java 提供了更强大的线程同步机制——通过显式定义同步锁对象来实现同步。同步锁使用 Lock 对象充当。
+从 JDK 5.0 开始，Java 提供了更强大的线程同步机制——通过显式定义同步锁对象来实现同步。同步锁使用 Lock 对象充当。
 
 - `java.util.concurrent.locks.Lock`接口是控制多个线程对共享资源进行访问的工具。锁提供了对共享资源的独占访问，每次只能有一个线程对 Lock 对象加锁，线程开始访问共享资源之前应先获得 Lock 对象。
 
 - 在实现线程安全的控制中，比较常用的是`ReentrantLock`，ReentrantLock 类实现了 Lock 接口，它拥有与 synchronized 相同的并发性和内存语义，可以显式加锁、释放锁。
 
-- 声明格式：
+声明格式：
 
-  <img src="java-thread/image-20210310103811885.png" alt="image-20210310103811885" style="zoom:67%;" />
-  
-- 继承 Thread 类方式的修正：
+<img src="java-thread/image-20210310103811885.png" alt="image-20210310103811885" style="zoom:67%;" />
 
-  ```java
-  public class LockTest {
-      public static void main(String[] args) {
-          // 启动第一个售票窗口
-          Ticket thread1 = new Ticket();
-          thread1.setName("售票窗口一");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          Ticket thread2 = new Ticket();
-          thread2.setName("售票窗口二");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          Ticket thread3 = new Ticket();
-          thread3.setName("售票窗口三");
-          thread3.start();
-      }
-  }
-  
-  class Ticket extends Thread {
-      private static int ticketNum = 100;
-  
-      // 1.实例化静态ReentrantLock
-      private static Lock lock = new ReentrantLock();
-  
-      @Override
-      public void run() {
-          while (true) {
-              // 2.调用锁定方法: lock()
-              lock.lock();
-              try {
-                  if (ticketNum > 0) {
-                      try {
-                          Thread.sleep(100);
-                      } catch (InterruptedException e) {
-                          e.printStackTrace();
-                      }
-                      System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-                  } else {
-                      break;
-                  }
-              } finally {
-                  lock.unlock();// 3.调用解锁方法: unlock()
-              }
-          }
-      }
-  }
-  ```
+继承 Thread 类方式的修正：
 
-  > **ReentrantLock 实例对象需要设置为 static。**
+```java
+public class LockTest {
+    public static void main(String[] args) {
+        // 启动第一个售票窗口
+        Ticket thread1 = new Ticket();
+        thread1.setName("售票窗口一");
+        thread1.start();
 
-- 实现 Runnable 接口方式的修正：
+        // 启动第二个售票窗口
+        Ticket thread2 = new Ticket();
+        thread2.setName("售票窗口二");
+        thread2.start();
 
-  ```java
-  public class LockTest {
-      public static void main(String[] args) {
-          Ticket ticket = new Ticket();
-  
-          // 启动第一个售票窗口
-          Thread thread1 = new Thread(ticket, "售票窗口1");
-          thread1.start();
-  
-          // 启动第二个售票窗口
-          Thread thread2 = new Thread(ticket, "售票窗口2");
-          thread2.start();
-  
-          // 启动第三个售票窗口
-          Thread thread3 = new Thread(ticket, "售票窗口3");
-          thread3.start();
-      }
-  }
-  
-  class Ticket implements Runnable {
-      private int ticketNum = 100;
-  
-      // 1.实例化ReentrantLock
-      private Lock lock = new ReentrantLock();
-  
-      @Override
-      public void run() {
-          while (true) {
-              // 2.调用锁定方法: lock()
-              lock.lock();
-              try {
-                  if (ticketNum > 0) {
-                      try {
-                          Thread.sleep(100);
-                      } catch (InterruptedException e) {
-                          e.printStackTrace();
-                      }
-                      System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
-                  } else {
-                      break;
-                  }
-              } finally {
-                  lock.unlock();// 3.调用解锁方法: unlock()
-              }
-          }
-      }
-  }
-  ```
+        // 启动第三个售票窗口
+        Ticket thread3 = new Ticket();
+        thread3.setName("售票窗口三");
+        thread3.start();
+    }
+}
+
+class Ticket extends Thread {
+    private static int ticketNum = 100;
+
+    // 1.实例化静态ReentrantLock
+    private static Lock lock = new ReentrantLock();
+
+    @Override
+    public void run() {
+        while (true) {
+            // 2.调用锁定方法: lock()
+            lock.lock();
+            try {
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+                } else {
+                    break;
+                }
+            } finally {
+                lock.unlock();// 3.调用解锁方法: unlock()
+            }
+        }
+    }
+}
+```
+
+> **ReentrantLock 实例对象需要设置为 static。**
+
+实现 Runnable 接口方式的修正：
+
+```java
+public class LockTest {
+    public static void main(String[] args) {
+        Ticket ticket = new Ticket();
+
+        // 启动第一个售票窗口
+        Thread thread1 = new Thread(ticket, "售票窗口1");
+        thread1.start();
+
+        // 启动第二个售票窗口
+        Thread thread2 = new Thread(ticket, "售票窗口2");
+        thread2.start();
+
+        // 启动第三个售票窗口
+        Thread thread3 = new Thread(ticket, "售票窗口3");
+        thread3.start();
+    }
+}
+
+class Ticket implements Runnable {
+    private int ticketNum = 100;
+
+    // 1.实例化ReentrantLock
+    private Lock lock = new ReentrantLock();
+
+    @Override
+    public void run() {
+        while (true) {
+            // 2.调用锁定方法: lock()
+            lock.lock();
+            try {
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + "售出车票，tick号为：" + ticketNum--);
+                } else {
+                    break;
+                }
+            } finally {
+                lock.unlock();// 3.调用解锁方法: unlock()
+            }
+        }
+    }
+}
+```
 
 #### synchronized 和 Lock 的对比
 
@@ -1094,136 +1093,136 @@ synchronized (同步监视器){
 
 #### 经典实例
 
-- 银行有一个账户，有两个储户分别向这个账户存钱，每次存 1000，存 10 次，要求每次存完打印账户余额。
+银行有一个账户，有两个储户分别向这个账户存钱，每次存 1000，存 10 次，要求每次存完打印账户余额。
 
-  - 实现方式一：
+实现方式一：
 
-    ```java
-    public class AccountTest {
-        public static void main(String[] args) {
-            // 一个账户
-            Account account = new Account(0.0);
-    
-            // 两个储户
-            Customer c1 = new Customer(account);
-            Customer c2 = new Customer(account);
-    
-            c1.setName("甲");
-            c2.setName("乙");
-    
-            c1.start();
-            c2.start();
-        }
+```java
+public class AccountTest {
+    public static void main(String[] args) {
+        // 一个账户
+        Account account = new Account(0.0);
+
+        // 两个储户
+        Customer c1 = new Customer(account);
+        Customer c2 = new Customer(account);
+
+        c1.setName("甲");
+        c2.setName("乙");
+
+        c1.start();
+        c2.start();
     }
-    
-    class Account {
-        private double balance;
-    
-        public Account(double balance) {
-            this.balance = balance;
-        }
-    
-        public double getBalance() {
-            return balance;
-        }
-    
-        // 此时的锁是Accout的对象，本例的写法中，Account只有一个，所以两个线程公用的是一个同步锁
-        public synchronized void deposit(double amt) {
-            if (amt > 0) {
-                balance += amt;
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Thread.currentThread().getName() + "存钱成功，余额为：" + balance);
+}
+
+class Account {
+    private double balance;
+
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    // 此时的锁是Accout的对象，本例的写法中，Account只有一个，所以两个线程公用的是一个同步锁
+    public synchronized void deposit(double amt) {
+        if (amt > 0) {
+            balance += amt;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            System.out.println(Thread.currentThread().getName() + "存钱成功，余额为：" + balance);
         }
     }
-    
-    class Customer extends Thread {
-        private Account account;
-    
-        public Customer(Account account) {
-            this.account = account;
+}
+
+class Customer extends Thread {
+    private Account account;
+
+    public Customer(Account account) {
+        this.account = account;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            account.deposit(1000.0);
         }
+    }
+}
+```
+
+实现方式二：
+
+```java
+public class AccountTest {
+    public static void main(String[] args) {
+        // 一个账户
+        Account account = new Account(0.0);
+
+        // 两个储户
+        Customer c1 = new Customer(account);
+        Customer c2 = new Customer(account);
+
+        c1.setName("甲");
+        c2.setName("乙");
+
+        c1.start();
+        c2.start();
+    }
+}
+
+class Account {
+    private double balance;
+
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amt) {
+        if (amt > 0) {
+            balance += amt;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "存钱成功，余额为：" + balance);
+        }
+    }
+}
+
+class Customer extends Thread {
+    private Account account;
     
-        @Override
-        public void run() {
-            for (int i = 0; i < 10; i++) {
+    // static的Lock
+    private static Lock lock = new ReentrantLock();
+
+    public Customer(Account account) {
+        this.account = account;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            lock.lock();
+            try {
                 account.deposit(1000.0);
+            } finally {
+                lock.unlock();
             }
         }
     }
-    ```
-
-  - 实现方式二：
-
-    ```java
-    public class AccountTest {
-        public static void main(String[] args) {
-            // 一个账户
-            Account account = new Account(0.0);
-    
-            // 两个储户
-            Customer c1 = new Customer(account);
-            Customer c2 = new Customer(account);
-    
-            c1.setName("甲");
-            c2.setName("乙");
-    
-            c1.start();
-            c2.start();
-        }
-    }
-    
-    class Account {
-        private double balance;
-    
-        public Account(double balance) {
-            this.balance = balance;
-        }
-    
-        public double getBalance() {
-            return balance;
-        }
-    
-        public void deposit(double amt) {
-            if (amt > 0) {
-                balance += amt;
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Thread.currentThread().getName() + "存钱成功，余额为：" + balance);
-            }
-        }
-    }
-    
-    class Customer extends Thread {
-        private Account account;
-        
-        // static的Lock
-        private static Lock lock = new ReentrantLock();
-    
-        public Customer(Account account) {
-            this.account = account;
-        }
-    
-        @Override
-        public void run() {
-            for (int i = 0; i < 10; i++) {
-                lock.lock();
-                try {
-                    account.deposit(1000.0);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        }
-    }
-    ```
+}
+```
 
 ### 线程的通信
 
@@ -1245,7 +1244,7 @@ synchronized (同步监视器){
 
   - 因为这三个方法必须由同步监视器调用，而任意对象都可以作为同步监视器，因此这三个方法只能在 Object 类中声明。
 
-- 实例一：使用两个线程打印 1 - 100，要求线程 1 和线程 2 交替打印。
+实例一：使用两个线程打印 1 - 100，要求线程 1 和线程 2 交替打印。
 
   ```java
   public class CommunicationTest {
@@ -1297,113 +1296,113 @@ synchronized (同步监视器){
   }
   ```
 
-- 实例二：生产者/消费者问题。
+实例二：生产者/消费者问题。
 
-  生产者（Producer）将产品交给店员（Clerk），而消费者（Customer）从店员处取走产品，店员一次只能持有固定数量的产品（比如 20），如果生产者试图生产更多的产品，店员会叫生产者停一下，如果店中有空位放产品了再通知生产者继续生产；如果店中没有产品了，店员会告诉消费者等一下，如果店中有产品了再通知消费者来取走产品。
+生产者（Producer）将产品交给店员（Clerk），而消费者（Customer）从店员处取走产品，店员一次只能持有固定数量的产品（比如 20），如果生产者试图生产更多的产品，店员会叫生产者停一下，如果店中有空位放产品了再通知生产者继续生产；如果店中没有产品了，店员会告诉消费者等一下，如果店中有产品了再通知消费者来取走产品。
 
-  ```java
-  public class ProductTest {
-      public static void main(String[] args) {
-          Clerk clerk = new Clerk();
-  
-          Producer producer1 = new Producer(clerk);
-          producer1.setName("生产者1");
-  
-          Consumer consumer1 = new Consumer(clerk);
-          consumer1.setName("消费者1");
-          Consumer consumer2 = new Consumer(clerk);
-          consumer2.setName("消费者2");
-  
-          producer1.start();
-          consumer1.start();
-          consumer2.start();
-      }
-  }
-  
-  class Clerk {
-      private int productCount = 0;
-  
-      public synchronized void produceProduct() {
-          if (productCount < 20) {
-              productCount++;
-              System.out.println(Thread.currentThread().getName() + "开始生产第" + productCount + "个产品");
-              notify();
-          } else {
-              try {
-                  wait();
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-          }
-      }
-  
-      public synchronized void consumerProduct() {
-          if (productCount > 0) {
-              System.out.println(Thread.currentThread().getName() + "开始消费第" + productCount + "个产品");
-              productCount--;
-              notify();
-          } else {
-              try {
-                  wait();
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-          }
-      }
-  }
-  
-  // 生产者
-  class Producer extends Thread {
-      private Clerk clerk;
-  
-      public Producer(Clerk clerk) {
-          this.clerk = clerk;
-      }
-  
-      @Override
-      public void run() {
-          System.out.println(Thread.currentThread().getName() + "开始生产产品...");
-          while (true) {
-              try {
-                  Thread.sleep(10);
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-              clerk.produceProduct();
-          }
-      }
-  }
-  
-  // 消费者
-  class Consumer extends Thread {
-      private Clerk clerk;
-  
-      public Consumer(Clerk clerk) {
-          this.clerk = clerk;
-      }
-  
-      @Override
-      public void run() {
-          System.out.println(Thread.currentThread().getName() + "开始消费产品...");
-          while (true) {
-              try {
-                  Thread.sleep(20);
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-              clerk.consumerProduct();
-          }
-      }
-  }
-  ```
+```java
+public class ProductTest {
+    public static void main(String[] args) {
+        Clerk clerk = new Clerk();
 
-- 面试题：`sleep()`和`wait()`的异同。
+        Producer producer1 = new Producer(clerk);
+        producer1.setName("生产者1");
 
-  - 相同点：一旦执行方法，都可以使得当前的线程进入阻塞状态。
-  - 不同点：
-    - 	两个方法声明的位置不同：`sleep()`声明在 Thread 类中，`wait()`声明在 Object 类中。
-    - 	调用的要求不同：`sleep()`可以在任何需要的场景下调用，`wait()`必须使用在同步代码块或同步方法中。
-    - 	关于是否释放同步监视器：如果两个方法都是用在同步代码块或同步方法中，`sleep()`不会释放锁，`wait()`会释放锁。
+        Consumer consumer1 = new Consumer(clerk);
+        consumer1.setName("消费者1");
+        Consumer consumer2 = new Consumer(clerk);
+        consumer2.setName("消费者2");
+
+        producer1.start();
+        consumer1.start();
+        consumer2.start();
+    }
+}
+
+class Clerk {
+    private int productCount = 0;
+
+    public synchronized void produceProduct() {
+        if (productCount < 20) {
+            productCount++;
+            System.out.println(Thread.currentThread().getName() + "开始生产第" + productCount + "个产品");
+            notify();
+        } else {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized void consumerProduct() {
+        if (productCount > 0) {
+            System.out.println(Thread.currentThread().getName() + "开始消费第" + productCount + "个产品");
+            productCount--;
+            notify();
+        } else {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+// 生产者
+class Producer extends Thread {
+    private Clerk clerk;
+
+    public Producer(Clerk clerk) {
+        this.clerk = clerk;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + "开始生产产品...");
+        while (true) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            clerk.produceProduct();
+        }
+    }
+}
+
+// 消费者
+class Consumer extends Thread {
+    private Clerk clerk;
+
+    public Consumer(Clerk clerk) {
+        this.clerk = clerk;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + "开始消费产品...");
+        while (true) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            clerk.consumerProduct();
+        }
+    }
+}
+```
+
+面试题：`sleep()`和`wait()`的异同。
+
+- 相同点：一旦执行方法，都可以使得当前的线程进入阻塞状态。
+- 不同点：
+  - 	两个方法声明的位置不同：`sleep()`声明在 Thread 类中，`wait()`声明在 Object 类中。
+  - 	调用的要求不同：`sleep()`可以在任何需要的场景下调用，`wait()`必须使用在同步代码块或同步方法中。
+  - 	关于是否释放同步监视器：如果两个方法都是用在同步代码块或同步方法中，`sleep()`不会释放锁，`wait()`会释放锁。
 
 ### 线程的死锁问题
 
@@ -1413,7 +1412,7 @@ synchronized (同步监视器){
 
 - **出现死锁后，不会出现异常，不会出现提示，只是所有的线程都处于阻塞状态，无法继续。**
 
-- 实例一：
+实例一：
 
   ```java
   public class DeadLock {
@@ -1476,73 +1475,73 @@ synchronized (同步监视器){
   }
   ```
 
-- 实例二：
+实例二：
 
-  ```java
-  class A {
-      public synchronized void foo(B b) {// 同步监视器：A的对象
-          System.out.println("当前线程名: " + Thread.currentThread().getName()
-                  + ", 进入了A实例的foo方法"); // ①
-          try {
-              Thread.sleep(200);
-          } catch (InterruptedException ex) {
-              ex.printStackTrace();
-          }
-          System.out.println("当前线程名: " + Thread.currentThread().getName()
-                  + ", 企图调用B实例的last方法"); // ③
-          b.last();
-      }
-  
-      public synchronized void last() {
-          System.out.println("进入了A类的last方法内部");
-      }
-  }
-  
-  class B {
-      public synchronized void bar(A a) {// 同步监视器：B的对象
-          System.out.println("当前线程名: " + Thread.currentThread().getName()
-                  + ", 进入了B实例的bar方法"); // ②
-          try {
-              Thread.sleep(200);
-          } catch (InterruptedException ex) {
-              ex.printStackTrace();
-          }
-          System.out.println("当前线程名: " + Thread.currentThread().getName()
-                  + ", 企图调用A实例的last方法"); // ④
-          a.last();
-      }
-  
-      public synchronized void last() {
-          System.out.println("进入了B类的last方法内部");
-      }
-  }
-  
-  public class DeadLock implements Runnable {
-      A a = new A();
-      B b = new B();
-  
-      public void init() {
-          Thread.currentThread().setName("主线程");
-          // 调用a对象的foo方法
-          a.foo(b);
-          System.out.println("进入了主线程之后");
-      }
-  
-      @Override
-      public void run() {
-          Thread.currentThread().setName("副线程");
-          // 调用b对象的bar方法
-          b.bar(a);
-          System.out.println("进入了副线程之后");
-      }
-  
-      public static void main(String[] args) {
-          DeadLock deadLock = new DeadLock();
-          new Thread(deadLock).start();
-          deadLock.init();
-      }
-  }
-  ```
+```java
+class A {
+    public synchronized void foo(B b) {// 同步监视器：A的对象
+        System.out.println("当前线程名: " + Thread.currentThread().getName()
+                + ", 进入了A实例的foo方法"); // ①
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("当前线程名: " + Thread.currentThread().getName()
+                + ", 企图调用B实例的last方法"); // ③
+        b.last();
+    }
+
+    public synchronized void last() {
+        System.out.println("进入了A类的last方法内部");
+    }
+}
+
+class B {
+    public synchronized void bar(A a) {// 同步监视器：B的对象
+        System.out.println("当前线程名: " + Thread.currentThread().getName()
+                + ", 进入了B实例的bar方法"); // ②
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("当前线程名: " + Thread.currentThread().getName()
+                + ", 企图调用A实例的last方法"); // ④
+        a.last();
+    }
+
+    public synchronized void last() {
+        System.out.println("进入了B类的last方法内部");
+    }
+}
+
+public class DeadLock implements Runnable {
+    A a = new A();
+    B b = new B();
+
+    public void init() {
+        Thread.currentThread().setName("主线程");
+        // 调用a对象的foo方法
+        a.foo(b);
+        System.out.println("进入了主线程之后");
+    }
+
+    @Override
+    public void run() {
+        Thread.currentThread().setName("副线程");
+        // 调用b对象的bar方法
+        b.bar(a);
+        System.out.println("进入了副线程之后");
+    }
+
+    public static void main(String[] args) {
+        DeadLock deadLock = new DeadLock();
+        new Thread(deadLock).start();
+        deadLock.init();
+    }
+}
+```
 
 解决死锁的方法：
 
