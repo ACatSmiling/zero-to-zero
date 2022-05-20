@@ -49,6 +49,71 @@ $ git push origin master
 
 - 不建议使用`git push`这种模糊的命令。
 
+对于本地删除的文件，使用`git rm`命令，示例如下：
+
+```bash
+Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    JavaBase/java-algorithm-sort.md
+        deleted:    JavaBase/java-algorithm-sort/image-20210219163623534.png
+        deleted:    JavaBase/java-algorithm-sort/image-20210219164721395.png
+        deleted:    JavaBase/java-base.md
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
+$ git rm JavaBase/*
+rm 'JavaBase/java-algorithm-sort.md'
+rm 'JavaBase/java-algorithm-sort/image-20210219163623534.png'
+rm 'JavaBase/java-algorithm-sort/image-20210219164721395.png'
+rm 'JavaBase/java-base.md'
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        deleted:    JavaBase/java-algorithm-sort.md
+        deleted:    JavaBase/java-algorithm-sort/image-20210219163623534.png
+        deleted:    JavaBase/java-algorithm-sort/image-20210219164721395.png
+        deleted:    JavaBase/java-base.md
+
+Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
+$ git commit -m "删除JavaBase，优化合并"
+[main 5ed2508] 删除JavaBase，优化合并
+ 280 files changed, 22042 deletions(-)
+ delete mode 100644 JavaBase/java-algorithm-sort.md
+ delete mode 100644 JavaBase/java-algorithm-sort/image-20210219163623534.png
+ delete mode 100644 JavaBase/java-algorithm-sort/image-20210219164721395.png
+ delete mode 100644 JavaBase/java-base.md
+ 
+Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
+$ git push origin main
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 262 bytes | 262.00 KiB/s, done.
+Total 2 (delta 1), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/ACatSmiling/zero_to_zero.git
+   be352f4..5ed2508  main -> main
+```
+
+对于已经 add，但未 commit 的操作，使用`git reset <file>`或`git reset`命令还原，示例如下：
+
+```bash
+# 还原所有add操作
+Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
+$ git reset
+```
+
 ## Github 提交代码到新分支
 
 第一步：在新代码路径下右键选择打开 Git Bash，并初始化。
