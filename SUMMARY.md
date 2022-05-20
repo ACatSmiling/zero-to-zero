@@ -23,8 +23,6 @@
   * [Java 中的排序算法](Java/java-algorithm-sort.md)
   * [Java 中获取 md5 的方法](Java/java-md5.md)
   * [Java 中的部分新特性](Java/java-newfeature.md)
-* C SHARP
-  * [C SHARP 初识](C#/c#.md)
 * Go
   * [Go 语言初识](Go/go.md)
 * Python
@@ -55,7 +53,6 @@
   * [emqx 的安装和使用](MessageQueue/emqx.md)
 * Data Base
   * [Java 如何操作数据库之 JDBC](DataBase/db-jdbc.md)
-
 * 时序数据
   * [时序数据初识以及 InfluxDB 的探究](TimeSeriesData/time-series-data-first-meeting.md)
 * 常用工具
