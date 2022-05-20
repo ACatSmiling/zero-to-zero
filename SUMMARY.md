@@ -24,7 +24,7 @@
   * [Java 中获取 md5 的方法](Java/java-md5.md)
   * [Java 中的部分新特性](Java/java-newfeature.md)
 * C#
-  * [C# 初识](C#/c#.md)
+  * [C SHARP 初识](C#/c#.md)
 * Go
   * [Go 语言初识](Go/go.md)
 * Python
