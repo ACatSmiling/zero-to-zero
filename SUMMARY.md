@@ -25,13 +25,10 @@
   * [Java 中的部分新特性](Java/java-newfeature.md)
 * C#
   * [C# 初识](C#/c#.md)
-
 * Go
   * [Go 语言初识](Go/go.md)
-
 * Python
   * [Python 入门](Python/python.md)
-
 * Linux 和虚拟机
   * [Linux 虚拟机安装方法](Linux/linux-virtualmachine.md)
   * [Linux 常见的命令](Linux/linux-command.md)
@@ -41,7 +38,6 @@
   * [Spring 是什么](Spring/spring-base.md)
   * [Spring Boot 入门](Spring/spring-boot.md)
   * [Spring Webflux 的使用](Spring/spring-webflux.md)
-
 * 大数据
   * [开始学习 Flink 吧](BigData/flink.md)
   * [记录一次 Flink 与 Kafka 结合的项目经验](BigData/flink-kafka.md)
@@ -57,6 +53,8 @@
   * [Kafka Consumer 源码之 consumer 如何拉取 offset 和数据](MessageQueue/kafka-consumer-offsetandfetcher.md)
   * [Kafka Consumer 源码之 consumer 的 offset commit 机制和 partition 分配机制](MessageQueue/kafka-consumer-commitandpartition.md)
   * [emqx 的安装和使用](MessageQueue/emqx.md)
+* Data Base
+  * [Java 如何操作数据库之 JDBC](DataBase/db-jdbc.md)
 
 * 时序数据
   * [时序数据初识以及 InfluxDB 的探究](TimeSeriesData/time-series-data-first-meeting.md)
