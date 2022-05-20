@@ -1,6 +1,4 @@
----
-date: 2021-08-26
----
+*date: 2021-08-26*
 
 ## WSL 使用
 
@@ -158,6 +156,12 @@ PS C:\WINDOWS\system32>
 ```
 
 - 此方式不能彻底解决问题，可能会再次出现。
+
+### WSL 与 Windows 互传文件
+
+https://www.cxyzjd.com/article/weixin_38883338/109825845
+
+https://blog.csdn.net/qq_38121031/article/details/81879212
 
 ### 参考
 
@@ -321,20 +325,20 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 - 切换 root 用户：
 
-  ```shell
+  ```bash
   [xisun@centos7 ~]$ su root
   密码：
   [root@centos7 xisun]# 
 
 - 设置虚拟机 IP 地址：
 
-  ```shell
+  ```bash
   [root@centos7 xisun]# vim /etc/sysconfig/network-scripts/ifcfg-ens33
   ```
 
   - ifcfg-ens33 文件原内容：
 
-    ```txt
+    ```bash
     TYPE="Ethernet"
     PROXY_METHOD="none"
     BROWSER_ONLY="no"
@@ -354,7 +358,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   - ifcfg-ens33 文件新内容：
 
-    ```txt
+    ```bash
     TYPE="Ethernet"
     PROXY_METHOD="none"
     BROWSER_ONLY="no"
@@ -379,7 +383,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 - 修改虚拟机的主机名称：
 
-  ```shell
+  ```bash
   [root@centos7 xisun]# vim /etc/hostname
   [root@centos7 xisun]# cat /etc/hostname
   centos7												# 主机名称按需求自定义
@@ -387,20 +391,20 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   - 修改虚拟机主机的名称映射：
 
-    ```shell
+    ```bash
     [root@centos7 xisun]# vim /etc/hosts
     ```
 
     - 原文件内容：
 
-      ```txt
+      ```bash
       127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
       ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
       ```
 
     - 新内容：
 
-      ```txt
+      ```bash
       127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
       ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
       
@@ -425,7 +429,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
     - hosts 文件新增如下主机映射：
 
-      ```txt
+      ```bash
       192.168.10.99 centos7
       192.168.10.100 hadoop100
       192.168.10.101 hadoop101
@@ -440,7 +444,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 - 重启：
 
-  ```shell
+  ```bash
   [root@centos7 xisun]# reboot
   ```
 
@@ -448,7 +452,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   - 验证虚拟机 IP 地址：
 
-    ```shell
+    ```bash
     [root@centos7 ~]# ifconfig
     ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
             inet 192.168.10.99  netmask 255.255.255.0  broadcast 192.168.10.255
@@ -480,7 +484,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   - 验证是否能连通外网：
 
-    ```shell
+    ```bash
     [root@centos7 ~]# ping www.baidu.com 
     PING www.a.shifen.com (14.215.177.39) 56(84) bytes of data.
     64 bytes from 14.215.177.39 (14.215.177.39): icmp_seq=1 ttl=128 time=38.4 ms
@@ -503,7 +507,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   - 查看主机地址：
 
-    ```shell
+    ```bash
     [root@centos7 ~]# hostname
     centos7
     ```
@@ -551,13 +555,13 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 开启克隆机，以 root 用户登录，按以下步骤修改 IP 地址：
 
-```shell
+```bash
 [root@centos7 ~]# vim /etc/sysconfig/network-scripts/ifcfg-ens33
 ```
 
 - 修改 ifcfg-ens33 文件中的 IPADDR：
 
-  ```txt
+  ```bash
   TYPE="Ethernet"
   PROXY_METHOD="none"
   BROWSER_ONLY="no"
@@ -581,7 +585,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 - 修改主机名称：
 
-  ```shell
+  ```bash
   [root@centos7 ~]# vim /etc/hostname
   [root@centos7 ~]# cat /etc/hostname
   hadoop100
@@ -589,13 +593,13 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 - 重启：
 
-  ```shell
+  ```bash
   [root@centos7 ~]# reboot
   ```
 
 - 查看新的 IP 地址和主机名称：
 
-  ```shell
+  ```bash
   [root@hadoop100 ~]# ifconfig
   ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
           inet 192.168.10.100  netmask 255.255.255.0  broadcast 192.168.10.255
@@ -631,7 +635,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 安装的 centos7 模板机，有自带的 JDK，某些情况，需要删除，按照需求自行安装。
 
-```shell
+```bash
 [xisun@centos7 ~]$ su root
 密码：
 [root@centos7 ~]# rpm -qa | grep -i java
@@ -668,10 +672,16 @@ Xshell 安装过程略。
 
 ## Linux 系统基本工具包
 
-```shell
+```bash
 $ apt install net-tools
 ```
 
+```bash
+$ apt install lrzsz
+```
+
+`// TODO`
+
 ## 声明
 
-声明：写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。

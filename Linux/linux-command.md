@@ -1,8 +1,4 @@
----
-title: linux 常用命令
-date: 2020-12-15 17:31:47
-tags: linux
----
+*date: 2020-12-15*
 
 ## find
 
@@ -1807,4 +1803,7 @@ $ gunzip test.txt.gz > test.txt
   wc -L filename 文件里最长的那一行是多少个字。
   ```
 
-  
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
