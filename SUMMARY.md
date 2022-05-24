@@ -36,7 +36,7 @@
   * [Linux 常见异常的处理](Linux/linux-error.md)
   * [Shell 脚本中的一些方法](Linux/shell.md)
 * Spring 全家桶
-  * [Spring 是什么](Spring/spring-base.md)
+  * [Spring 是什么](Spring/spring.md)
   * [Spring Boot 入门](Spring/spring-boot.md)
   * [Spring Webflux 的使用](Spring/spring-webflux.md)
 * 大数据
