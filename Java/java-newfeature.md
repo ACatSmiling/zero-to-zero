@@ -321,6 +321,8 @@ public class LambdaTest {
 }
 ```
 
+> 关于面向函数编程的精髓，可以从以下链接中体会：https://blog.csdn.net/qq_27416233/article/details/83418791
+
 ### 方法引用
 
 **当要传递给 Lambda 体的操作，已经有实现的方法了，可以使用`方法引用 (Method References)`！**
@@ -1180,6 +1182,22 @@ public class StreamAPITest {
         // 返回Set
         Set<Employee> employeeSet = employees.stream().filter(e -> e.getSalary() > 6000).collect(Collectors.toSet());
         employeeSet.forEach(System.out::println);
+    }
+    
+    // 4-将List转变为逗号分隔的字符串
+    @Test
+    public void test5() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+
+        // String类的方法，推荐
+        String join = String.join(",", list);
+        System.out.println(join);
+
+        // Java 8流式写法
+        String collect = list.stream().collect(Collectors.joining(","));
+        System.out.println(collect);
+
+        // 常规写法，使用循环遍历添加，此处不表
     }
 }
 ```
