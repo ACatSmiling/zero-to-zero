@@ -23,6 +23,9 @@
   * [Java 中的排序算法](Java/java-algorithm-sort.md)
   * [Java 中获取 md5 的方法](Java/java-md5.md)
   * [Java 中的部分新特性](Java/java-newfeature.md)
+* C Sharp
+  * [C# 初识](CSharp/CSharp.md)
+
 * Go
   * [Go 语言初识](Go/go.md)
 * Python
