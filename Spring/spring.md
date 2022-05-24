@@ -2035,945 +2035,726 @@ public class SpringTest {
 
 ## AOP
 
-- AOP (Aspect-Oriented Programming，面向切面编程)：是一种新的方法论，是对传统 OOP (Object-Oriented Programming，面向对象编程) 的补充。
+`AOP (Aspect-Oriented Programming，面向切面编程)`：是一种新的方法论，是对传统 OOP（Object-Oriented Programming，面向对象编程）的补充。
 
-- AOP 编程操作的主要对象是切面 (aspect)，而切面模块化横切关注点。
+AOP 编程操作的主要对象是`切面 (aspect)`，而切面模块化横切关注点。
 
-- 在应用 AOP 编程时，仍然需要定义公共功能，但可以明确的定义这个功能应用在哪里，以什么方式应用，并且不必修改受影响的类。这样一来横切关注点就被模块化到特殊的类里 --- 这样的类我们通常称之为 "切面"。
+在应用 AOP 编程时，仍然需要定义公共功能，但可以明确的定义这个功能应用在哪里，以什么方式应用，并且不必修改受影响的类。这样一来横切关注点就被模块化到特殊的类里 --- 这样的类我们通常称之为`切面`。
 
-- AOP 的好处：每个事物逻辑位于一个位置，代码不分散，便于维护和升级；业务模块更简洁，只包含核心业务代码。以上面的计算器案例说明：
+AOP 的好处：每个事物逻辑位于一个位置，代码不分散，便于维护和升级；业务模块更简洁，只包含核心业务代码。以计算器案例说明：
 
-  <img src="spring/image-20210416152006380.png" alt="image-20210416152006380" style="zoom:67%;" />
+<img src="spring/image-20210416152006380.png" alt="image-20210416152006380" style="zoom:67%;" />
 
-- **通俗的说：AOP 是面向切面 (方面) 编程，利用 AOP 可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。即：可在不通过修改源代码方式，在主干功能里面添加新功能。**
+**通俗的说：AOP 是面向切面（方面）编程，利用 AOP 可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。即：可在不通过修改源代码方式，在主干功能里面添加新功能。**
 
 ### AOP 底层原理
 
-- **AOP 底层使用动态代理。**
+> **AOP 底层使用`动态代理`。**
 
 #### 第一种：有接口的情况
 
-- **使用 JDK 动态代理。**
+**`使用 JDK 动态代理。`**
 
-  - **创建接口实现类代理对象，增强类的方法。**
+- **创建接口实现类代理对象，增强类的方法。**
 
-- 数学计算器要求：① 执行加减乘除运算；② 日志增强：在程序执行期间追踪正在发生的活动；③ 验证增强：希望计算器只能处理正数的运算。
+数学计算器要求：① 执行加减乘除运算；② 日志增强：在程序执行期间追踪正在发生的活动；③ 验证增强：希望计算器只能处理正数的运算。
 
-- 数学计算器的常规实现代码 (这里为了简便形参类型设置为 int)：
+数学计算器的常规实现代码（这里为了简便形参类型设置为 int）：
 
-  ```java
-  /**
-   * 计算器接口
-   */
-  public interface ArithmeticCalculator {
-      Integer add(int i, int j);
-  
-      Integer subtract(int i, int j);
-  
-      Integer multiply(int i, int j);
-  
-      Integer div(int i, int j);
-  }
-  ```
+```java
+/**
+ * 计算器接口
+ */
+public interface ArithmeticCalculator {
+    Integer add(int i, int j);
 
-  ```java
-  /**
-   * 常规方法实现类
-   */
-  public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
-      @Override
-      public Integer add(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-          
-          System.out.println("The method add() begins with [" + i + ", " + j + "]");
-          int result = i + j;
-          System.out.println("The method add() ends with [" + result + "]");
-          return result;
-      }
-  
-      @Override
-      public Integer subtract(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-          
-          System.out.println("The method subtract() begins with [" + i + ", " + j + "]");
-          int result = i - j;
-          System.out.println("The method subtract() ends with [" + result + "]");
-          return result;
-      }
-  
-      @Override
-      public Integer multiply(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-          
-          System.out.println("The method multiply() begins with [" + i + ", " + j + "]");
-          int result = i * j;
-          System.out.println("The method multiply() ends with [" + result + "]");
-          return result;
-      }
-  
-      @Override
-      public Integer div(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-          
-          System.out.println("The method div() begins with [" + i + ", " + j + "]");
-          int result = i / j;
-          System.out.println("The method div() ends with [" + result + "]");
-          return result;
-      }
-  }
-  ```
+    Integer subtract(int i, int j);
 
-  - 存在的问题一：**代码混乱**。越来越多的非业务需求 (日志和验证等) 加入后，原有的业务方法急剧膨胀。每个方法在处理核心逻辑的同时还必须兼顾其他多个关注点。
-  - 存在的问题二：**代码分散**。以日志需求为例，只是为了满足这个单一需求，就不得不在多个模块 (方法) 里多次重复相同的日志代码。如果日志需求发生变化，必须修改所有模块。
+    Integer multiply(int i, int j);
 
-- 使用 JDK 动态代理改进：
+    Integer div(int i, int j);
+}
+```
 
-  <img src="spring/image-20210416151059910.png" alt="image-20210416151059910" style="zoom:67%;" />
+```java
+/**
+ * 常规方法实现类
+ */
+public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
+    @Override
+    public Integer add(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
+        
+        System.out.println("The method add() begins with [" + i + ", " + j + "]");
+        int result = i + j;
+        System.out.println("The method add() ends with [" + result + "]");
+        return result;
+    }
 
-  ```java
-  /**
-   * 计算器接口
-   */
-  public interface ArithmeticCalculator {
-      Integer add(int i, int j);
-  
-      Integer subtract(int i, int j);
-  
-      Integer multiply(int i, int j);
-  
-      Integer div(int i, int j);
-  }
-  ```
+    @Override
+    public Integer subtract(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
+        
+        System.out.println("The method subtract() begins with [" + i + ", " + j + "]");
+        int result = i - j;
+        System.out.println("The method subtract() ends with [" + result + "]");
+        return result;
+    }
 
-  ```java
-  /**
-   * ArithmeticCalculator实现类，只做计算的核心功能
-   */
-  public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
-      @Override
-      public Integer add(int i, int j) {
-          System.out.println("add 核心方法");
-          return i + j;
-      }
-  
-      @Override
-      public Integer subtract(int i, int j) {
-          System.out.println("subtract 核心方法");
-          return i - j;
-      }
-  
-      @Override
-      public Integer multiply(int i, int j) {
-          System.out.println("multiply 核心方法");
-          return i * j;
-      }
-  
-      @Override
-      public Integer div(int i, int j) {
-          System.out.println("div 核心方法");
-          return i / j;
-      }
-  }
-  ```
+    @Override
+    public Integer multiply(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
+        
+        System.out.println("The method multiply() begins with [" + i + ", " + j + "]");
+        int result = i * j;
+        System.out.println("The method multiply() ends with [" + result + "]");
+        return result;
+    }
 
-  ```java
-  /**
-   * 日志处理器：在计算的过程中添加日志记录
-   */
-  public class ArithmeticCalculatorLoggingHandler implements InvocationHandler {
-      private Object obj;
-  
-      public ArithmeticCalculatorLoggingHandler(Object obj) {
-          this.obj = obj;
-      }
-  
-      // 重写invoke()，增加日志处理
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-          System.out.println("The method " + method.getName() + "() begins with " + Arrays.toString(args));
-          Object result = method.invoke(obj, args);
-          System.out.println("The method " + method.getName() + "() ends with [" + result + "]");
-          return result;
-      }
-  
-      // 创建当前代理的代理对象
-      public static Object createProxy(Object obj) {
-          ArithmeticCalculatorLoggingHandler handler = new ArithmeticCalculatorLoggingHandler(obj);
-          return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj.getClass().getInterfaces(), handler);
-      }
-  }
-  ```
+    @Override
+    public Integer div(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
+        
+        System.out.println("The method div() begins with [" + i + ", " + j + "]");
+        int result = i / j;
+        System.out.println("The method div() ends with [" + result + "]");
+        return result;
+    }
+}
+```
 
-  ```java
-  /**
-   * 验证处理器：在计算之前对参数进行验证
-   */
-  public class ArithmeticCalculatorValidationHandler implements InvocationHandler {
-      private Object obj;
-  
-      public ArithmeticCalculatorValidationHandler(Object obj) {
-          this.obj = obj;
-      }
-  
-      // 重写invoke()，增加验证处理
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-          for (Object arg : args) {
-              validate((int) arg);
-          }
-          return method.invoke(obj, args);
-      }
-  
-      private void validate(int number) {
-          if (number <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + number);
-          }
-      }
-  
-      // 创建当前代理的代理对象
-      public static Object createProxy(Object obj) {
-          ArithmeticCalculatorValidationHandler handler = new ArithmeticCalculatorValidationHandler(obj);
-          return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj.getClass().getInterfaces(), handler);
-      }
-  }
-  ```
+- 存在的问题一：**代码混乱**。越来越多的非业务需求 (日志和验证等) 加入后，原有的业务方法急剧膨胀。每个方法在处理核心逻辑的同时还必须兼顾其他多个关注点。
 
-  ```java
-  // 测试方法
-  public class SpringTest {
-      public static void main(String[] args) {
-          // 两级增强：普通计算 ---> 日志增强 ---> 验证增强
-          ArithmeticCalculator calculator = (ArithmeticCalculator) ArithmeticCalculatorValidationHandler.createProxy(
-                  ArithmeticCalculatorLoggingHandler.createProxy(new ArithmeticCalculatorImpl()));
-          int addResult = calculator.add(-1, 2);
-          System.out.println("result: " + addResult);
-      }
-  }
-  ```
+- 存在的问题二：**代码分散**。以日志需求为例，只是为了满足这个单一需求，就不得不在多个模块 (方法) 里多次重复相同的日志代码。如果日志需求发生变化，必须修改所有模块。
+
+使用 JDK 动态代理改进：
+
+<img src="spring/image-20210416151059910.png" alt="image-20210416151059910" style="zoom:67%;" />
+
+```java
+/**
+ * 计算器接口
+ */
+public interface ArithmeticCalculator {
+    Integer add(int i, int j);
+
+    Integer subtract(int i, int j);
+
+    Integer multiply(int i, int j);
+
+    Integer div(int i, int j);
+}
+```
+
+```java
+/**
+ * ArithmeticCalculator实现类，只做计算的核心功能
+ */
+public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
+    @Override
+    public Integer add(int i, int j) {
+        System.out.println("add 核心方法");
+        return i + j;
+    }
+
+    @Override
+    public Integer subtract(int i, int j) {
+        System.out.println("subtract 核心方法");
+        return i - j;
+    }
+
+    @Override
+    public Integer multiply(int i, int j) {
+        System.out.println("multiply 核心方法");
+        return i * j;
+    }
+
+    @Override
+    public Integer div(int i, int j) {
+        System.out.println("div 核心方法");
+        return i / j;
+    }
+}
+```
+
+```java
+/**
+ * 日志处理器：在计算的过程中添加日志记录
+ */
+public class ArithmeticCalculatorLoggingHandler implements InvocationHandler {
+    private Object obj;
+
+    public ArithmeticCalculatorLoggingHandler(Object obj) {
+        this.obj = obj;
+    }
+
+    // 重写invoke()，增加日志处理
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("The method " + method.getName() + "() begins with " + Arrays.toString(args));
+        Object result = method.invoke(obj, args);
+        System.out.println("The method " + method.getName() + "() ends with [" + result + "]");
+        return result;
+    }
+
+    // 创建当前代理的代理对象
+    public static Object createProxy(Object obj) {
+        ArithmeticCalculatorLoggingHandler handler = new ArithmeticCalculatorLoggingHandler(obj);
+        return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj.getClass().getInterfaces(), handler);
+    }
+}
+```
+
+```java
+/**
+ * 验证处理器：在计算之前对参数进行验证
+ */
+public class ArithmeticCalculatorValidationHandler implements InvocationHandler {
+    private Object obj;
+
+    public ArithmeticCalculatorValidationHandler(Object obj) {
+        this.obj = obj;
+    }
+
+    // 重写invoke()，增加验证处理
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        for (Object arg : args) {
+            validate((int) arg);
+        }
+        return method.invoke(obj, args);
+    }
+
+    private void validate(int number) {
+        if (number <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + number);
+        }
+    }
+
+    // 创建当前代理的代理对象
+    public static Object createProxy(Object obj) {
+        ArithmeticCalculatorValidationHandler handler = new ArithmeticCalculatorValidationHandler(obj);
+        return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj.getClass().getInterfaces(), handler);
+    }
+}
+```
+
+```java
+// 测试方法
+public class SpringTest {
+    public static void main(String[] args) {
+        // 两级增强：普通计算 ---> 日志增强 ---> 验证增强
+        ArithmeticCalculator calculator = (ArithmeticCalculator) ArithmeticCalculatorValidationHandler.createProxy(
+                ArithmeticCalculatorLoggingHandler.createProxy(new ArithmeticCalculatorImpl()));
+        int addResult = calculator.add(-1, 2);
+        System.out.println("result: " + addResult);
+    }
+}
+```
 
 #### 第二种：没有接口的情况
 
-- **使用 CGLIB 动态代理。**
+**`使用 CGLIB 动态代理。`**
 
-  - **创建子类的代理对象，增强类的方法。**
+- **创建子类的代理对象，增强类的方法。**
 
-- 数学计算器要求：① 执行加减乘除运算；② 日志增强：在程序执行期间追踪正在发生的活动；③ 验证增强：希望计算器只能处理正数的运算。
+数学计算器要求：① 执行加减乘除运算；② 日志增强：在程序执行期间追踪正在发生的活动；③ 验证增强：希望计算器只能处理正数的运算。
 
-- 数学计算器的常规实现代码 (这里为了简便形参类型设置为 int)：
+数学计算器的常规实现代码（这里为了简便形参类型设置为 int）：
 
-  ```java
-  /**
-   * 常规方法实现类
-   */
-  public class ArithmeticCalculator {
-      public Integer add(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-  
-          System.out.println("The method add() begins with [" + i + ", " + j + "]");
-          int result = i + j;
-          System.out.println("The method add() ends with [" + result + "]");
-          return result;
-      }
-  
-      public Integer subtract(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-  
-          System.out.println("The method subtract() begins with [" + i + ", " + j + "]");
-          int result = i - j;
-          System.out.println("The method subtract() ends with [" + result + "]");
-          return result;
-      }
-  
-      public Integer multiply(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-  
-          System.out.println("The method multiply() begins with [" + i + ", " + j + "]");
-          int result = i * j;
-          System.out.println("The method multiply() ends with [" + result + "]");
-          return result;
-      }
-  
-      public Integer div(int i, int j) {
-          if (i <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + i);
-          }
-          if (j <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + j);
-          }
-  
-          System.out.println("The method div() begins with [" + i + ", " + j + "]");
-          int result = i / j;
-          System.out.println("The method div() ends with [" + result + "]");
-          return result;
-      }
-  }
-  ```
+```java
+/**
+ * 常规方法实现类
+ */
+public class ArithmeticCalculator {
+    public Integer add(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
 
-- 使用 CGLIB 动态代理改进：
+        System.out.println("The method add() begins with [" + i + ", " + j + "]");
+        int result = i + j;
+        System.out.println("The method add() ends with [" + result + "]");
+        return result;
+    }
 
-  ```java
-  public class ArithmeticCalculator {
-      public Integer add(int i, int j) {
-          System.out.println("add 核心方法");
-          return i + j;
-      }
-  
-      public Integer subtract(int i, int j) {
-          System.out.println("subtract 核心方法");
-          return i - j;
-      }
-  
-      public Integer multiply(int i, int j) {
-          System.out.println("multiply 核心方法");
-          return i * j;
-      }
-  
-      public Integer div(int i, int j) {
-          System.out.println("div 核心方法");
-          return i / j;
-      }
-  }
-  ```
+    public Integer subtract(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
 
-  ```java
-  /**
-   * 日志拦截器：在计算的过程中添加日志记录
-   */
-  public class ArithmeticCalculatorLoggingInterceptor implements MethodInterceptor {
-      @Override
-      public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-          System.out.println("The method " + method.getName() + "() begins with " + Arrays.toString(args));
-          Object result = methodProxy.invokeSuper(obj, args);
-          System.out.println("The method " + method.getName() + "() ends with [" + result + "]");
-          return result;
-      }
-  
-      public static Object createProxy(Object obj) {
-          Enhancer enhancer = new Enhancer();
-          enhancer.setClassLoader(obj.getClass().getClassLoader());
-          enhancer.setSuperclass(obj.getClass());
-          enhancer.setCallback(new ArithmeticCalculatorLoggingInterceptor());
-          return enhancer.create();
-      }
-  }
-  ```
+        System.out.println("The method subtract() begins with [" + i + ", " + j + "]");
+        int result = i - j;
+        System.out.println("The method subtract() ends with [" + result + "]");
+        return result;
+    }
 
-  ```java
-  /**
-   * 验证处理器：在计算之前对参数进行验证
-   */
-  public class ArithmeticCalculatorValidationInterceptor implements MethodInterceptor {
-      @Override
-      public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-          for (Object arg : args) {
-              validate((int) arg);
-          }
-          return methodProxy.invokeSuper(obj, args);
-      }
-  
-      private void validate(int number) {
-          if (number <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + number);
-          }
-      }
-  
-      public static Object createProxy(Object obj) {
-          Enhancer enhancer = new Enhancer();
-          enhancer.setClassLoader(obj.getClass().getClassLoader());
-          enhancer.setSuperclass(obj.getClass());
-          enhancer.setCallback(new ArithmeticCalculatorValidationInterceptor());
-          return enhancer.create();
-      }
-  }
-  ```
+    public Integer multiply(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
 
-  ```java
-  // 测试方法
-  public class SpringTest {
-      public static void main(String[] args) {
-          // 日志增强
-          ArithmeticCalculator arithmeticCalculator = (ArithmeticCalculator) ArithmeticCalculatorLoggingInterceptor
-                  .createProxy(new ArithmeticCalculator());
-          Integer addResult = arithmeticCalculator.add(-1, 2);
-          System.out.println(addResult);
-      }
-  }
-  ```
+        System.out.println("The method multiply() begins with [" + i + ", " + j + "]");
+        int result = i * j;
+        System.out.println("The method multiply() ends with [" + result + "]");
+        return result;
+    }
 
-  > CGLIB 不支持类嵌套增强，如果需要多个嵌套增强，需要其他方法实现，此处不涉及。
+    public Integer div(int i, int j) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + i);
+        }
+        if (j <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + j);
+        }
+
+        System.out.println("The method div() begins with [" + i + ", " + j + "]");
+        int result = i / j;
+        System.out.println("The method div() ends with [" + result + "]");
+        return result;
+    }
+}
+```
+
+使用 CGLIB 动态代理改进：
+
+```java
+public class ArithmeticCalculator {
+    public Integer add(int i, int j) {
+        System.out.println("add 核心方法");
+        return i + j;
+    }
+
+    public Integer subtract(int i, int j) {
+        System.out.println("subtract 核心方法");
+        return i - j;
+    }
+
+    public Integer multiply(int i, int j) {
+        System.out.println("multiply 核心方法");
+        return i * j;
+    }
+
+    public Integer div(int i, int j) {
+        System.out.println("div 核心方法");
+        return i / j;
+    }
+}
+```
+
+```java
+/**
+ * 日志拦截器：在计算的过程中添加日志记录
+ */
+public class ArithmeticCalculatorLoggingInterceptor implements MethodInterceptor {
+    @Override
+    public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+        System.out.println("The method " + method.getName() + "() begins with " + Arrays.toString(args));
+        Object result = methodProxy.invokeSuper(obj, args);
+        System.out.println("The method " + method.getName() + "() ends with [" + result + "]");
+        return result;
+    }
+
+    public static Object createProxy(Object obj) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setClassLoader(obj.getClass().getClassLoader());
+        enhancer.setSuperclass(obj.getClass());
+        enhancer.setCallback(new ArithmeticCalculatorLoggingInterceptor());
+        return enhancer.create();
+    }
+}
+```
+
+```java
+/**
+ * 验证处理器：在计算之前对参数进行验证
+ */
+public class ArithmeticCalculatorValidationInterceptor implements MethodInterceptor {
+    @Override
+    public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+        for (Object arg : args) {
+            validate((int) arg);
+        }
+        return methodProxy.invokeSuper(obj, args);
+    }
+
+    private void validate(int number) {
+        if (number <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + number);
+        }
+    }
+
+    public static Object createProxy(Object obj) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setClassLoader(obj.getClass().getClassLoader());
+        enhancer.setSuperclass(obj.getClass());
+        enhancer.setCallback(new ArithmeticCalculatorValidationInterceptor());
+        return enhancer.create();
+    }
+}
+```
+
+```java
+// 测试方法
+public class SpringTest {
+    public static void main(String[] args) {
+        // 日志增强
+        ArithmeticCalculator arithmeticCalculator = (ArithmeticCalculator) ArithmeticCalculatorLoggingInterceptor
+                .createProxy(new ArithmeticCalculator());
+        Integer addResult = arithmeticCalculator.add(-1, 2);
+        System.out.println(addResult);
+    }
+}
+```
+
+> CGLIB 不支持类嵌套增强，如果需要多个嵌套增强，需要其他方法实现，此处不涉及。
 
 ### 切入点表达式
 
-- AOP 相关术语：
+AOP 相关术语：
 
-  - **连接点 (JoinPoint)**：**类里面可以被增强的方法被称为连接点。**就是 Spring 允许使用通知的地方，基本每个方法的前、后 (两者都有也行)，或抛出异常时都可以是连接点，Spring 只支持方法连接点。
-  - **切入点 (Pointcut)**：**实际被真正增强的方法，称为切入点。**在上面说的连接点的基础上，来定义切入点，假设一个类里，有 15 个方法，那就可能有几十个连接点，但不一定需要在所有方法附近都使用通知，而是只想让其中的几个方法使用通知。则在调用这几个方法之前，之后或者抛出异常时，利用切入点来定义这几个方法，让切入点来筛选连接点，选中那几个需要使用通知的方法。
-  - **通知 (Advice)**：**实际增强的逻辑部分，也就是想要的功能，比如上面说的日志处理、验证处理等。**事先定义好，然后在想用的地方用一下。通知的类型：前置通知、最终通知、后置通知、异常通知、环绕通知。
-    - 前置通知 (Before Advice)：在切入点选择的连接点处的方法之前执行的通知，该通知不影响正常程序执行流程 (除非该通知抛出异常，该异常将中断当前方法链的执行而返回)。
-    - 最终通知 (After Advice)：在切入点选择的连接点处的方法之后执行的通知 (无论方法执行是否成功都会被调用)。
-    - 后置通知 (After returning Advice)：在切入点选择的连接点处的方法正常执行完毕时执行的通知，必须是连接点处的方法没抛出任何异常正常返回时才调用。
-    - 异常通知 (After throwing Advice)：在切入点选择的连接点处的方法抛出异常返回时执行的通知，必须是连接点处的方法抛出任何异常返回时才调用异常通知。
-    - 环绕通知 (Around Advices)：环绕着在切入点选择的连接点处的方法所执行的通知，环绕通知可以在方法调用之前和之后自定义任何行为，并且可以决定是否执行连接点处的方法、替换返回值、抛出异常等等。
-  - **切面 (Aspect)**：**把通知应用到切入点的过程 (是动作)。**切面是通知和切入点的结合，也就是说，没连接点什么事情，连接点是为了好理解切入点而提出来的概念。
-  - **引入 (introduction)**：允许我们向现有的类添加新方法属性，也就是把切面 (即新方法属性：通知定义的) 用到目标类中。
-  - **目标 (target)**：引入中所提到的目标类，也就是要被通知的对象，即真正的业务逻辑，他可以在毫不知情的情况下，被织入切面。而自己专注于业务本身的逻辑。
-  - **代理 (proxy)**：怎么实现整套 AOP 机制的，都是通过代理。
-  - **织入 (weaving)**：把切面应用到目标对象来创建新的代理对象的过程。有 3 种方式，Spring 采用的是运行时。
+- **`连接点 (JoinPoint)`**：**类里面可以被增强的方法被称为连接点。**就是 Spring 允许使用通知的地方，基本每个方法的前、后 (两者都有也行)，或抛出异常时都可以是连接点，Spring 只支持方法连接点。
+- **`切入点 (Pointcut)`**：**实际被真正增强的方法，称为切入点。**在上面说的连接点的基础上，来定义切入点，假设一个类里，有 15 个方法，那就可能有几十个连接点，但不一定需要在所有方法附近都使用通知，而是只想让其中的几个方法使用通知。则在调用这几个方法之前，之后或者抛出异常时，利用切入点来定义这几个方法，让切入点来筛选连接点，选中那几个需要使用通知的方法。
+- **`通知 (Advice)`**：**实际增强的逻辑部分，也就是想要的功能，比如上面说的日志处理、验证处理等。**事先定义好，然后在想用的地方用一下。通知的类型：前置通知、最终通知、后置通知、异常通知、环绕通知。
+  - 前置通知（Before Advice）：在切入点选择的连接点处的方法之前执行的通知，该通知不影响正常程序执行流程（除非该通知抛出异常，该异常将中断当前方法链的执行而返回）。
+  - 最终通知（After Advice）：在切入点选择的连接点处的方法之后执行的通知（无论方法执行是否成功都会被调用）。
+  - 后置通知（After returning Advice）：在切入点选择的连接点处的方法正常执行完毕时执行的通知，必须是连接点处的方法没抛出任何异常正常返回时才调用。
+  - 异常通知（After throwing Advice）：在切入点选择的连接点处的方法抛出异常返回时执行的通知，必须是连接点处的方法抛出任何异常返回时才调用异常通知。
+  - 环绕通知（Around Advices）：环绕着在切入点选择的连接点处的方法所执行的通知，环绕通知可以在方法调用之前和之后自定义任何行为，并且可以决定是否执行连接点处的方法、替换返回值、抛出异常等等。
+- **`切面 (Aspect)`**：**把通知应用到切入点的过程 (是动作)。**切面是通知和切入点的结合，也就是说，没连接点什么事情，连接点是为了好理解切入点而提出来的概念。
+- **`引入 (introduction)`**：允许我们向现有的类添加新方法属性，也就是把切面（即新方法属性：通知定义的）用到目标类中。
+- **`目标 (target)`**：引入中所提到的目标类，也就是要被通知的对象，即真正的业务逻辑，他可以在毫不知情的情况下，被织入切面。而自己专注于业务本身的逻辑。
+- **`代理 (proxy)`**：怎么实现整套 AOP 机制的，都是通过代理。
+- **`织入 (weaving)`**：把切面应用到目标对象来创建新的代理对象的过程。有 3 种方式，Spring 采用的是运行时。
 
-- **切入点表达式：**
+**切入点表达式：**
 
-  - 切入点表达式作用：表明对哪个类里面的哪个方法进行增强。
-  - **语法结构： execution([权限修饰符] [返回类型] [类全类名] \[方法名称]([参数列表]) )。**
-    - 权限修饰符一般使用 * 替代；返回类型可以省略；参数列表使用 .. 代替。
-  - 举例 1：对 `cn.xisun.spring.dao.UserDao` 类里面的 `add()` 进行增强。
-    - **`execution(* cn.xisun.spring.dao.UserDao.add(..))`**
-  - 举例 2：对 `cn.xisun.spring.dao.UserDao` 类里面的所有的方法进行增强。
-    - **`execution(* cn.xisun.spring.dao.UserDao.*(..))`**
-  - 举例 3：对 `cn.xisun.spring.dao` 包里面所有类，类里面所有方法进行增强。
-    - **`execution(* cn.xisun.spring.dao.*.*(..))`**
-  - 举例 4：对 `cn.xisun.spring.dao.UserDao` 类里面返回 double 类型的方法进行增强。
-    - **`execution(* double cn.xisun.spring.dao.UserDao.*(..))`**
-  - 举例 5：对 `cn.xisun.spring.dao.UserDao` 类里面第一个参数为 double 类型的方法进行增强。
-    - **`execution(* cn.xisun.spring.dao.UserDao.*(double, ..))`**
-  - 举例 6：对 `cn.xisun.spring.dao.UserDao` 类里面里面的 `add()` 或 `div()` 进行增强。
-    - **`execution(* cn.xisun.spring.dao.UserDao.add(..)) || execution(* cn.xisun.spring.dao.UserDap.div(..))`**
-    - 在 AspectJ 中，切入点表达式可以通过 &&、||、! 等操作符结合起来。
+- 切入点表达式作用：表明对哪个类里面的哪个方法进行增强。
+- **语法结构：`execution([权限修饰符] [返回类型] [类全类名] \[方法名称]([参数列表]) )`。**
+  - 权限修饰符一般使用 * 替代；返回类型可以省略；参数列表使用 .. 代替。
+- 举例 1：对`cn.xisun.spring.dao.UserDao`类里面的`add()`进行增强。
+  - **`execution(* cn.xisun.spring.dao.UserDao.add(..))`**
+- 举例 2：对`cn.xisun.spring.dao.UserDao`类里面的所有的方法进行增强。
+  - **`execution(* cn.xisun.spring.dao.UserDao.*(..))`**
+- 举例 3：对`cn.xisun.spring.dao`包里面所有类，类里面所有方法进行增强。
+  - **`execution(* cn.xisun.spring.dao.*.*(..))`**
+- 举例 4：对`cn.xisun.spring.dao.UserDao`类里面返回 double 类型的方法进行增强。
+  - **`execution(* double cn.xisun.spring.dao.UserDao.*(..))`**
+- 举例 5：对`cn.xisun.spring.dao.UserDao`类里面第一个参数为 double 类型的方法进行增强。
+  - **`execution(* cn.xisun.spring.dao.UserDao.*(double, ..))`**
+- 举例 6：对`cn.xisun.spring.dao.UserDao`类里面里面的`add()`或`div()`进行增强。
+  - **`execution(* cn.xisun.spring.dao.UserDao.add(..)) || execution(* cn.xisun.spring.dao.UserDap.div(..))`**
+  - 在 AspectJ 中，切入点表达式可以通过 &&、||、! 等操作符结合起来。
 
 ### 实现 AOP 操作的方式
 
-- **实现 AOP 操作的准备工作：**
+**实现 AOP 操作的准备工作：**
 
-  - **Spring 框架一般都是基于 AspectJ 实现 AOP 操作：**
+- **Spring 框架一般都是基于`AspectJ`实现 AOP 操作：**
 
-    - AspectJ 不是 Spring 组成部分，它是 Java 社区里最完整最流行的 AOP 框架。在 Spring 2.0 以上版本中，可以使用基于 AspectJ 注解或基于 xml 配置的 AOP。
+  - AspectJ 不是 Spring 组成部分，它是 Java 社区里最完整最流行的 AOP 框架。在 Spring 2.0 以上版本中，可以使用基于 AspectJ 注解或基于 xml 配置的 AOP。
 
-  - 基于 AspectJ 实现 AOP 操作：
+- 基于 AspectJ 实现 AOP 操作：
 
-    - **基于注解方式实现 (常用)。**
-    - 基于 xml 配置文件实现。
+  - **基于注解方式实现（常用）。**
+  - 基于 xml 配置文件实现。
 
-  - 引入 AOP 和 AspectJ 的相关依赖：
+- 引入 AOP 和 AspectJ 的相关依赖：
 
-    ```xml
-    <!-- Spring AOP和AspectJ相关依赖-->
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-aop</artifactId>
-        <version>5.2.7.RELEASE</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-aspects</artifactId>
-        <version>5.1.10.RELEASE</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.aspectj</groupId>
-        <artifactId>aspectjweaver</artifactId>
-        <version>1.9.5</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>aopalliance</groupId>
-        <artifactId>aopalliance</artifactId>
-        <version>1.0</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>net.sourceforge.cglib</groupId>
-        <artifactId>com.springsource.net.sf.cglib</artifactId>
-        <version>2.2.0</version>
-    </dependency>
-    ```
+  ```xml
+  <!-- Spring AOP和AspectJ相关依赖-->
+  <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+      <version>5.2.7.RELEASE</version>
+  </dependency>
+  
+  <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aspects</artifactId>
+      <version>5.1.10.RELEASE</version>
+  </dependency>
+  
+  <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.9.5</version>
+  </dependency>
+  
+  <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <version>1.0</version>
+  </dependency>
+  
+  <dependency>
+      <groupId>net.sourceforge.cglib</groupId>
+      <artifactId>com.springsource.net.sf.cglib</artifactId>
+      <version>2.2.0</version>
+  </dependency>
+  ```
 
 #### 基于注解方式实现
 
-- 第一步：编写 Spring 配置文件，引入 context 和 aop 名称空间，并开启组件扫描，指明包路径，以及开启自动代理功能。
+第一步：编写 Spring 配置文件，引入 context 和 aop 名称空间，并开启组件扫描，指明包路径，以及开启自动代理功能。
 
-  ```xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <beans xmlns="http://www.springframework.org/schema/beans"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:context="http://www.springframework.org/schema/context"
-         xmlns:aop="http://www.springframework.org/schema/aop"
-         xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                             http://www.springframework.org/schema/beans/spring-beans.xsd
-  
-                             http://www.springframework.org/schema/context 
-                             http://www.springframework.org/schema/context/spring-context.xsd
-  
-                             http://www.springframework.org/schema/aop 
-                             http://www.springframework.org/schema/aop/spring-aop.xsd">
-  
-      <!-- 开启注解扫描 -->
-      <context:component-scan base-package="cn.xisun.spring.aop"/>
-  
-      <!-- 开启Aspect生成代理对象-->
-      <!-- 被增强类有接口，需指定proxy-target-class为true，如果没有接口，不需要指定这个参数 -->
-      <aop:aspectj-autoproxy  proxy-target-class="true"/>
-  </beans>
-  ```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
 
-- 第二步：被增强类 (目标类) 的定义。**添加 `@Component` 注解。**
+                           http://www.springframework.org/schema/context 
+                           http://www.springframework.org/schema/context/spring-context.xsd
 
-  ```java
-  public interface ArithmeticCalculator {
-      int add(int i, int j);
-  
-      int subtract(int i, int j);
-  
-      int multiply(int i, int j);
-  
-      int div(int i, int j);
-  }
-  ```
+                           http://www.springframework.org/schema/aop 
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-  ```java
-  /**
-   * 需要被增强的类
-   */
-  @Component
-  public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
-      @Override
-      public Integer add(int i, int j) {
-          System.out.println("add 核心方法");
-          return i + j;
-      }
-  
-      @Override
-      public Integer subtract(int i, int j) {
-          System.out.println("subtract 核心方法");
-          return i - j;
-      }
-  
-      @Override
-      public Integer multiply(int i, int j) {
-          System.out.println("multiply 核心方法");
-          return i * j;
-      }
-  
-      @Override
-      public Integer div(int i, int j) {
-          System.out.println("div 核心方法");
-          return i / j;
-      }
-  }
-  ```
+    <!-- 开启注解扫描 -->
+    <context:component-scan base-package="cn.xisun.spring.aop"/>
 
-- 第三步：增强类 (切面类) 的定义。**在增强类上添加 `@Component` 和 `@Aspect` 注解；在增强类里面，在作为通知的方法上面添加对应的通知类型注解，并使用切入点表达式配置需要增强的方法。**
+    <!-- 开启Aspect生成代理对象-->
+    <!-- 被增强类有接口，需指定proxy-target-class为true，如果没有接口，不需要指定这个参数 -->
+    <aop:aspectj-autoproxy  proxy-target-class="true"/>
+</beans>
+```
 
-  ```java
-  /**
-   * 日志增强
-   */
-  @Component
-  @Aspect
-  @Order(1)
-  public class ArithmeticCalculatorLoggingAspect {
-      // 相同的切入点抽取
-      @Pointcut(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.*(..))")
-      public void pointSame() {
-  
-      }
-  
-      @Before(value = "pointSame()")
-      public void before() {
-          System.out.println("@Before 前置通知");
-      }
-  
-      @AfterReturning(value = "pointSame()")
-      public void afterReturning() {
-          System.out.println("@AfterReturning 后置通知");
-      }
-  
-      @After(value = "pointSame()")
-      public void after() {
-          System.out.println("@After 最终通知");
-      }
-  
-      @AfterThrowing(value = "pointSame()")
-      public void afterThrowing() {
-          System.out.println("@AfterThrowing 异常通知");
-      }
-  
-      @Around(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.add(..))")
-      public Object around(ProceedingJoinPoint proceedingJoinPoint) {
-          System.out.println("@Around 环绕通知之前");
-          // 被增强的方法执行，proceed是该方法的返回结果，如果原方法为void，则proceed为null
-          Object proceed = null;
-          try {
-              proceed = proceedingJoinPoint.proceed();
-          } catch (Throwable throwable) {
-              throwable.printStackTrace();
-          }
-          System.out.println("@Around 环绕通知之后");
-          return proceed;
-      }
-  }
-  ```
+第二步：被增强类（目标类）的定义。**添加`@Component`注解。**
 
-  > 前置通知、后置通知、异常通知和最终通知，可以额外接受一个 JoinPoint 参数，用来获取目标对象和目标方法相关信息，但是一定要保证这个参数是第一个参数。在环绕通知中必须显式的通过调用 ProceedingJoinPoint 来执行目标方法，否则目标方法不会执行。
+```java
+public interface ArithmeticCalculator {
+    int add(int i, int j);
 
-  ```java
-  /**
-   * 验证增强
-   */
-  @Component
-  @Aspect
-  @Order(0)
-  public class ArithmeticCalculatorValidationAspect {
-      @Before(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.*(..))")
-      public void before(JoinPoint joinPoint) {
-          System.out.println("验证方法开始执行");
-          Class<?> clazz = joinPoint.getTarget().getClass();// 当前执行的方法所属的类
-          String name = joinPoint.getSignature().getName();// 当前执行的方法名
-          Object[] args = joinPoint.getArgs();// 当前执行的方法的参数
-          for (Object arg : args) {
-              validate((int) arg);
-          }
-      }
-  
-      private void validate(int number) {
-          if (number <= 0) {
-              throw new IllegalArgumentException("positive numbers only: " + number);
-          }
-      }
-  }
-  ```
+    int subtract(int i, int j);
 
-- 第四步：测试方法。
+    int multiply(int i, int j);
 
-  ```java
-  public class SpringTest {
-      public static void main(String[] args) {
-          System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
-          ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-          ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
-          Integer addResult = arithmeticCalculatorImpl.add(1, 2);
-          System.out.println("计算结果：" + addResult);
-      }
-  }
-  输出结果：
-  Spring 测试版本：5.2.7.RELEASE
-  验证方法开始执行
-  @Around 环绕通知之前
-  @Before 前置通知
-  add 核心方法
-  @AfterReturning 后置通知
-  @After 最终通知
-  @Around 环绕通知之后
-  计算结果：3
-  ```
+    int div(int i, int j);
+}
+```
 
-- 进阶操作：
-
-  - **1. 相同的切入点抽取：**
-
-    - 在编写 AspectJ 切面时，可以直接在通知注解中书写切入点表达式。但同一个切点表达式可能会在多个通知中重复出现。此时，**在 AspectJ 切面中，可以通过 `@Pointcut` 注解将一个重复的切入点声明成简单的方法，该切入点的方法体通常是空的。**
-
-      <img src="spring/image-20210418144525994.png" alt="image-20210418144525994" style="zoom:80%;" />
-
-    - 切入点方法的访问权限控制符同时也控制着这个切入点的可见性。如果切入点要在多个切面中共用，最好将它们集中在一个公共的类中。在这种情况下，它们必须被声明为 public。在引入这个切入点时，必须将类名也包括在内。如果类没有与这个切面放在同一个包中，还必须包含包名。
-
-    - 比如，前面的日志增强类，各个通知的切入点表达式主要是 `execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))`，可以把它单独抽取出来：
-
-      ```java
-      /**
-       * 日志增强
-       */
-      @Component
-      @Aspect
-      public class LoggingAspect implements CutAspect {
-          // 相同的切入点抽取
-          @Pointcut(value = "execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))")
-          public void pointSame() {
-      
-          }
-      
-          @Override
-          @Before(value = "pointSame()")
-          public void before() {
-              System.out.println("@Before 前置通知");
-          }
-      
-          @Override
-          @AfterReturning(value = "pointSame()")
-          public void afterReturning() {
-              System.out.println("@AfterReturning 后置通知");
-          }
-      
-          @Override
-          @After(value = "pointSame()")
-          public void after() {
-              System.out.println("@After 最终通知");
-          }
-      
-          @Override
-          @AfterThrowing(value = "pointSame()")
-          public void afterThrowing() {
-              System.out.println("@AfterThrowing 异常通知");
-          }
-      
-          @Override
-          @Around(value = "execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.add(..))")
-          public Object around(ProceedingJoinPoint proceedingJoinPoint) {
-              System.out.println("proceedingJoinPoint: " + proceedingJoinPoint);
-              System.out.println("@Around 环绕通知之前");
-              // 被增强的方法执行，proceed是该方法的返回结果，如果原方法为void，则proceed为null
-              Object proceed = null;
-              try {
-                  proceed = proceedingJoinPoint.proceed();
-              } catch (Throwable throwable) {
-                  throwable.printStackTrace();
-              }
-              System.out.println("@Around 环绕通知之后");
-              return proceed;
-          }
-      }
-      ```
-
-  - **2. 指定切面的优先级：**
-
-    - **在同一个连接点上应用不止一个切面时，除非明确指定，否则它们的优先级是不确定的。切面的优先级可以通过实现 `Ordered` 接口或利用 `@Order(数值类型值)` 注解指定。**
-
-    - 若是实现 Ordered 接口，`getOrder()` 方法的返回值越小，优先级越高。
-
-    - 若是使用 `@Order(数值类型值)` 注解，数字类型值越小，优先级越高。
-
-      ```java
-      @Component
-      @Aspect
-      @Order(1)
-      public class ArithmeticCalculatorLoggingAspect implements CutAspect {}
-          
-      @Component
-      @Aspect
-      @Order(0)
-      public class ArithmeticCalculatorValidationAspect implements CutAspect {}
-      ```
-
-#### 完全使用注解方式实现
-
-- 第一步：创建配置类，替代 xml 配置文件。其他操作，与基于注解方式实现 AOP 操作相同。
-
-  ```java
-  @Configuration
-  @ComponentScan(basePackages = {"cn.xisun.spring.aop"})
-  @EnableAspectJAutoProxy(proxyTargetClass = true)
-  public class SpringAopConfig {
-  }
-  ```
-
-  - `@Configuration`：表示这是一个配置类。
-  - `@ComponentScan(basePackages = {"cn.xisun.spring.aop"})`：配置包扫描路径为 `cn.xisun.spring.aop`。
-  - `@EnableAspectJAutoProxy(proxyTargetClass = true)`：表示开启 AOP 自动代理。如果被增强类有接口，需指定 proxy-target-class 为 true，如果被增强类没有接口，不需要指定这个参数。
-
-- 第二步：编写测试代码。
-
-  ```java
-  public class SpringTest {
-      public static void main(String[] args) {
-          System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
-          ApplicationContext context = new AnnotationConfigApplicationContext(SpringAopConfig.class);
-          ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
-          Integer addResult = arithmeticCalculatorImpl.add(1, 2);
-          System.out.println("计算结果：" + addResult);
-      }
-  }
-  输出结果：
-  Spring 测试版本：5.2.7.RELEASE
-  验证方法开始执行
-  @Around 环绕通知之前
-  @Before 前置通知
-  add 核心方法
-  @AfterReturning 后置通知
-  @After 最终通知
-  @Around 环绕通知之后
-  计算结果：3
-  ```
-
-#### 基于 xml 配置文件实现
-
-- 了解，不建议深究。
-
-- 除了使用 AspectJ 注解声明切面，Spring 也支持在 bean 配置文件中声明切面。这种声明是通过 AOP 名称空间中的 xml 元素完成的。
-
-- **正常情况下，基于注解的声明要优先于基于 xml 的声明，尽可能不使用基于 xml 的声明。**通过 AspectJ 注解，切面可以与 AspectJ 兼容，而基于 xml 的配置则是 Spring 专有的。由于 AspectJ 得到越来越多的 AOP 框架支持，因此以注解风格编写的切面将会有更多重用的机会。
-
-- 具体步骤：
-
-  - 第一步：编写 Spring 配置文件，引入 aop 名称空间，并开启自动代理功能。
-
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:aop="http://www.springframework.org/schema/aop"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                               http://www.springframework.org/schema/beans/spring-beans.xsd
-                               http://www.springframework.org/schema/aop 
-                               http://www.springframework.org/schema/aop/spring-aop.xsd">
-    
-        <!-- 开启Aspect生成代理对象-->
-        <aop:aspectj-autoproxy proxy-target-class="true"/>
-    </beans>
-    ```
-
-  - 第二步：定义增强类和被增强类。
-
-    ```java
-    public interface ArithmeticCalculator {
-        Integer add(int i, int j);
-    
-        Integer subtract(int i, int j);
-    
-        Integer multiply(int i, int j);
-    
-        Integer div(int i, int j);
+```java
+/**
+ * 需要被增强的类
+ */
+@Component
+public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
+    @Override
+    public Integer add(int i, int j) {
+        System.out.println("add 核心方法");
+        return i + j;
     }
-    ```
 
-    ```java
-    /**
-     * 需要被增强的类
-     */
-    public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
-        @Override
-        public Integer add(int i, int j) {
-            System.out.println("add 核心方法");
-            return i + j;
+    @Override
+    public Integer subtract(int i, int j) {
+        System.out.println("subtract 核心方法");
+        return i - j;
+    }
+
+    @Override
+    public Integer multiply(int i, int j) {
+        System.out.println("multiply 核心方法");
+        return i * j;
+    }
+
+    @Override
+    public Integer div(int i, int j) {
+        System.out.println("div 核心方法");
+        return i / j;
+    }
+}
+```
+
+第三步：增强类（切面类）的定义。**在增强类上添加`@Component`和`@Aspect`注解；在增强类里面，在作为通知的方法上面添加对应的通知类型注解，并使用切入点表达式配置需要增强的方法。**
+
+```java
+/**
+ * 日志增强
+ */
+@Component
+@Aspect
+@Order(1)
+public class ArithmeticCalculatorLoggingAspect {
+    // 相同的切入点抽取
+    @Pointcut(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.*(..))")
+    public void pointSame() {
+
+    }
+
+    @Before(value = "pointSame()")
+    public void before() {
+        System.out.println("@Before 前置通知");
+    }
+
+    @AfterReturning(value = "pointSame()")
+    public void afterReturning() {
+        System.out.println("@AfterReturning 后置通知");
+    }
+
+    @After(value = "pointSame()")
+    public void after() {
+        System.out.println("@After 最终通知");
+    }
+
+    @AfterThrowing(value = "pointSame()")
+    public void afterThrowing() {
+        System.out.println("@AfterThrowing 异常通知");
+    }
+
+    @Around(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.add(..))")
+    public Object around(ProceedingJoinPoint proceedingJoinPoint) {
+        System.out.println("@Around 环绕通知之前");
+        // 被增强的方法执行，proceed是该方法的返回结果，如果原方法为void，则proceed为null
+        Object proceed = null;
+        try {
+            proceed = proceedingJoinPoint.proceed();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
-    
-        @Override
-        public Integer subtract(int i, int j) {
-            System.out.println("subtract 核心方法");
-            return i - j;
-        }
-    
-        @Override
-        public Integer multiply(int i, int j) {
-            System.out.println("multiply 核心方法");
-            return i * j;
-        }
-    
-        @Override
-        public Integer div(int i, int j) {
-            System.out.println("div 核心方法");
-            return i / j;
+        System.out.println("@Around 环绕通知之后");
+        return proceed;
+    }
+}
+```
+
+> 前置通知、后置通知、异常通知和最终通知，可以额外接受一个 JoinPoint 参数，用来获取目标对象和目标方法相关信息，但是一定要保证这个参数是第一个参数。在环绕通知中必须显式的通过调用 ProceedingJoinPoint 来执行目标方法，否则目标方法不会执行。
+
+```java
+/**
+ * 验证增强
+ */
+@Component
+@Aspect
+@Order(0)
+public class ArithmeticCalculatorValidationAspect {
+    @Before(value = "execution(* cn.xisun.spring.aop.ArithmeticCalculatorImpl.*(..))")
+    public void before(JoinPoint joinPoint) {
+        System.out.println("验证方法开始执行");
+        Class<?> clazz = joinPoint.getTarget().getClass();// 当前执行的方法所属的类
+        String name = joinPoint.getSignature().getName();// 当前执行的方法名
+        Object[] args = joinPoint.getArgs();// 当前执行的方法的参数
+        for (Object arg : args) {
+            validate((int) arg);
         }
     }
-    ```
 
-    ```java
-    public interface CutAspect {
-        /**
-         * 前置通知：在方法执行前执行
-         */
-        default void before() {
-        }
-    
-        default void before(JoinPoint joinPoint) {
-        }
-    
-        /**
-         * 后置通知
-         */
-        default void afterReturning() {
-        }
-    
-        default void afterReturning(JoinPoint joinPoint) {
-        }
-    
-        /**
-         * 异常通知
-         */
-        default void afterThrowing() {
-        }
-    
-        default void afterThrowing(JoinPoint joinPoint) {
-        }
-    
-        /**
-         * 环绕通知
-         */
-        default Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-            return proceedingJoinPoint.proceed();
-        }
-    
-        /**
-         * 最终通知
-         */
-        default void after() {
-        }
-    
-        default void after(JoinPoint joinPoint) {
+    private void validate(int number) {
+        if (number <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + number);
         }
     }
-    ```
+}
+```
+
+第四步：测试方法。
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
+        ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+        ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
+        Integer addResult = arithmeticCalculatorImpl.add(1, 2);
+        System.out.println("计算结果：" + addResult);
+    }
+}
+输出结果：
+Spring 测试版本：5.2.7.RELEASE
+验证方法开始执行
+@Around 环绕通知之前
+@Before 前置通知
+add 核心方法
+@AfterReturning 后置通知
+@After 最终通知
+@Around 环绕通知之后
+计算结果：3
+```
+
+进阶操作：
+
+1. **相同的切入点抽取：**
+
+  - 在编写 AspectJ 切面时，可以直接在通知注解中书写切入点表达式。但同一个切点表达式可能会在多个通知中重复出现。此时，**在 AspectJ 切面中，可以通过`@Pointcut`注解将一个重复的切入点声明成简单的方法，该切入点的方法体通常是空的。**
+
+    <img src="spring/image-20210418144525994.png" alt="image-20210418144525994" style="zoom:80%;" />
+
+  - 切入点方法的访问权限控制符同时也控制着这个切入点的可见性。如果切入点要在多个切面中共用，最好将它们集中在一个公共的类中。在这种情况下，它们必须被声明为 public。在引入这个切入点时，必须将类名也包括在内。如果类没有与这个切面放在同一个包中，还必须包含包名。
+
+  - 比如，前面的日志增强类，各个通知的切入点表达式主要是`execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))`，可以把它单独抽取出来：
 
     ```java
     /**
      * 日志增强
      */
+    @Component
+    @Aspect
     public class LoggingAspect implements CutAspect {
+        // 相同的切入点抽取
+        @Pointcut(value = "execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))")
+        public void pointSame() {
+    
+        }
+    
         @Override
+        @Before(value = "pointSame()")
         public void before() {
             System.out.println("@Before 前置通知");
         }
     
         @Override
+        @AfterReturning(value = "pointSame()")
         public void afterReturning() {
             System.out.println("@AfterReturning 后置通知");
         }
     
         @Override
+        @After(value = "pointSame()")
         public void after() {
             System.out.println("@After 最终通知");
         }
     
         @Override
+        @AfterThrowing(value = "pointSame()")
         public void afterThrowing() {
             System.out.println("@AfterThrowing 异常通知");
         }
     
         @Override
+        @Around(value = "execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.add(..))")
         public Object around(ProceedingJoinPoint proceedingJoinPoint) {
+            System.out.println("proceedingJoinPoint: " + proceedingJoinPoint);
             System.out.println("@Around 环绕通知之前");
             // 被增强的方法执行，proceed是该方法的返回结果，如果原方法为void，则proceed为null
             Object proceed = null;
@@ -2988,372 +2769,590 @@ public class SpringTest {
     }
     ```
 
+2. **指定切面的优先级：**
+
+  - **在同一个连接点上应用不止一个切面时，除非明确指定，否则它们的优先级是不确定的。切面的优先级可以通过实现`Ordered`接口或利用`@Order(数值类型值)`注解指定。**
+
+  - 若是实现 Ordered 接口，`getOrder()`方法的返回值越小，优先级越高。
+
+  - 若是使用`@Order(数值类型值)`注解，数字类型值越小，优先级越高。
+
     ```java
-    /**
-     * 验证增强
-     */
-    public class ArithmeticCalculatorValidationAspect implements CutAspect {
-        @Override
-        public void before(JoinPoint joinPoint) {
-            System.out.println("验证方法开始执行");
-            Class<?> clazz = joinPoint.getTarget().getClass();// 当前执行的方法所属的类
-            String name = joinPoint.getSignature().getName();// 当前执行的方法名
-            Object[] args = joinPoint.getArgs();// 当前执行的方法的参数
-            for (Object arg : args) {
-                validate((int) arg);
-            }
-        }
-    
-        private void validate(int number) {
-            if (number <= 0) {
-                throw new IllegalArgumentException("positive numbers only: " + number);
-            }
-        }
-    }
-    ```
-
-  - 第三步：在 Spring 配置文件中配置两个类的对象。
-
-    ```xml
-    <!-- 配置增强类LoggingAspect和被增强类ArithmeticCalculatorImpl的对象 -->
-    <bean id="arithmeticCalculatorImpl" class="cn.xisun.spring.dao.ArithmeticCalculatorImpl"/>
-    <bean id="loggingAspect" class="cn.xisun.spring.dao.LoggingAspect"/>
-    ```
-
-  - 第四步：配置切入点和切面。
-
-    ```xml
-    <!-- 配置aop切入点 -->
-    <aop:config>
-        <!-- 配置切入点表达式 -->
-        <aop:pointcut id="add" expression="execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.add(..))"/>
-        <aop:pointcut id="all" expression="execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))"/>
+    @Component
+    @Aspect
+    @Order(1)
+    public class ArithmeticCalculatorLoggingAspect implements CutAspect {}
         
-        <!-- 配置切面 -->
-        <aop:aspect ref="loggingAspect">
-            <!-- 配置通知的类型，以及对应的切入点 -->
-            <aop:before method="before" pointcut-ref="all"/>
-            <aop:after method="after" pointcut-ref="all"/>
-            <aop:after-returning method="afterReturning" pointcut-ref="all"/>
-            <aop:after-throwing method="afterThrowing" pointcut-ref="all"/>
-            <aop:around method="around" pointcut-ref="add"/>
-        </aop:aspect>
-    </aop:config>
+    @Component
+    @Aspect
+    @Order(0)
+    public class ArithmeticCalculatorValidationAspect implements CutAspect {}
     ```
 
-    - 在 bean 配置文件中，所有的 Spring AOP 配置都必须定义在 `<aop:config>` 元素内部。对于每个切面而言，都要创建一个 `<aop:aspect>` 元素来为具体的切面实现引用后端 bean 实例。切面 bean 必须有一个标识符，供 `<aop:aspect>` 元素引用。
-    - 切入点：
-      - 切入点使用 `<aop:pointcut>` 元素声明。
-      - 切入点必须定义在 `<aop:aspect>` 元素下，或者直接定义在 `<aop:config>` 元素下。
-      - 切入点定义在 `<aop:aspect>` 元素下时：只对当前切面有效。
-      - 切入点定义在 `<aop:config>` 元素下：对所有切面都有效。
-      - 基于 xml 的 AOP 配置不允许在切入点表达式中用名称引用其他切入点。
-    - 通知：
-      - 在 aop 名称空间中，每种通知类型都对应一个特定的 xml 元素。
-      - 通知元素需要使用 `<pointcut-ref>` 来引用切入点，或用 `<pointcut>` 直接嵌入切入点表达式。
-      - method 属性指定切面类中通知方法的名称。
-    - xml 在配置带参数的通知时，有部分细节未搞清楚，ArithmeticCalculatorValidationAspect 配置不成功，不做探讨了。
+#### 完全使用注解方式实现
 
-  - 第五步：测试方法。
+第一步：创建配置类，替代 xml 配置文件。其他操作，与基于注解方式实现 AOP 操作相同。
 
-    ```java
-    public class SpringTest {
-        public static void main(String[] args) {
-            System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
-            ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-            ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
-            Integer add = arithmeticCalculatorImpl.add(7, 2);
-            System.out.println("计算结果：" + add);
+```java
+@Configuration
+@ComponentScan(basePackages = {"cn.xisun.spring.aop"})
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+public class SpringAopConfig {
+}
+```
+
+- `@Configuration`：表示这是一个配置类。
+- `@ComponentScan(basePackages = {"cn.xisun.spring.aop"})`：配置包扫描路径为`cn.xisun.spring.aop`。
+- `@EnableAspectJAutoProxy(proxyTargetClass = true)`：表示开启 AOP 自动代理。如果被增强类有接口，需指定 proxy-target-class 为 true，如果被增强类没有接口，不需要指定这个参数。
+
+第二步：编写测试代码。
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
+        ApplicationContext context = new AnnotationConfigApplicationContext(SpringAopConfig.class);
+        ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
+        Integer addResult = arithmeticCalculatorImpl.add(1, 2);
+        System.out.println("计算结果：" + addResult);
+    }
+}
+输出结果：
+Spring 测试版本：5.2.7.RELEASE
+验证方法开始执行
+@Around 环绕通知之前
+@Before 前置通知
+add 核心方法
+@AfterReturning 后置通知
+@After 最终通知
+@Around 环绕通知之后
+计算结果：3
+```
+
+#### 基于 xml 配置文件实现
+
+> 了解，不建议深究。
+
+除了使用 AspectJ 注解声明切面，Spring 也支持在 bean 配置文件中声明切面。这种声明是通过 AOP 名称空间中的 xml 元素完成的。
+
+**正常情况下，基于注解的声明要优先于基于 xml 的声明，尽可能不使用基于 xml 的声明。**通过 AspectJ 注解，切面可以与 AspectJ 兼容，而基于 xml 的配置则是 Spring 专有的。由于 AspectJ 得到越来越多的 AOP 框架支持，因此以注解风格编写的切面将会有更多重用的机会。
+
+第一步：编写 Spring 配置文件，引入 aop 名称空间，并开启自动代理功能。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/aop 
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 开启Aspect生成代理对象-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+</beans>
+```
+
+第二步：定义增强类和被增强类。
+
+```java
+public interface ArithmeticCalculator {
+    Integer add(int i, int j);
+
+    Integer subtract(int i, int j);
+
+    Integer multiply(int i, int j);
+
+    Integer div(int i, int j);
+}
+```
+
+```java
+/**
+ * 需要被增强的类
+ */
+public class ArithmeticCalculatorImpl implements ArithmeticCalculator {
+    @Override
+    public Integer add(int i, int j) {
+        System.out.println("add 核心方法");
+        return i + j;
+    }
+
+    @Override
+    public Integer subtract(int i, int j) {
+        System.out.println("subtract 核心方法");
+        return i - j;
+    }
+
+    @Override
+    public Integer multiply(int i, int j) {
+        System.out.println("multiply 核心方法");
+        return i * j;
+    }
+
+    @Override
+    public Integer div(int i, int j) {
+        System.out.println("div 核心方法");
+        return i / j;
+    }
+}
+```
+
+```java
+public interface CutAspect {
+    /**
+     * 前置通知：在方法执行前执行
+     */
+    default void before() {
+    }
+
+    default void before(JoinPoint joinPoint) {
+    }
+
+    /**
+     * 后置通知
+     */
+    default void afterReturning() {
+    }
+
+    default void afterReturning(JoinPoint joinPoint) {
+    }
+
+    /**
+     * 异常通知
+     */
+    default void afterThrowing() {
+    }
+
+    default void afterThrowing(JoinPoint joinPoint) {
+    }
+
+    /**
+     * 环绕通知
+     */
+    default Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        return proceedingJoinPoint.proceed();
+    }
+
+    /**
+     * 最终通知
+     */
+    default void after() {
+    }
+
+    default void after(JoinPoint joinPoint) {
+    }
+}
+```
+
+```java
+/**
+ * 日志增强
+ */
+public class LoggingAspect implements CutAspect {
+    @Override
+    public void before() {
+        System.out.println("@Before 前置通知");
+    }
+
+    @Override
+    public void afterReturning() {
+        System.out.println("@AfterReturning 后置通知");
+    }
+
+    @Override
+    public void after() {
+        System.out.println("@After 最终通知");
+    }
+
+    @Override
+    public void afterThrowing() {
+        System.out.println("@AfterThrowing 异常通知");
+    }
+
+    @Override
+    public Object around(ProceedingJoinPoint proceedingJoinPoint) {
+        System.out.println("@Around 环绕通知之前");
+        // 被增强的方法执行，proceed是该方法的返回结果，如果原方法为void，则proceed为null
+        Object proceed = null;
+        try {
+            proceed = proceedingJoinPoint.proceed();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        System.out.println("@Around 环绕通知之后");
+        return proceed;
+    }
+}
+```
+
+```java
+/**
+ * 验证增强
+ */
+public class ArithmeticCalculatorValidationAspect implements CutAspect {
+    @Override
+    public void before(JoinPoint joinPoint) {
+        System.out.println("验证方法开始执行");
+        Class<?> clazz = joinPoint.getTarget().getClass();// 当前执行的方法所属的类
+        String name = joinPoint.getSignature().getName();// 当前执行的方法名
+        Object[] args = joinPoint.getArgs();// 当前执行的方法的参数
+        for (Object arg : args) {
+            validate((int) arg);
         }
     }
-    ```
+
+    private void validate(int number) {
+        if (number <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + number);
+        }
+    }
+}
+```
+
+第三步：在 Spring 配置文件中配置两个类的对象。
+
+```xml
+<!-- 配置增强类LoggingAspect和被增强类ArithmeticCalculatorImpl的对象 -->
+<bean id="arithmeticCalculatorImpl" class="cn.xisun.spring.dao.ArithmeticCalculatorImpl"/>
+<bean id="loggingAspect" class="cn.xisun.spring.dao.LoggingAspect"/>
+```
+
+第四步：配置切入点和切面。
+
+```xml
+<!-- 配置aop切入点 -->
+<aop:config>
+    <!-- 配置切入点表达式 -->
+    <aop:pointcut id="add" expression="execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.add(..))"/>
+    <aop:pointcut id="all" expression="execution(* cn.xisun.spring.dao.ArithmeticCalculatorImpl.*(..))"/>
+    
+    <!-- 配置切面 -->
+    <aop:aspect ref="loggingAspect">
+        <!-- 配置通知的类型，以及对应的切入点 -->
+        <aop:before method="before" pointcut-ref="all"/>
+        <aop:after method="after" pointcut-ref="all"/>
+        <aop:after-returning method="afterReturning" pointcut-ref="all"/>
+        <aop:after-throwing method="afterThrowing" pointcut-ref="all"/>
+        <aop:around method="around" pointcut-ref="add"/>
+    </aop:aspect>
+</aop:config>
+```
+
+- 在 bean 配置文件中，所有的 Spring AOP 配置都必须定义在 `<aop:config>` 元素内部。对于每个切面而言，都要创建一个 `<aop:aspect>` 元素来为具体的切面实现引用后端 bean 实例。切面 bean 必须有一个标识符，供 `<aop:aspect>` 元素引用。
+- 切入点：
+  - 切入点使用 `<aop:pointcut>` 元素声明。
+  - 切入点必须定义在 `<aop:aspect>` 元素下，或者直接定义在 `<aop:config>` 元素下。
+  - 切入点定义在 `<aop:aspect>` 元素下时：只对当前切面有效。
+  - 切入点定义在 `<aop:config>` 元素下：对所有切面都有效。
+  - 基于 xml 的 AOP 配置不允许在切入点表达式中用名称引用其他切入点。
+- 通知：
+  - 在 aop 名称空间中，每种通知类型都对应一个特定的 xml 元素。
+  - 通知元素需要使用 `<pointcut-ref>` 来引用切入点，或用 `<pointcut>` 直接嵌入切入点表达式。
+  - method 属性指定切面类中通知方法的名称。
+- xml 在配置带参数的通知时，有部分细节未搞清楚，ArithmeticCalculatorValidationAspect 配置不成功，不做探讨了。
+
+第五步：测试方法。
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
+        ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+        ArithmeticCalculator arithmeticCalculatorImpl = context.getBean("arithmeticCalculatorImpl", ArithmeticCalculatorImpl.class);
+        Integer add = arithmeticCalculatorImpl.add(7, 2);
+        System.out.println("计算结果：" + add);
+    }
+}
+```
 
 ## JdbcTemplate
 
-- 为了使 JDBC 更加易于使用，Spring 在 JDBC API 上定义了一个抽象层，以此建立一个 JDBC 存取框架。
+为了使 JDBC 更加易于使用，Spring 在 JDBC API 上定义了一个抽象层，以此建立一个 JDBC 存取框架。
 
-- 作为 Spring JDBC 框架的核心，JDBC 模板的设计目的是为不同类型的 JDBC 操作提供模板方法，通过这种方式，可以在尽可能保留灵活性的情况下，将数据库存取的工作量降到最低。
+作为 Spring JDBC 框架的核心，JDBC 模板的设计目的是为不同类型的 JDBC 操作提供模板方法，通过这种方式，可以在尽可能保留灵活性的情况下，将数据库存取的工作量降到最低。
 
-- 可以将 Spring 的 JdbcTemplate 看作是一个小型的轻量级持久化层框架，和我们之前使用过的 DBUtils 风格非常接近。
+可以将 Spring 的 JdbcTemplate 看作是一个小型的轻量级持久化层框架，和我们之前使用过的 DBUtils 风格非常接近。
 
-- 第一步：引入 JDBC 和 MySQL 的相关依赖。
+第一步：引入 JDBC 和 MySQL 的相关依赖。
 
-  ```xml
-  <!-- Spring jdbc相关依赖-->
-  <!-- spring-jdbc -->
-  <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>5.2.7.RELEASE</version>
-  </dependency>
+```xml
+<!-- Spring jdbc相关依赖-->
+<!-- spring-jdbc -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.2.7.RELEASE</version>
+</dependency>
+
+<!-- spring-tx: 事务相关 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.2.7.RELEASE</version>
+</dependency>
+
+<!-- spring-orm: 整合Mybatis等框架需要 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-orm</artifactId>
+    <version>5.2.7.RELEASE</version>
+</dependency>
+
+<!-- druid连接池 -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.1.20</version>
+</dependency>
+
+<!-- mysql驱动 -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.19</version>
+</dependency>
+```
+
+第二步：开启组件扫描。
+
+```xml
+<!-- 开启组件扫描 -->
+<context:component-scan base-package="cn.xisun.spring"/>
+```
+
+第三步：配置数据库连接池。
+
+```xml
+<!-- 配置数据库连接池 -->
+<context:property-placeholder location="classpath:jdbc.properties"/>
+<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+    <property name="driverClassName" value="${prop.driverClass}"/>
+    <property name="url" value="${prop.url}"/>
+    <property name="username" value="${prop.userName}"/>
+    <property name="password" value="${prop.password}"/>
+</bean>
+```
+
+```properties
+prop.driverClass=com.mysql.cj.jdbc.Driver
+prop.url=jdbc:mysql://localhost:3306/userDb
+prop.userName=root
+prop.password=root
+```
+
+第四步：配置 JdbcTemplate 对象，注入 DataSource。
+
+```xml
+<!-- 配置JdbcTemplate对象 -->
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <!-- 注入数据源dataSource -->
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+```
+
+第五步：创建 dao 类，在 dao 注入 jdbcTemplate 对象；创建 service 类，在 service 类注入 dao 对象。
+
+```java
+public interface UserDao {
+}
+```
+
+```java
+/**
+ * dao类
+ */
+@Repository
+public class UserDaoImpl implements UserDao {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;// 注入JdbcTemplate
+}
+```
+
+```java
+/**
+ * service类
+ */
+@Service
+public class UserService {
+    @Autowired
+    private UserDao userDao;// 注入dao
+}
+```
+
+JdbcTemplate 操作数据库 --- **添加、修改、删除**。
+
+- 创建对应数据库表的实体类。
+
+  ```java
+  public class User {
+      private String userId;
+      private String userName;
+      private String userStatus;
   
-  <!-- spring-tx: 事务相关 -->
-  <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-tx</artifactId>
-      <version>5.2.7.RELEASE</version>
-  </dependency>
+      public User() {
+      }
   
-  <!-- spring-orm: 整合Mybatis等框架需要 -->
-  <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-orm</artifactId>
-      <version>5.2.7.RELEASE</version>
-  </dependency>
+      public User(String userId, String userName, String userStatus) {
+          this.userId = userId;
+          this.userName = userName;
+          this.userStatus = userStatus;
+      }
   
-  <!-- druid连接池 -->
-  <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>druid</artifactId>
-      <version>1.1.20</version>
-  </dependency>
+      public String getUserId() {
+          return userId;
+      }
   
-  <!-- mysql驱动 -->
-  <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.19</version>
-  </dependency>
+      public void setUserId(String userId) {
+          this.userId = userId;
+      }
+  
+      public String getUserName() {
+          return userName;
+      }
+  
+      public void setUserName(String userName) {
+          this.userName = userName;
+      }
+  
+      public String getUserStatus() {
+          return userStatus;
+      }
+  
+      public void setUserStatus(String userStatus) {
+          this.userStatus = userStatus;
+      }
+  
+      @Override
+      public boolean equals(Object o) {
+          if (this == o) {
+              return true;
+          }
+          if (o == null || getClass() != o.getClass()) {
+              return false;
+          }
+  
+          User user = (User) o;
+  
+          if (!Objects.equals(userId, user.userId)) {
+              return false;
+          }
+          if (!Objects.equals(userName, user.userName)) {
+              return false;
+          }
+          return Objects.equals(userStatus, user.userStatus);
+      }
+  
+      @Override
+      public int hashCode() {
+          int result = userId != null ? userId.hashCode() : 0;
+          result = 31 * result + (userName != null ? userName.hashCode() : 0);
+          result = 31 * result + (userStatus != null ? userStatus.hashCode() : 0);
+          return result;
+      }
+  
+      @Override
+      public String toString() {
+          return "User{" +
+                  "userId='" + userId + '\'' +
+                  ", userName='" + userName + '\'' +
+                  ", userStatus='" + userStatus + '\'' +
+                  '}';
+      }
+  }
   ```
 
-- 第二步：开启组件扫描。
-
-  ```xml
-  <!-- 开启组件扫描 -->
-  <context:component-scan base-package="cn.xisun.spring"/>
-  ```
-
-- 第三步：配置数据库连接池。
-
-  ```xml
-  <!-- 配置数据库连接池 -->
-  <context:property-placeholder location="classpath:jdbc.properties"/>
-  <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
-      <property name="driverClassName" value="${prop.driverClass}"/>
-      <property name="url" value="${prop.url}"/>
-      <property name="username" value="${prop.userName}"/>
-      <property name="password" value="${prop.password}"/>
-  </bean>
-  ```
-
-  ```properties
-  prop.driverClass=com.mysql.cj.jdbc.Driver
-  prop.url=jdbc:mysql://localhost:3306/userDb
-  prop.userName=root
-  prop.password=root
-  ```
-
-- 第四步：配置 JdbcTemplate 对象，注入 DataSource。
-
-  ```xml
-  <!-- 配置JdbcTemplate对象 -->
-  <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-      <!-- 注入数据源dataSource -->
-      <property name="dataSource" ref="dataSource"/>
-  </bean>
-  ```
-
-- 第五步：创建 dao 类，在 dao 注入 jdbcTemplate 对象；创建 service 类，在 service 类注入 dao 对象。
+- 在 dao 中调用 JdbcTemplate 对象里面的**`update()`**进行数据库添加、修改和删除操作。
 
   ```java
   public interface UserDao {
+      void add(User user);
+      
+      void update(User user);
+  
+      void delete(String userId);
   }
   ```
 
   ```java
-  /**
-   * dao类
-   */
   @Repository
   public class UserDaoImpl implements UserDao {
       @Autowired
-      private JdbcTemplate jdbcTemplate;// 注入JdbcTemplate
+      private JdbcTemplate jdbcTemplate;
+  
+      @Override
+      public void add(User user) {
+          // 1.创建sql语句
+          String sql = "insert into t_user values(?, ?, ?)";
+          // 2.设置参数
+          Object[] args = {user.getUserId(), user.getUserName(), user.getUserStatus()};
+          // 3.调用方法实现
+          int update = jdbcTemplate.update(sql, args);
+          System.out.println(update);
+      }
+      
+      @Override
+      public void update(User user) {
+          String sql = "update t_user set user_name = ?, user_status = ? where user_id = ?";
+          Object[] args = {user.getUserName(), user.getUserStatus(), user.getUserId()};
+          int update = jdbcTemplate.update(sql, args);
+          System.out.println(update);
+      }
+  
+      @Override
+      public void delete(String userId) {
+          String sql = "delete from t_user where user_id = ?";
+          int update = jdbcTemplate.update(sql, userId);
+          System.out.println(update);
+      }
   }
   ```
 
   ```java
-  /**
-   * service类
-   */
   @Service
   public class UserService {
       @Autowired
-      private UserDao userDao;// 注入dao
+      private UserDao userDao;
+  
+      public void addUser(User user) {
+          userDao.add(user);
+      }
+      
+      public void updateUser(User user) {
+          userDao.update(user);
+      }
+  
+      public void deleteUser(String userId) {
+          userDao.delete(userId);
+      }
   }
   ```
 
-- JdbcTemplate 操作数据库 --- **添加、修改、删除**。
+- 测试方法，执行 service 类相应方法实现添加、修改和删除操作。
 
-  - 创建对应数据库表的实体类。
-
-    ```java
-    public class User {
-        private String userId;
-        private String userName;
-        private String userStatus;
-    
-        public User() {
-        }
-    
-        public User(String userId, String userName, String userStatus) {
-            this.userId = userId;
-            this.userName = userName;
-            this.userStatus = userStatus;
-        }
-    
-        public String getUserId() {
-            return userId;
-        }
-    
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-    
-        public String getUserName() {
-            return userName;
-        }
-    
-        public void setUserName(String userName) {
-            this.userName = userName;
-        }
-    
-        public String getUserStatus() {
-            return userStatus;
-        }
-    
-        public void setUserStatus(String userStatus) {
-            this.userStatus = userStatus;
-        }
-    
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-    
-            User user = (User) o;
-    
-            if (!Objects.equals(userId, user.userId)) {
-                return false;
-            }
-            if (!Objects.equals(userName, user.userName)) {
-                return false;
-            }
-            return Objects.equals(userStatus, user.userStatus);
-        }
-    
-        @Override
-        public int hashCode() {
-            int result = userId != null ? userId.hashCode() : 0;
-            result = 31 * result + (userName != null ? userName.hashCode() : 0);
-            result = 31 * result + (userStatus != null ? userStatus.hashCode() : 0);
-            return result;
-        }
-    
-        @Override
-        public String toString() {
-            return "User{" +
-                    "userId='" + userId + '\'' +
-                    ", userName='" + userName + '\'' +
-                    ", userStatus='" + userStatus + '\'' +
-                    '}';
-        }
-    }
-    ```
-
-  - 在 dao 中调用 JdbcTemplate 对象里面的 **`update()`** 进行数据库添加、修改和删除操作。
-
-    ```java
-    public interface UserDao {
-        void add(User user);
-        
-        void update(User user);
-    
-        void delete(String userId);
-    }
-    ```
-
-    ```java
-    @Repository
-    public class UserDaoImpl implements UserDao {
-        @Autowired
-        private JdbcTemplate jdbcTemplate;
-    
-        @Override
-        public void add(User user) {
-            // 1.创建sql语句
-            String sql = "insert into t_user values(?, ?, ?)";
-            // 2.设置参数
-            Object[] args = {user.getUserId(), user.getUserName(), user.getUserStatus()};
-            // 3.调用方法实现
-            int update = jdbcTemplate.update(sql, args);
-            System.out.println(update);
-        }
-        
-        @Override
-        public void update(User user) {
-            String sql = "update t_user set user_name = ?, user_status = ? where user_id = ?";
-            Object[] args = {user.getUserName(), user.getUserStatus(), user.getUserId()};
-            int update = jdbcTemplate.update(sql, args);
-            System.out.println(update);
-        }
-    
-        @Override
-        public void delete(String userId) {
-            String sql = "delete from t_user where user_id = ?";
-            int update = jdbcTemplate.update(sql, userId);
-            System.out.println(update);
-        }
-    }
-    ```
-
-    ```java
-    @Service
-    public class UserService {
-        @Autowired
-        private UserDao userDao;
-    
-        public void addUser(User user) {
-            userDao.add(user);
-        }
-        
-        public void updateUser(User user) {
-            userDao.update(user);
-        }
-    
-        public void deleteUser(String userId) {
-            userDao.delete(userId);
-        }
-    }
-    ```
-
-  - 测试方法，执行 service 类相应方法实现添加、修改和删除操作。
-
-    ```java
-    public class SpringTest {
-        public static void main(String[] args) {
-            System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
-            ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-            UserService userService = context.getBean("userService", UserService.class);
-            
-            User user = new User();
-            user.setUserId("1000");
-            user.setUserName("Tom");
-            user.setUserStatus("ok");
-            
-            // 添加
-            userService.addUser(user);
-            // 修改
-            user.setUserStatus("ng");
-            userService.updateUser(user);
-            // 删除
-            userService.deleteUser("1000");
-        }
-    }
-    ```
+  ```java
+  public class SpringTest {
+      public static void main(String[] args) {
+          System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
+          ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+          UserService userService = context.getBean("userService", UserService.class);
+          
+          User user = new User();
+          user.setUserId("1000");
+          user.setUserName("Tom");
+          user.setUserStatus("ok");
+          
+          // 添加
+          userService.addUser(user);
+          // 修改
+          user.setUserStatus("ng");
+          userService.updateUser(user);
+          // 删除
+          userService.deleteUser("1000");
+      }
+  }
+  ```
 
 - JdbcTemplate 操作数据库 --- **查询返回某个值、查询返回对象、查询返回集合**。
 
