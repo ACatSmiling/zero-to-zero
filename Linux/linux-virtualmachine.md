@@ -159,9 +159,91 @@ PS C:\WINDOWS\system32>
 
 ### WSL 与 Windows 互传文件
 
-https://www.cxyzjd.com/article/weixin_38883338/109825845
+Windows 下，打开文件资源管理器，然后在目录窗口输入`\\wsl$`，回车就可以看到所有的子系统：
 
-https://blog.csdn.net/qq_38121031/article/details/81879212
+![image-20220520170435644](linux-virtualmachine/image-20220520170435644.png)
+
+WSL 下，`/mnt`目录下可以访问 Windows 系统的各个盘：
+
+```powershell
+root@WIN-K11OM3VD9KL:/mnt/c/Users# cd /mnt/
+root@WIN-K11OM3VD9KL:/mnt# pwd
+/mnt
+root@WIN-K11OM3VD9KL:/mnt# ls
+c  e  f  g  wsl
+```
+
+### 迁移
+
+WSL 默认安装在 C 盘，可通过以下方式迁移到其他磁盘，假设迁移到 E:\wsl。
+
+首先，查看已安装的 WSL 系统，注意，不是在 WSL 系统下操作，使用普通的终端即可：
+
+```powershell
+Windows PowerShell
+版权所有 (C) Microsoft Corporation。保留所有权利。
+
+尝试新的跨平台 PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Administrator> wsl --list
+适用于 Linux 的 Windows 子系统分发版:
+Ubuntu20.04LTS (默认)
+```
+
+其次，将指定的 WSL 子系统备份：
+
+```powershell
+# 备份路径需要事先创建
+PS C:\Users\Administrator> mkdir E:\backup
+
+
+    目录: E:\
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         2022/5/20     17:27                backup
+
+
+# 名称保持一致
+PS C:\Users\Administrator> wsl --export Ubuntu20.04LTS E:\backup\ubuntu.tar
+```
+
+![image-20220520173107956](linux-virtualmachine/image-20220520173107956.png)
+
+然后，从 C 盘卸载该 WSL 子系统，并确认卸载成功：
+
+```powershell
+PS C:\Users\Administrator> wsl --unregister Ubuntu20.04LTS
+正在注销...
+PS C:\Users\Administrator> wsl --list
+适用于 Linux 的 Windows 子系统没有已安装的分发版。
+可以通过访问 Microsoft Store 来安装分发版:
+https://aka.ms/wslstore
+```
+
+最后，将备份解压到指定的路径下，并确认重新安装成功：
+
+```powershell
+# 解压路径需要事先创建
+PS C:\Users\Administrator> mkdir E:\programs\WSL
+
+
+    目录: E:\programs
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         2022/5/20     21:15                WSL
+
+
+PS C:\Users\Administrator> wsl --import Ubuntu20.04LTS E:\programs\WSL\ E:\backup\ubuntu.tar
+PS C:\Users\Administrator> wsl --list
+适用于 Linux 的 Windows 子系统分发版:
+Ubuntu20.04LTS (默认)
+```
+
+> 迁移之后，WSL 默认的用户是 root。
 
 ### 参考
 
