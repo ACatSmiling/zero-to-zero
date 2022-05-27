@@ -16,6 +16,50 @@
 
 7. 开发人员在 Github 上 Mark done 确认开发完成，并关闭 issue。这一步在提交合并请求时，可以通过描述中填写“close #1”等字样，直接关闭 issue。
 
+## Github 配置
+
+第一步，配置用户名和邮箱地址：
+
+```bash
+$ git config --global user.name "ACatSmiling"
+
+$ git config --global user.email "1172042509@qq.com"
+
+$ git config --list
+user.name=ACatSmiling
+user.email=1172042509@qq.com
+```
+
+第二步，删除 C:\Users\XiSun\.ssh 文件夹下的 known_hosts。
+
+第三步，在本地生成秘钥：
+
+```bash
+$ ssh-keygen -t rsa -C "1172042509@qq.com"
+Generating public/private rsa key pair.
+Enter file in which to save the key (/c/Users/XiSun/.ssh/id_rsa):
+Created directory '/c/Users/XiSun/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /c/Users/XiSun/.ssh/id_rsa
+Your public key has been saved in /c/Users/XiSun/.ssh/id_rsa.pub
+...
+```
+
+第四步，进入 C:\Users\XiSun\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上：
+
+![image-20220527142655618](git/image-20220527142655618.png)
+
+第五步，验证：
+
+```bash
+$ ssh git@github.com
+PTY allocation request failed on channel 0
+Hi ACatSmiling! You've successfully authenticated, but GitHub does not provide shell access.
+Connection to github.com closed.
+```
+
+> 第一次输入时，需要点击 yes。
 
 ## Github 常用命令
 
