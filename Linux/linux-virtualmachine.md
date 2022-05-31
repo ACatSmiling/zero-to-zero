@@ -255,59 +255,97 @@ https://os.51cto.com/article/649463.html
 
 ## VMware 使用
 
+官网：https://www.vmware.com/cn.html
+
+登录：
+
+![image-20220527181648724](linux-virtualmachine/image-20220527181648724.png)
+
+下载：
+
+![image-20220527200802283](linux-virtualmachine/image-20220527200802283.png)
+
+![image-20220527201957037](linux-virtualmachine/image-20220527201957037.png)
+
+![image-20220527202213176](linux-virtualmachine/image-20220527202213176.png)
+
+![image-20220527202354067](linux-virtualmachine/image-20220527202354067.png)
+
+
+
 ### VMware 安装
 
-下载地址：https://my.vmware.com/cn/web/vmware/downloads
+安装 VMware 时，如果主机启用了 Hyper-V 功能，需要额外开启 WHP 功能：
 
-下载版本：VMware Workstation Pro
+![image-20220527204618948](linux-virtualmachine/image-20220527204618948.png)
 
-VMware 15 秘钥：https://www.cnblogs.com/liuqun/p/11737327.html
 
-Vmware 创建新的虚拟机，首先配置硬件清单，重要步骤如下：
 
-![image-20210826132716290](linux-virtualmachine/image-20210826132716290.png)
+Vmware 创建新的虚拟机前，首先配置硬件清单，安装步骤参考如下：
 
-![image-20210826132815834](linux-virtualmachine/image-20210826132815834.png)
+![image-20220527213047172](linux-virtualmachine/image-20220527213047172.png)
 
-![image-20210826133045467](linux-virtualmachine/image-20210826133045467.png)
+![image-20220527213200350](linux-virtualmachine/image-20220527213200350.png)
 
-![image-20210826133304018](linux-virtualmachine/image-20210826133304018.png)
+![image-20220527213531273](linux-virtualmachine/image-20220527213531273.png)
 
-![image-20210826153752970](linux-virtualmachine/image-20210826153752970.png)
+![image-20220527213704902](linux-virtualmachine/image-20220527213704902.png)
 
-![image-20210826153909369](linux-virtualmachine/image-20210826153909369.png)
+![image-20220527214621147](linux-virtualmachine/image-20220527214621147.png)
 
-![image-20210826154006619](linux-virtualmachine/image-20210826154006619.png)
+![image-20220527215057305](linux-virtualmachine/image-20220527215057305.png)
 
-![image-20210826155036506](linux-virtualmachine/image-20210826155036506.png)
+![image-20220527221037967](linux-virtualmachine/image-20220527221037967.png)
 
-![image-20210826155217418](linux-virtualmachine/image-20210826155217418.png)
+![image-20220527221237035](linux-virtualmachine/image-20220527221237035.png)
 
-![image-20210826155358396](linux-virtualmachine/image-20210826155358396.png)
+![image-20220527221410314](linux-virtualmachine/image-20220527221410314.png)
+
+![image-20220527221504691](linux-virtualmachine/image-20220527221504691.png)
+
+![image-20220527221527818](linux-virtualmachine/image-20220527221527818.png)
+
+![image-20220527221610522](linux-virtualmachine/image-20220527221610522.png)
+
+![image-20220527221801846](linux-virtualmachine/image-20220527221801846.png)
+
+![image-20220527222004016](linux-virtualmachine/image-20220527222004016.png)
+
+![image-20220527222033199](linux-virtualmachine/image-20220527222033199.png)
+
+删除不需要的硬件，编辑虚拟机设置，然后移除 USB 控制器、声卡、打印机，这样可以使虚拟器启动的快一点：
+
+![image-20220527223527295](linux-virtualmachine/image-20220527223527295.png)
+
+![image-20220527223728294](linux-virtualmachine/image-20220527223728294.png)
+
+> 如果需要，可以手动添加硬件，比如，一个网口不够，再添加一个。
 
 ### CentOS 安装
 
-准备工作，检查 BIOS 虚拟化支持：
+准备工作，检查 BIOS 虚拟化支持，打开任务管理器，进入性能，查看虚拟化是否启用：
 
-- 打开任务管理器，进入性能，查看虚拟化是否启用。
+![image-20220527222407813](linux-virtualmachine/image-20220527222407813.png)
 
-  ![image-20210826114631117](linux-virtualmachine/image-20210826114631117.png)
+> 若虚拟化未启用，重启电脑，F2 进入 BIOS 模式（不同主板快捷键不同），进入高级模式页面，Advanced ---> CPU Configuration，开启虚拟化支持。
 
-- 若虚拟化未启用，重启电脑，F2 进入 BIOS 模式（不同主板快捷键不同），进入高级模式页面，Advanced ---> CPU Configuration，开启虚拟化支持。
+CentOS 镜像：https://developer.aliyun.com/mirror/centos?spm=a2c6h.13651102.0.0.3e221b11se5c1r
 
-下载地址：https://developer.aliyun.com/mirror/centos?spm=a2c6h.13651102.0.0.3e221b11se5c1r
+下载地址：https://mirrors.aliyun.com/centos/
 
-下载版本：dvd 标准安装版。
+下载版本：dvd 标准安装版，选择 7.9.2009版本。
 
-![image-20210826132225940](linux-virtualmachine/image-20210826132225940.png)
-
-安装参考：https://blog.csdn.net/qq_44714603/article/details/88829423
+![image-20220527223200924](linux-virtualmachine/image-20220527223200924.png)
 
 Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
-![image-20210828143341232](linux-virtualmachine/image-20210828143341232.png)
+![image-20220527225352279](linux-virtualmachine/image-20220527225352279.png)
 
 开启虚拟机，安装系统盘并配置：
+
+![image-20220527225558168](linux-virtualmachine/image-20220527225558168.png)
+
+![image-20220527225653989](linux-virtualmachine/image-20220527225653989.png)
 
 - 语言环境：
 
@@ -357,25 +395,6 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
   ![image-20210828234207374](linux-virtualmachine/image-20210828234207374.png)
 
-  ![image-20210828234408166](linux-virtualmachine/image-20210828234408166.png)
-
-  ![image-20210828234514646](linux-virtualmachine/image-20210828234514646.png)
-
-  ![image-20210828234649230](linux-virtualmachine/image-20210828234649230.png)
-
-  ![image-20210828234747576](linux-virtualmachine/image-20210828234747576.png)
-
-  ![image-20210828234839063](linux-virtualmachine/image-20210828234839063.png)
-
-  ![image-20210828234935663](linux-virtualmachine/image-20210828234935663.png)
-
-  ![image-20210828235029894](linux-virtualmachine/image-20210828235029894.png)
-
-  ![image-20210828235204876](linux-virtualmachine/image-20210828235204876.png)
-
-  ![image-20210828235429417](linux-virtualmachine/image-20210828235429417.png)
-
-  ![image-20210828235642980](linux-virtualmachine/image-20210828235642980.png)
 
 ### 配置 IP 地址和主机名称
 
@@ -397,7 +416,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 ![image-20210829221730077](linux-virtualmachine/image-20210829221730077.png)
 
-- 如果没有出现 VMnet 8 选项，回到 VMware 的虚拟网络编辑器，点击 "更改设置" ---> "还原默认设置"，即可。
+> 如果没有出现 VMnet 8 选项，回到 VMware 的虚拟网络编辑器，点击 "更改设置" ---> "还原默认设置"，即可。
 
 ![image-20210829221917341](linux-virtualmachine/image-20210829221917341.png)
 
@@ -471,37 +490,37 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
   centos7												# 主机名称按需求自定义
   ```
 
-  - 修改虚拟机主机的名称映射：
+- 修改虚拟机主机的名称映射：
+
+  ```bash
+  [root@centos7 xisun]# vim /etc/hosts
+  ```
+
+  - 原文件内容：
 
     ```bash
-    [root@centos7 xisun]# vim /etc/hosts
+    127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+    ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
     ```
 
-    - 原文件内容：
+  - 新内容：
 
-      ```bash
-      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-      ```
-
-    - 新内容：
-
-      ```bash
-      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-      
-      # 按需求添加主机名称映射
-      192.168.10.99 centos7
-      192.168.10.100 hadoop100
-      192.168.10.101 hadoop101
-      192.168.10.102 hadoop102
-      192.168.10.103 hadoop103
-      192.168.10.104 hadoop104
-      192.168.10.105 hadoop105
-      192.168.10.106 hadoop106
-      192.168.10.107 hadoop107
-      192.168.10.108 hadoop108
-      ```
+    ```bash
+    127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+    ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+    
+    # 按需求添加主机名称映射
+    192.168.10.99 centos7
+    192.168.10.100 hadoop100
+    192.168.10.101 hadoop101
+    192.168.10.102 hadoop102
+    192.168.10.103 hadoop103
+    192.168.10.104 hadoop104
+    192.168.10.105 hadoop105
+    192.168.10.106 hadoop106
+    192.168.10.107 hadoop107
+    192.168.10.108 hadoop108
+    ```
 
   - 修改 Windows 10 主机的名称映射：`C:\Windows\System32\drivers\etc\hosts`
 
@@ -524,7 +543,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
       192.168.10.108 hadoop108
       ```
 
-- 重启：
+- 重启虚拟机：
 
   ```bash
   [root@centos7 xisun]# reboot
@@ -594,6 +613,100 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
     centos7
     ```
 
+### 安装 JDK
+
+安装的 centos7 模板机，可能有自带的 JDK，某些情况，需要删除：
+
+```bash
+[xisun@centos7 ~]$ su root
+密码：
+[root@centos7 ~]# rpm -qa | grep -i java
+javapackages-tools-3.4.1-11.el7.noarch
+tzdata-java-2019c-1.el7.noarch
+java-1.8.0-openjdk-headless-1.8.0.242.b08-1.el7.x86_64
+java-1.8.0-openjdk-1.8.0.242.b08-1.el7.x86_64
+java-1.7.0-openjdk-headless-1.7.0.251-2.6.21.1.el7.x86_64
+python-javapackages-3.4.1-11.el7.noarch
+java-1.7.0-openjdk-1.7.0.251-2.6.21.1.el7.x86_64
+[root@centos7 ~]# rpm -qa | grep -i java | xargs -n1 rpm -e --nodeps
+[root@centos7 ~]# rpm -qa | grep -i java
+```
+
+重新安装 OpenJDK，官网：http://openjdk.java.net/install/
+
+![image-20220529122300127](linux-virtualmachine/image-20220529122300127.png)
+
+```bash
+[root@centos7 ~]# yum install -y java-1.8.0-openjdk-devel
+```
+
+> `yum install -y java-1.8.0-openjdk`命令安装的是 JRE，`yum install -y java-1.8.0-openjdk-devel`命令安装的是 JDK。
+
+验证安装成功：
+
+```bash
+[root@hadoop100 ~]# java -version
+openjdk version "1.8.0_332"
+OpenJDK Runtime Environment (build 1.8.0_332-b09)
+OpenJDK 64-Bit Server VM (build 25.332-b09, mixed mode)
+```
+
+寻找 JDK 安装路径：
+
+```bash
+[root@hadoop100 ~]# ls -lrt /usr/bin/java
+lrwxrwxrwx. 1 root root 22 5月  29 12:22 /usr/bin/java -> /etc/alternatives/java
+[root@hadoop100 ~]# ls -lrt /etc/alternatives/java
+lrwxrwxrwx. 1 root root 73 5月  29 12:22 /etc/alternatives/java -> /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.332.b09-1.el7_9.x86_64/jre/bin/java
+```
+
+配置全局环境变量：
+
+```bash
+[root@centos7 ~]# vi /etc/profile
+```
+
+在 profile 文件最后添加：
+
+```bash
+JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.332.b09-1.el7_9.x86_64
+CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+PATH=$PATH:$JAVA_HOME/bin
+export JAVA_HOME
+export CLASSPATH
+export PATH
+```
+
+>export 是把这三个变量导出为全局变量。
+
+生效配置信息，并验证是否安装成功：
+
+```bash
+[root@hadoop100 ~]# source /etc/profile
+```
+
+全局环境变量配置时，所有用户的 shell 都有权使用这些环境变量，可能会给系统带来安全性问题。
+
+因此，修改`.bashrc`文件这种方法更为安全，它可以把使用这些环境变量的权限控制到用户级别，如果需要给某个用户权限使用这些环境变量，只需要修改其个人用户主目录下的 .bashrc 文件就可以了。用文本编辑器打开用户目录下的 .bashrc 文件，在 .bashrc 文件末尾加入：
+
+```bash
+JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.332.b09-1.el7_9.x86_64
+CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+PATH=$PATH:$JAVA_HOME/bin
+
+set JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.332.b09-1.el7_9.x86_64
+export JAVA_HOME
+set CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+export CLASSPATH
+set PATH=$PATH:$JAVA_HOME/bin
+export PATH
+```
+
+然后，生效配置信息：
+
+```bash
+root@hadoop100 ~]# source .bashrc
+```
 
 ### 克隆虚拟机
 
@@ -607,7 +720,7 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 
 ![image-20210830152407112](linux-virtualmachine/image-20210830152407112.png)
 
-![image-20210830152532017](linux-virtualmachine/image-20210830152532017.png)
+![image-20220528133348075](linux-virtualmachine/image-20220528133348075.png)
 
 ![image-20210830153137306](linux-virtualmachine/image-20210830153137306.png)
 
@@ -638,10 +751,10 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
 开启克隆机，以 root 用户登录，按以下步骤修改 IP 地址：
 
 ```bash
-[root@centos7 ~]# vim /etc/sysconfig/network-scripts/ifcfg-ens33
+[root@centos7 ~]# vim /etc/sysconfig/network-scripts/ifcfg-ens32
 ```
 
-- 修改 ifcfg-ens33 文件中的 IPADDR：
+- 修改 ifcfg-ens32 文件中的 IPADDR：
 
   ```bash
   TYPE="Ethernet"
@@ -712,25 +825,6 @@ Vmware 配置 CentOS 软件，即，向虚拟机插入系统盘：
   [root@hadoop100 ~]# hostname
   hadoop100
   ```
-
-### JDK 说明
-
-安装的 centos7 模板机，有自带的 JDK，某些情况，需要删除，按照需求自行安装。
-
-```bash
-[xisun@centos7 ~]$ su root
-密码：
-[root@centos7 ~]# rpm -qa | grep -i java
-javapackages-tools-3.4.1-11.el7.noarch
-tzdata-java-2019c-1.el7.noarch
-java-1.8.0-openjdk-headless-1.8.0.242.b08-1.el7.x86_64
-java-1.8.0-openjdk-1.8.0.242.b08-1.el7.x86_64
-java-1.7.0-openjdk-headless-1.7.0.251-2.6.21.1.el7.x86_64
-python-javapackages-3.4.1-11.el7.noarch
-java-1.7.0-openjdk-1.7.0.251-2.6.21.1.el7.x86_64
-[root@centos7 ~]# rpm -qa | grep -i java | xargs -n1 rpm -e --nodeps
-[root@centos7 ~]# rpm -qa | grep -i java
-```
 
 ### 参考
 
