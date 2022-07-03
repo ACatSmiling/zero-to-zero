@@ -19,7 +19,7 @@ Spring 可以解决企业应用开发的复杂性。
 **Spring 两个核心部分：`IOC`和`AOP`。**
 
 - **IOC：Inversion of Control，即`控制反转`。是面向对象编程中的一种设计原则，可以用来降低计算机代码之间的耦合度，其中最常见的方式叫做`依赖注入 (Dependency Injection，简称 DI)`。Spring 就是采用依赖注入的方式，来管理容器中的 Bean 实例对象。**
-- **AOP：Aspect Oriented Programming，即`面向切面`。可以在不修改源代码的前提下，通过预编译方式和运行期间动态代理方式实现对原有代码的增强（添加新功能）。**
+- **AOP：Aspect Oriented Programming，即`面向切面`。可以在不修改源代码的前提下，通过`预编译方式`和`运行期间动态代理方式`实现对原有代码的增强（添加新功能）。**
 
 Spring 特点：
 
@@ -284,127 +284,129 @@ IDEA 中，对于 Spring 的配置类或配置文件，可能会提示`Applicati
 
 **Spring 内置了两种类型的 Bean ，一种是`普通 Bean`，另外一种是`工厂 Bean (FactoryBean)`。**
 
-- 普通 Bean：在配置文件中定义的 Bean 类型与返回类型一致。这种最常见。
+#### 普通 Bean
 
-  ```xml
-  <bean id="myBook" class="cn.xisun.spring.bean.Book">
-      <property name="name" value="三体"/>
-  </bean>
-  ```
+在配置文件中定义的 Bean 类型与返回类型一致。这种最常见。
 
-  ```java
-  public class SpringTest {
-      public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
-          ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-  
-          // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-          Book book = iocContainer.getBean("myBook", Book.class);
-  
-          // 3.打印bean
-          System.out.println(book);
-      }
-  }
-  ```
+```xml
+<bean id="myBook" class="cn.xisun.spring.bean.Book">
+    <property name="name" value="三体"/>
+</bean>
+```
 
-  >配置文件中定义的 Bean 类型是 Book，实际返回的类型也是 Book。
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        // 1.加载Spring配置文件，创建IOC容器对象
+        ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
-- `工厂 Bean：在配置文件中定义的 Bean 类型可以和返回类型不一样。`
+        // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+        Book book = iocContainer.getBean("myBook", Book.class);
 
-  - 第一步：创建类，实现 FactoryBean 接口，让这个类作为工厂 Bean。
-
-    - FactoryBean 接口中有如下三个方法：`getObject()`负责将创建好的 Bean 实例返回给 IOC 容器；`getObjectType()`负责返回工厂生产的 Bean 类型；`isSingleton()`用于指示该 Bean 实例是否为单例，默认是单例 Bean。
-
-      ```java
-      public interface FactoryBean<T> {
-          String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
-      
-          @Nullable
-          T getObject() throws Exception;
-      
-          @Nullable
-          Class<?> getObjectType();
-      
-          default boolean isSingleton() {
-              return true;
-          }
-      }
-      ```
-
-  - 第二步：实现接口里面的方法，在实现的方法中定义返回的 Bean 类型。
-
-    ```java
-    public class Book {
-        private String name;
-        
-        private String author;
-    
-        public void setName(String name) {
-            this.name = name;
-        }
-    
-        public void setAuthor(String author) {
-            this.author = author;
-        }
-    
-        @Override
-        public String toString() {
-            return "Book{" +
-                    "name='" + name + '\'' +
-                    ", author='" + author + '\'' +
-                    '}';
-        }
+        // 3.打印bean
+        System.out.println(book);
     }
-    ```
+}
+```
 
-    ```java
-    public class MyFactoryBean implements FactoryBean<Book> {
-        // 在getObject()方法中定义返回的Bean
-        @Override
-        public Book getObject() throws Exception {
-            Book book = new Book();
-            book.setName("三体");
-            return book;
-        }
-    
-        @Override
-        public Class<?> getObjectType() {
-            return Book.class;
-        }
-    
-        @Override
-        public boolean isSingleton() {
-            return false;
-        }
+>配置文件中定义的 Bean 类型是 Book，实际返回的类型也是 Book。
+
+#### 工厂 Bean
+
+在配置文件中定义的 Bean 类型可以和返回类型不一样。
+
+第一步：创建类，实现 FactoryBean 接口，让这个类作为工厂 Bean。FactoryBean 接口中有如下三个方法：`getObject()`负责将创建好的 Bean 实例返回给 IOC 容器；`getObjectType()`负责返回工厂生产的 Bean 类型；`isSingleton()`用于指示该 Bean 实例是否为单例，默认是单例 Bean。
+
+```java
+public interface FactoryBean<T> {
+    String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
+
+    @Nullable
+    T getObject() throws Exception;
+
+    @Nullable
+    Class<?> getObjectType();
+
+    default boolean isSingleton() {
+        return true;
     }
-    ```
+}
+```
 
-  - 第三步：在 Spring 配置文件中进行配置并测试，注意获取 Bean 的时候要使用工厂 Bean 返回的那个 Bean 的类型。
+第二步：实现接口里面的方法，在实现的方法中定义返回的 Bean 类型。
 
-    ```xml
-    <bean id="myBean" class="cn.xisun.spring.factory.MyFactoryBean"></bean>
-    ```
-
-    ```java
-    public class SpringTest {
-        public static void main(String[] args) {
-            // 1.加载Spring配置文件，创建IOC容器对象
-            ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+```java
+public class Book {
+    private String name;
     
-            // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-            Book book = iocContainer.getBean("myBean", Book.class);
-    
-            // 3.打印bean
-            System.out.println(book);
-        }
+    private String author;
+
+    public void setName(String name) {
+        this.name = name;
     }
-    ```
 
-    > 配置文件中定义的 Bean 类型是 MyFactoryBean，但实际返回的类型是 Book。
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                '}';
+    }
+}
+```
+
+```java
+public class MyFactoryBean implements FactoryBean<Book> {
+    // 在getObject()方法中定义返回的Bean
+    @Override
+    public Book getObject() throws Exception {
+        Book book = new Book();
+        book.setName("三体");
+        return book;
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return Book.class;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return false;
+    }
+}
+```
+
+第三步：在 Spring 配置文件中进行配置并测试，注意获取 Bean 的时候要使用工厂 Bean 返回的那个 Bean 的类型。
+
+```xml
+<bean id="myBean" class="cn.xisun.spring.factory.MyFactoryBean"></bean>
+```
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        // 1.加载Spring配置文件，创建IOC容器对象
+        ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+
+        // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+        Book book = iocContainer.getBean("myBean", Book.class);
+
+        // 3.打印bean
+        System.out.println(book);
+    }
+}
+```
+
+> 配置文件中定义的 Bean 类型是 MyFactoryBean，但实际返回的类型是 Book。
 
 ### Spring 中 Bean 的作用域
 
-默认情况下，Spring 只为每个在 IOC 容器里声明的 Bean 创建唯一一个实例（单例对象），整个 IOC 容器范围内都能共享该实例：所有后续的`getBean()`调用和 Bean 引用都将返回这个唯一的 Bean 实例。**该作用域被称为 singleton，它是所有 Bean 的默认作用域。**
+默认情况下，Spring 只为每个在 IOC 容器里声明的 Bean 创建唯一一个实例（单例对象），整个 IOC 容器范围内都能共享该实例：所有后续的`getBean()`调用和 Bean 引用都将返回这个唯一的 Bean 实例。**该作用域被称为`singleton`，它是所有 Bean 的默认作用域。**
 
 在 Spring 中，可以在 \<bean> 标签的 scope 属性里设置 Bean 的作用域，以决定这个 Bean 是单实例的还是多实例的。scope 属性值有四个：
 
@@ -476,81 +478,81 @@ Spring IOC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生�
 
 2. **为 Bean 的属性设置值和对其他 Bean 的引用。**
 
-3. **调用 Bean 的初始化方法 (需要创建和配置初始化的方法)。**
+3. **调用 Bean 的初始化方法（需要创建和配置初始化的方法）。**
 
 4. **获取 Bean 实例并使用。**
 
-5. **当容器关闭时，调用 Bean 的销毁方法 (需要创建和配置销毁的方法)。**
+5. **当容器关闭时，调用 Bean 的销毁方法（需要创建和配置销毁的方法）。**
 
 6. 代码演示：
 
-  ```java
-  public class Book {
-      private String name;
-  
-      public Book() {
-          System.out.println("第一步：执行无参数构造方法创建bean实例");
-      }
-  
-      public void setName(String name) {
-          System.out.println("第二步：调用setter方法设置属性值");
-          this.name = name;
-      }
-  
-      // 创建执行的初始化的方法
-      public void initMethod(){
-          System.out.println("第三步：执行初始化的方法");
-      }
-  
-      // 创建执行的销毁的方法
-      public void destroyMethod(){
-          System.out.println("第五步：执行销毁的方法");
-      }
-  
-      @Override
-      public String toString() {
-          return "Book{" +
-                  "name='" + name + '\'' +
-                  '}';
-      }
-  }
-  ```
+   ```java
+   public class Book {
+       private String name;
+   
+       public Book() {
+           System.out.println("第一步：执行无参数构造方法创建bean实例");
+       }
+   
+       public void setName(String name) {
+           System.out.println("第二步：调用setter方法设置属性值");
+           this.name = name;
+       }
+   
+       // 创建执行的初始化的方法
+       public void initMethod(){
+           System.out.println("第三步：执行初始化的方法");
+       }
+   
+       // 创建执行的销毁的方法
+       public void destroyMethod(){
+           System.out.println("第五步：执行销毁的方法");
+       }
+   
+       @Override
+       public String toString() {
+           return "Book{" +
+                   "name='" + name + '\'' +
+                   '}';
+       }
+   }
+   ```
 
-  ```xml
-  <!-- 在<bean>标签中指定book实例的init-method属性(初始化方法)和destroy-method属性(销毁方法) -->
-  <bean id="book" class="cn.xisun.spring.bean.Book" init-method="initMethod" destroy-method="destroyMethod">
-      <property name="name" value="平凡的世界"/>
-  </bean>
-  ```
+   ```xml
+   <!-- 在<bean>标签中指定book实例的init-method属性(初始化方法)和destroy-method属性(销毁方法) -->
+   <bean id="book" class="cn.xisun.spring.bean.Book" init-method="initMethod" destroy-method="destroyMethod">
+       <property name="name" value="平凡的世界"/>
+   </bean>
+   ```
 
-```java
-  public class SpringTest {
-      public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
-          ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-  
-          // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-          S                          ystem.out.println("第四步：获取创建的bean实例对象");
-          Book book = iocContainer.getBean("book", Book.class);                 
-  
-          // 3.打印bean
-          System.out.println(book);
-  
-          // 手动销毁bean的实例，会调用Book中定义的destroyMethod()，前提：在Spring配置文件中bean标签配置了destroy-method
-          // ApplicationContext接口没有close()，需要它的子接口或实现类才能调用
-          ((ClassPathXmlApplicationContext)iocContainer).close();
-      }
-  }
-  输出结果：
-  第一步：执行无参数构造方法创建bean实例
-  第二步：调用setter方法设置属性值
-  第三步：执行初始化的方法
-  第四步：获取创建的bean实例对象
-  Book{name='平凡的世界'}
-  第五步：执行销毁的方法
-```
+   ```java\
+   public class SpringTest {
+       public static void main(String[] args) {
+           // 1.加载Spring配置文件，创建IOC容器对象
+           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+   
+           // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+           S                          ystem.out.println("第四步：获取创建的bean实例对象");
+           Book book = iocContainer.getBean("book", Book.class);                 
+   
+           // 3.打印bean
+           System.out.println(book);
+   
+           // 手动销毁bean的实例，会调用Book中定义的destroyMethod()，前提：在Spring配置文件中bean标签配置了destroy-method
+           // ApplicationContext接口没有close()，需要它的子接口或实现类才能调用
+           ((ClassPathXmlApplicationContext)iocContainer).close();
+       }
+   }
+   输出结果：
+   第一步：执行无参数构造方法创建bean实例
+   第二步：调用setter方法设置属性值
+   第三步：执行初始化的方法
+   第四步：获取创建的bean实例对象
+   Book{name='平凡的世界'}
+   第五步：执行销毁的方法
+   ```
 
->注意：要手动关闭 IOC 容器才会执行 destroy-method 方法。
+   >注意：要手动关闭 IOC 容器才会执行 destroy-method 指定的方法。
 
 Spring 中可以设置`Bean 后置处理器`：
 
@@ -562,21 +564,21 @@ Spring 中可以设置`Bean 后置处理器`：
 
 Bean 添加后置处理器后的生命周期：
 
-- **1. 通过构造器或工厂方法创建 Bean 实例。**
+1. **通过构造器或工厂方法创建 Bean 实例。**
 
-- **2. 为 Bean 的属性设置值和对其他 Bean 的引用。**
+2. **为 Bean 的属性设置值和对其他 Bean 的引用。**
 
-- **3. 将 Bean 实例传递给 Bean 后置处理器的`postProcessBeforeInitialization()`。**
+3. **将 Bean 实例传递给 Bean 后置处理器的`postProcessBeforeInitialization()`。**
 
-- **4. 调用 Bean 的初始化方法（需要创建和配置初始化的方法）。**
+4. **调用 Bean 的初始化方法（需要创建和配置初始化的方法）。**
 
-- **5. 将 Bean 实例传递给 Bean 后置处理器的`postProcessAfterInitialization()`。**
+5. **将 Bean 实例传递给 Bean 后置处理器的`postProcessAfterInitialization()`。**
 
-- **6. 获取 Bean 实例并使用。**
+6. **获取 Bean 实例并使用。**
 
-- **7. 当容器关闭时，调用 Bean 的销毁方法（需要创建和配置销毁的方法）。**
+7. **当容器关闭时，调用 Bean 的销毁方法（需要创建和配置销毁的方法）。**
 
-- 代码演示：
+8. 代码演示：
 
   ```java
   /**
@@ -1064,84 +1066,85 @@ DI 依赖注入：可以将 DI 看作是 IOC 的一种实现方式 ---> **即组
 
 ### IOC 容器的实现方式
 
-Spring 为 IOC 容器提供的两种实现方式（即两个接口：BeanFactory 和 ApplicationContext）：
+Spring 在通过 IOC 容器读取 Bean 的实例之前，需要先将 IOC 容器本身实例化。
 
-- 在通过 IOC 容器读取 Bean 的实例之前，需要先将 IOC 容器本身实例化。
+Spring 为 IOC 容器提供的两种实现方式，即两个接口：`BeanFactory`和`ApplicationContext`。
 
-- `BeanFactory 接口`：
+#### BeanFactory 接口
 
-  - IOC 容器的基本实现，是 Spring 内部的使用接口。面向 Spring 本身，不提供给开发人员使用。
+IOC 容器的基本实现，是 Spring 内部的使用接口。`面向 Spring 本身`，不提供给开发人员使用。
 
-  - BeanFactory 在加载配置文件的时候，不会创建对象，而是在使用对象的时候才去创建。
+BeanFactory 在加载配置文件的时候，不会创建对象，而是`在使用对象的时候才去创建`。
 
-  - BeanFactory 接口的实现类：
+BeanFactory 接口的实现类：
 
-    ![image-20210413214323672](spring/image-20210413214323672.png)
+![image-20210413214323672](spring/image-20210413214323672.png)
 
-- **`ApplicationContext 接口`**：
+#### ApplicationContext 接口
+
+**BeanFactory 的子接口 ，`面向 Spring 的使用者`，提供了更多功能，一般由开发人员进行使用。几乎所有场合都使用 ApplicationContext 而不是底层的 BeanFactory。**
+
+**`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**（在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭。)
+
+ApplicationContext 接口的重要子接口和实现类：
+
+- ConfigurableApplicationContext 子接口：扩展了一些方法，如`refresh()`和`close()`，这些方法能够让 ApplicationContext 具有启动、关闭和刷新上下文的能力。
+
+  ```java
+  public interface ConfigurableApplicationContext extends ApplicationContext, Lifecycle, Closeable {
+     /**
+      * Load or refresh the persistent representation of the configuration,
+      * which might an XML file, properties file, or relational database schema.
+      * <p>As this is a startup method, it should destroy already created singletons
+      * if it fails, to avoid dangling resources. In other words, after invocation
+      * of that method, either all or no singletons at all should be instantiated.
+      * @throws BeansException if the bean factory could not be initialized
+      * @throws IllegalStateException if already initialized and multiple refresh
+      * attempts are not supported
+      */
+     void refresh() throws BeansException, IllegalStateException;
   
-  - **BeanFactory 的子接口 ，面向 Spring 的使用者，提供了更多功能，一般由开发人员进行使用。几乎所有场合都使用 ApplicationContext 而不是底层的 BeanFactory。**
-  - **`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**(在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭。)
+     /**
+      * Close this application context, releasing all resources and locks that the
+      * implementation mig ht hold. This includes destroying all cached singleton beans.
+      * <p>Note: Does <i>not</i> invoke {@code close} on a parent context;
+      * parent contexts have their own, independent lifecycle.
+      * <p>This method can be called multiple times without side effects: Subsequent
+      * {@code close} calls on an already closed context will be ignored.
+      */
+     @Override
+     void close();
   
-  - ApplicationContext 接口的重要子接口和实现类：
-  
-    - ConfigurableApplicationContext 子接口：扩展了一些方法，如`refresh()`和`close()`，这些方法能够让 ApplicationContext 具有启动、关闭和刷新上下文的能力。
-  
-      ```java
-      public interface ConfigurableApplicationContext extends ApplicationContext, Lifecycle, Closeable {
-         /**
-          * Load or refresh the persistent representation of the configuration,
-          * which might an XML file, properties file, or relational database schema.
-          * <p>As this is a startup method, it should destroy already created singletons
-          * if it fails, to avoid dangling resources. In other words, after invocation
-          * of that method, either all or no singletons at all should be instantiated.
-          * @throws BeansException if the bean factory could not be initialized
-          * @throws IllegalStateException if already initialized and multiple refresh
-          * attempts are not supported
-          */
-         void refresh() throws BeansException, IllegalStateException;
-      
-         /**
-          * Close this application context, releasing all resources and locks that the
-          * implementation mig ht hold. This includes destroying all cached singleton beans.
-          * <p>Note: Does <i>not</i> invoke {@code close} on a parent context;
-          * parent contexts have their own, independent lifecycle.
-          * <p>This method can be called multiple times without side effects: Subsequent
-          * {@code close} calls on an already closed context will be ignored.
-          */
-         @Override
-         void close();
-      
-          ...
-      }
-      ```
-  
-    - FileSystemXmlApplicationContext：对应文件系统中的 xml 格式的配置文件。（xml 配置文件的绝对路径）
-  
-      ```java
-      ApplicationContext iocContainer = new FileSystemXmlApplicationContext(
-              "D:\\JetBrainsWorkSpace\\IDEAProjects\\xisun-projects\\xisun-spring\\src\\main\\resources\\spring.xml");
-      ```
-  
-    - **`ClassPathXmlApplicationContext`：对应类路径下的 xml 格式的配置文件。（xml 配置文件的相对路径，常用）**
-  
-      ```java
-      ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-      ```
-  
-    - **`WebApplicationContext`子接口：扩展了 ApplicationContext，是专门为 Web 应用准备的，它允许从相对于 Web 根目录的路径中装载配置文件完成初始化。**
-  
-      ![image-20210414095049165](spring/image-20210414095049165.png)
-      - 需要额外引入 `spring-web` 依赖：
-  
-        ```xml
-        <!-- Spring Web依赖 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        ```
+      ...
+  }
+  ```
+
+- FileSystemXmlApplicationContext：对应文件系统中的 xml 格式的配置文件。（xml 配置文件的绝对路径）
+
+  ```java
+  ApplicationContext iocContainer = new FileSystemXmlApplicationContext(
+          "D:\\JetBrainsWorkSpace\\IDEAProjects\\xisun-projects\\xisun-spring\\src\\main\\resources\\spring.xml");
+  ```
+
+- **`ClassPathXmlApplicationContext`：对应类路径下的 xml 格式的配置文件。（xml 配置文件的相对路径，常用）**
+
+  ```java
+  ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+  ```
+
+- **`WebApplicationContext`子接口：扩展了 ApplicationContext，是专门为 Web 应用准备的，它允许从相对于 Web 根目录的路径中装载配置文件完成初始化。**
+
+  ![image-20210414095049165](spring/image-20210414095049165.png)
+  - 需要额外引入`spring-web`依赖：
+
+    ```xml
+    <!-- Spring Web依赖 -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>5.2.7.RELEASE</version>
+    </dependency>
+    ```
 
 ### IOC 管理 Bean 的方式
 
@@ -1282,7 +1285,7 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
       <bean id="book" class="cn.xisun.spring.bean.Book" p:bookName="论语" p:bookAuthor="孔子"/>
       ```
 
-  - 基于 xml 方式注入其他类型的属性。
+- 基于 xml 方式注入其他类型的属性。
 
     - 第一种：字面量
 
@@ -1768,7 +1771,7 @@ user service add ......
      </context:component-scan>
   ```
 
-  >通常需要与 use-default-filters 属性配合使用才能够达到"仅包含某些组件"这样的效果。即：通过将 use-default-filters 属性设置为 false，禁用默认过滤器，然后扫描的就只是 \<context:include-filter> 标签中的规则指定的组件了。
+  >通常需要与 use-default-filters 属性配合使用才能够达到  "仅包含某些组件" 这样的效果。即：通过将 use-default-filters 属性设置为 false，禁用默认过滤器，然后扫描的就只是 \<context:include-filter> 标签中的规则指定的组件了。
 
 - **`<context:exclude-filter>`**：表示要排除在外的目标类。
 
@@ -1791,179 +1794,176 @@ user service add ......
 
 项目中组件装配时，Controller 组件中往往需要用到 Service 组件的实例，Service 组件中往往需要用到 Repository 组件的实例。Spring 可以通过注解的方式帮我们实现属性的装配。
 
-**在指定要扫描的包时，\<context:component-scan> 标签会自动注册一个 Bean 的后置处理器 AutowiredAnnotationBeanPostProcessor 的实例。该后置处理器可以自动装配标记了`@Autowired`、`@Resource`或`@Inject`注解的属性。这就是组件扫描的原理。**
+**在指定要扫描的包时，`<context:component-scan>`标签会自动注册一个 Bean 的后置处理器`AutowiredAnnotationBeanPostProcessor`的实例。该后置处理器可以自动装配标记了`@Autowired`、`@Resource`或`@Inject`注解的属性。这就是组件扫描的原理。**
 
-- **`@Autowired`**
+###### @Autowired
 
-  - **根据属性类型实现自动装配。**
+**根据`属性类型`实现自动装配。**
 
-  - 构造器、普通字段（即使是非 public）、一切具有参数的方法都可以应用`@Autowired`注解。
+构造器、普通字段（即使是非 public）、一切具有参数的方法都可以应用`@Autowired`注解。
 
-  - 默认情况下，所有使用`@Autowired`注解的属性都需要被设置。当 Spring 找不到匹配的 Bean 装配属性时，会抛出异常。
+默认情况下，所有使用`@Autowired`注解的属性都需要被设置。当 Spring 找不到匹配的 Bean 装配属性时，会抛出异常。
 
-  - 若某一属性允许不被设置，可以设置`@Autowired`注解的 required 属性为 false。
+若某一属性允许不被设置，可以设置`@Autowired`注解的 required 属性为 false。
 
-  - 默认情况下，当 IOC 容器里存在多个类型兼容的 Bean 时，Spring 会尝试匹配 Bean 的 id 值是否与变量名相同，如果相同则进行装配。如果 Bean 的 id 值不相同，通过类型的自动装配将无法工作。此时可以在`@Qualifier`注解里提供 Bean 的名称。Spring 甚至允许在方法的形参上标注`@Qualifiter`注解以指定注入 Bean 的名称。
+默认情况下，当 IOC 容器里存在多个类型兼容的 Bean 时，Spring 会尝试匹配 Bean 的 id 值是否与变量名相同，如果相同则进行装配。如果 Bean 的 id 值不相同，通过类型的自动装配将无法工作。此时可以在`@Qualifier`注解里提供 Bean 的名称。Spring 甚至允许在方法的形参上标注`@Qualifiter`注解以指定注入 Bean 的名称。
 
-  - `@Autowired`注解也可以应用在数组类型的属性上，此时 Spring 将会把所有匹配的 Bean 进行自动装配。
+`@Autowired`注解也可以应用在数组类型的属性上，此时 Spring 将会把所有匹配的 Bean 进行自动装配。
 
-  - `@Autowired`注解也可以应用在集合属性上，此时 Spring 读取该集合的类型信息，然后自动装配所有与之兼容的 Bean。
+`@Autowired`注解也可以应用在集合属性上，此时 Spring 读取该集合的类型信息，然后自动装配所有与之兼容的 Bean。
 
-  - `@Autowired`注解用在`java.util.Map`上时，若该 Map 的键值为 String，那么 Spring 将自动装配与值类型兼容的 Bean 作为值，并以 Bean 的 id 值作为键。
+`@Autowired`注解用在`java.util.Map`上时，若该 Map 的键值为 String，那么 Spring 将自动装配与值类型兼容的 Bean 作为值，并以 Bean 的 id 值作为键。
 
-  - `@Autowired`注解使用过程：
+`@Autowired`注解使用过程：
 
-    - 第一步：创建 service 和 dao 对象，在 service 和 dao 类添加创建对象注解。
+```java
+public interface UserDao {
+    public void add();
+}
+```
 
-    - 第二步：在 service 中注入 dao 对象，在 service 类添加 dao 类型属性，在属性上面使用注解。
-
-      ```java
-      public interface UserDao {
-          public void add();
-      }
-      ```
-
-      ```java
-      @Repository
-      public class UserDaoImpl implements UserDao {
-          @Override
-          public void add() {
-              System.out.println("dao add ......");
-          }
-      }
-      ```
-
-      ```java
-      @Service
-      public class UserService {
-          // 定义dao类型属性，添加注入属性注解，不需要添加setter方法
-          @Autowired
-          private UserDao userDao;
-      
-          public void add() {
-              System.out.println("user service add ......");
-              userDao.add();
-          }
-      }
-      ```
-
-      ```java
-      public class SpringTest {
-          public static void main(String[] args) {
-              // 1.加载Spring配置文件，创建IOC容器对象
-              ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-      
-              // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-              UserService userService = iocContainer.getBean("userService", UserService.class);
-      
-              // 3.打印bean
-              System.out.println(userService);
-              userService.add();
-          }
-      }
-      输出结果：
-      cn.xisun.spring.service.UserService@161b062a
-      user service add ......
-      dao add ......
-      ```
-
-- **`@Qualifier`**
-
-  - **根据属性名称实现自动装配。**
-
-  - **`@Qualifier`注解需要和上面`@Autowired`注解一起使用。**
-
-  - 如果存在多个类型相同的 Bean，可以为每个 Bean 单独命名，然后根据名称使用`@Qualifier`注解指定需要注入的 Bean。
-
-  - `@Qualifier`注解使用过程：
-
-    ```java
-    public interface UserDao {
-        public void add();
+```java
+@Repository
+public class UserDaoImpl implements UserDao {
+    @Override
+    public void add() {
+        System.out.println("dao add ......");
     }
-    ```
+}
+```
 
-    ```java
-    @Repository(value = "userDaoImpl1")
-    public class UserDaoImpl implements UserDao {
-        @Override
-        public void add() {
-            System.out.println("dao add ......");
-        }
-    }
-    ```
-
-    ```java
-    @Service
-    public class UserService {
-        @Autowired
-        @Qualifier(value = "userDaoImpl1")// 需要与指定的bean的value相同，否则会找不到
-        private UserDao userDao;
-    
-        public void add() {
-            System.out.println("user service add ......");
-            userDao.add();
-        }
-    }
-    ```
-
-    ```java
-    public class SpringTest {
-        public static void main(String[] args) {
-            // 1.加载Spring配置文件，创建IOC容器对象
-            ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-    
-            // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-            UserService userService = iocContainer.getBean("userService", UserService.class);
-    
-            // 3.打印bean
-            System.out.println(userService);
-            userService.add();
-        }
-    }
-    输出结果：
-    cn.xisun.spring.service.UserService@3ee0fea4
-    user service add ......
-    dao add ......
-    ```
-
-- `@Resource`
-
-  - 可以根据类型注入，也可以根据名称注入。`@Resource`注解要求提供一个 Bean 名称的属性，若该属性为空，则自动采用标注处的变量或方法名作为 Bean 的名称。
-
-  - `@Resource`是 JDK 提供的注解，不建议使用，开发中应该尽量使用 Spring 提供的注解。
-
-  - `@Resource`注解使用说明：
-
-    ```java
-    // @Resource // 根据类型进行注入
-    @Resource(name = "userDaoImpl1") // 根据Bean名称进行注入 
+```java
+@Service
+public class UserService {
+    // 定义dao类型属性，添加注入属性注解，不需要添加setter方法
+    @Autowired
     private UserDao userDao;
-    ```
 
-- **`@Value`**
-
-  - 注入普通属性的值。
-
-  - `@Value`注解使用说明：
-
-    ```java
-    @Service
-    public class UserService {
-        @Autowired
-        @Qualifier(value = "userDaoImpl1")
-        private UserDao userDao;
-    
-        @Value(value = "Tom")
-        private String name;// @Value注解为name属性注入了一个值Tom
-    
-        public void add() {
-            System.out.println("name is: " + this.name);// name is: Tom
-            System.out.println("user service add ......");
-            userDao.add();
-        }
+    public void add() {
+        System.out.println("user service add ......");
+        userDao.add();
     }
-    ```
+}
+```
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        // 1.加载Spring配置文件，创建IOC容器对象
+        ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+
+        // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+        UserService userService = iocContainer.getBean("userService", UserService.class);
+
+        // 3.打印bean
+        System.out.println(userService);
+        userService.add();
+    }
+}
+输出结果：
+cn.xisun.spring.service.UserService@161b062a
+user service add ......
+dao add ......
+```
+
+###### @Qualifier
+
+**根据`属性名称`实现自动装配。**
+
+**`@Qualifier`注解需要和上面`@Autowired`注解一起使用。**
+
+如果存在多个类型相同的 Bean，可以为每个 Bean 单独命名，然后根据名称使用`@Qualifier`注解指定需要注入的 Bean。
+
+`@Qualifier`注解使用过程：
+
+```java
+public interface UserDao {
+    public void add();
+}
+```
+
+```java
+// value自定义bean的名称
+@Repository(value = "userDaoImpl1")
+public class UserDaoImpl implements UserDao {
+    @Override
+    public void add() {
+        System.out.println("dao add ......");
+    }
+}
+```
+
+```java
+@Service
+public class UserService {
+    @Autowired
+    @Qualifier(value = "userDaoImpl1")// 需要与指定的bean的value相同，否则会找不到
+    private UserDao userDao;
+
+    public void add() {
+        System.out.println("user service add ......");
+        userDao.add();
+    }
+}
+```
+
+```java
+public class SpringTest {
+    public static void main(String[] args) {
+        // 1.加载Spring配置文件，创建IOC容器对象
+        ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+
+        // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+        UserService userService = iocContainer.getBean("userService", UserService.class);
+
+        // 3.打印bean
+        System.out.println(userService);
+        userService.add();
+    }
+}
+输出结果：
+cn.xisun.spring.service.UserService@3ee0fea4
+user service add ......
+dao add ......
+```
+
+###### @Resource
+
+可以根据类型注入，也可以根据名称注入。`@Resource`注解要求提供一个 Bean 名称的属性，若该属性为空，则自动采用标注处的变量或方法名作为 Bean 的名称。
+
+`@Resource`是 JDK 提供的注解，不建议使用，开发中应该尽量使用 Spring 提供的注解。
+
+`@Resource`注解使用说明：
+
+```java
+// @Resource // 根据类型进行注入
+@Resource(name = "userDaoImpl1") // 根据Bean名称进行注入 
+private UserDao userDao;
+```
+
+###### @Value
+
+注入普通属性的值。
+
+`@Value`注解使用说明：
+
+```java
+@Service
+public class UserService {
+    @Autowired
+    @Qualifier(value = "userDaoImpl1")
+    private UserDao userDao;
+
+    @Value(value = "Tom")
+    private String name;// @Value注解为name属性注入了一个值Tom
+
+    public void add() {
+        System.out.println("name is: " + this.name);// name is: Tom
+        System.out.println("user service add ......");
+        userDao.add();
+    }
+}
+```
 
 #### 进阶：完全注解开发
 
@@ -2005,7 +2005,7 @@ public class SpringConfig {
   }
   ```
 
-第二步：编写测试类，通过 new 一个 AnnotationConfigApplicationContext 对象创建 IOC 容器对象。其他与前面的相同。
+第二步：编写测试类，通过 new 一个`AnnotationConfigApplicationContext`对象创建 IOC 容器对象。其他与前面的相同。
 
 ```java
 public class SpringTest {
@@ -2024,13 +2024,11 @@ public class SpringTest {
         System.out.println(userDao);
     }
 }
+输出结果：
+Student{studentId=1000, studentName='Jerry'}
+Student{studentId=1001, studentName='Tom'}
+cn.xisun.spring.dao.UserDao@55a1c291
 ```
-
-> 效果：
->
-> Student{studentId=1000, studentName='Jerry'}
-> Student{studentId=1001, studentName='Tom'}
-> cn.xisun.spring.dao.UserDao@55a1c291
 
 
 ## AOP
@@ -2041,7 +2039,9 @@ AOP 编程操作的主要对象是`切面 (aspect)`，而切面模块化横切�
 
 在应用 AOP 编程时，仍然需要定义公共功能，但可以明确的定义这个功能应用在哪里，以什么方式应用，并且不必修改受影响的类。这样一来横切关注点就被模块化到特殊的类里 --- 这样的类我们通常称之为`切面`。
 
-AOP 的好处：每个事物逻辑位于一个位置，代码不分散，便于维护和升级；业务模块更简洁，只包含核心业务代码。以计算器案例说明：
+AOP 的好处：每个事物逻辑位于一个位置，代码不分散，便于维护和升级；业务模块更简洁，只包含核心业务代码。
+
+以计算器案例说明：
 
 <img src="spring/image-20210416152006380.png" alt="image-20210416152006380" style="zoom:67%;" />
 
@@ -2235,6 +2235,12 @@ public class ArithmeticCalculatorValidationHandler implements InvocationHandler 
     public ArithmeticCalculatorValidationHandler(Object obj) {
         this.obj = obj;
     }
+    
+    private void validate(int number) {
+        if (number <= 0) {
+            throw new IllegalArgumentException("positive numbers only: " + number);
+        }
+    }
 
     // 重写invoke()，增加验证处理
     @Override
@@ -2243,12 +2249,6 @@ public class ArithmeticCalculatorValidationHandler implements InvocationHandler 
             validate((int) arg);
         }
         return method.invoke(obj, args);
-    }
-
-    private void validate(int number) {
-        if (number <= 0) {
-            throw new IllegalArgumentException("positive numbers only: " + number);
-        }
     }
 
     // 创建当前代理的代理对象
@@ -2442,15 +2442,15 @@ public class SpringTest {
 
 AOP 相关术语：
 
-- **`连接点 (JoinPoint)`**：**类里面可以被增强的方法被称为连接点。**就是 Spring 允许使用通知的地方，基本每个方法的前、后 (两者都有也行)，或抛出异常时都可以是连接点，Spring 只支持方法连接点。
+- **`连接点 (JoinPoint)`**：**类里面可以被增强的方法被称为连接点。**就是 Spring 允许使用通知的地方，基本每个方法的前、后（两者都有也行），或抛出异常时都可以是连接点，Spring 只支持方法连接点。
 - **`切入点 (Pointcut)`**：**实际被真正增强的方法，称为切入点。**在上面说的连接点的基础上，来定义切入点，假设一个类里，有 15 个方法，那就可能有几十个连接点，但不一定需要在所有方法附近都使用通知，而是只想让其中的几个方法使用通知。则在调用这几个方法之前，之后或者抛出异常时，利用切入点来定义这几个方法，让切入点来筛选连接点，选中那几个需要使用通知的方法。
-- **`通知 (Advice)`**：**实际增强的逻辑部分，也就是想要的功能，比如上面说的日志处理、验证处理等。**事先定义好，然后在想用的地方用一下。通知的类型：前置通知、最终通知、后置通知、异常通知、环绕通知。
-  - 前置通知（Before Advice）：在切入点选择的连接点处的方法之前执行的通知，该通知不影响正常程序执行流程（除非该通知抛出异常，该异常将中断当前方法链的执行而返回）。
-  - 最终通知（After Advice）：在切入点选择的连接点处的方法之后执行的通知（无论方法执行是否成功都会被调用）。
-  - 后置通知（After returning Advice）：在切入点选择的连接点处的方法正常执行完毕时执行的通知，必须是连接点处的方法没抛出任何异常正常返回时才调用。
-  - 异常通知（After throwing Advice）：在切入点选择的连接点处的方法抛出异常返回时执行的通知，必须是连接点处的方法抛出任何异常返回时才调用异常通知。
-  - 环绕通知（Around Advices）：环绕着在切入点选择的连接点处的方法所执行的通知，环绕通知可以在方法调用之前和之后自定义任何行为，并且可以决定是否执行连接点处的方法、替换返回值、抛出异常等等。
-- **`切面 (Aspect)`**：**把通知应用到切入点的过程 (是动作)。**切面是通知和切入点的结合，也就是说，没连接点什么事情，连接点是为了好理解切入点而提出来的概念。
+- **`通知 (Advice)`**：**实际增强的逻辑部分，也就是想要的功能，比如上面说的日志处理、验证处理等。**事先定义好，然后在想用的地方用一下。通知的类型：前置通知、后置通知、异常通知、环绕通知、最终通知。
+  - `前置通知 (Before Advice)`：在切入点选择的连接点处的方法之前执行的通知，该通知不影响正常程序执行流程（除非该通知抛出异常，该异常将中断当前方法链的执行而返回）。
+  - `后置通知 (After returning Advice)`：在切入点选择的连接点处的方法正常执行完毕时执行的通知，必须是连接点处的方法没抛出任何异常正常返回时才调用。
+  - `异常通知 (After throwing Advice)`：在切入点选择的连接点处的方法抛出异常返回时执行的通知，必须是连接点处的方法抛出任何异常返回时才调用异常通知。
+  - `环绕通知 (Around Advices)`：环绕着在切入点选择的连接点处的方法所执行的通知，环绕通知可以在方法调用之前和之后自定义任何行为，并且可以决定是否执行连接点处的方法、替换返回值、抛出异常等等。
+  - `最终通知 (After Advice)`：在切入点选择的连接点处的方法之后执行的通知（无论方法执行是否成功都会被调用）。
+- **`切面 (Aspect)`**：**把通知应用到切入点的过程（是动作）。**切面是通知和切入点的结合，也就是说，没连接点什么事情，连接点是为了好理解切入点而提出来的概念。
 - **`引入 (introduction)`**：允许我们向现有的类添加新方法属性，也就是把切面（即新方法属性：通知定义的）用到目标类中。
 - **`目标 (target)`**：引入中所提到的目标类，也就是要被通知的对象，即真正的业务逻辑，他可以在毫不知情的情况下，被织入切面。而自己专注于业务本身的逻辑。
 - **`代理 (proxy)`**：怎么实现整套 AOP 机制的，都是通过代理。
@@ -2461,7 +2461,7 @@ AOP 相关术语：
 - 切入点表达式作用：表明对哪个类里面的哪个方法进行增强。
 - **语法结构：`execution([权限修饰符] [返回类型] [类全类名] \[方法名称]([参数列表]) )`。**
   - 权限修饰符一般使用 * 替代；返回类型可以省略；参数列表使用 .. 代替。
-- 举例 1：对`cn.xisun.spring.dao.UserDao`类里面的`add()`进行增强。
+- 举例 1：对`cn.xisun.spring.dao.UserDao`类里面的 add() 进行增强。
   - **`execution(* cn.xisun.spring.dao.UserDao.add(..))`**
 - 举例 2：对`cn.xisun.spring.dao.UserDao`类里面的所有的方法进行增强。
   - **`execution(* cn.xisun.spring.dao.UserDao.*(..))`**
@@ -2704,7 +2704,7 @@ add 核心方法
 
 进阶操作：
 
-1. **相同的切入点抽取：**
+**1. 相同的切入点抽取：**
 
   - 在编写 AspectJ 切面时，可以直接在通知注解中书写切入点表达式。但同一个切点表达式可能会在多个通知中重复出现。此时，**在 AspectJ 切面中，可以通过`@Pointcut`注解将一个重复的切入点声明成简单的方法，该切入点的方法体通常是空的。**
 
@@ -2769,7 +2769,7 @@ add 核心方法
     }
     ```
 
-2. **指定切面的优先级：**
+**2. 指定切面的优先级：**
 
   - **在同一个连接点上应用不止一个切面时，除非明确指定，否则它们的优先级是不确定的。切面的优先级可以通过实现`Ordered`接口或利用`@Order(数值类型值)`注解指定。**
 
@@ -3040,16 +3040,16 @@ public class ArithmeticCalculatorValidationAspect implements CutAspect {
 </aop:config>
 ```
 
-- 在 bean 配置文件中，所有的 Spring AOP 配置都必须定义在 `<aop:config>` 元素内部。对于每个切面而言，都要创建一个 `<aop:aspect>` 元素来为具体的切面实现引用后端 bean 实例。切面 bean 必须有一个标识符，供 `<aop:aspect>` 元素引用。
+- 在 bean 配置文件中，所有的 Spring AOP 配置都必须定义在`<aop:config>`元素内部。对于每个切面而言，都要创建一个`<aop:aspect>`元素来为具体的切面实现引用后端 bean 实例。切面 bean 必须有一个标识符，供`<aop:aspect>`元素引用。
 - 切入点：
-  - 切入点使用 `<aop:pointcut>` 元素声明。
-  - 切入点必须定义在 `<aop:aspect>` 元素下，或者直接定义在 `<aop:config>` 元素下。
-  - 切入点定义在 `<aop:aspect>` 元素下时：只对当前切面有效。
-  - 切入点定义在 `<aop:config>` 元素下：对所有切面都有效。
+  - 切入点使用`<aop:pointcut>`元素声明。
+  - 切入点必须定义在`<aop:aspect>`元素下，或者直接定义在`<aop:config>`元素下。
+  - 切入点定义在`<aop:aspect>`元素下时：只对当前切面有效。
+  - 切入点定义在`<aop:config>`元素下：对所有切面都有效。
   - 基于 xml 的 AOP 配置不允许在切入点表达式中用名称引用其他切入点。
 - 通知：
   - 在 aop 名称空间中，每种通知类型都对应一个特定的 xml 元素。
-  - 通知元素需要使用 `<pointcut-ref>` 来引用切入点，或用 `<pointcut>` 直接嵌入切入点表达式。
+  - 通知元素需要使用`<pointcut-ref>`来引用切入点，或用`<pointcut>`直接嵌入切入点表达式。
   - method 属性指定切面类中通知方法的名称。
 - xml 在配置带参数的通知时，有部分细节未搞清楚，ArithmeticCalculatorValidationAspect 配置不成功，不做探讨了。
 
@@ -3356,7 +3356,7 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
 
 - JdbcTemplate 操作数据库 --- **查询返回某个值、查询返回对象、查询返回集合**。
 
-  - 在 dao 中调用 JdbcTemplate 对象里面的 **`query()` 和 `queryForObject()`** 进行数据库相应查询操作。
+  - 在 dao 中调用 JdbcTemplate 对象里面的**`query()`**和**`queryForObject()`**进行数据库相应查询操作。
 
     ```java
     public interface UserDao {
@@ -3445,7 +3445,7 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
 
 - JdbcTemplate 操作数据库 --- **批量添加、修改和删除操作**。
 
-  - 在 dao 中调用 JdbcTemplate 对象里面的 **`batchUpdate()`** 进行数据库批量添加、修改和删除操作。
+  - 在 dao 中调用 JdbcTemplate 对象里面的**`batchUpdate()`**进行数据库批量添加、修改和删除操作。
 
     ```java
     public interface UserDao {
@@ -3558,305 +3558,315 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
 
 ## 事务操作
 
-- 事务是数据库操作的最基本单元，是一组由于逻辑上紧密关联而合并成一个整体 (工作单元) 的多个数据库操作，这些操作要么都执行成功，如果有一个失败所有操作都失败。典型应用场景：银行转账。
+事务是数据库操作的最基本单元，是一组由于逻辑上紧密关联而合并成一个整体（工作单元）的多个数据库操作，这些操作要么都执行成功，如果有一个失败所有操作都失败。典型应用场景：银行转账。
 
-- **事务的四个特性 (ACID)：**
+### 事务的四个特性（ACID）
 
-  - **原子性** (atomicity)：原子的本意是不可再分，事务的原子性表现为一个事务中涉及到的多个操作在逻辑上缺一不可。**事务的原子性要求事务中的所有操作要么都执行，要么都不执行。**
-  - **一致性** (consistency)：一致指的是数据的一致，具体是指：所有数据都处于满足业务规则的一致性状态。**一致性原则要求：一个事务中不管涉及到多少个操作，都必须保证事务执行之前数据是正确的，事务执行之后数据仍然是正确的。**如果一个事务在执行的过程中，其中某一个或某几个操作失败了，则必须将其他所有操作撤销，将数据恢复到事务执行之前的状态，这就是**回滚**。
-  - **隔离性** (isolation)：在应用程序实际运行过程中，事务往往是并发执行的，所以很有可能有许多事务同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。**隔离性原则要求多个事务在并发执行过程中不会互相干扰。**
-  - **持久性** (durability)：持久性原则要求事务执行完成后，对数据的修改永久的保存下来，不会因各种系统错误或其他意外情况而受到影响。通常情况下，事务对数据的修改应该被写入到持久化存储器中。
+**`原子性 (atomicity)`**：原子的本意是不可再分，事务的原子性表现为一个事务中涉及到的多个操作在逻辑上缺一不可。**事务的原子性要求事务中的所有操作要么都执行，要么都不执行。**
 
-- 事务管理一般添加到 JavaEE 三层结构里面的 Service 层 (业务逻辑层)。
+**`一致性 (consistency)`**：一致指的是数据的一致，具体是指：所有数据都处于满足业务规则的一致性状态。**一致性原则要求：一个事务中不管涉及到多少个操作，都必须保证事务执行之前数据是正确的，事务执行之后数据仍然是正确的。**如果一个事务在执行的过程中，其中某一个或某几个操作失败了，则必须将其他所有操作撤销，将数据恢复到事务执行之前的状态，这就是**回滚**。
 
-- 事务管理操作有两种方式：
+**`隔离性 (isolation)`**：在应用程序实际运行过程中，事务往往是并发执行的，所以很有可能有许多事务同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。**隔离性原则要求多个事务在并发执行过程中不会互相干扰。**
 
-  - 编程式事务管理：
-    - 执行步骤 --- 使用原生的 JDBC API 进行事务管理：
-      - 获取数据库连接Connection对象
-      - 取消事务的自动提交
-      - 执行操作
-      - 正常完成操作时手动提交事务
-      - 执行失败时回滚事务
-      - 关闭相关资源
-    - 使用原生的 JDBC API 实现事务管理是所有事务管理方式的基石，同时也是最典型的编程式事务管理。编程式事务管理需要将事务管理代码嵌入到业务方法中来控制事务的提交和回滚。在使用编程的方式管理事务时，必须在每个事务操作中包含额外的事务管理代码。相对于核心业务而言，事务管理的代码显然属于非核心业务，如果多个模块都使用同样模式的代码进行事务管理，显然会造成较大程度的代码冗余。
-  - **声明式事务管理：**
-    - 大多数情况下声明式事务比编程式事务管理更好：它将事务管理代码从业务方法中分离出来，以声明的方式来实现事务管理。事务管理代码的固定模式作为一种横切关注点，可以通过 AOP 方法模块化，进而借助 Spring AOP 框架实现声明式事务管理。
-  - **Spring 既支持编程式事务管理，也支持声明式事务管理。**
-    - **Spring 进行声明式事务管理，底层使用 AOP 原理。**
-    - Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配置的方式使其生效，从而让应用程序开发人员不必了解事务管理 API 的底层实现细节，就可以使用 Spring 的事务管理机制。
+**`持久性 (durability)`**：持久性原则要求事务执行完成后，对数据的修改永久的保存下来，不会因各种系统错误或其他意外情况而受到影响。通常情况下，事务对数据的修改应该被写入到持久化存储器中。
 
-- Spring 的事务管理器：
+事务管理一般添加到 JavaEE 三层结构里面的 Service 层 (业务逻辑层)。
 
-  - **Spring 的核心事务管理抽象是 PlatformTransactionManager。**它为事务管理封装了一组独立于技术的方法。无论使用 Spring 的哪种事务管理策略 (编程式或声明式)，事务管理器都是必须的。
+### Spring 的事务管理器
 
-    ![image-20210421144320340](spring/image-20210421144320340.png)
+**Spring 的核心事务管理抽象是`PlatformTransactionManager`。**它为事务管理封装了一组独立于技术的方法。无论使用 Spring 的哪种事务管理策略（编程式或声明式)），事务管理器都是必须的。
 
-    - **DataSourceTransactionManager**：在应用程序中只需要处理一个数据源，而且通过 JDBC 存取。
-    - **JtaTransactionManager**：在 JavaEE 应用服务器上用 JTA (Java Transaction API) 进行事务管理。
-    - **HibernateTransactionManager**：用 Hibernate 框架存取数据库。
+![image-20210421144320340](spring/image-20210421144320340.png)
 
-  - 事务管理器可以以普通的 bean 的形式声明在 Spring IOC 容器中。
+- **DataSourceTransactionManager**：在应用程序中只需要处理一个数据源，而且通过 JDBC 存取。
+- **JtaTransactionManager**：在 JavaEE 应用服务器上用 JTA (Java Transaction API) 进行事务管理。
+- **HibernateTransactionManager**：用 Hibernate 框架存取数据库。
 
-- Spring 声明式事务管理的两种实现方式：
+事务管理器可以以普通的 bean 的形式声明在 Spring IOC 容器中。
 
-  - 基于 xml 配置文件方式
-  - **基于注解方式 (常用)**
+### Spring 事务管理操作的两种方式
 
-- **Spring 基于注解实现声明式事务管理：**
+#### 编程式事务管理
 
-  - 第一步：引入 jdbc 和 mysql 的相关依赖、开启组件扫描、配置数据库连接池、配置 JdbcTemplate 对象，注入 DataSource。具体操作见 JdbcTemplate。
+执行步骤 --- 使用原生的 JDBC API 进行事务管理：
+- 获取数据库连接 Connection 对象
+- 取消事务的自动提交
+- 执行操作
+- 正常完成操作时手动提交事务
+- 执行失败时回滚事务
+- 关闭相关资源
 
-  - 第二步：在 Spring 配置文件中，配置事务管理器并注入数据源。
+`使用原生的 JDBC API 实现事务管理是所有事务管理方式的基石，同时也是最典型的编程式事务管理。`编程式事务管理需要将事务管理代码嵌入到业务方法中来控制事务的提交和回滚。在使用编程的方式管理事务时，必须在每个事务操作中包含额外的事务管理代码。相对于核心业务而言，事务管理的代码显然属于非核心业务，如果多个模块都使用同样模式的代码进行事务管理，显然会造成较大程度的代码冗余。
 
-    ```xml
-    <!-- 配置事务管理器 -->
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <!-- 注入数据源dataSource -->
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-    ```
+#### 声明式事务管理
 
-    >事务管理器的名字一定要叫 transactionManager，不然会抛异常。
+大多数情况下声明式事务比编程式事务管理更好：它将事务管理代码从业务方法中分离出来，以声明的方式来实现事务管理。事务管理代码的固定模式作为一种横切关注点，可以通过 AOP 方法模块化，进而借助 Spring AOP 框架实现声明式事务管理。
 
-  - 第三步：在 Spring 配置文件中，引入 tx 名称空间并开启事务注解。
+> **Spring 既支持编程式事务管理，也支持声明式事务管理。**
 
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:context="http://www.springframework.org/schema/context"
-           xmlns:tx="http://www.springframework.org/schema/tx"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                               http://www.springframework.org/schema/beans/spring-beans.xsd
-                               http://www.springframework.org/schema/context 
-                               http://www.springframework.org/schema/context/spring-context.xsd
-                               http://www.springframework.org/schema/tx 
-                               http://www.springframework.org/schema/tx/spring-tx.xsd">
-    </beans>
-    ```
+**Spring 进行声明式事务管理，底层使用 AOP 原理。**
 
-    ```xml
-    <!-- 开启事务注解 -->
-    <tx:annotation-driven transaction-manager="transactionManager"/>
-    ```
+Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配置的方式使其生效，从而让应用程序开发人员不必了解事务管理 API 的底层实现细节，就可以使用 Spring 的事务管理机制。
 
-  - 第四步：创建 dao 类，在 dao 注入 jdbcTemplate 对象；创建 service 类，在 service 类注入 dao 对象。具体操作见 JdbcTemplate。
+### Spring 声明式事务管理的两种实现方式
 
-  - 第五步：在需要进行事务控制的方法或类上添加 `@Transactional` 注解。
+- 基于 xml 配置文件方式
+- **基于注解方式（常用）**
 
-    - 如果把 `@Transactional` 注解添加类上面，则这个类里面所有的方法都添加事务。
-    - 如果把 `@Transactional` 注解添加方法上面，则为这个方法添加事务。
+##### Spring 基于注解实现声明式事务管理
 
-  - 代码一览：
+- 第一步：引入 jdbc 和 mysql 的相关依赖、开启组件扫描、配置数据库连接池、配置 JdbcTemplate 对象，注入 DataSource。具体操作见 JdbcTemplate。
 
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:context="http://www.springframework.org/schema/context"
-           xmlns:tx="http://www.springframework.org/schema/tx"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                               http://www.springframework.org/schema/beans/spring-beans.xsd
-                               http://www.springframework.org/schema/context 
-                               http://www.springframework.org/schema/context/spring-context.xsd
-                               http://www.springframework.org/schema/tx 
-                               http://www.springframework.org/schema/tx/spring-tx.xsd">
-    
-        <!-- 开启组件扫描 -->
-        <context:component-scan base-package="cn.xisun.spring.dao,cn.xisun.spring.service"/>
-    
-        <!-- 配置数据库连接池 -->
-        <context:property-placeholder location="classpath:jdbc.properties"/>
-        <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
-            <property name="driverClassName" value="${prop.driverClass}"/>
-            <property name="url" value="${prop.url}"/>
-            <property name="username" value="${prop.userName}"/>
-            <property name="password" value="${prop.password}"/>
-        </bean>
-    
-        <!-- 配置JdbcTemplate对象 -->
-        <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-            <!-- 注入数据源dataSource -->
-            <property name="dataSource" ref="dataSource"/>
-        </bean>
-    
-        <!-- 配置事务管理器 -->
-        <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-            <!-- 注入数据源dataSource -->
-            <property name="dataSource" ref="dataSource"/>
-        </bean>
-    
-        <!-- 开启事务注解 -->
-        <tx:annotation-driven transaction-manager="transactionManager"/>
-    </beans>
-    ```
+- 第二步：在 Spring 配置文件中，配置事务管理器并注入数据源。
 
-    ```java
-    public class Account {
-        private Integer accountId;
-        private String accountName;
-        private Integer accountBalance;
-    
-        public Account() {
-        }
-    
-        public Account(Integer accountId, String accountName, Integer accountBalance) {
-            this.accountId = accountId;
-            this.accountName = accountName;
-            this.accountBalance = accountBalance;
-        }
-    
-        public Integer getAccountId() {
-            return accountId;
-        }
-    
-        public void setAccountId(Integer accountId) {
-            this.accountId = accountId;
-        }
-    
-        public String getAccountName() {
-            return accountName;
-        }
-    
-        public void setAccountName(String accountName) {
-            this.accountName = accountName;
-        }
-    
-        public Integer getAccountBalance() {
-            return accountBalance;
-        }
-    
-        public void setAccountBalance(Integer accountBalance) {
-            this.accountBalance = accountBalance;
-        }
-    
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-    
-            Account account = (Account) o;
-    
-            if (!Objects.equals(accountId, account.accountId)) {
-                return false;
-            }
-            if (!Objects.equals(accountName, account.accountName)) {
-                return false;
-            }
-            return Objects.equals(accountBalance, account.accountBalance);
-        }
-    
-        @Override
-        public int hashCode() {
-            int result = accountId != null ? accountId.hashCode() : 0;
-            result = 31 * result + (accountName != null ? accountName.hashCode() : 0);
-            result = 31 * result + (accountBalance != null ? accountBalance.hashCode() : 0);
-            return result;
-        }
-    
-        @Override
-        public String toString() {
-            return "Account{" +
-                    "accountId=" + accountId +
-                    ", accountName='" + accountName + '\'' +
-                    ", accountBalance=" + accountBalance +
-                    '}';
-        }
-    }
-    ```
+  ```xml
+  <!-- 配置事务管理器 -->
+  <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+      <!-- 注入数据源dataSource -->
+      <property name="dataSource" ref="dataSource"/>
+  </bean>
+  ```
 
-    ```java
-    public interface AccountDao {
-    
-        void reduceMoney();
-    
-        void addMoney();
-    
-        // 上面两个方法可以合并
-        int tranfer(String accountName, int money);
-    }
-    ```
+  >事务管理器的名字一定要叫 transactionManager，不然会抛异常。
 
-    ```java
-    @Repository
-    public class AccountDaoImpl implements AccountDao {
-        @Autowired
-        private JdbcTemplate jdbcTemplate;
-    
-        // lucy少钱
-        @Override
-        public void reduceMoney() {
-            String sql = "update t_account set account_balance = account_balance - ? where account_name = ?";
-            jdbcTemplate.update(sql, 100, "lucy");
-        }
-    
-        // mary多钱
-        @Override
-        public void addMoney() {
-            String sql = "update t_account set account_balance = account_balance + ? where account_name = ?";
-            jdbcTemplate.update(sql, 100, "mary");
-        }
-    
-        // 上面两个方法可以合并
-        @Override
-        public int tranfer(String accountName, int money) {
-            // 创建 SQL 语句
-            String sql = "update t_account set account_balance = account_balance - ? where account_name = ?";
-    
-            // SQL 语句参数
-            Object[] args = {money, accountName};
-    
-            // 执行 SQL 语句
-            int insertRows = jdbcTemplate.update(sql, args);
-            return insertRows;
-        }
-    }
-    ```
+- 第三步：在 Spring 配置文件中，引入 tx 名称空间并开启事务注解。
 
-    ```java
-    @Service
-    @Transactional
-    public class AccountService {
-        @Autowired
-        private AccountDao accountDao;
-    
-        // 转账的方法一
-        public void accountMoney() {
-            // lucy 少 100
-            accountDao.reduceMoney();
-            // mary 多 100
-            accountDao.addMoney();
-        }
-    
-        // 转账的方法二
-        public void transfer(String srcAccountName, String destAccountName, int money) {
-            accountDao.tranfer(srcAccountName, money);
-            accountDao.tranfer(destAccountName, -money);
-            System.out.println(srcAccountName + " 向 " + destAccountName + " 转账 " + money + " 元");
-        }
-    }
-    ```
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xmlns:tx="http://www.springframework.org/schema/tx"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                             http://www.springframework.org/schema/beans/spring-beans.xsd
+                             http://www.springframework.org/schema/context 
+                             http://www.springframework.org/schema/context/spring-context.xsd
+                             http://www.springframework.org/schema/tx 
+                             http://www.springframework.org/schema/tx/spring-tx.xsd">
+  </beans>
+  ```
 
-    ```java
-    public class SpringTest {
-        public static void main(String[] args) {
-            System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
-            ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-            AccountService accountService = context.getBean("accountService", AccountService.class);
-    
-            // 测试方法一
-            accountService.accountMoney();
-    
-            // 测试方法二
-            accountService.transfer("lucy", "mary", 100);
-        }
-    }
-    ```
+  ```xml
+  <!-- 开启事务注解 -->
+  <tx:annotation-driven transaction-manager="transactionManager"/>
+  ```
+
+- 第四步：创建 dao 类，在 dao 注入 jdbcTemplate 对象；创建 service 类，在 service 类注入 dao 对象。具体操作见 JdbcTemplate。
+
+- 第五步：在需要进行事务控制的方法或类上添加 `@Transactional` 注解。
+
+  - 如果把 `@Transactional` 注解添加类上面，则这个类里面所有的方法都添加事务。
+  - 如果把 `@Transactional` 注解添加方法上面，则为这个方法添加事务。
+
+- 代码一览：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xmlns:tx="http://www.springframework.org/schema/tx"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                             http://www.springframework.org/schema/beans/spring-beans.xsd
+                             http://www.springframework.org/schema/context 
+                             http://www.springframework.org/schema/context/spring-context.xsd
+                             http://www.springframework.org/schema/tx 
+                             http://www.springframework.org/schema/tx/spring-tx.xsd">
+  
+      <!-- 开启组件扫描 -->
+      <context:component-scan base-package="cn.xisun.spring.dao,cn.xisun.spring.service"/>
+  
+      <!-- 配置数据库连接池 -->
+      <context:property-placeholder location="classpath:jdbc.properties"/>
+      <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+          <property name="driverClassName" value="${prop.driverClass}"/>
+          <property name="url" value="${prop.url}"/>
+          <property name="username" value="${prop.userName}"/>
+          <property name="password" value="${prop.password}"/>
+      </bean>
+  
+      <!-- 配置JdbcTemplate对象 -->
+      <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+          <!-- 注入数据源dataSource -->
+          <property name="dataSource" ref="dataSource"/>
+      </bean>
+  
+      <!-- 配置事务管理器 -->
+      <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+          <!-- 注入数据源dataSource -->
+          <property name="dataSource" ref="dataSource"/>
+      </bean>
+  
+      <!-- 开启事务注解 -->
+      <tx:annotation-driven transaction-manager="transactionManager"/>
+  </beans>
+  ```
+
+  ```java
+  public class Account {
+      private Integer accountId;
+      private String accountName;
+      private Integer accountBalance;
+  
+      public Account() {
+      }
+  
+      public Account(Integer accountId, String accountName, Integer accountBalance) {
+          this.accountId = accountId;
+          this.accountName = accountName;
+          this.accountBalance = accountBalance;
+      }
+  
+      public Integer getAccountId() {
+          return accountId;
+      }
+  
+      public void setAccountId(Integer accountId) {
+          this.accountId = accountId;
+      }
+  
+      public String getAccountName() {
+          return accountName;
+      }
+  
+      public void setAccountName(String accountName) {
+          this.accountName = accountName;
+      }
+  
+      public Integer getAccountBalance() {
+          return accountBalance;
+      }
+  
+      public void setAccountBalance(Integer accountBalance) {
+          this.accountBalance = accountBalance;
+      }
+  
+      @Override
+      public boolean equals(Object o) {
+          if (this == o) {
+              return true;
+          }
+          if (o == null || getClass() != o.getClass()) {
+              return false;
+          }
+  
+          Account account = (Account) o;
+  
+          if (!Objects.equals(accountId, account.accountId)) {
+              return false;
+          }
+          if (!Objects.equals(accountName, account.accountName)) {
+              return false;
+          }
+          return Objects.equals(accountBalance, account.accountBalance);
+      }
+  
+      @Override
+      public int hashCode() {
+          int result = accountId != null ? accountId.hashCode() : 0;
+          result = 31 * result + (accountName != null ? accountName.hashCode() : 0);
+          result = 31 * result + (accountBalance != null ? accountBalance.hashCode() : 0);
+          return result;
+      }
+  
+      @Override
+      public String toString() {
+          return "Account{" +
+                  "accountId=" + accountId +
+                  ", accountName='" + accountName + '\'' +
+                  ", accountBalance=" + accountBalance +
+                  '}';
+      }
+  }
+  ```
+
+  ```java
+  public interface AccountDao {
+  
+      void reduceMoney();
+  
+      void addMoney();
+  
+      // 上面两个方法可以合并
+      int tranfer(String accountName, int money);
+  }
+  ```
+
+  ```java
+  @Repository
+  public class AccountDaoImpl implements AccountDao {
+      @Autowired
+      private JdbcTemplate jdbcTemplate;
+  
+      // lucy少钱
+      @Override
+      public void reduceMoney() {
+          String sql = "update t_account set account_balance = account_balance - ? where account_name = ?";
+          jdbcTemplate.update(sql, 100, "lucy");
+      }
+  
+      // mary多钱
+      @Override
+      public void addMoney() {
+          String sql = "update t_account set account_balance = account_balance + ? where account_name = ?";
+          jdbcTemplate.update(sql, 100, "mary");
+      }
+  
+      // 上面两个方法可以合并
+      @Override
+      public int tranfer(String accountName, int money) {
+          // 创建 SQL 语句
+          String sql = "update t_account set account_balance = account_balance - ? where account_name = ?";
+  
+          // SQL 语句参数
+          Object[] args = {money, accountName};
+  
+          // 执行 SQL 语句
+          int insertRows = jdbcTemplate.update(sql, args);
+          return insertRows;
+      }
+  }
+  ```
+
+  ```java
+  @Service
+  @Transactional
+  public class AccountService {
+      @Autowired
+      private AccountDao accountDao;
+  
+      // 转账的方法一
+      public void accountMoney() {
+          // lucy 少 100
+          accountDao.reduceMoney();
+          // mary 多 100
+          accountDao.addMoney();
+      }
+  
+      // 转账的方法二
+      public void transfer(String srcAccountName, String destAccountName, int money) {
+          accountDao.tranfer(srcAccountName, money);
+          accountDao.tranfer(destAccountName, -money);
+          System.out.println(srcAccountName + " 向 " + destAccountName + " 转账 " + money + " 元");
+      }
+  }
+  ```
+
+  ```java
+  public class SpringTest {
+      public static void main(String[] args) {
+          System.out.println("Spring 测试版本：" + SpringVersion.getVersion());
+          ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+          AccountService accountService = context.getBean("accountService", AccountService.class);
+  
+          // 测试方法一
+          accountService.accountMoney();
+  
+          // 测试方法二
+          accountService.transfer("lucy", "mary", 100);
+      }
+  }
+  ```
 
 - Spring 声明式事务管理参数配置：
 
@@ -4180,13 +4190,13 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
         }
     }
     ```
-  
+
 - `@Configuration`：标识这是一个配置类。
     - `@ComponentScan(basePackages = "cn.xisun.spring")`：配置包扫描路径。
     - `@EnableTransactionManagement`：开启注解事务管理。
-    
+
 - 方式二：
-  
+
   ```java
     public class JdbcConfig {
         /**
@@ -4241,7 +4251,7 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
         }
     }
   ```
-  
+
   ```java
   @Configuration
     @ComponentScan(basePackages = {"cn.xisun.spring"})
@@ -4251,9 +4261,9 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
     
     }
   ```
-  
+
   - `@Import(JdbcConfig.class)`：引入 JdbcConfig.class 配置文件。
-  
+
   - 方式三：
 
     ```java
@@ -4322,10 +4332,10 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
         }
     }
     ```
-  
+
     - `@PropertySource(value = "classpath:jdbc.properties")`：标识 properties 配置文件的路径。
   -  `@Value`：给当前属性赋值，取值来源于读取的 jdbc.properties 配置文件中的内容。
-  
+
   - 测试方法：
 
     ```java
@@ -4534,4 +4544,6 @@ https://www.bilibili.com/video/BV1Vf4y127N5
 
 https://blog.csdn.net/oneby1314/article/details/114259893
 
-声明：写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。

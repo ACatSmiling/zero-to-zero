@@ -2,24 +2,25 @@
 
 ## Spring Boot 简介
 
-- 官网：https://spring.io/projects/spring-boot
+官网：https://spring.io/projects/spring-boot
 
-- 文档：https://spring.io/projects/spring-boot#learn
+文档：https://spring.io/projects/spring-boot#learn
 
-  <img src="spring-boot/image-20210618171017632.png" alt="image-20210618171017632" style="zoom:80%;" />
+<img src="spring-boot/image-20210618171017632.png" alt="image-20210618171017632" style="zoom:80%;" />
 
-  ![image-20210618172108696](spring-boot/image-20210618172108696.png)
+![image-20210618172108696](spring-boot/image-20210618172108696.png)
 
-- 查看各版本的新特性：https://github.com/spring-projects/spring-boot/wiki#release-notes
+查看各版本的新特性：https://github.com/spring-projects/spring-boot/wiki#release-notes
 
-  <img src="spring-boot/image-20210618172926609.png" alt="image-20210618172926609" style="zoom:80%;" />
+<img src="spring-boot/image-20210618172926609.png" alt="image-20210618172926609" style="zoom:80%;" />
 
-  <img src="spring-boot/image-20210618173003220.png" alt="image-20210618173003220" style="zoom:80%;" />
+<img src="spring-boot/image-20210618173003220.png" alt="image-20210618173003220" style="zoom:80%;" />
 
 ## Spring Boot 的作用
 
-- Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
-  - Spring Boot 能快速创建出生产级别的 Spring 应用。
+> Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
+
+Spring Boot 能快速创建出生产级别的 Spring 应用。
 
 ## Spring Boot 的优点
 
@@ -56,130 +57,525 @@
 
 ### 系统要求
 
-- Java 8 +：
+Java 8 +：
 
-  ```powershell
-  PS C:\Users\XiSun> java -version
-  openjdk version "1.8.0_222"
-  OpenJDK Runtime Environment (AdoptOpenJDK)(build 1.8.0_222-b10)
-  OpenJDK 64-Bit Server VM (AdoptOpenJDK)(build 25.222-b10, mixed mode)
-  ```
+```powershell
+PS C:\Users\XiSun> java -version
+openjdk version "1.8.0_222"
+OpenJDK Runtime Environment (AdoptOpenJDK)(build 1.8.0_222-b10)
+OpenJDK 64-Bit Server VM (AdoptOpenJDK)(build 25.222-b10, mixed mode)
+```
 
-- Maven 3.5 +：
+Maven 3.5 +：
 
-  ```powershell
-  PS C:\Users\XiSun> mvn -v
-  Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
-  Maven home: D:\Program Files\Maven\apache-maven-3.6.3\bin\..
-  Java version: 1.8.0_222, vendor: AdoptOpenJDK, runtime: D:\Program Files\AdoptOpenJDK\jdk-8.0.222.10-hotspot\jre
-  Default locale: zh_CN, platform encoding: GBK
-  OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"
-  ```
+```powershell
+PS C:\Users\XiSun> mvn -v
+Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
+Maven home: D:\Program Files\Maven\apache-maven-3.6.3\bin\..
+Java version: 1.8.0_222, vendor: AdoptOpenJDK, runtime: D:\Program Files\AdoptOpenJDK\jdk-8.0.222.10-hotspot\jre
+Default locale: zh_CN, platform encoding: GBK
+OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"
+```
 
-  - Maven setting.xml 的设置：
+Maven setting.xml 的设置：
 
-    ```xml
-    <mirrors>
-        <mirror>
-            <id>nexus-aliyun</id>
-            <mirrorOf>central</mirrorOf>
-            <name>Nexus aliyun</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
-        </mirror>
-    </mirrors>
-     
-    <profiles>
-        <profile>
-            <id>jdk-1.8</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.source>1.8</maven.compiler.source>
-                <maven.compiler.target>1.8</maven.compiler.target>
-                <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
-            </properties>
-        </profile>
-    </profiles>
-    ```
-    
-  - 说明：添加上面的配置后，项目中每次 Maven 更新依赖时，不会改变 Compiler 的版本。如果针对单个项目配置，则在该项目的 pom.xml 文件中添加：
-  
-    ```xml
-    <properties>
-            <app.main.class>cn.matgene.reaction.extractor.FlinkKafkaJob</app.main.class>
-            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-            <java.version>1.8</java.version>
-            <maven.compiler.version>3.6.1</maven.compiler.version>
-            <maven.compiler.source>${java.version}</maven.compiler.source>
-            <maven.compiler.target>${java.version}</maven.compiler.target>
+```xml
+<mirrors>
+    <mirror>
+        <id>nexus-aliyun</id>
+        <mirrorOf>central</mirrorOf>
+        <name>Nexus aliyun</name>
+        <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+    </mirror>
+</mirrors>
+ 
+<profiles>
+    <profile>
+        <id>jdk-1.8</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+            <jdk>1.8</jdk>
+        </activation>
+        <properties>
+            <maven.compiler.source>1.8</maven.compiler.source>
+            <maven.compiler.target>1.8</maven.compiler.target>
+            <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
         </properties>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-        <plugins>
-    </build>
-    ```
+    </profile>
+</profiles>
+```
+
+说明：添加上面的配置后，项目中每次 Maven 更新依赖时，不会改变 Compiler 的版本。如果针对单个项目配置，则在该项目的 pom.xml 文件中添加：
+
+```xml
+<properties>
+        <app.main.class>cn.matgene.reaction.extractor.FlinkKafkaJob</app.main.class>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <maven.compiler.version>3.6.1</maven.compiler.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven.compiler.version}</version>
+            <configuration>
+                <source>${maven.compiler.source}</source>
+                <target>${maven.compiler.target}</target>
+            </configuration>
+        </plugin>
+    <plugins>
+</build>
+```
 
 ### HelloWorld
 
-- 需求：浏览器发送 `/hello`请求，服务器响应 `Hello, Spring Boot 2!`。
-- 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/getting-started.html#getting-started.first-application
+需求：浏览器发送`/hello`请求，服务器响应`Hello, Spring Boot 2!`。
 
-- 创建 Maven 工程，并添加 parent 依赖：
+参考：https://docs.spring.io/spring-boot/docs/current/reference/html/getting-started.html#getting-started.first-application
 
-  ![image-20210620142811195](spring-boot/image-20210620142811195.png)
+第一步，创建 Maven 工程，并添加 parent 依赖：
 
-  ```xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <project xmlns="http://maven.apache.org/POM/4.0.0"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-      <modelVersion>4.0.0</modelVersion>
-  
-      <groupId>cn.xisun</groupId>
-      <artifactId>springboot-helloworld</artifactId>
-      <version>1.0-SNAPSHOT</version>
-  
-      <parent>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-parent</artifactId>
-          <version>2.5.1</version>
-      </parent>
-  
-  </project>
+![image-20210620142811195](spring-boot/image-20210620142811195.png)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.xisun</groupId>
+    <artifactId>springboot-helloworld</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.5.1</version>
+    </parent>
+
+</project>
+```
+
+> parent 节点为手动添加。
+
+第二步，引入 web 相关依赖：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+第三步，创建主程序：
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/20 15:03
+ * @Description 主程序类
+ */
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MainApplication.class, args);
+    }
+}
+```
+
+第四步，业务层：
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/20 15:17
+ */
+@Controller
+public class HelloController {
+    @RequestMapping("/hello")
+    @ResponseBody
+    public String hello() {
+        return "Hello, Spring Boot 2!";
+    }
+}
+```
+
+第五步，运行 MainApplication.class 的 main 方法，启动程序，在浏览器输入地址 `http://localhost:8080/hello`，查看结果：
+
+```java
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.5.1)
+
+2021-06-20 15:37:47.623  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : Starting MainApplication using Java 1.8.0_222 on DESKTOP-OJKMETJ with PID 14268 (D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes started by XiSun in D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot)
+2021-06-20 15:37:47.627  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : No active profile set, falling back to default profiles: default
+2021-06-20 15:37:48.380  INFO 14268 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2021-06-20 15:37:48.386  INFO 14268 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2021-06-20 15:37:48.386  INFO 14268 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.46]
+2021-06-20 15:37:48.438  INFO 14268 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2021-06-20 15:37:48.439  INFO 14268 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 760 ms
+2021-06-20 15:37:48.674  INFO 14268 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2021-06-20 15:37:48.681  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : Started MainApplication in 1.374 seconds (JVM running for 2.301)
+2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+```
+
+![image-20210620154854477](spring-boot/image-20210620154854477.png)
+
+简化配置：
+
+- 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
+
+- 在 resources 目录下新建 application.properties 文件，项目中的一些配置可在此文件中进行修改。
+
+- 如，修改 tomcat 端口：
+
+  ```properties
+  server.port=8888
   ```
 
-  > parent 节点为手动添加。
+简化部署：
 
-- 引入 web 相关依赖：
+- **添加 `spring-boot-maven-plugin`：**
 
   ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-  </dependency>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-maven-plugin</artifactId>
+          </plugin>
+      </plugins>
+  </build>
   ```
 
-- 创建主程序：
+- 打包：
 
   ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/20 15:03
-   * @Description 主程序类
-   */
-  @SpringBootApplication
+  D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot>mvn clean package -DskipTests
+  [INFO] Scanning for projects...
+  [INFO]
+  [INFO] -------------------< cn.xisun:springboot-helloworld >-------------------
+  [INFO] Building springboot-helloworld 1.0-SNAPSHOT
+  [INFO] --------------------------------[ jar ]---------------------------------
+  [INFO]
+  [INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ springboot-helloworld ---
+  [INFO] Deleting D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target
+  [INFO]
+  [INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ springboot-helloworld ---
+  [INFO] Using 'UTF-8' encoding to copy filtered resources.
+  [INFO] Using 'UTF-8' encoding to copy filtered properties files.
+  [INFO] Copying 1 resource
+  [INFO] Copying 0 resource
+  [INFO]
+  [INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ springboot-helloworld ---
+  [INFO] Changes detected - recompiling the module!
+  [INFO] Compiling 2 source files to D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes
+  [INFO]
+  [INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ springboot-helloworld ---
+  [INFO] Using 'UTF-8' encoding to copy filtered resources.
+  [INFO] Using 'UTF-8' encoding to copy filtered properties files.
+  [INFO] skip non existing resourceDirectory D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\src\test\resources
+  [INFO]
+  [INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ springboot-helloworld ---
+  [INFO] Changes detected - recompiling the module!
+  [INFO]
+  [INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ springboot-helloworld ---
+  [INFO] Tests are skipped.
+  [INFO]
+  [INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ springboot-helloworld ---
+  [INFO] Building jar: D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\springboot-helloworld-1.0-SNAPSHOT.jar
+  [INFO]
+  [INFO] --- spring-boot-maven-plugin:2.5.1:repackage (repackage) @ springboot-helloworld ---
+  [INFO] Replacing main artifact with repackaged archive
+  [INFO] ------------------------------------------------------------------------
+  [INFO] BUILD SUCCESS
+  [INFO] ------------------------------------------------------------------------
+  [INFO] Total time:  1.890 s
+  [INFO] Finished at: 2021-06-20T16:47:43+08:00
+  [INFO] ------------------------------------------------------------------------
+  ```
+
+## Spring Boot 的特点
+
+### 依赖管理
+
+#### parent 依赖
+
+Spring Boot 项目，都会添加一个 parent 依赖`spring-boot-starter-parent`：
+
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.5.1</version>
+</parent>
+```
+
+- 父项目一般都是做依赖管理的，后续在项目中添加的依赖，其版本号和父项目 version 一致，不需要再单独指定。
+
+- `spring-boot-starter-parent`有自己的父项目`spring-boot-dependencies`，在该项目中几乎声明了所有开发中常用的依赖的版本号，这个版本号一般适应当前项目对应的版本，即**自动版本仲裁机制**。
+
+  ```xml
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-dependencies</artifactId>
+    <version>2.5.1</version>
+  </parent>
+  ```
+
+  ```xml
+  <properties>
+    <activemq.version>5.16.2</activemq.version>
+    <antlr2.version>2.7.7</antlr2.version>
+    <appengine-sdk.version>1.9.89</appengine-sdk.version>
+    <artemis.version>2.17.0</artemis.version>
+    <aspectj.version>1.9.6</aspectj.version>
+    <assertj.version>3.19.0</assertj.version>
+    <atomikos.version>4.0.6</atomikos.version>
+    <awaitility.version>4.0.3</awaitility.version>
+    <build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
+    <byte-buddy.version>1.10.22</byte-buddy.version>
+    <caffeine.version>2.9.1</caffeine.version>
+    <cassandra-driver.version>4.11.1</cassandra-driver.version>
+    <classmate.version>1.5.1</classmate.version>
+    <commons-codec.version>1.15</commons-codec.version>
+    <commons-dbcp2.version>2.8.0</commons-dbcp2.version>
+    <commons-lang3.version>3.12.0</commons-lang3.version>
+    <commons-pool.version>1.6</commons-pool.version>
+    <commons-pool2.version>2.9.0</commons-pool2.version>
+    <couchbase-client.version>3.1.6</couchbase-client.version>
+    <db2-jdbc.version>11.5.5.0</db2-jdbc.version>
+    <dependency-management-plugin.version>1.0.11.RELEASE</dependency-management-plugin.version>
+    <derby.version>10.14.2.0</derby.version>
+    <dropwizard-metrics.version>4.1.22</dropwizard-metrics.version>
+    <ehcache.version>2.10.9.2</ehcache.version>
+    <ehcache3.version>3.9.4</ehcache3.version>
+    <elasticsearch.version>7.12.1</elasticsearch.version>
+    <embedded-mongo.version>3.0.0</embedded-mongo.version>
+    <flyway.version>7.7.3</flyway.version>
+    <freemarker.version>2.3.31</freemarker.version>
+    <git-commit-id-plugin.version>4.0.5</git-commit-id-plugin.version>
+    <glassfish-el.version>3.0.3</glassfish-el.version>
+    <glassfish-jaxb.version>2.3.4</glassfish-jaxb.version>
+    <groovy.version>3.0.8</groovy.version>
+    <gson.version>2.8.7</gson.version>
+    <h2.version>1.4.200</h2.version>
+    <hamcrest.version>2.2</hamcrest.version>
+    <hazelcast.version>4.1.3</hazelcast.version>
+    <hazelcast-hibernate5.version>2.2.0</hazelcast-hibernate5.version>
+    <hibernate.version>5.4.32.Final</hibernate.version>
+    <hibernate-validator.version>6.2.0.Final</hibernate-validator.version>
+    <hikaricp.version>4.0.3</hikaricp.version>
+    <hsqldb.version>2.5.2</hsqldb.version>
+    <htmlunit.version>2.49.1</htmlunit.version>
+    <httpasyncclient.version>4.1.4</httpasyncclient.version>
+    <httpclient.version>4.5.13</httpclient.version>
+    <httpclient5.version>5.0.4</httpclient5.version>
+    <httpcore.version>4.4.14</httpcore.version>
+    <httpcore5.version>5.1.1</httpcore5.version>
+    <infinispan.version>12.1.4.Final</infinispan.version>
+    <influxdb-java.version>2.21</influxdb-java.version>
+    <jackson-bom.version>2.12.3</jackson-bom.version>
+    <jakarta-activation.version>1.2.2</jakarta-activation.version>
+    <jakarta-annotation.version>1.3.5</jakarta-annotation.version>
+    <jakarta-jms.version>2.0.3</jakarta-jms.version>
+    <jakarta-json.version>1.1.6</jakarta-json.version>
+    <jakarta-json-bind.version>1.0.2</jakarta-json-bind.version>
+    <jakarta-mail.version>1.6.7</jakarta-mail.version>
+    <jakarta-persistence.version>2.2.3</jakarta-persistence.version>
+    <jakarta-servlet.version>4.0.4</jakarta-servlet.version>
+    <jakarta-servlet-jsp-jstl.version>1.2.7</jakarta-servlet-jsp-jstl.version>
+    <jakarta-transaction.version>1.3.3</jakarta-transaction.version>
+    <jakarta-validation.version>2.0.2</jakarta-validation.version>
+    <jakarta-websocket.version>1.1.2</jakarta-websocket.version>
+    <jakarta-ws-rs.version>2.1.6</jakarta-ws-rs.version>
+    <jakarta-xml-bind.version>2.3.3</jakarta-xml-bind.version>
+    <jakarta-xml-soap.version>1.4.2</jakarta-xml-soap.version>
+    <jakarta-xml-ws.version>2.3.3</jakarta-xml-ws.version>
+    <janino.version>3.1.4</janino.version>
+    <javax-activation.version>1.2.0</javax-activation.version>
+    <javax-annotation.version>1.3.2</javax-annotation.version>
+    <javax-cache.version>1.1.1</javax-cache.version>
+    <javax-jaxb.version>2.3.1</javax-jaxb.version>
+    <javax-jaxws.version>2.3.1</javax-jaxws.version>
+    <javax-jms.version>2.0.1</javax-jms.version>
+    <javax-json.version>1.1.4</javax-json.version>
+    <javax-jsonb.version>1.0</javax-jsonb.version>
+    <javax-mail.version>1.6.2</javax-mail.version>
+    <javax-money.version>1.1</javax-money.version>
+    <javax-persistence.version>2.2</javax-persistence.version>
+    <javax-transaction.version>1.3</javax-transaction.version>
+    <javax-validation.version>2.0.1.Final</javax-validation.version>
+    <javax-websocket.version>1.1</javax-websocket.version>
+    <jaxen.version>1.2.0</jaxen.version>
+    <jaybird.version>4.0.3.java8</jaybird.version>
+    <jboss-logging.version>3.4.2.Final</jboss-logging.version>
+    <jboss-transaction-spi.version>7.6.1.Final</jboss-transaction-spi.version>
+    <jdom2.version>2.0.6</jdom2.version>
+    <jedis.version>3.6.0</jedis.version>
+    <jersey.version>2.33</jersey.version>
+    <jetty-el.version>9.0.29</jetty-el.version>
+    <jetty-jsp.version>2.2.0.v201112011158</jetty-jsp.version>
+    <jetty-reactive-httpclient.version>1.1.9</jetty-reactive-httpclient.version>
+    <jetty.version>9.4.42.v20210604</jetty.version>
+    <jmustache.version>1.15</jmustache.version>
+    <johnzon.version>1.2.13</johnzon.version>
+    <jolokia.version>1.6.2</jolokia.version>
+    <jooq.version>3.14.11</jooq.version>
+    <json-path.version>2.5.0</json-path.version>
+    <json-smart.version>2.4.7</json-smart.version>
+    <jsonassert.version>1.5.0</jsonassert.version>
+    <jstl.version>1.2</jstl.version>
+    <jtds.version>1.3.1</jtds.version>
+    <junit.version>4.13.2</junit.version>
+    <junit-jupiter.version>5.7.2</junit-jupiter.version>
+    <kafka.version>2.7.1</kafka.version>
+    <kotlin.version>1.5.10</kotlin.version>
+    <kotlin-coroutines.version>1.5.0</kotlin-coroutines.version>
+    <lettuce.version>6.1.2.RELEASE</lettuce.version>
+    <liquibase.version>4.3.5</liquibase.version>
+    <log4j2.version>2.14.1</log4j2.version>
+    <logback.version>1.2.3</logback.version>
+    <lombok.version>1.18.20</lombok.version>
+    <mariadb.version>2.7.3</mariadb.version>
+    <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
+    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+    <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
+    <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+    <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
+    <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
+    <maven-help-plugin.version>3.2.0</maven-help-plugin.version>
+    <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-invoker-plugin.version>3.2.2</maven-invoker-plugin.version>
+    <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
+    <micrometer.version>1.7.0</micrometer.version>
+    <mimepull.version>1.9.14</mimepull.version>
+    <mockito.version>3.9.0</mockito.version>
+    <mongodb.version>4.2.3</mongodb.version>
+    <mssql-jdbc.version>9.2.1.jre8</mssql-jdbc.version>
+    <mysql.version>8.0.25</mysql.version>
+    <nekohtml.version>1.9.22</nekohtml.version>
+    <neo4j-java-driver.version>4.2.6</neo4j-java-driver.version>
+    <netty.version>4.1.65.Final</netty.version>
+    <netty-tcnative.version>2.0.39.Final</netty-tcnative.version>
+    <oauth2-oidc-sdk.version>9.3.3</oauth2-oidc-sdk.version>
+    <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
+    <ojdbc.version>19.3.0.0</ojdbc.version>
+    <okhttp3.version>3.14.9</okhttp3.version>
+    <oracle-database.version>21.1.0.0</oracle-database.version>
+    <pooled-jms.version>1.2.2</pooled-jms.version>
+    <postgresql.version>42.2.20</postgresql.version>
+    <prometheus-pushgateway.version>0.10.0</prometheus-pushgateway.version>
+    <quartz.version>2.3.2</quartz.version>
+    <querydsl.version>4.4.0</querydsl.version>
+    <r2dbc-bom.version>Arabba-SR10</r2dbc-bom.version>
+    <rabbit-amqp-client.version>5.12.0</rabbit-amqp-client.version>
+    <reactive-streams.version>1.0.3</reactive-streams.version>
+    <reactor-bom.version>2020.0.7</reactor-bom.version>
+    <rest-assured.version>4.3.3</rest-assured.version>
+    <rsocket.version>1.1.1</rsocket.version>
+    <rxjava.version>1.3.8</rxjava.version>
+    <rxjava-adapter.version>1.2.1</rxjava-adapter.version>
+    <rxjava2.version>2.2.21</rxjava2.version>
+    <saaj-impl.version>1.5.3</saaj-impl.version>
+    <selenium.version>3.141.59</selenium.version>
+    <selenium-htmlunit.version>2.49.1</selenium-htmlunit.version>
+    <sendgrid.version>4.7.2</sendgrid.version>
+    <servlet-api.version>4.0.1</servlet-api.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <snakeyaml.version>1.28</snakeyaml.version>
+    <solr.version>8.8.2</solr.version>
+    <spring-amqp.version>2.3.8</spring-amqp.version>
+    <spring-batch.version>4.3.3</spring-batch.version>
+    <spring-data-bom.version>2021.0.1</spring-data-bom.version>
+    <spring-framework.version>5.3.8</spring-framework.version>
+    <spring-hateoas.version>1.3.1</spring-hateoas.version>
+    <spring-integration.version>5.5.0</spring-integration.version>
+    <spring-kafka.version>2.7.2</spring-kafka.version>
+    <spring-ldap.version>2.3.4.RELEASE</spring-ldap.version>
+    <spring-restdocs.version>2.0.5.RELEASE</spring-restdocs.version>
+    <spring-retry.version>1.3.1</spring-retry.version>
+    <spring-security.version>5.5.0</spring-security.version>
+    <spring-session-bom.version>2021.0.0</spring-session-bom.version>
+    <spring-ws.version>3.1.1</spring-ws.version>
+    <sqlite-jdbc.version>3.34.0</sqlite-jdbc.version>
+    <sun-mail.version>1.6.7</sun-mail.version>
+    <thymeleaf.version>3.0.12.RELEASE</thymeleaf.version>
+    <thymeleaf-extras-data-attribute.version>2.0.1</thymeleaf-extras-data-attribute.version>
+    <thymeleaf-extras-java8time.version>3.0.4.RELEASE</thymeleaf-extras-java8time.version>
+    <thymeleaf-extras-springsecurity.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity.version>
+    <thymeleaf-layout-dialect.version>2.5.3</thymeleaf-layout-dialect.version>
+    <tomcat.version>9.0.46</tomcat.version>
+    <unboundid-ldapsdk.version>4.0.14</unboundid-ldapsdk.version>
+    <undertow.version>2.2.8.Final</undertow.version>
+    <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
+    <webjars-hal-browser.version>3325375</webjars-hal-browser.version>
+    <webjars-locator-core.version>0.46</webjars-locator-core.version>
+    <wsdl4j.version>1.6.3</wsdl4j.version>
+    <xml-maven-plugin.version>1.0.2</xml-maven-plugin.version>
+    <xmlunit2.version>2.8.2</xmlunit2.version>
+  </properties>
+  ```
+
+  > 通过`spring-boot-dependencies`，可以查看适应当前版本的其他依赖的 version。
+
+#### 场景启动器
+
+参考：https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.build-systems.starters
+
+场景启动器表示的是实现某种功能时，所需要的一组常规的依赖，当引入这个启动器后，会自动添加这一组依赖。比如`spring-boot-start-web`：
+
+![springboot-helloworld](spring-boot/springboot-helloworld.png)
+
+Spring 官方的启动器命名规则为`spring-boot-start-*`，* 代表的就是某种场景。
+
+自定义的第三方启动器，命名规则一般为`thirdpartyproject-spring-boot-starter`。
+
+所有场景启动器最底层的依赖：
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter</artifactId>
+  <version>2.5.1</version>
+  <scope>compile</scope>
+</dependency>
+```
+
+### 自动配置
+
+比如，引入`spring-boot-start-web`启动器时，会自动引入 Tomcat、SpringMVC 的相关依赖，并配置好。也会自动配好 Web 的常见功能，如：字符编码问题。
+
+默认的包结构：
+
+- 默认情况下，**主程序所在包及其下面的所有子包**里面的组件都会被扫描进来，无需自行设置包扫描。
+
+  ![image-20210623132742700](spring-boot/image-20210623132742700.png)
+
+- 如果想要改变扫描路径，使用**`@SpringBootApplication(scanBasePackages="cn.xisun")`**。
+
+  ```java
+  @SpringBootApplication(scanBasePackages = "cn.xisun")
   public class MainApplication {
       public static void main(String[] args) {
           SpringApplication.run(MainApplication.class, args);
@@ -187,391 +583,12 @@
   }
   ```
 
-- 业务层：
-
-  ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/20 15:17
-   */
-  @Controller
-  public class HelloController {
-      @RequestMapping("/hello")
-      @ResponseBody
-      public String hello() {
-          return "Hello, Spring Boot 2!";
-      }
-  }
-  ```
-
-- 运行 MainApplication.class 的 main 方法，启动程序，在浏览器输入地址 `http://localhost:8080/hello`，查看结果：
-
-  ```java
-    .   ____          _            __ _ _
-   /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-  ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
-   \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-    '  |____| .__|_| |_|_| |_\__, | / / / /
-   =========|_|==============|___/=/_/_/_/
-   :: Spring Boot ::                (v2.5.1)
-  
-  2021-06-20 15:37:47.623  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : Starting MainApplication using Java 1.8.0_222 on DESKTOP-OJKMETJ with PID 14268 (D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes started by XiSun in D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot)
-  2021-06-20 15:37:47.627  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : No active profile set, falling back to default profiles: default
-  2021-06-20 15:37:48.380  INFO 14268 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-  2021-06-20 15:37:48.386  INFO 14268 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-  2021-06-20 15:37:48.386  INFO 14268 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.46]
-  2021-06-20 15:37:48.438  INFO 14268 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-  2021-06-20 15:37:48.439  INFO 14268 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 760 ms
-  2021-06-20 15:37:48.674  INFO 14268 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-  2021-06-20 15:37:48.681  INFO 14268 --- [           main] cn.xisun.web.MainApplication             : Started MainApplication in 1.374 seconds (JVM running for 2.301)
-  2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-  2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-  2021-06-20 15:37:59.504  INFO 14268 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
-  ```
-
-  ![image-20210620154854477](spring-boot/image-20210620154854477.png)
-
-- 简化配置：
-
-  - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
-
-  - 在 resources 目录下新建 application.properties 文件，项目中的一些配置可在此文件中进行修改。
-
-  - 如，修改 tomcat 端口：
-
-    ```properties
-    server.port=8888
-    ```
-
-- 简化部署：
-
-  - **添加 `spring-boot-maven-plugin`：**
-
-    ```xml
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-    ```
-
-  - 打包：
+  - `@SpringBootApplication`注解等同于`@SpringBootConfiguration`，`@EnableAutoConfiguration`和`@ComponentScan`，复写此三个注解，然后使用`@ComponentScan`也可以重新指定扫码路径。
 
     ```java
-    D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot>mvn clean package -DskipTests
-    [INFO] Scanning for projects...
-    [INFO]
-    [INFO] -------------------< cn.xisun:springboot-helloworld >-------------------
-    [INFO] Building springboot-helloworld 1.0-SNAPSHOT
-    [INFO] --------------------------------[ jar ]---------------------------------
-    [INFO]
-    [INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ springboot-helloworld ---
-    [INFO] Deleting D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target
-    [INFO]
-    [INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ springboot-helloworld ---
-    [INFO] Using 'UTF-8' encoding to copy filtered resources.
-    [INFO] Using 'UTF-8' encoding to copy filtered properties files.
-    [INFO] Copying 1 resource
-    [INFO] Copying 0 resource
-    [INFO]
-    [INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ springboot-helloworld ---
-    [INFO] Changes detected - recompiling the module!
-    [INFO] Compiling 2 source files to D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes
-    [INFO]
-    [INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ springboot-helloworld ---
-    [INFO] Using 'UTF-8' encoding to copy filtered resources.
-    [INFO] Using 'UTF-8' encoding to copy filtered properties files.
-    [INFO] skip non existing resourceDirectory D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\src\test\resources
-    [INFO]
-    [INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ springboot-helloworld ---
-    [INFO] Changes detected - recompiling the module!
-    [INFO]
-    [INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ springboot-helloworld ---
-    [INFO] Tests are skipped.
-    [INFO]
-    [INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ springboot-helloworld ---
-    [INFO] Building jar: D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\springboot-helloworld-1.0-SNAPSHOT.jar
-    [INFO]
-    [INFO] --- spring-boot-maven-plugin:2.5.1:repackage (repackage) @ springboot-helloworld ---
-    [INFO] Replacing main artifact with repackaged archive
-    [INFO] ------------------------------------------------------------------------
-    [INFO] BUILD SUCCESS
-    [INFO] ------------------------------------------------------------------------
-    [INFO] Total time:  1.890 s
-    [INFO] Finished at: 2021-06-20T16:47:43+08:00
-    [INFO] ------------------------------------------------------------------------
-    ```
-
-## Spring Boot 的特点
-
-### 依赖管理
-
-- Spring Boot 项目，都会添加一个 parent 依赖 `spring-boot-starter-parent`：
-
-  ```xml
-  <parent>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-parent</artifactId>
-      <version>2.5.1</version>
-  </parent>
-  ```
-
-  - 父项目一般都是做依赖管理的，后续在项目中添加的依赖，其版本号和父项目 version 一致，不需要再单独指定。
-
-  - `spring-boot-starter-parent` 有自己的父项目 `spring-boot-dependencies`，在该项目中几乎声明了所有开发中常用的依赖的版本号，这个版本号一般适应当前项目对应的版本。这是**自动版本仲裁机制**。
-
-    ```xml
-    <parent>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-dependencies</artifactId>
-      <version>2.5.1</version>
-    </parent>
-    ```
-
-    ```xml
-    <properties>
-      <activemq.version>5.16.2</activemq.version>
-      <antlr2.version>2.7.7</antlr2.version>
-      <appengine-sdk.version>1.9.89</appengine-sdk.version>
-      <artemis.version>2.17.0</artemis.version>
-      <aspectj.version>1.9.6</aspectj.version>
-      <assertj.version>3.19.0</assertj.version>
-      <atomikos.version>4.0.6</atomikos.version>
-      <awaitility.version>4.0.3</awaitility.version>
-      <build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
-      <byte-buddy.version>1.10.22</byte-buddy.version>
-      <caffeine.version>2.9.1</caffeine.version>
-      <cassandra-driver.version>4.11.1</cassandra-driver.version>
-      <classmate.version>1.5.1</classmate.version>
-      <commons-codec.version>1.15</commons-codec.version>
-      <commons-dbcp2.version>2.8.0</commons-dbcp2.version>
-      <commons-lang3.version>3.12.0</commons-lang3.version>
-      <commons-pool.version>1.6</commons-pool.version>
-      <commons-pool2.version>2.9.0</commons-pool2.version>
-      <couchbase-client.version>3.1.6</couchbase-client.version>
-      <db2-jdbc.version>11.5.5.0</db2-jdbc.version>
-      <dependency-management-plugin.version>1.0.11.RELEASE</dependency-management-plugin.version>
-      <derby.version>10.14.2.0</derby.version>
-      <dropwizard-metrics.version>4.1.22</dropwizard-metrics.version>
-      <ehcache.version>2.10.9.2</ehcache.version>
-      <ehcache3.version>3.9.4</ehcache3.version>
-      <elasticsearch.version>7.12.1</elasticsearch.version>
-      <embedded-mongo.version>3.0.0</embedded-mongo.version>
-      <flyway.version>7.7.3</flyway.version>
-      <freemarker.version>2.3.31</freemarker.version>
-      <git-commit-id-plugin.version>4.0.5</git-commit-id-plugin.version>
-      <glassfish-el.version>3.0.3</glassfish-el.version>
-      <glassfish-jaxb.version>2.3.4</glassfish-jaxb.version>
-      <groovy.version>3.0.8</groovy.version>
-      <gson.version>2.8.7</gson.version>
-      <h2.version>1.4.200</h2.version>
-      <hamcrest.version>2.2</hamcrest.version>
-      <hazelcast.version>4.1.3</hazelcast.version>
-      <hazelcast-hibernate5.version>2.2.0</hazelcast-hibernate5.version>
-      <hibernate.version>5.4.32.Final</hibernate.version>
-      <hibernate-validator.version>6.2.0.Final</hibernate-validator.version>
-      <hikaricp.version>4.0.3</hikaricp.version>
-      <hsqldb.version>2.5.2</hsqldb.version>
-      <htmlunit.version>2.49.1</htmlunit.version>
-      <httpasyncclient.version>4.1.4</httpasyncclient.version>
-      <httpclient.version>4.5.13</httpclient.version>
-      <httpclient5.version>5.0.4</httpclient5.version>
-      <httpcore.version>4.4.14</httpcore.version>
-      <httpcore5.version>5.1.1</httpcore5.version>
-      <infinispan.version>12.1.4.Final</infinispan.version>
-      <influxdb-java.version>2.21</influxdb-java.version>
-      <jackson-bom.version>2.12.3</jackson-bom.version>
-      <jakarta-activation.version>1.2.2</jakarta-activation.version>
-      <jakarta-annotation.version>1.3.5</jakarta-annotation.version>
-      <jakarta-jms.version>2.0.3</jakarta-jms.version>
-      <jakarta-json.version>1.1.6</jakarta-json.version>
-      <jakarta-json-bind.version>1.0.2</jakarta-json-bind.version>
-      <jakarta-mail.version>1.6.7</jakarta-mail.version>
-      <jakarta-persistence.version>2.2.3</jakarta-persistence.version>
-      <jakarta-servlet.version>4.0.4</jakarta-servlet.version>
-      <jakarta-servlet-jsp-jstl.version>1.2.7</jakarta-servlet-jsp-jstl.version>
-      <jakarta-transaction.version>1.3.3</jakarta-transaction.version>
-      <jakarta-validation.version>2.0.2</jakarta-validation.version>
-      <jakarta-websocket.version>1.1.2</jakarta-websocket.version>
-      <jakarta-ws-rs.version>2.1.6</jakarta-ws-rs.version>
-      <jakarta-xml-bind.version>2.3.3</jakarta-xml-bind.version>
-      <jakarta-xml-soap.version>1.4.2</jakarta-xml-soap.version>
-      <jakarta-xml-ws.version>2.3.3</jakarta-xml-ws.version>
-      <janino.version>3.1.4</janino.version>
-      <javax-activation.version>1.2.0</javax-activation.version>
-      <javax-annotation.version>1.3.2</javax-annotation.version>
-      <javax-cache.version>1.1.1</javax-cache.version>
-      <javax-jaxb.version>2.3.1</javax-jaxb.version>
-      <javax-jaxws.version>2.3.1</javax-jaxws.version>
-      <javax-jms.version>2.0.1</javax-jms.version>
-      <javax-json.version>1.1.4</javax-json.version>
-      <javax-jsonb.version>1.0</javax-jsonb.version>
-      <javax-mail.version>1.6.2</javax-mail.version>
-      <javax-money.version>1.1</javax-money.version>
-      <javax-persistence.version>2.2</javax-persistence.version>
-      <javax-transaction.version>1.3</javax-transaction.version>
-      <javax-validation.version>2.0.1.Final</javax-validation.version>
-      <javax-websocket.version>1.1</javax-websocket.version>
-      <jaxen.version>1.2.0</jaxen.version>
-      <jaybird.version>4.0.3.java8</jaybird.version>
-      <jboss-logging.version>3.4.2.Final</jboss-logging.version>
-      <jboss-transaction-spi.version>7.6.1.Final</jboss-transaction-spi.version>
-      <jdom2.version>2.0.6</jdom2.version>
-      <jedis.version>3.6.0</jedis.version>
-      <jersey.version>2.33</jersey.version>
-      <jetty-el.version>9.0.29</jetty-el.version>
-      <jetty-jsp.version>2.2.0.v201112011158</jetty-jsp.version>
-      <jetty-reactive-httpclient.version>1.1.9</jetty-reactive-httpclient.version>
-      <jetty.version>9.4.42.v20210604</jetty.version>
-      <jmustache.version>1.15</jmustache.version>
-      <johnzon.version>1.2.13</johnzon.version>
-      <jolokia.version>1.6.2</jolokia.version>
-      <jooq.version>3.14.11</jooq.version>
-      <json-path.version>2.5.0</json-path.version>
-      <json-smart.version>2.4.7</json-smart.version>
-      <jsonassert.version>1.5.0</jsonassert.version>
-      <jstl.version>1.2</jstl.version>
-      <jtds.version>1.3.1</jtds.version>
-      <junit.version>4.13.2</junit.version>
-      <junit-jupiter.version>5.7.2</junit-jupiter.version>
-      <kafka.version>2.7.1</kafka.version>
-      <kotlin.version>1.5.10</kotlin.version>
-      <kotlin-coroutines.version>1.5.0</kotlin-coroutines.version>
-      <lettuce.version>6.1.2.RELEASE</lettuce.version>
-      <liquibase.version>4.3.5</liquibase.version>
-      <log4j2.version>2.14.1</log4j2.version>
-      <logback.version>1.2.3</logback.version>
-      <lombok.version>1.18.20</lombok.version>
-      <mariadb.version>2.7.3</mariadb.version>
-      <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-      <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-      <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-      <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-      <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
-      <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-      <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
-      <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
-      <maven-help-plugin.version>3.2.0</maven-help-plugin.version>
-      <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-      <maven-invoker-plugin.version>3.2.2</maven-invoker-plugin.version>
-      <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-      <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
-      <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-      <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-      <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-      <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-      <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
-      <micrometer.version>1.7.0</micrometer.version>
-      <mimepull.version>1.9.14</mimepull.version>
-      <mockito.version>3.9.0</mockito.version>
-      <mongodb.version>4.2.3</mongodb.version>
-      <mssql-jdbc.version>9.2.1.jre8</mssql-jdbc.version>
-      <mysql.version>8.0.25</mysql.version>
-      <nekohtml.version>1.9.22</nekohtml.version>
-      <neo4j-java-driver.version>4.2.6</neo4j-java-driver.version>
-      <netty.version>4.1.65.Final</netty.version>
-      <netty-tcnative.version>2.0.39.Final</netty-tcnative.version>
-      <oauth2-oidc-sdk.version>9.3.3</oauth2-oidc-sdk.version>
-      <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
-      <ojdbc.version>19.3.0.0</ojdbc.version>
-      <okhttp3.version>3.14.9</okhttp3.version>
-      <oracle-database.version>21.1.0.0</oracle-database.version>
-      <pooled-jms.version>1.2.2</pooled-jms.version>
-      <postgresql.version>42.2.20</postgresql.version>
-      <prometheus-pushgateway.version>0.10.0</prometheus-pushgateway.version>
-      <quartz.version>2.3.2</quartz.version>
-      <querydsl.version>4.4.0</querydsl.version>
-      <r2dbc-bom.version>Arabba-SR10</r2dbc-bom.version>
-      <rabbit-amqp-client.version>5.12.0</rabbit-amqp-client.version>
-      <reactive-streams.version>1.0.3</reactive-streams.version>
-      <reactor-bom.version>2020.0.7</reactor-bom.version>
-      <rest-assured.version>4.3.3</rest-assured.version>
-      <rsocket.version>1.1.1</rsocket.version>
-      <rxjava.version>1.3.8</rxjava.version>
-      <rxjava-adapter.version>1.2.1</rxjava-adapter.version>
-      <rxjava2.version>2.2.21</rxjava2.version>
-      <saaj-impl.version>1.5.3</saaj-impl.version>
-      <selenium.version>3.141.59</selenium.version>
-      <selenium-htmlunit.version>2.49.1</selenium-htmlunit.version>
-      <sendgrid.version>4.7.2</sendgrid.version>
-      <servlet-api.version>4.0.1</servlet-api.version>
-      <slf4j.version>1.7.30</slf4j.version>
-      <snakeyaml.version>1.28</snakeyaml.version>
-      <solr.version>8.8.2</solr.version>
-      <spring-amqp.version>2.3.8</spring-amqp.version>
-      <spring-batch.version>4.3.3</spring-batch.version>
-      <spring-data-bom.version>2021.0.1</spring-data-bom.version>
-      <spring-framework.version>5.3.8</spring-framework.version>
-      <spring-hateoas.version>1.3.1</spring-hateoas.version>
-      <spring-integration.version>5.5.0</spring-integration.version>
-      <spring-kafka.version>2.7.2</spring-kafka.version>
-      <spring-ldap.version>2.3.4.RELEASE</spring-ldap.version>
-      <spring-restdocs.version>2.0.5.RELEASE</spring-restdocs.version>
-      <spring-retry.version>1.3.1</spring-retry.version>
-      <spring-security.version>5.5.0</spring-security.version>
-      <spring-session-bom.version>2021.0.0</spring-session-bom.version>
-      <spring-ws.version>3.1.1</spring-ws.version>
-      <sqlite-jdbc.version>3.34.0</sqlite-jdbc.version>
-      <sun-mail.version>1.6.7</sun-mail.version>
-      <thymeleaf.version>3.0.12.RELEASE</thymeleaf.version>
-      <thymeleaf-extras-data-attribute.version>2.0.1</thymeleaf-extras-data-attribute.version>
-      <thymeleaf-extras-java8time.version>3.0.4.RELEASE</thymeleaf-extras-java8time.version>
-      <thymeleaf-extras-springsecurity.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity.version>
-      <thymeleaf-layout-dialect.version>2.5.3</thymeleaf-layout-dialect.version>
-      <tomcat.version>9.0.46</tomcat.version>
-      <unboundid-ldapsdk.version>4.0.14</unboundid-ldapsdk.version>
-      <undertow.version>2.2.8.Final</undertow.version>
-      <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
-      <webjars-hal-browser.version>3325375</webjars-hal-browser.version>
-      <webjars-locator-core.version>0.46</webjars-locator-core.version>
-      <wsdl4j.version>1.6.3</wsdl4j.version>
-      <xml-maven-plugin.version>1.0.2</xml-maven-plugin.version>
-      <xmlunit2.version>2.8.2</xmlunit2.version>
-    </properties>
-    ```
-
-    > 通过 `spring-boot-dependencies`，可以查看适应当前版本的其他依赖的 version。
-
-- 场景启动器：
-
-  - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.build-systems.starters
-
-  - 场景启动器表示的是实现某种功能时，所需要的一组常规的依赖，当引入这个启动器后，会自动添加这一组依赖。比如 `spring-boot-start-web`：
-
-    ![springboot-helloworld](spring-boot/springboot-helloworld.png)
-
-  - Spring 官方的启动器命名规则为 `spring-boot-start-*`，* 代表的就是某种场景。
-
-  - 自定义的第三方启动器，命名规则一般为 `thirdpartyproject-spring-boot-starter`。
-
-  - 所有场景启动器最底层的依赖：
-
-    ```xml
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-      <version>2.5.1</version>
-      <scope>compile</scope>
-    </dependency>
-    ```
-
-### 自动配置
-
-- 比如，引入 `spring-boot-start-web` 启动器时，会自动引入 Tomcat、SpringMVC 的相关依赖，并配置好。也会自动配好 Web 的常见功能，如：字符编码问题。
-
-- 默认的包结构：
-
-  - **主程序所在包及其下面的所有子包**里面的组件都会被默认扫描进来，无需自行设置包扫描。
-
-    ![image-20210623132742700](spring-boot/image-20210623132742700.png)
-
-  - 如果想要改变扫描路径，使用 **`@SpringBootApplication(scanBasePackages="cn.xisun")`**。
-
-    ```java
-    @SpringBootApplication(scanBasePackages = "cn.xisun")
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    @ComponentScan("cn.xisun")
     public class MainApplication {
         public static void main(String[] args) {
             SpringApplication.run(MainApplication.class, args);
@@ -579,129 +596,116 @@
     }
     ```
 
-    - `@SpringBootApplication` 注解等同于 `@SpringBootConfiguration`，`@EnableAutoConfiguration` 和 `@ComponentScan`，复写此三个注解，然后使用 `@ComponentScan` 也可以重新指定扫码路径。
+各种配置拥有默认值：
 
-      ```java
-      @SpringBootConfiguration
-      @EnableAutoConfiguration
-      @ComponentScan("cn.xisun")
-      public class MainApplication {
-          public static void main(String[] args) {
-              SpringApplication.run(MainApplication.class, args);
-          }
-      }
-      ```
+- 默认配置最终都是映射到某个类上，如：MultipartProperties。
+- 配置文件的值最终会绑定每个类上，这个类会在容器中会创建对象。
+- 在 application.properties 文件内可以修改各种配置的默认值。
 
-- 各种配置拥有默认值：
+按需加载所有自动配置项：
 
-  - 默认配置最终都是映射到某个类上，如：MultipartProperties。
-  - 配置文件的值最终会绑定每个类上，这个类会在容器中会创建对象。
-  - 在 application.properties 文件内可以修改各种配置的默认值。
-
-- 按需加载所有自动配置项：
-
-  - 引入了一个场景启动器后，这个场景的自动配置才会开启。
-  - Spring Boot 所有的自动配置功能，都在 spring-boot-autoconfigure 包里面。
+- 引入了一个场景启动器后，这个场景的自动配置才会开启。
+- Spring Boot 所有的自动配置功能，都在 spring-boot-autoconfigure 包里面。
 
 ## Spring Boot 的容器功能
 
 ### 添加组件
 
-- 新建 User 类和 Pet 类，用于测试：
+新建 User 类和 Pet 类，用于测试：
 
-  ```java
-  package cn.xisun.web.bean;
-  
-  /**
-   * @Author XiSun
-   * @Date 2021/6/23 16:28
-   */
-  public class Pet {
-      private String name;
-  
-      public Pet() {
-      }
-  
-      public Pet(String name) {
-          this.name = name;
-      }
-  
-      public String getName() {
-          return name;
-      }
-  
-      public void setName(String name) {
-          this.name = name;
-      }
-  
-      @Override
-      public String toString() {
-          return "Pet{" +
-                  "name='" + name + '\'' +
-                  '}';
-      }
-  }
-  ```
+```java
+package cn.xisun.web.bean;
 
-  ```java
-  package cn.xisun.web.bean;
-  
-  /**
-   * @Author XiSun
-   * @Date 2021/6/23 15:23
-   */
-  public class User {
-      private String name;
-      
-      private int age;
-      
-      private Pet pet;
-  
-      public User() {
-      }
-  
-      public User(String name, int age) {
-          this.name = name;
-          this.age = age;
-      }
-  
-      public String getName() {
-          return name;
-      }
-  
-      public void setName(String name) {
-          this.name = name;
-      }
-  
-      public int getAge() {
-          return age;
-      }
-  
-      public void setAge(int age) {
-          this.age = age;
-      }
-  
-      public Pet getPet() {
-          return pet;
-      }
-  
-      public void setPet(Pet pet) {
-          this.pet = pet;
-      }
-  
-      @Override
-      public String toString() {
-          return "User{" +
-                  "name='" + name + '\'' +
-                  ", age=" + age +
-                  ", pet=" + pet +
-                  '}';
-      }
-  }
-  ```
+/**
+ * @Author XiSun
+ * @Date 2021/6/23 16:28
+ */
+public class Pet {
+    private String name;
+
+    public Pet() {
+    }
+
+    public Pet(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Pet{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+```
+
+```java
+package cn.xisun.web.bean;
+
+/**
+ * @Author XiSun
+ * @Date 2021/6/23 15:23
+ */
+public class User {
+    private String name;
+    
+    private int age;
+    
+    private Pet pet;
+
+    public User() {
+    }
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Pet getPet() {
+        return pet;
+    }
+
+    public void setPet(Pet pet) {
+        this.pet = pet;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", pet=" + pet +
+                '}';
+    }
+}
+```
 
 - **`@Configuration`**
-  
+
   ```java
   /**
    * @Author XiSun
@@ -755,7 +759,7 @@
       }
   }
   ```
-  
+
   ```java
   /**
    * @Author XiSun
@@ -813,9 +817,9 @@
       }
   }
   ```
-  
+
   - `@Configuration` 标注在类上，表明该类是一个配置类，作用等同于 Spring 的 xml 配置文件中的 \<beans> 标签，如下所示：
-  
+
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
@@ -837,13 +841,13 @@
         </bean>
     </beans>
     ```
-  
+
   - 根据 `@Configuration` 注解的 proxyBeanMethods 属性值：
-  
+
     - false：Lite 模式。当配置类组件之间无依赖关系时，用 Lite 模式可以减少判断，加速容器启动过程。
     - true：Full 模式。当配置类组件之间有依赖关系时，配置类里的 Bean 方法会被调用，为了得到之前容器中注册的单实例组件，需要使用 Full 模式。
       - 组件依赖必须使用 Full 模式。
-  
+
 - `@ComponentScan`：指定扫描的包，默认扫码主程序所在包及其下面的所有子包。
 
 - `@Import`：给容器中自动创建出指定类型的组件，并且，默认组件的名字是全类名。
@@ -891,9 +895,9 @@
 
 - `@Bean`、`@Component`、`@Controller`、`@Service`、`@Repository`。
 
-- `@Conditional`：条件装配，当满足 `@Conditional` 指定的条件时，则进行组件注入。
+- `@Conditional`：条件装配，当满足`@Conditional` 指定的条件时，则进行组件注入。
 
-  - `@Conditional` 注解有多个派生注解，每一个派生注解都代表一种条件。
+  - `@Conditional`注解有多个派生注解，每一个派生注解都代表一种条件。
 
     ![image-20210709153759323](spring-boot/image-20210709153759323.png)
 
