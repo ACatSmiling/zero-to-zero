@@ -390,7 +390,7 @@ hello-world   latest    d1165f221234   3 months ago   13.3kB
 
 ### Ubuntu 安装 Docker
 
-按照官网指示一步步执行，即可安装 Docker。主要涉及如下命令，各命令的含义参考官网：
+官网：https://docs.docker.com/engine/install/ubuntu/
 
 ```bash
 $ sudo apt-get remove docker docker-engine docker.io containerd runc
@@ -417,8 +417,65 @@ $ sudo apt-get install docker-ce docker-ce-cli containerd.io
 
 > 以上命令默认安装的为 Docker 最新版本，若需要安装特定版本，请参考官网。
 >
-> 参考：https://docs.docker.com/engine/install/ubuntu/
 
+### CentOS 安装 Docker
+
+官网：https://docs.docker.com/engine/install/centos/
+
+安装：
+
+```bash
+$ sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+
+$ sudo yum install -y yum-utils
+
+$ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+$ sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+```
+
+安装过程中，确认一下密钥指纹是否为`060A 61C5 1B55 8A7F 742B 77AA C52F EB6B 621E 9F35`，如果是，则继续安装下去：
+
+![image-20220530201453187](docker/image-20220530201453187.png)
+
+>以上命令默认安装的为 Docker 最新版本，若需要安装特定版本，请参考官网。
+
+启动 Docker：
+
+```bash
+$ sudo systemctl start docker
+```
+
+查看 Docker 状态：
+
+```bash
+$ sudo systemctl status docker
+```
+
+运行 HelloWorld：
+
+```bash
+$ sudo docker run hello-world
+```
+
+停止 Docker：
+
+```bash
+$ sudo systemctl stop docker
+```
+
+设置 Docker 开机自启动：
+
+```bash
+$ sudo systemctl enable docker
+```
 
 ## Docker 常用命令
 
