@@ -327,7 +327,7 @@ Server: Docker Engine - Community
 第八步，设置 Docker 镜像源。
 
 ```powershell
-# 设置镜像源
+# 设置镜像源，新建一个daemon.json文件，然后添加如下内容
 root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# vim /etc/docker/daemon.json
 root@DESKTOP-OM8IACS:/mnt/c/Users/XiSun# cat /etc/docker/daemon.json
 {
