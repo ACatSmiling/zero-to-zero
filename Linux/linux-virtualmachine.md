@@ -830,6 +830,200 @@ root@hadoop100 ~]# source .bashrc
 
 https://www.bilibili.com/video/BV1Qp4y1n7EN
 
+### 补充：Ubuntu 安装
+
+桌面版下载：https://ubuntu.com/download/desktop
+
+![image-20220630162643336](linux-virtualmachine/image-20220630162643336.png)
+
+> 上面的是桌面版。
+
+非桌面版下载：https://ubuntu.com/download/server
+
+![image-20220630163552967](linux-virtualmachine/image-20220630163552967.png)
+
+![image-20220630163701129](linux-virtualmachine/image-20220630163701129.png)
+
+> 可以使用清华源镜像地址下载：https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu/releases/20.04.4/release/ubuntu-20.04.4-live-server-arm64.iso
+>
+> 桌面版与非桌面版的区别：非桌面版的软件需要自己安装，桌面版自带了很多安装好的软件。
+
+其他步骤参考 CentOS 安装，需要修改的地方如下：
+
+<img src="linux-virtualmachine/image-20220630163047226.png" alt="image-20220630163047226" style="zoom: 50%;" />
+
+<img src="linux-virtualmachine/image-20220630165011882.png" alt="image-20220630165011882" style="zoom:50%;" />
+
+<img src="linux-virtualmachine/image-20220630170138476.png" alt="image-20220630170138476" style="zoom:50%;" />
+
+<img src="linux-virtualmachine/image-20220630170422620.png" alt="image-20220630170422620" style="zoom:50%;" />
+
+Vmware 配置 Ubuntu 软件，即，向虚拟机插入系统盘：
+
+![image-20220630173458690](linux-virtualmachine/image-20220630173458690.png)
+
+> 如果选择非桌面版镜像文件，安装系统的时候出现了`Operating System not found`异常，暂不明确异常原因，因此，后续选择桌面版镜像文件。
+
+开启虚拟机，安装系统盘并配置，当选择桌面版镜像文件时，推荐最小化安装：
+
+<img src="linux-virtualmachine/image-20220630175311944.png" alt="image-20220630175311944" style="zoom:50%;" />
+
+<img src="linux-virtualmachine/image-20220630175609327.png" alt="image-20220630175609327" style="zoom: 67%;" />
+
+<img src="linux-virtualmachine/image-20220630175941141.png" alt="image-20220630175941141" style="zoom:67%;" />
+
+<img src="linux-virtualmachine/image-20220630180022743.png" alt="image-20220630180022743" style="zoom:67%;" />
+
+<img src="linux-virtualmachine/image-20220630181828463.png" alt="image-20220630181828463" style="zoom:67%;" />
+
+系统安装完成后，可以使用安装过程中创建的用户名和密码登录，然后修改下 root 密码：
+
+```bash
+xisun@xisun-virtual-machine:~/Desktop$ sudo passwd root
+New password: 
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password: 
+passwd: password updated successfully
+```
+
+安装 vim：
+
+```bash
+$ apt remove vim-common
+$ apt install vim
+```
+
+> Ubuntu 默认安装装的是 vim tiny 版本，使用时会出现上下左右方向键变为 ABCD 的情况，因此，将其移除，安装 vim full 版本。
+
+安装 openssh-server：
+
+```bash
+$ apt install openssh-server
+```
+
+> 不安装 openssh-server，Xshell 无法通过 SSH 连接虚拟机。
+
+查看 22 端口：
+
+```bash
+$ netstat -ntlp | grep 22
+```
+
+修改虚拟机 hostname：
+
+```bash
+$ vim /etc/hostname
+$ hostname
+```
+
+配置虚拟机静态 IP 地址，Ubuntu 从 17.10 开始，放弃在 /etc/network/interfaces 里面配置 IP，改为在`/etc/netplan/XX-installer-config.yaml`的 yaml 文件中配置 IP 地址。（以下命令需要使用 root 权限执行）
+
+> 关于 VMware 和 Windows 主机的地址修改，参考 Centos，下面的内容只涉及虚拟机的静态 IP 配置。
+
+查看网络配置信息：
+
+```bash
+# 方式一
+xisun@xisun-virtual-machine:~$ ifconfig
+ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.10.128  netmask 255.255.255.0  broadcast 192.168.10.255
+        inet6 fe80::ec53:34d9:1134:ce0b  prefixlen 64  scopeid 0x20<link>
+        ether 00:0c:29:14:62:e0  txqueuelen 1000  (Ethernet)
+        RX packets 216049  bytes 316602255 (316.6 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 16993  bytes 2432653 (2.4 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 717  bytes 111403 (111.4 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 717  bytes 111403 (111.4 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+# 方式二
+xisun@xisun-virtual-machine:~$ ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:14:62:e0 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.10.128/24 brd 192.168.10.255 scope global dynamic noprefixroute ens33
+       valid_lft 1534sec preferred_lft 1534sec
+    inet6 fe80::ec53:34d9:1134:ce0b/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+```
+
+修改配置文件：
+
+```bash
+$ vim /etc/netplan/01-network-manager-all.yaml
+```
+
+```yaml
+network:
+  version: 2
+  renderer: NetworkManager
+  # 根据自身需要，添加以下配置
+  ethernets:
+    ens33:	# 配置的网卡的名称
+      addresses: [192.168.10.99/24]	# 配置的静态ip地址和掩码
+      dhcp4: false	# 关闭dhcp4(动态IP)
+      gateway4: 192.168.10.2	# 网关地址
+      nameservers:
+        addresses: [192.168.10.2]	# DNS服务器地址，多个DNS服务器地址需要用英文逗号分隔开，可不配置
+```
+
+使配置生效：
+
+```bash
+$ netplan apply
+```
+
+查看修改后的 IP 地址：
+
+```bash
+xisun@xisun-virtual-machine:~$ ifconfig
+ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.10.99  netmask 255.255.255.0  broadcast 192.168.10.255
+        inet6 fe80::20c:29ff:fe14:62e0  prefixlen 64  scopeid 0x20<link>
+        ether 00:0c:29:14:62:e0  txqueuelen 1000  (Ethernet)
+        RX packets 224034  bytes 325714476 (325.7 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 19050  bytes 2666184 (2.6 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 776  bytes 119231 (119.2 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 776  bytes 119231 (119.2 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+xisun@xisun-virtual-machine:~$ ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:14:62:e0 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.10.99/24 brd 192.168.10.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fe14:62e0/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
 ## Xshell 远程连接虚拟机
 
 Xshell 安装过程略。
