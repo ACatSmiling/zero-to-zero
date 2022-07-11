@@ -289,6 +289,20 @@ $ git branch -a
 
 以上，后续修改时，直接推送到 main 分支即可。
 
+## 异常处理
+
+Git 使用时，有时会出现以下错误：
+
+```bash
+error: RPC failed; curl 28 OpenSSL SSL_read: Connection was reset, errno 10054
+```
+
+使用如下设置：
+
+```bash
+$ git config --global http.sslVerify false
+```
+
 ## 本文参考
 
 https://blog.csdn.net/weixin_41287260/article/details/89743120
@@ -296,6 +310,8 @@ https://blog.csdn.net/weixin_41287260/article/details/89743120
 https://www.cnblogs.com/hyhy904/p/11097338.html
 
 https://www.cxyzjd.com/article/qq_23518283/100578030
+
+https://stackoverflow.com/questions/9008309/how-do-i-set-git-ssl-no-verify-for-specific-repos-only
 
 ## 声明
 
