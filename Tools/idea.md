@@ -8,7 +8,13 @@
 
 ### 编码设置
 
+![image-20220714134438849](idea/image-20220714134438849.png)
+
+> 控制台输出中文乱码时，查看是否 Console  配置的不是 UTF-8。
+
 ![image-20220407105335024](idea/image-20220407105335024.png)
+
+> 某些文件如 .properties 中文乱码，查看是否 File Encodings 配置的不是 UTF-8。
 
 ### 注释信息
 
@@ -213,6 +219,50 @@ Structure：
        </executions>
    </plugin>
    ```
+
+## 集成 Tomcat
+
+Tomcat 官网：https://tomcat.apache.org/
+
+下载 Tomcat：
+
+<img src="idea/image-20220714115000138.png" alt="image-20220714115000138" style="zoom: 50%;" />
+
+![image-20220714115123037](idea/image-20220714115123037.png)
+
+安装 Tomcat：
+
+<img src="idea/image-20220714115458043.png" alt="image-20220714115458043" style="zoom:50%;" />
+
+集成 Tomcat：
+
+- 点击 Run ---> Edit Configuration：
+
+  <img src="idea/image-20220714120020551.png" alt="image-20220714120020551" style="zoom:50%;" />
+
+- 点击 +，选择 Tomcat Server ---> Local：
+
+  <img src="idea/image-20220714120213523.png" alt="image-20220714120213523" style="zoom:50%;" />
+
+- 点击 Server，设置基本信息：
+
+  ![image-20220714131952935](idea/image-20220714131952935.png)
+
+  <img src="idea/image-20220714132045282.png" alt="image-20220714132045282" style="zoom:50%;" />
+
+- 点击 Deployment，点击 + ---> Artifact，选择需要部署的 Web 项目：
+
+  ![image-20220714132247415](idea/image-20220714132247415.png)
+
+  <img src="idea/image-20220714132422230.png" alt="image-20220714132422230" style="zoom: 50%;" />
+
+- 设置完成后，启动 Tomcat，即可在浏览器中访问设置的 URL 地址：
+
+  <img src="idea/image-20220714132545544.png" alt="image-20220714132545544" style="zoom:50%;" />
+
+Tomcat 启动时，控制台可能出现中文乱码，设置如下：
+
+![image-20220714133533466](idea/image-20220714133533466.png)
 
 ## 本文参考
 
