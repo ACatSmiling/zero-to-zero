@@ -116,7 +116,7 @@ Structure：
 
 `Ctrl + Alt + U`：查看类图
 
-`Ctrl + Alt + B`：查找接口的实现类
+`Ctrl + Alt + B`：查找接口的实现类（`Ctrl + Alt + F7`）
 
 `Ctrl + Alt + ⬅`：回到上一步
 
