@@ -418,6 +418,16 @@ $ sudo apt-get install docker-ce docker-ce-cli containerd.io
 > 以上命令默认安装的为 Docker 最新版本，若需要安装特定版本，请参考官网。
 >
 
+安装 Docker 后，设置镜像源，然后重启 Docker 服务。
+
+查看 Docker 状态：
+
+```bash
+$ systemctl status docker
+```
+
+
+
 ### CentOS 安装 Docker
 
 官网：https://docs.docker.com/engine/install/centos/
