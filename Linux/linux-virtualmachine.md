@@ -893,7 +893,7 @@ $ apt remove vim-common
 $ apt install vim
 ```
 
-> Ubuntu 默认安装装的是 vim tiny 版本，使用时会出现上下左右方向键变为 ABCD 的情况，因此，将其移除，安装 vim full 版本。
+> Ubuntu 默认安装的是 vim tiny 版本，使用时会出现上下左右方向键变为 ABCD 的情况，因此，将其移除，安装 vim full 版本。
 
 安装 openssh-server：
 
@@ -906,6 +906,7 @@ $ apt install openssh-server
 查看 22 端口：
 
 ```bash
+$ apt install net-tools
 $ netstat -ntlp | grep 22
 ```
 
@@ -960,6 +961,8 @@ xisun@xisun-virtual-machine:~$ ip addr
        valid_lft forever preferred_lft forever
 ```
 
+>网卡名是 ens33。
+
 修改配置文件：
 
 ```bash
@@ -973,12 +976,22 @@ network:
   # 根据自身需要，添加以下配置
   ethernets:
     ens33:	# 配置的网卡的名称
-      addresses: [192.168.10.99/24]	# 配置的静态ip地址和掩码
+      addresses: 
+        - 192.168.10.99/24	# 配置的静态ip地址和掩码
       dhcp4: false	# 关闭dhcp4(动态IP)
-      gateway4: 192.168.10.2	# 网关地址
+      # gateway4: 192.168.10.2	# 网关地址
+      routes:
+      	- to: default
+      	  via: 192.168.10.2
       nameservers:
         addresses: [192.168.10.2]	# DNS服务器地址，多个DNS服务器地址需要用英文逗号分隔开，可不配置
 ```
+
+> 配置时，需要指定当前虚拟机的网卡名，然后进行修改，例如，本机网卡为 ens33，因此，修改时，也要指定为 ens33。
+>
+> 注意：'gateway4' has been deprecated, use default routes instead. See the 'Default routes' section of the documentation for more details.
+>
+> 使用 routes 替换 gateway4。
 
 使配置生效：
 
@@ -1023,6 +1036,16 @@ xisun@xisun-virtual-machine:~$ ip addr
     inet6 fe80::20c:29ff:fe14:62e0/64 scope link 
        valid_lft forever preferred_lft forever
 ```
+
+安装 OpenJDK 8：
+
+```bash
+$ sudo apt update
+$ sudo apt install openjdk-8-jdk
+$ java -version
+```
+
+安装 Docker：略。
 
 ## Xshell 远程连接虚拟机
 
