@@ -333,7 +333,7 @@ $ docker images
 启动容器：
 
 ```bash
-$ docker run -d --name mysql -p 3306:3306 -v /mydata/:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mysql:8.0.29
+$ docker run -d --name mysql_8.0.29 -p 3306:3306 -v /home/xisun/MyDatas/mysql/:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mysql:8.0.29
 ```
 
 ## MySQL 数据库的使用
