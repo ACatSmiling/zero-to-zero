@@ -1940,8 +1940,8 @@ EmployeeMapper.xml：
             column：将SQL以及查询结果中的某个字段设置为分步查询的条件
 				注意：column是SQL查询出来的结果中的字段名，此处为dep_id
         -->
-        <association property="department" select="cn.xisun.mybatis.mapper.DepartmentMapper.getDepartmentByStepTwoById"
-                     column="dep_id">
+        <association property="department" column="dep_id" 
+                     select="cn.xisun.mybatis.mapper.DepartmentMapper.getDepartmentByStepTwoById">
         </association>
     </resultMap>
 
@@ -1974,6 +1974,7 @@ DepartmentMapper.xml：
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.xisun.mybatis.mapper.DepartmentMapper">
+    <!-- 多对一映射，方式三：分步查询 -->
     <resultMap id="department" type="cn.xisun.mybatis.entity.Department">
         <id property="id" column="id"></id>
         <result property="depName" column="dep_name"></result>
@@ -2145,9 +2146,9 @@ public class Employee {
     private Integer age;
 
     /**
-     * 多对一：Employee实例，对应一个Department实例
+     * 一对多
      */
-    private Department department;
+    private Integer depId;
 }
 ```
 
@@ -2181,6 +2182,530 @@ public class Department {
 
 #### 使用 collection 处理映射关系
 
+```xml
+public interface DepartmentMapper {
+    /**
+     * 获取部门信息，包含部门内的所有员工
+     *
+     * @param id 部门id
+     * @return 部门实例
+     */
+    Department getDepartmentById(@Param("id") Integer id);
+}
+```
 
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DepartmentMapper">
+    <!-- 一对多映射，方式一：使用collection -->
+    <resultMap id="department" type="cn.xisun.mybatis.entity.Department">
+        <id property="id" column="dep_id"></id>
+        <result property="depName" column="dep_name"></result>
+        <!--
+            collection：处理一对多的映射关系
+                属性：
+                    ofType：设置collection标签中所处理的集合属性中存储数据的类型
+        -->
+        <collection property="employees" ofType="cn.xisun.mybatis.entity.Employee">
+            <id property="id" column="emp_id"></id>
+            <result property="empName" column="emp_name"></result>
+            <result property="sex" column="sex"></result>
+            <result property="age" column="age"></result>
+            <!-- employees集合中的employee对象，不应该设置其department属性 -->
+        </collection>
+    </resultMap>
+
+    <!-- Department getDepartmentById(@Param("id") Integer id); -->
+    <select id="getDepartmentById" resultMap="department">
+        SELECT d.id dep_id, d.dep_name, e.id emp_id, e.emp_name, e.sex, e.age, e.dep_id
+        FROM mybatis.department d
+                 LEFT JOIN mybatis.employee e ON d.id = e.dep_id
+        WHERE d.id = #{id};
+    </select>
+</mapper>
+```
+
+```java
+class DepartmentMapperTest {
+    @Test
+    void test() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
+        Department department = departmentMapper.getDepartmentById(2);
+        System.out.println(department);
+    }
+}
+```
+
+```java
+2022-07-24 09:45:00.851 [main] DEBUG c.x.m.mapper.DepartmentMapper.getDepartmentById - ==>  Preparing: SELECT d.id dep_id, d.dep_name, e.id emp_id, e.emp_name, e.sex, e.age, e.dep_id FROM mybatis.department d LEFT JOIN mybatis.employee e ON d.id = e.dep_id WHERE d.id = ?;
+2022-07-24 09:45:00.874 [main] DEBUG c.x.m.mapper.DepartmentMapper.getDepartmentById - ==> Parameters: 2(Integer)
+2022-07-24 09:45:00.894 [main] DEBUG c.x.m.mapper.DepartmentMapper.getDepartmentById - <==      Total: 2
+Department(id=2, depName=产品部, employees=[Employee(id=2, empName=李四, sex=男, age=28, department=null), Employee(id=3, empName=王五, sex=男, age=29, department=null)])
+```
 
 #### 分布查询处理映射关系
+
+DepartmentMapper.java：
+
+```java
+public interface DepartmentMapper {
+    /**
+     * 分步查询第一步：获取部门信息
+     *
+     * @param id 部门id
+     * @return 部门实例
+     */
+    Department getDepartmentByStepOneById(@Param("id") Integer id);
+}
+```
+
+DepartmentMapper.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DepartmentMapper">
+    <!-- 一对多映射，方式二：分布查询 -->
+    <resultMap id="department" type="cn.xisun.mybatis.entity.Department">
+        <id property="id" column="id"></id>
+        <result property="depName" column="dep_name"></result>
+        <!-- 根据department的id，查询对应的employee，因此，column列，填写的是department的id字段 -->
+        <collection property="employees" column="id" fetchType="lazy"
+                    select="cn.xisun.mybatis.mapper.EmployeeMapper.getEmployeeByStepTwoByDepId">
+        </collection>
+    </resultMap>
+
+    <!-- Department getDepartmentByStepOneById(@Param("id") Integer id); -->
+    <select id="getDepartmentByStepOneById" resultMap="department">
+        SELECT * FROM mybatis.department WHERE id = #{id};
+    </select>
+</mapper>
+```
+
+EmployeeMapper.java：
+
+```java
+public interface EmployeeMapper {
+    /**
+     * 分步查询第二步：获取部门信息中的员工信息
+     *
+     * @param depId 员工所属部门id
+     * @return 员工列表
+     */
+    List<Employee> getEmployeeByStepTwoByDepId(@Param("depId") Integer depId);
+}
+```
+
+EmployeeMapper.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.EmployeeMapper">
+    <!-- 一对多映射，方式二：分布查询 -->
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- Employee getEmployeeByStepTwoByDepId(@Param("dep_id") Integer dep_id); -->
+    <select id="getEmployeeByStepTwoByDepId" resultMap="employee">
+        SELECT * FROM mybatis.employee WHERE dep_id = #{depId};
+    </select>
+</mapper>
+```
+
+测试：
+
+```java
+class DepartmentMapperTest {
+    @Test
+    void test() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
+        Department department = departmentMapper.getDepartmentByStepOneById(2);
+        System.out.println(department.getDepName());
+        System.out.println("--------------------------------------------");
+        System.out.println(department.getEmployees());
+    }
+}
+```
+
+输出：
+
+```java
+2022-07-24 21:02:52.356 [main] DEBUG c.x.m.m.D.getDepartmentByStepOneById - ==>  Preparing: SELECT * FROM mybatis.department WHERE id = ?;
+2022-07-24 21:02:52.389 [main] DEBUG c.x.m.m.D.getDepartmentByStepOneById - ==> Parameters: 2(Integer)
+2022-07-24 21:02:52.457 [main] DEBUG c.x.m.m.D.getDepartmentByStepOneById - <==      Total: 1
+产品部
+--------------------------------------------
+2022-07-24 21:02:52.460 [main] DEBUG c.x.m.m.EmployeeMapper.getEmployeeByStepTwoByDepId - ==>  Preparing: SELECT * FROM mybatis.employee WHERE dep_id = ?;
+2022-07-24 21:02:52.461 [main] DEBUG c.x.m.m.EmployeeMapper.getEmployeeByStepTwoByDepId - ==> Parameters: 2(Long)
+2022-07-24 21:02:52.464 [main] DEBUG c.x.m.m.EmployeeMapper.getEmployeeByStepTwoByDepId - <==      Total: 2
+[Employee(id=2, empName=李四, sex=男, age=28, depId=2), Employee(id=3, empName=王五, sex=男, age=29, depId=2)]
+```
+
+> 此处，设置了延时加载。
+
+## 动态 SQL
+
+MyBatis 框架的`动态 SQL 技术`是一种根据特定条件，动态拼装 SQL 语句的功能，它存在的意义是为了解决拼接 SQL 语句字符串时的痛点问题。
+
+新建 DynamicSQLMapper.java：
+
+```java
+public interface DynamicSQLMapper {
+    /**
+     * 根据多条件查询，可能获得多个结果
+     *
+     * @param employee 查询条件可能包含多个，以一个Employee对象为参数模拟
+     * @return 员工列表
+     */
+    List<Employee> getEmployeesByConditions(Employee employee);
+}
+```
+
+新建一个 DynamicSQLMapper 映射：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 设置MyBatis的全局配置 -->
+    <!-- <settings> -->
+        <!-- 将表字段的_，自动映射为驼峰，例如emp_name映射为empName
+                mapUnderscoreToCamelCase默认为false
+        -->
+        <!-- <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings> -->
+    
+    <settings>
+        <!-- 开启延时加载 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+    
+    <!-- 设置连接数据库的环境 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.10.100:3306/mybatis"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 引入映射文件 -->
+    <mappers>
+        <mapper resource="mappers/UserMapper.xml"/>
+        <mapper resource="mappers/SelectMapper.xml"/>
+        <mapper resource="mappers/SpecialSqlMapper.xml"/>
+        <mapper resource="mappers/EmployeeMapper.xml"/>
+        <mapper resource="mappers/DepartmentMapper.xml"/>
+        <mapper resource="mappers/DynamicSQLMapper.xml"/>
+    </mappers>
+</configuration>
+```
+
+### if 标签
+
+if 标签可通过 test 属性的表达式进行判断，若表达式的结果为 true，则标签中的内容会执行；反之，标签中的内容不会执行。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- 动态SQL之if标签 -->
+    <!-- List<Employee> getEmployeesByConditions(Employee employee); -->
+    <select id="getEmployeesByConditions" resultMap="employee">
+        SELECT * FROM mybatis.employee WHERE 1 = 1
+        <!-- test中的条件，此处是employee对象的属性名 -->
+        <if test="empName != '' and empName != null">
+            <!-- AND可以替换成OR关键字 -->
+            AND emp_name = #{empName}
+        </if>
+        <if test="age != '' and age != null">
+            AND age = #{age}
+        </if>
+        <if test="sex != '' and sex != null">
+            AND sex = #{sex}
+        </if>
+        ;
+    </select>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void getEmployeesByConditions() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Employee employee = new Employee();
+        employee.setEmpName("张三");
+        employee.setSex("男");
+        List<Employee> employees = dynamicSQLMapper.getEmployeesByConditions(employee);
+        System.out.println(employees);
+    }
+}
+```
+
+```java
+2022-07-24 22:08:04.620 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==>  Preparing: SELECT * FROM mybatis.employee WHERE 1 = 1 AND emp_name = ? AND sex = ? ;
+2022-07-24 22:08:04.642 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==> Parameters: 张三(String), 男(String)
+2022-07-24 22:08:04.661 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - <==      Total: 1
+[Employee(id=1, empName=张三, sex=男, age=27, depId=1)]
+```
+
+> 可以自行修改 employee 对象的属性值，并观察最终执行的 SQL 查询语句和条件。
+
+### where 标签
+
+`where 标签和 if 标签一般结合使用`：
+
+- 若 where 标签中的 if 标签的条件都不满足，则 where 标签没有任何功能，即不会添加 WHERE 关键字；
+
+- 若 where 标签中的 if 标签的条件满足，则 where 标签会自动添加 WHERE 关键字，并将条件最前面多余的 AND 或 OR 关键字去掉；
+
+- 注意：where 标签不能去掉条件最后面多余的 AND 或 OR 关键字。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+    
+    <!-- 动态SQL之where标签 -->
+    <!-- List<Employee> getEmployeesByConditions(Employee employee); -->
+    <select id="getEmployeesByConditions" resultMap="employee">
+        SELECT * FROM mybatis.employee
+        <!-- 当所有条件都不成立时，WHERE语句会省略 -->
+        <where>
+            <if test="empName != '' and empName != null">
+                <!-- AND或OR关键字，只能添加在条件的最前面 -->
+                AND emp_name = #{empName}
+            </if>
+            <if test="age != '' and age != null">
+                AND age = #{age}
+            </if>
+            <if test="sex != '' and sex != null">
+                AND sex = #{sex}
+            </if>
+        </where>
+        ;
+    </select>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void getEmployeesByConditions() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Employee employee = new Employee();
+        List<Employee> employees = dynamicSQLMapper.getEmployeesByConditions(employee);
+        System.out.println(employees);
+    }
+}
+```
+
+```java
+2022-07-24 22:18:43.760 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==>  Preparing: SELECT * FROM mybatis.employee ;
+2022-07-24 22:18:43.781 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==> Parameters: 
+2022-07-24 22:18:43.801 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - <==      Total: 3
+[Employee(id=1, empName=张三, sex=男, age=27, depId=1), Employee(id=2, empName=李四, sex=男, age=28, depId=2), Employee(id=3, empName=王五, sex=男, age=29, depId=2)]
+```
+
+### trim 标签
+
+trim 标签，用于`去掉或添加标签中的内容`。常用属性：
+
+- prefix：在 trim 标签中的内容的前面添加某些内容。
+- prefixOverrides：在 trim 标签中的内容的前面去掉某些内容。
+- suffix：在 trim 标签中的内容的后面添加某些内容。
+- suffixOverrides：在 trim 标签中的内容的后面去掉某些内容。
+- 若标签中没有内容时，trim 标签无效。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- 动态SQL之trim标签 -->
+    <!-- List<Employee> getEmployeesByConditions(Employee employee); -->
+    <select id="getEmployeesByConditions" resultMap="employee">
+        SELECT * FROM mybatis.employee
+        <trim prefix="WHERE" suffixOverrides="AND">
+            <if test="empName != '' and empName != null">
+                emp_name = #{empName} AND
+            </if>
+            <if test="age != '' and age != null">
+                age = #{age} AND
+            </if>
+            <if test="sex != '' and sex != null">
+                sex = #{sex} AND
+            </if>
+        </trim>
+        ;
+    </select>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void getEmployeesByConditions() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Employee employee = new Employee();
+        employee.setEmpName("张三");
+        employee.setSex("男");
+        List<Employee> employees = dynamicSQLMapper.getEmployeesByConditions(employee);
+        System.out.println(employees);
+    }
+}
+```
+
+```java
+2022-07-24 22:38:29.518 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==>  Preparing: SELECT * FROM mybatis.employee WHERE emp_name = ? AND sex = ? ;
+2022-07-24 22:38:29.541 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==> Parameters: 张三(String), 男(String)
+2022-07-24 22:38:29.566 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - <==      Total: 1
+[Employee(id=1, empName=张三, sex=男, age=27, depId=1)]
+```
+
+### choose、when、otherwise 标签
+
+choose、when、otherwise 标签，相当于 if...else if...else。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- 动态SQL之choose、when、otherwise标签 -->
+    <!-- List<Employee> getEmployeesByConditions(Employee employee); -->
+    <select id="getEmployeesByConditions" resultMap="employee">
+        SELECT * FROM mybatis.employee
+        <where>
+            <choose>
+                <!-- when标签至少要有一个，otherwise标签至多只有一个 -->
+                <!-- when标签的条件有一个满足时，后续的when标签忽略，如果when标签的条件都不满足，执行otherwise标签的语句 -->
+                <when test="empName != '' and empName != null">
+                    emp_name = #{empName}
+                </when>
+                <when test="age != '' and age != null">
+                    age = #{age}
+                </when>
+                <when test="sex != '' and sex != null">
+                    sex = #{sex}
+                </when>
+                <!-- 如果前面when标签的条件都不满足，然后也没有传入depId值，查询结果为空，其SQL语句为：
+                     SELECT * FROM mybatis.employee WHERE dep_id = ? ;
+                -->
+                <otherwise>
+                    dep_id = #{depId}
+                </otherwise>
+            </choose>
+        </where>
+        ;
+    </select>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void getEmployeesByConditions() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Employee employee = new Employee();
+        employee.setEmpName("张三");
+        employee.setSex("男");
+        employee.setAge(27);
+        List<Employee> employees = dynamicSQLMapper.getEmployeesByConditions(employee);
+        System.out.println(employees);
+    }
+}
+```
+
+```java
+2022-07-24 23:03:23.782 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==>  Preparing: SELECT * FROM mybatis.employee WHERE emp_name = ? ;
+2022-07-24 23:03:23.806 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - ==> Parameters: 张三(String)
+2022-07-24 23:03:23.832 [main] DEBUG c.x.m.m.DynamicSQLMapper.getEmployeesByConditions - <==      Total: 1
+[Employee(id=1, empName=张三, sex=男, age=27, depId=1)]
+```
+
+> 注意查看 SQL 语句。
+
+### foreach 标签
+
