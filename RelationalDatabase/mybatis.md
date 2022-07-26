@@ -2709,3 +2709,1638 @@ class DynamicSQLMapperTest {
 
 ### foreach 标签
 
+需求一：通过员工 id `数组`，批量删除员工。
+
+```java
+public interface DynamicSQLMapper {
+    /**
+     * 通过员工id数组，批量删除员工
+     * 注意：未加@Param("ids")标签
+     *
+     * @param ids 员工id的数组
+     * @return 受影响的条数
+     */
+    Integer deleteEmployeesByArray(Integer[] ids);
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- 动态SQL之foreach标签 -->
+    <!-- Integer deleteEmployeesByArray(Integer[] ids); -->
+    <delete id="deleteEmployeesByArray">
+        DELETE
+        FROM mybatis.employee
+        WHERE id IN
+        (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+        ;
+    </delete>
+</mapper>
+```
+
+因为 DynamicSQLMapper 接口中，未使用 @Param("ids") 注解，指定参数名为 ids，因此，DynamicSQLMapper 映射文件中，collection="ids" 会抛异常：
+
+```java
+org.apache.ibatis.exceptions.PersistenceException: 
+### Error updating database.  Cause: org.apache.ibatis.binding.BindingException: Parameter 'ids' not found. Available parameters are [array, arg0]
+### The error may exist in mappers/DynamicSQLMapper.xml
+### The error may involve cn.xisun.mybatis.mapper.DynamicSQLMapper.deleteEmployeesByArray
+### The error occurred while executing an update
+### Cause: org.apache.ibatis.binding.BindingException: Parameter 'ids' not found. Available parameters are [array, arg0]
+	......
+```
+
+> 通过异常，可以看出，对于数组类型的参数，使用 array 或 arg0，才能接收到其值，具体参考 "多个字面量类型的参数" 一节。因此，为了开发方便，建议给多参数类型的参数（数组、集合等），添加`@Param()`注解，并指定其 value 值。
+
+改进如下：
+
+```java
+public interface DynamicSQLMapper {
+    /**
+     * 通过员工id数组，批量删除员工
+     *
+     * @param ids 员工id的数组
+     * @return 受影响的条数
+     */
+    Integer deleteEmployeesByArray(@Param("ids") Integer[] ids);
+}
+```
+
+> 添加 @Param("ids") 标签。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <!-- 动态SQL之foreach标签 -->
+    <!--
+            属性：
+                collection：设置要循环的数组或集合
+                item：表示集合或数组中的每一个数据
+                separator：设置循环体之间的分隔符
+                open：设置foreach标签中的内容的开始符
+                close：设置foreach标签中的内容的结束符
+    -->
+    <!-- Integer deleteEmployeesByArray(Integer[] ids); -->
+    <delete id="deleteEmployeesByArray">
+        DELETE
+        FROM mybatis.employee
+        WHERE id IN
+        (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+        ;
+    </delete>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void test() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        // 待删除员工id
+        Integer[] ids = {4, 5, 6};
+        Integer i = dynamicSQLMapper.deleteEmployeesByArray(ids);
+        System.out.println(i);
+    }
+}
+```
+
+```java
+2022-07-25 10:58:56.023 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - ==>  Preparing: DELETE FROM mybatis.employee WHERE id IN ( ? , ? , ? ) ;
+2022-07-25 10:58:56.045 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - ==> Parameters: 4(Integer), 5(Integer), 6(Integer)
+2022-07-25 10:58:56.051 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - <==    Updates: 3
+3
+```
+
+DynamicSQLMapper 映射文件中，foreach 可以进一步改进：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <!-- 动态SQL之foreach标签 -->
+    <!-- Integer deleteEmployeesByArray(@Param("ids") Integer[] ids); -->
+    <delete id="deleteEmployeesByArray">
+        DELETE
+        FROM mybatis.employee
+        WHERE id IN
+        <!-- 使用open和close，取代手动添加() -->
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        ;
+    </delete>
+</mapper>
+```
+
+使用 OR 关键字，实现批量删除：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <!-- 动态SQL之foreach标签 -->
+    <!-- Integer deleteEmployeesByArray(@Param("ids") Integer[] ids); -->
+    <!--<delete id="deleteEmployeesByArray">
+        DELETE
+        FROM mybatis.employee
+        WHERE id IN
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        ;
+    </delete>-->
+    <!-- 使用OR关键字实现批量删除 -->
+    <delete id="deleteEmployeesByArray">
+        DELETE
+        FROM mybatis.employee
+        WHERE
+        <foreach collection="ids" item="id" separator="OR">
+            id = #{id}
+        </foreach>
+        ;
+    </delete>
+</mapper>
+```
+
+```java
+2022-07-25 11:50:23.822 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - ==>  Preparing: DELETE FROM mybatis.employee WHERE id = ? OR id = ? OR id = ? ;
+2022-07-25 11:50:23.844 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - ==> Parameters: 7(Integer), 8(Integer), 9(Integer)
+2022-07-25 11:50:23.853 [main] DEBUG c.x.m.m.DynamicSQLMapper.deleteEmployeesByArray - <==    Updates: 3
+3
+```
+
+需求二：通过员工`集合`，批量添加员工。
+
+```java
+public interface DynamicSQLMapper {
+    /**
+     * 通过员工集合，批量添加员工
+     *
+     * @param employees 员工集合
+     * @return 受影响的条数
+     */
+    Integer insertEmployeesByList(@Param("employees") List<Employee> employees);
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <!-- 动态SQL之foreach标签 -->
+    <!-- Integer insertEmployeesByList(@Param("employees") List<Employee> employees); -->
+    <insert id="insertEmployeesByList">
+        INSERT INTO mybatis.employee VALUES
+        <foreach collection="employees" item="employee" separator=",">
+            (
+            #{employee.id}, #{employee.empName}, #{employee.sex},
+            #{employee.age}, #{employee.depId}
+            )
+        </foreach>
+        ;
+    </insert>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void testInsert() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        // 待添加员工
+        List<Employee> employees = new ArrayList<>();
+        Employee employee1 = new Employee();
+        employee1.setEmpName("张三");
+        employee1.setSex("男");
+        employee1.setAge(29);
+        employee1.setDepId(1);
+        employees.add(employee1);
+        Employee employee2 = new Employee();
+        employee2.setEmpName("张三");
+        employee2.setSex("男");
+        employee2.setAge(29);
+        employee2.setDepId(1);
+        employees.add(employee2);
+        Employee employee3 = new Employee();
+        employee3.setEmpName("张三");
+        employee3.setSex("男");
+        employee3.setAge(29);
+        employee3.setDepId(1);
+        employees.add(employee3);
+        Integer i = dynamicSQLMapper.insertEmployeesByList(employees);
+        System.out.println(i);
+    }
+}
+```
+
+```java
+2022-07-25 12:51:41.476 [main] DEBUG c.x.m.m.DynamicSQLMapper.insertEmployeesByList - ==>  Preparing: INSERT INTO mybatis.employee VALUES ( ?, ?, ?, ?, ? ) , ( ?, ?, ?, ?, ? ) , ( ?, ?, ?, ?, ? ) ;
+2022-07-25 12:51:41.504 [main] DEBUG c.x.m.m.DynamicSQLMapper.insertEmployeesByList - ==> Parameters: null, 张三(String), 男(String), 29(Integer), 1(Integer), null, 张三(String), 男(String), 29(Integer), 1(Integer), null, 张三(String), 男(String), 29(Integer), 1(Integer)
+2022-07-25 12:51:41.510 [main] DEBUG c.x.m.m.DynamicSQLMapper.insertEmployeesByList - <==    Updates: 3
+3
+```
+
+### SQL 标签
+
+sql 标签，可以记录一段公共 sql 片段，在使用的地方通过`include 标签`进行引入。
+
+```java
+public interface DynamicSQLMapper {
+    /**
+     * 根据员工id，查找员工信息
+     * 测试sql片段
+     *
+     * @param id 员工id
+     * @return 员工实例
+     */
+    Employee getEmployeeById(@Param("id") Integer id);
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.DynamicSQLMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- sql片段内预定义的字段，通过include标签引用 -->
+    <sql id="employeeColumns">
+        id, emp_name, sex, age, dep_id
+    </sql>
+
+    <!-- Employee getEmployeeById(@Param("id") Integer id); -->
+    <select id="getEmployeeById" resultMap="employee">
+        SELECT <include refid="employeeColumns"></include> FROM mybatis.employee 
+        WHERE id = #{id};
+    </select>
+</mapper>
+```
+
+```java
+class DynamicSQLMapperTest {
+    @Test
+    void test() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DynamicSQLMapper dynamicSQLMapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Employee employee = dynamicSQLMapper.getEmployeeById(2);
+        System.out.println(employee);
+    }
+}
+```
+
+```java
+2022-07-25 13:46:49.254 [main] DEBUG c.x.m.mapper.DynamicSQLMapper.getEmployeeById - ==>  Preparing: SELECT id, emp_name, sex, age, dep_id FROM mybatis.employee WHERE id = ?;
+2022-07-25 13:46:49.280 [main] DEBUG c.x.m.mapper.DynamicSQLMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 13:46:49.297 [main] DEBUG c.x.m.mapper.DynamicSQLMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+## MyBatis 的缓存
+
+### 一级缓存
+
+`一级缓存是 SqlSession 级别的`，通过同一个 SqlSession 查询的数据会被缓存，此后若再次执行相同的查询语句，就会从缓存中直接获取，不会从数据库重新访问。
+
+使一级缓存失效的四种情况：
+
+- `不同的 SqlSession`，对应不同的一级缓存。
+
+- 同一个 SqlSession，但是`查询条件不同`。
+
+- 同一个SqlSession，两次查询期间`执行了任意的增删改操作`。
+
+- 同一个SqlSession，两次查询期间`手动清空了缓存`。
+
+  ```java
+  // 手动清缓存，也可以使一级缓存失效
+  sqlSession.clearCache();
+  ```
+
+```java
+public interface CacheMapper {
+    /**
+     * 根据员工id，查找员工信息
+     * 测试一级缓存
+     *
+     * @param id 员工id
+     * @return 员工实例
+     */
+    Employee getEmployeeById(@Param("id") Integer id);
+    
+    /**
+     * 插入员工
+     * 测试一级缓存
+     *
+     * @param employee 员工实例
+     * @return 受影响的条数
+     */
+    int insertEmployee(Employee employee);
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.CacheMapper">
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- Employee getEmployeeById(@Param("id") Integer id); -->
+    <select id="getEmployeeById" resultMap="employee">
+        SELECT * FROM mybatis.employee WHERE id = #{id};
+    </select>
+    
+    <!-- int insertEmployee(Employee employee); -->
+    <insert id="insertEmployee">
+        INSERT INTO mybatis.employee VALUES (#{id}, #{empName}, #{sex}, #{age}, #{depId});
+    </insert>
+</mapper>
+```
+
+测试一：
+
+```java
+class CacheMapperTest {
+
+    @Test
+    void test1() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper = sqlSession.getMapper(CacheMapper.class);
+        Employee employee1 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee1);
+        // 执行相同地查询，可以看到，这一次查询没有打印SQL语句，说明是从缓存中获取的结果
+        Employee employee2 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee2);
+    }
+}
+```
+
+```java
+2022-07-25 14:15:25.818 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 14:15:25.828 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 304715920.
+2022-07-25 14:15:25.868 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 14:15:25.892 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 14:15:25.909 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+测试二：
+
+```java
+class CacheMapperTest {
+
+    @Test
+    void test1() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper = sqlSession.getMapper(CacheMapper.class);
+        Employee employee1 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee1);
+        // 执行相同地查询，可以看到，这一次查询没有打印SQL语句，说明是从缓存中获取的结果
+        Employee employee2 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee2);
+    }
+
+    @Test
+    void test2() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper1 = sqlSession.getMapper(CacheMapper.class);
+        Employee employee1 = cacheMapper1.getEmployeeById(2);
+        System.out.println(employee1);
+        // 使用相同的sqlSession再次创建一个CacheMapper，执行相同的查询，也没有打印SQL语句
+        CacheMapper cacheMapper2 = sqlSession.getMapper(CacheMapper.class);
+        Employee employee2 = cacheMapper2.getEmployeeById(2);
+        System.out.println(employee2);
+        // 创建一个新的SqlSession，执行相同的查询，可以看到，这次打印了SQL语句
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper3 = sqlSession2.getMapper(CacheMapper.class);
+        Employee employee3 = cacheMapper3.getEmployeeById(2);
+        System.out.println(employee3);
+    }
+}
+```
+
+```java
+2022-07-25 14:21:58.121 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 14:21:58.546 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 304715920.
+2022-07-25 14:21:58.550 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 14:21:58.577 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 14:21:58.603 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-25 14:21:58.607 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 14:21:58.632 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 533810548.
+2022-07-25 14:21:58.632 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 14:21:58.633 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 14:21:58.634 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+> 从上面的测试也可以看出，`MyBatis 默认的就是一级缓存，且一级缓存的作用范围，是 SqlSession 级别的`。
+
+测试三：
+
+```java
+class CacheMapperTest {
+    @Test
+    void test3() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper = sqlSession.getMapper(CacheMapper.class);
+        Employee employee1 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee1);
+        // 在两次相同的查询之前，执行一次插入操作
+        Employee employee = new Employee();
+        employee.setEmpName("王二");
+        employee.setSex("男");
+        employee.setAge(29);
+        employee.setDepId(2);
+        int i = cacheMapper.insertEmployee(employee);
+        System.out.println(i);
+        Employee employee2 = cacheMapper.getEmployeeById(2);
+        System.out.println(employee2);
+    }
+}
+```
+
+```java
+2022-07-25 15:22:22.036 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 15:22:22.446 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 304715920.
+2022-07-25 15:22:22.449 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 15:22:22.470 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 15:22:22.489 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-25 15:22:22.491 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper.insertEmployee - ==>  Preparing: INSERT INTO mybatis.employee VALUES (?, ?, ?, ?, ?);
+2022-07-25 15:22:22.492 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper.insertEmployee - ==> Parameters: null, 王二(String), 男(String), 29(Integer), 2(Integer)
+2022-07-25 15:22:22.496 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper.insertEmployee - <==    Updates: 1
+1
+2022-07-25 15:22:22.497 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 15:22:22.497 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 15:22:22.498 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+> 可以看到，打印了两次查询 SQL 语句，中间执行了一次插入操作后，一级缓存失效。
+
+### 二级缓存
+
+`二级缓存是 SqlSessionFactory 级别的`，通过同一个 SqlSessionFactory 创建的 SqlSession 查询的结果会被缓存，此后若再次执行相同的查询语句，结果就会从缓存中获取。
+
+二级缓存需要`手动开启`，开启的条件：
+
+- 在核心配置文件中，设置全局配置属性`cacheEnabled="true"`，默认为 true，即不需要设置。
+
+- 在映射文件中设置标签`<cache/>`（关于 cache 的属性，见下一章节）。
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <!DOCTYPE mapper
+          PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+          "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="cn.xisun.mybatis.mapper.CacheMapper">
+      <!-- 开启二级缓存 -->
+      <cache/>
+  
+      ...
+  </mapper>
+  ```
+
+- 二级缓存必须`在 SqlSession 关闭或提交之后有效`。在没有关闭或提交 SqlSession 时，缓存保存为一级缓存，只有关闭或提交之后，才保存为二级缓存。
+
+  ```java
+  // 提交
+  sqlSession.commit();
+  // 关闭
+  sqlSession.close();
+  ```
+
+- 查询的数据所转换的实体类类型必须`实现序列化的接口`。
+
+  ```java
+  public class Employee implements Serializable {
+      ...
+  }
+  ```
+
+使二级缓存失效的情况：
+
+- `两次查询之间执行了任意的增删改操作`，会使一级缓存和二级缓存同时失效。
+
+测试一：
+
+```java
+class CacheMapperTest {
+    // 测试二级缓存
+    @Test
+    void test4() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper1.getEmployeeById(2));
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper2.getEmployeeById(2));
+    }
+}
+```
+
+```java
+2022-07-25 17:22:29.366 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.0
+2022-07-25 17:22:29.371 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 17:22:29.804 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1129944640.
+2022-07-25 17:22:29.807 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 17:22:29.833 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 17:22:29.849 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-25 17:22:29.851 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.0
+2022-07-25 17:22:29.851 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 17:22:29.869 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1581267786.
+2022-07-25 17:22:29.869 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 17:22:29.869 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 17:22:29.871 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+>sqlSession1 和 sqlSession2 执行的是相同的 SQL 查询语句，但打印了两次查询 SQL 语句。同时，可以看到，两次查询的`Cache Hit Ratio (缓存命中率)`都是 0。由此说明，此时并未触发二级缓存。
+
+测试二：
+
+```java
+class CacheMapperTest {
+    // 测试二级缓存
+    @Test
+    void test4() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper1.getEmployeeById(2));
+        // 关闭sqlSession1
+        sqlSession1.close();
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper2.getEmployeeById(2));
+        // 关闭sqlSession2
+        sqlSession2.close();
+    }
+}
+```
+
+```java
+2022-07-25 17:31:13.914 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.0
+2022-07-25 17:31:13.917 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-25 17:31:14.328 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1129944640.
+2022-07-25 17:31:14.330 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-25 17:31:14.351 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-25 17:31:14.366 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-25 17:31:14.371 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@43599640]
+2022-07-25 17:31:14.371 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Returned connection 1129944640 to pool.
+2022-07-25 17:31:14.372 [main] WARN  org.apache.ibatis.io.SerialFilterChecker - As you are using functionality that deserializes object streams, it is recommended to define the JEP-290 serial filter. Please refer to https://docs.oracle.com/pls/topic/lookup?ctx=javase15&id=GUID-8296D8E8-2B93-4B9A-856E-0A65AF9B8C66
+2022-07-25 17:31:14.373 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.5
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+```
+
+>sqlSession2 在执行相同的查询 SQL 语句时，没有打印查询 SQL 语句，其获取的是二级缓存内的数据，同时，其 Cache Hit Ratio 也不为 0。
+>
+>另外，开启二级缓存功能后，MyBatis 官方建议定义`JEP-290 串行过滤器`，防止出现漏洞，详情此处不涉及。
+
+#### 二级缓存的相关配置
+
+在 Mapper 映射文件中添加的 cache 标签可以设置一些属性：
+
+- `eviction 属性`：缓存回收策略，默认的是 LRU。
+  - `LRU (Least Recently Used)`：最近最少使用的，移除最长时间不被使用的对象。
+  - `FIFO (First in First out) `：先进先出，按对象进入缓存的顺序来移除它们。
+  - `SOFT`：软引用，移除基于垃圾回收器状态和软引用规则的对象。
+  - `WEAK`：弱引用，更积极地移除基于垃圾收集器状态和弱引用规则的对象。
+- `flushInterval 属性`：刷新间隔，单位毫秒。
+  - 默认情况是不设置，也就是没有刷新间隔，缓存仅仅调用语句时刷新。
+- `size 属性`：引用数目，正整数。
+  - 代表缓存最多可以存储多少个对象，太大容易导致内存溢出。
+- `readOnly 属性`：只读，true/false。
+  - true：只读缓存；会给所有调用者返回缓存对象的相同实例。因此这些对象不能被修改。这提供了很重要的性能优势。
+  - false：读写缓存；会返回缓存对象的拷贝（通过序列化）。这会慢一些，但是安全，因此`默认是 false，即读写缓存`。
+
+### 缓存查询的顺序
+
+- `先查询二级缓存`，因为二级缓存中可能会有其他程序已经查出来的数据，可以拿来直接使用。
+- 如果二级缓存没有命中，`再查询一级缓存`。
+- 如果一级缓存也没有命中，`则查询数据库`。
+- SqlSession 关闭之后，一级缓存中的数据会写入二级缓存。
+
+### 整合第三方缓存 EHCache
+
+MyBatis 可以整合第三方缓存，用来替换自身提供的二级缓存。注意：MyBatis 的一级缓存，无法被第三方缓存替换。下面以 EHCache 为例说明。
+
+添加依赖：
+
+```xml
+<!-- MyBatis EHCache整合包 -->
+<dependency>
+    <groupId>org.mybatis.caches</groupId>
+    <artifactId>mybatis-ehcache</artifactId>
+    <version>1.2.2</version>
+</dependency>
+```
+
+<img src="mybatis/image-20220726085806375.png" alt="image-20220726085806375" style="zoom:50%;" />
+
+创建 EHCache 的配置文件 ehcache.xml：
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../config/ehcache.xsd">
+    <!-- 本地磁盘保存路径 -->
+    <diskStore path="D:\ehcache"/>
+    <defaultCache
+            maxElementsInMemory="1000"
+            maxElementsOnDisk="10000000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU">
+    </defaultCache>
+</ehcache>
+```
+
+属性说明：
+
+| 属性名                          | 是否必须 | 作用                                                         |
+| ------------------------------- | -------- | ------------------------------------------------------------ |
+| maxElementsInMemory             | 是       | 在内存中缓存的 element 的最大数目                            |
+| maxElementsOnDisk               | 是       | 在磁盘上缓存的 element 的最大数目，若是 0 表示无穷大         |
+| eternal                         | 是       | 设定缓存的 elements 是否永远不过期。 如果为 true，则缓存的数据始终有效， 如果为 false，那么还要根据 timeToIdleSeconds，以及 timeToLiveSeconds 判断 |
+| overflowToDisk                  | 是       | 设定当内存缓存溢出的时候，是否将过期的 element 缓存到磁盘上  |
+| timeToIdleSeconds               | 否       | 当缓存在 EhCache 中的数据，前后两次访问的时间超过 timeToIdleSeconds 的属性取值时， 这些数据便会删除，默认值是 0，也就是可闲置时间无穷大 |
+| timeToLiveSeconds               | 否       | 缓存 element 的有效生命期，默认是 0，也就是 element 存活时间无穷大 |
+| diskSpoolBufferSizeMB           | 否       | DiskStore（磁盘缓存）的缓存区大小。默认是 30 MB。每个 Cache 都应该有自己的一个缓冲区 |
+| diskPersistent                  | 否       | 在 VM 重启的时候，是否启用磁盘保存 EhCache 中的数据，默认是 false |
+| diskExpiryThreadIntervalSeconds | 否       | 磁盘缓存的清理线程运行间隔，默认是 120 秒。每隔 120 秒， 相应的线程会进行一次 EhCache 中数据的清理工作 |
+| memoryStoreEvictionPolicy       | 否       | 当内存缓存达到最大，有新的 element 加入的时候， 移除缓存中 element 的策略。 默认是 LRU（最近最少使用），可选的有 LFU（最不常使用）和 FIFO（先进先出） |
+
+Mapper 映射文件设置二级缓存的类型：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mapper.CacheMapper">
+    <!-- 开启二级缓存
+            type属性：指定使用的二级缓存，如果不设置，则是使用MyBatis自身的二级缓存
+    -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="employee" type="cn.xisun.mybatis.entity.Employee">
+        <id property="id" column="id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="depId" column="dep_id"></result>
+    </resultMap>
+
+    <!-- Employee getEmployeeById(@Param("id") Integer id); -->
+    <select id="getEmployeeById" resultMap="employee">
+        SELECT *
+        FROM mybatis.employee
+        WHERE id = #{id};
+    </select>
+
+    <!-- int insertEmployee(Employee employee); -->
+    <insert id="insertEmployee">
+        INSERT INTO mybatis.employee
+        VALUES (#{id}, #{empName}, #{sex}, #{age}, #{depId});
+    </insert>
+</mapper>
+```
+
+测试：
+
+```java
+class CacheMapperTest {
+    // 测试二级缓存
+    @Test
+    void test4() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper1.getEmployeeById(2));
+        // 关闭sqlSession1
+        sqlSession1.close();
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper cacheMapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(cacheMapper2.getEmployeeById(2));
+        // 关闭sqlSession2
+        sqlSession2.close();
+    }
+}
+```
+
+> 虽然使用 EHCache 作为二级缓存，但实际上其功能同 MyBatis 自带的二级缓存相同，测试代码也是相同的。
+
+输出：
+
+```java
+2022-07-26 09:18:06.813 [main] DEBUG net.sf.ehcache.Cache - Initialised cache: cn.xisun.mybatis.mapper.CacheMapper
+2022-07-26 09:18:06.813 [main] DEBUG net.sf.ehcache.config.ConfigurationHelper - CacheDecoratorFactory not configured for defaultCache. Skipping for 'cn.xisun.mybatis.mapper.CacheMapper'.
+2022-07-26 09:18:06.828 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.0
+2022-07-26 09:18:06.833 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-26 09:18:07.113 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1426725223.
+2022-07-26 09:18:07.114 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==>  Preparing: SELECT * FROM mybatis.employee WHERE id = ?;
+2022-07-26 09:18:07.131 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - ==> Parameters: 2(Integer)
+2022-07-26 09:18:07.162 [main] DEBUG c.xisun.mybatis.mapper.CacheMapper.getEmployeeById - <==      Total: 1
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-26 09:18:07.165 [main] DEBUG net.sf.ehcache.store.disk.Segment - put added 0 on heap
+2022-07-26 09:18:07.165 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@550a1967]
+2022-07-26 09:18:07.165 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Returned connection 1426725223 to pool.
+2022-07-26 09:18:07.166 [main] DEBUG cn.xisun.mybatis.mapper.CacheMapper - Cache Hit Ratio [cn.xisun.mybatis.mapper.CacheMapper]: 0.5
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+2022-07-26 09:18:07.170 [cn%002exisun%002emybatis%002emapper%002e%0043ache%004dapper.data] DEBUG net.sf.ehcache.store.disk.Segment - fault removed 0 from heap
+2022-07-26 09:18:07.171 [cn%002exisun%002emybatis%002emapper%002e%0043ache%004dapper.data] DEBUG net.sf.ehcache.store.disk.Segment - fault added 0 on disk
+```
+
+> 通过日志可以看到，EHCache 对 CacheMapper 进行了初始化，第二次执行相同的查询 SQL 语句时，没有打印查询 SQL 语句，Cache Hit Ratio 也不为 0。
+
+同时，在磁盘上，可以看到缓存的数据：
+
+![image-20220726114737747](mybatis/image-20220726114737747.png)
+
+## MyBatis 的逆向工程
+
+`正向工程`：先创建 Java 实体类，由框架负责根据实体类生成数据库表。例如，Hibernate 是支持正向工程的。
+
+`逆向工程`：先创建数据库表，由框架负责根据数据库表，反向生成如下资源：
+
+- Java 实体类
+- Mapper 接口
+- Mapper 映射文件
+
+### 新建项目
+
+![image-20220726125928076](mybatis/image-20220726125928076.png)
+
+### 添加依赖和插件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.xisun.mybatis</groupId>
+    <artifactId>xisun-mybatis-mbg</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <jupiter.version>5.8.2</jupiter.version>
+        <lombok.version>1.18.24</lombok.version>
+        <logback.version>1.2.11</logback.version>
+        <hutool.version>5.8.3</hutool.version>
+        <fastjson.version>2.0.7</fastjson.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>aliyun-plugin</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
+        <!-- MyBatis 核心 -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.10</version>
+        </dependency>
+
+        <!-- MySQL 连接驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.29</version>
+        </dependency>
+    </dependencies>
+
+    <!-- 控制Maven在构建过程中相关配置 -->
+    <build>
+        <!-- 构建过程中用到的插件 -->
+        <plugins>
+            <!-- 具体插件，逆向工程的操作是以构建过程中插件形式出现的 -->
+            <plugin>
+                <groupId>org.mybatis.generator</groupId>
+                <artifactId>mybatis-generator-maven-plugin</artifactId>
+                <version>1.4.1</version>
+                <!-- 插件的依赖 -->
+                <dependencies>
+                    <!-- 逆向工程的核心依赖 -->
+                    <dependency>
+                        <groupId>org.mybatis.generator</groupId>
+                        <artifactId>mybatis-generator-core</artifactId>
+                        <version>1.4.1</version>
+                    </dependency>
+
+                    <!-- 数据库连接池 -->
+                    <dependency>
+                        <groupId>com.alibaba</groupId>
+                        <artifactId>druid</artifactId>
+                        <version>1.2.11</version>
+                    </dependency>
+
+                    <!-- MySQL驱动 -->
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>8.0.29</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+### 创建 MyBatis 的核心配置文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 设置MyBatis的全局配置 -->
+    <!-- <settings> -->
+    <!-- 将表字段的_，自动映射为驼峰，例如emp_name映射为empName
+            mapUnderscoreToCamelCase默认为false
+    -->
+    <!-- <setting name="mapUnderscoreToCamelCase" value="true"/> -->
+    <!-- </settings> -->
+
+    <settings>
+        <!-- 开启延时加载 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <package name="cn.xisun.mybatis.mbg.entity"/>
+    </typeAliases>
+
+    <!-- 设置连接数据库的环境 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.10.100:3306/mybatis"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 引入映射文件 -->
+    <mappers>
+        <package name="cn.xisun.mybatis.mbg.mapper"/>
+    </mappers>
+</configuration>
+```
+
+### 创建逆向工程的配置文件
+
+文件名必须是：`generatorConfig.xml`。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <!--
+        targetRuntime: 执行生成的逆向工程的版本
+        MyBatis3Simple: 生成基本的CRUD（清新简洁版）
+        MyBatis3: 生成带条件的CRUD（奢华尊享版）
+    -->
+    <context id="DB2Tables" targetRuntime="MyBatis3Simple">
+        <!-- 数据库的连接信息 -->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.10.100:3306/mybatis"
+                        userId="root"
+                        password="root">
+        </jdbcConnection>
+
+        <!-- javaBean的生成策略 -->
+        <javaModelGenerator targetPackage="cn.xisun.mybatis.mbg.entity"
+                            targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- SQL映射文件的生成策略 -->
+        <sqlMapGenerator targetPackage="cn.xisun.mybatis.mbg.mapper"
+                         targetProject=".\src\main\resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- Mapper接口的生成策略 -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="cn.xisun.mybatis.mbg.mapper"
+                             targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 逆向分析的表 -->
+        <!-- tableName设置为*号，可以对应所有表，此时不写domainObjectName -->
+        <!-- domainObjectName属性指定生成出来的实体类的类名 -->
+        <table tableName="department" domainObjectName="Department"/>
+        <table tableName="employee" domainObjectName="Employee"/>
+    </context>
+</generatorConfiguration>
+```
+
+### 执行逆向工程
+
+<img src="mybatis/image-20220726161314246.png" alt="image-20220726161314246" style="zoom:50%;" />
+
+输出信息：
+
+```java
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< cn.xisun.mybatis:xisun-mybatis-mbg >-----------------
+[INFO] Building xisun-mybatis-mbg 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- mybatis-generator-maven-plugin:1.4.1:generate (default-cli) @ xisun-mybatis-mbg ---
+[WARNING] The POM for com.alibaba:druid:jar:1.2.11 is invalid, transitive dependencies (if any) will not be available, enable debug logging for more details
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.029 s
+[INFO] Finished at: 2022-07-26T15:12:28+08:00
+[INFO] ------------------------------------------------------------------------
+```
+
+结果：
+
+<img src="mybatis/image-20220726175517216.png" alt="image-20220726175517216" style="zoom:50%;" />
+
+```java
+package cn.xisun.mybatis.mbg.entity;
+
+public class Department {
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column department.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private Long id;
+
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column department.dep_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private String depName;
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column department.id
+     *
+     * @return the value of department.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column department.id
+     *
+     * @param id the value for department.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column department.dep_name
+     *
+     * @return the value of department.dep_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public String getDepName() {
+        return depName;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column department.dep_name
+     *
+     * @param depName the value for department.dep_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setDepName(String depName) {
+        this.depName = depName == null ? null : depName.trim();
+    }
+}
+```
+
+```java
+package cn.xisun.mybatis.mbg.entity;
+
+public class Employee {
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column employee.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private Long id;
+
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column employee.emp_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private String empName;
+
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column employee.sex
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private String sex;
+
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column employee.age
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private Integer age;
+
+    /**
+     *
+     * This field was generated by MyBatis Generator.
+     * This field corresponds to the database column employee.dep_id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    private Long depId;
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column employee.id
+     *
+     * @return the value of employee.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column employee.id
+     *
+     * @param id the value for employee.id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column employee.emp_name
+     *
+     * @return the value of employee.emp_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public String getEmpName() {
+        return empName;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column employee.emp_name
+     *
+     * @param empName the value for employee.emp_name
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setEmpName(String empName) {
+        this.empName = empName == null ? null : empName.trim();
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column employee.sex
+     *
+     * @return the value of employee.sex
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public String getSex() {
+        return sex;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column employee.sex
+     *
+     * @param sex the value for employee.sex
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setSex(String sex) {
+        this.sex = sex == null ? null : sex.trim();
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column employee.age
+     *
+     * @return the value of employee.age
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public Integer getAge() {
+        return age;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column employee.age
+     *
+     * @param age the value for employee.age
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method returns the value of the database column employee.dep_id
+     *
+     * @return the value of employee.dep_id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public Long getDepId() {
+        return depId;
+    }
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method sets the value of the database column employee.dep_id
+     *
+     * @param depId the value for employee.dep_id
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    public void setDepId(Long depId) {
+        this.depId = depId;
+    }
+}
+```
+
+```java
+package cn.xisun.mybatis.mbg.mapper;
+
+import cn.xisun.mybatis.mbg.entity.Department;
+import java.util.List;
+
+public interface DepartmentMapper {
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table department
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int deleteByPrimaryKey(Long id);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table department
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int insert(Department row);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table department
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    Department selectByPrimaryKey(Long id);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table department
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    List<Department> selectAll();
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table department
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int updateByPrimaryKey(Department row);
+}
+```
+
+```java
+package cn.xisun.mybatis.mbg.mapper;
+
+import cn.xisun.mybatis.mbg.entity.Employee;
+import java.util.List;
+
+public interface EmployeeMapper {
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table employee
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int deleteByPrimaryKey(Long id);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table employee
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int insert(Employee row);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table employee
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    Employee selectByPrimaryKey(Long id);
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table employee
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    List<Employee> selectAll();
+
+    /**
+     * This method was generated by MyBatis Generator.
+     * This method corresponds to the database table employee
+     *
+     * @mbg.generated Tue Jul 26 15:12:28 CST 2022
+     */
+    int updateByPrimaryKey(Employee row);
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mbg.mapper.DepartmentMapper">
+  <resultMap id="BaseResultMap" type="cn.xisun.mybatis.mbg.entity.Department">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="dep_name" jdbcType="VARCHAR" property="depName" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    delete from department
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.xisun.mybatis.mbg.entity.Department">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    insert into department (id, dep_name)
+    values (#{id,jdbcType=BIGINT}, #{depName,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.xisun.mybatis.mbg.entity.Department">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    update department
+    set dep_name = #{depName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    select id, dep_name
+    from department
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    select id, dep_name
+    from department
+  </select>
+</mapper>
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xisun.mybatis.mbg.mapper.EmployeeMapper">
+  <resultMap id="BaseResultMap" type="cn.xisun.mybatis.mbg.entity.Employee">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="emp_name" jdbcType="VARCHAR" property="empName" />
+    <result column="sex" jdbcType="VARCHAR" property="sex" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="dep_id" jdbcType="BIGINT" property="depId" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    delete from employee
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.xisun.mybatis.mbg.entity.Employee">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    insert into employee (id, emp_name, sex, 
+      age, dep_id)
+    values (#{id,jdbcType=BIGINT}, #{empName,jdbcType=VARCHAR}, #{sex,jdbcType=VARCHAR}, 
+      #{age,jdbcType=INTEGER}, #{depId,jdbcType=BIGINT})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.xisun.mybatis.mbg.entity.Employee">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    update employee
+    set emp_name = #{empName,jdbcType=VARCHAR},
+      sex = #{sex,jdbcType=VARCHAR},
+      age = #{age,jdbcType=INTEGER},
+      dep_id = #{depId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    select id, emp_name, sex, age, dep_id
+    from employee
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    <!--
+      WARNING - @mbg.generated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Jul 26 15:12:28 CST 2022.
+    -->
+    select id, emp_name, sex, age, dep_id
+    from employee
+  </select>
+</mapper>
+```
+
+### 测试
+
+```java
+class DepartmentMapperTest {
+    @Test
+    void test() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
+        System.out.println(departmentMapper.selectByPrimaryKey(2L));
+    }
+}
+```
+
+输出：
+
+```java
+2022-07-26 17:59:15.773 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-26 17:59:16.571 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 483797427.
+2022-07-26 17:59:16.575 [main] DEBUG c.x.m.m.mapper.DepartmentMapper.selectByPrimaryKey - ==>  Preparing: select id, dep_name from department where id = ?
+2022-07-26 17:59:16.610 [main] DEBUG c.x.m.m.mapper.DepartmentMapper.selectByPrimaryKey - ==> Parameters: 2(Long)
+2022-07-26 17:59:16.652 [main] DEBUG c.x.m.m.mapper.DepartmentMapper.selectByPrimaryKey - <==      Total: 1
+cn.xisun.mybatis.mbg.entity.Department@2a225dd7
+```
+
+## 分页插件
+
+添加依赖：
+
+```xml
+<!-- 分页插件 -->
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper</artifactId>
+    <version>5.3.0</version>
+</dependency>
+```
+
+在 MyBatis 的核心配置文件中配置插件：
+
+```xml
+<plugins>
+    <!--设置分页插件-->
+    <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+</plugins>
+```
+
+分页插件的使用：
+
+- 在查询功能之前，使用`PageHelper.startPage(int pageNum, int pageSize)`开启分页功能。
+- 在查询获取list集合之后，使用PageInfo<T> pageInfo = new PageInfo<>(List<T> list, int
+  navigatePages)获取分页相关数据
+- 分页相关数据
