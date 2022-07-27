@@ -4350,7 +4350,7 @@ cn.xisun.mybatis.mbg.entity.Department@2a225dd7
   - list：分页之后的数据。
   - navigatePages：导航分页的页码数。
 
-- 分页相关数据：
+- 分页相关数据，参考如下：
 
   ```java
   PageInfo{pageNum=8, pageSize=4, size=2, startRow=29, endRow=30, total=30, pages=8, list=Page{count=true, pageNum=8, pageSize=4, startRow=28, endRow=32, total=30, pages=8, reasonable=false, pageSizeZero=false}, prePage=7, nextPage=0, isFirstPage=false, isLastPage=true, hasPreviousPage=true, hasNextPage=false, navigatePages=5, navigateFirstPage4, navigateLastPage8, navigatepageNums=[4, 5, 6, 7, 8]}
@@ -4369,6 +4369,57 @@ cn.xisun.mybatis.mbg.entity.Department@2a225dd7
   - navigatepageNums：导航分页的页码，[1, 2, 3, 4, 5]。
 
 测试：
+
+```java
+class EmployeeMapperTest {
+    /**
+     * 测试分页：
+     * limit index,pageSize
+     * index:当前页的起始索引
+     * pageSize：每页显示的条数
+     * pageNum：当前页的页码
+     * index=(pageNum-1)*pageSize
+     * <p>
+     * 使用MyBatis的分页插件实现分页功能：
+     * 1、需要在查询功能之前开启分页
+     * PageHelper.startPage(int pageNum, int pageSize);
+     * 2、在查询功能之后获取分页相关信息
+     * PageInfo<Emp> page = new PageInfo<>(list, 5);
+     * list表示分页数据，5表示当前导航分页的数量
+     */
+    @Test
+    void test1() throws IOException {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(is);
+        SqlSession sqlSession = sqlSessionFactory.openSession(true);
+        EmployeeMapper employeeMapper = sqlSession.getMapper(EmployeeMapper.class);
+        PageHelper.startPage(1, 2);
+        List<Employee> employees = employeeMapper.selectAll();
+        System.out.println(employees);
+        employees.forEach(System.out::println);
+        PageInfo<Employee> pageInfo = new PageInfo<>(employees, 1);
+        System.out.println(pageInfo);
+    }
+}
+```
+
+输出：
+
+```java
+2022-07-26 20:32:48.584 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-07-26 20:32:48.584 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Checked out connection 1337866219 from pool.
+2022-07-26 20:32:48.586 [main] DEBUG c.x.m.mbg.mapper.EmployeeMapper.selectAll_COUNT - ==>  Preparing: SELECT count(0) FROM employee
+2022-07-26 20:32:48.607 [main] DEBUG c.x.m.mbg.mapper.EmployeeMapper.selectAll_COUNT - ==> Parameters: 
+2022-07-26 20:32:48.626 [main] DEBUG c.x.m.mbg.mapper.EmployeeMapper.selectAll_COUNT - <==      Total: 1
+2022-07-26 20:32:48.628 [main] DEBUG c.x.mybatis.mbg.mapper.EmployeeMapper.selectAll - ==>  Preparing: select id, emp_name, sex, age, dep_id from employee LIMIT ?
+2022-07-26 20:32:48.628 [main] DEBUG c.x.mybatis.mbg.mapper.EmployeeMapper.selectAll - ==> Parameters: 2(Integer)
+2022-07-26 20:32:48.631 [main] DEBUG c.x.mybatis.mbg.mapper.EmployeeMapper.selectAll - <==      Total: 2
+Page{count=true, pageNum=1, pageSize=2, startRow=0, endRow=2, total=8, pages=4, reasonable=false, pageSizeZero=false}[Employee(id=1, empName=张三, sex=男, age=27, depId=2), Employee(id=2, empName=李四, sex=男, age=28, depId=1)]
+Employee(id=1, empName=张三, sex=男, age=27, depId=2)
+Employee(id=2, empName=李四, sex=男, age=28, depId=1)
+PageInfo{pageNum=1, pageSize=2, size=2, startRow=1, endRow=2, total=8, pages=4, list=Page{count=true, pageNum=1, pageSize=2, startRow=0, endRow=2, total=8, pages=4, reasonable=false, pageSizeZero=false}[Employee(id=1, empName=张三, sex=男, age=27, depId=2), Employee(id=2, empName=李四, sex=男, age=28, depId=1)], prePage=0, nextPage=2, isFirstPage=true, isLastPage=false, hasPreviousPage=false, hasNextPage=true, navigatePages=1, navigateFirstPage=1, navigateLastPage=1, navigatepageNums=[1]}
+```
 
 ## 本文参考
 
