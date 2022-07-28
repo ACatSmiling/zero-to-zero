@@ -130,7 +130,7 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/14 21:26
  * @description 用户
@@ -163,7 +163,7 @@ public class User {
 package cn.xisun.mybatis.mapper;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/14 21:31
  * @description
@@ -283,7 +283,7 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/14 21:50
  * @description
@@ -1604,7 +1604,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:37
  * @description 员工
@@ -1631,7 +1631,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:38
  * @description 部门
@@ -1726,7 +1726,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:37
  * @description 员工
@@ -1756,7 +1756,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:38
  * @description 部门
@@ -2129,7 +2129,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:37
  * @description 员工
@@ -2161,7 +2161,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * @author WangDeSong
+ * @author XiSun
  * @version 1.0
  * @date 2022/7/20 0:38
  * @description 部门
@@ -2182,7 +2182,7 @@ public class Department {
 
 #### 使用 collection 处理映射关系
 
-```xml
+```java
 public interface DepartmentMapper {
     /**
      * 获取部门信息，包含部门内的所有员工
