@@ -1045,7 +1045,37 @@ $ sudo apt install openjdk-8-jdk
 $ java -version
 ```
 
+设置 JAVA_HOME 环境变量：
+
+```bash
+# OpenJDK安装位置
+root@xisun-develop:/usr/lib/jvm# pwd
+/usr/lib/jvm
+root@xisun-develop:/usr/lib/jvm# ls
+java-1.8.0-openjdk-amd64  java-8-openjdk-amd64
+# 设置
+root@xisun-develop:/usr/lib/jvm# export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
+# 查看
+root@xisun-develop:/usr/lib/jvm# echo 'JAVA_HOME'
+```
+
+> export 命令用于声明一个环境变量，只在当前 shell 的使用中，才能访问这个变量，或者在当前 shell 启动的启动程序中，也是可以访问这个变量的，因为它们是当前 shell 的子进程。**新开 shell 连接及重启服务器，该环境变量都会失效。**
+
 安装 Docker：略。
+
+安装 GCC：
+
+```bash
+$ apt install build-essential
+```
+
+```bash
+root@xisun-develop:/opt/resin-pro-4.0.66# gcc --version
+gcc (Ubuntu 11.2.0-19ubuntu1) 11.2.0
+Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
 
 ## Xshell 远程连接虚拟机
 
