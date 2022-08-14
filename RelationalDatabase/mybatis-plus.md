@@ -354,7 +354,7 @@ public interface UserMapper extends BaseMapper<User> {
 
 >`@Mapper`注解：用在接口类上，在编译之后会生成相应的接口实现类。如果有很多接口都需要使用 @Mapper 注解，则可以将这些接口置于同一个包路径下，然后使用 @MapperScan 注解扫描这个包，此时，该包下的接口不需要再添加 @Mapper 注解。
 >
->`@Repository`注解：@Mapper 标注的类，使用 @Autowired 自动装配时，IDEA 会提示找不到这个类，但不影响程序运行。这是因为 @Mapper 注解是 MyBatis 提供的，而 @Autowried 注解是 Spring 提供的，IDEA 能理解 Spring 的上下文，但是却和 Mybatis 关联不上。因此，可以在 Mapper 接口上， 添加 @Repository 注解，或者 @Component 注解，让 IDEA 以为其也是一个 Spring 管理的 Bean。
+>`@Repository`注解：@Mapper 标注的类，使用 @Autowired 自动装配时，IDEA 会提示找不到这个类，但不影响程序运行。这是因为 @Mapper 注解是 MyBatis 提供的，而 @Autowried 注解是 Spring 提供的，IDEA 能理解 Spring 的上下文，但是却和 MyBatis 关联不上。因此，可以在 Mapper 接口上， 添加 @Repository 注解，或者 @Component 注解，让 IDEA 以为其也是一个 Spring 管理的 Bean。
 
 ### 测试类
 
@@ -685,9 +685,957 @@ public interface BaseMapper<T> extends Mapper<T> {
 
 ## 通用 Service
 
+### IService 和 ServiceImpl
+
 MyBatis-Plus 中有一个接口`IService`和其实现类`ServiceImpl`，封装了常见的业务层逻辑。
 
+如果存在自定义通用 Service 方法的可能，可以创建自己的 IBaseService 继承 Mybatis-Plus 提供的基类。
 
+```java
+/**
+ * 顶级 Service
+ *
+ * @author hubin
+ * @since 2018-06-23
+ */
+public interface IService<T> {
+
+    /**
+     * 默认批次提交数量
+     */
+    int DEFAULT_BATCH_SIZE = 1000;
+
+    /**
+     * 插入一条记录（选择字段，策略插入）
+     *
+     * @param entity 实体对象
+     */
+    default boolean save(T entity) {
+        return SqlHelper.retBool(getBaseMapper().insert(entity));
+    }
+
+    /**
+     * 插入（批量）
+     *
+     * @param entityList 实体对象集合
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean saveBatch(Collection<T> entityList) {
+        return saveBatch(entityList, DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 插入（批量）
+     *
+     * @param entityList 实体对象集合
+     * @param batchSize  插入批次数量
+     */
+    boolean saveBatch(Collection<T> entityList, int batchSize);
+
+    /**
+     * 批量修改插入
+     *
+     * @param entityList 实体对象集合
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean saveOrUpdateBatch(Collection<T> entityList) {
+        return saveOrUpdateBatch(entityList, DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 批量修改插入
+     *
+     * @param entityList 实体对象集合
+     * @param batchSize  每次的数量
+     */
+    boolean saveOrUpdateBatch(Collection<T> entityList, int batchSize);
+
+    /**
+     * 根据 ID 删除
+     *
+     * @param id 主键ID
+     */
+    default boolean removeById(Serializable id) {
+        return SqlHelper.retBool(getBaseMapper().deleteById(id));
+    }
+
+    /**
+     * 根据 ID 删除
+     *
+     * @param id      主键(类型必须与实体类型字段保持一致)
+     * @param useFill 是否启用填充(为true的情况,会将入参转换实体进行delete删除)
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    default boolean removeById(Serializable id, boolean useFill) {
+        throw new UnsupportedOperationException("不支持的方法!");
+    }
+
+    /**
+     * 根据实体(ID)删除
+     *
+     * @param entity 实体
+     * @since 3.4.4
+     */
+    default boolean removeById(T entity) {
+        return SqlHelper.retBool(getBaseMapper().deleteById(entity));
+    }
+
+    /**
+     * 根据 columnMap 条件，删除记录
+     *
+     * @param columnMap 表字段 map 对象
+     */
+    default boolean removeByMap(Map<String, Object> columnMap) {
+        Assert.notEmpty(columnMap, "error: columnMap must not be empty");
+        return SqlHelper.retBool(getBaseMapper().deleteByMap(columnMap));
+    }
+
+    /**
+     * 根据 entity 条件，删除记录
+     *
+     * @param queryWrapper 实体包装类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default boolean remove(Wrapper<T> queryWrapper) {
+        return SqlHelper.retBool(getBaseMapper().delete(queryWrapper));
+    }
+
+    /**
+     * 删除（根据ID 批量删除）
+     *
+     * @param list 主键ID或实体列表
+     */
+    default boolean removeByIds(Collection<?> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return false;
+        }
+        return SqlHelper.retBool(getBaseMapper().deleteBatchIds(list));
+    }
+
+    /**
+     * 批量删除
+     *
+     * @param list    主键ID或实体列表
+     * @param useFill 是否填充(为true的情况,会将入参转换实体进行delete删除)
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean removeByIds(Collection<?> list, boolean useFill) {
+        if (CollectionUtils.isEmpty(list)) {
+            return false;
+        }
+        if (useFill) {
+            return removeBatchByIds(list, true);
+        }
+        return SqlHelper.retBool(getBaseMapper().deleteBatchIds(list));
+    }
+
+    /**
+     * 批量删除(jdbc批量提交)
+     *
+     * @param list 主键ID或实体列表(主键ID类型必须与实体类型字段保持一致)
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean removeBatchByIds(Collection<?> list) {
+        return removeBatchByIds(list, DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 批量删除(jdbc批量提交)
+     *
+     * @param list    主键ID或实体列表(主键ID类型必须与实体类型字段保持一致)
+     * @param useFill 是否启用填充(为true的情况,会将入参转换实体进行delete删除)
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean removeBatchByIds(Collection<?> list, boolean useFill) {
+        return removeBatchByIds(list, DEFAULT_BATCH_SIZE, useFill);
+    }
+
+    /**
+     * 批量删除(jdbc批量提交)
+     *
+     * @param list      主键ID或实体列表
+     * @param batchSize 批次大小
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    default boolean removeBatchByIds(Collection<?> list, int batchSize) {
+        throw new UnsupportedOperationException("不支持的方法!");
+    }
+
+    /**
+     * 批量删除(jdbc批量提交)
+     *
+     * @param list      主键ID或实体列表
+     * @param batchSize 批次大小
+     * @param useFill   是否启用填充(为true的情况,会将入参转换实体进行delete删除)
+     * @return 删除结果
+     * @since 3.5.0
+     */
+    default boolean removeBatchByIds(Collection<?> list, int batchSize, boolean useFill) {
+        throw new UnsupportedOperationException("不支持的方法!");
+    }
+
+    /**
+     * 根据 ID 选择修改
+     *
+     * @param entity 实体对象
+     */
+    default boolean updateById(T entity) {
+        return SqlHelper.retBool(getBaseMapper().updateById(entity));
+    }
+
+    /**
+     * 根据 UpdateWrapper 条件，更新记录 需要设置sqlset
+     *
+     * @param updateWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper}
+     */
+    default boolean update(Wrapper<T> updateWrapper) {
+        return update(null, updateWrapper);
+    }
+
+    /**
+     * 根据 whereEntity 条件，更新记录
+     *
+     * @param entity        实体对象
+     * @param updateWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper}
+     */
+    default boolean update(T entity, Wrapper<T> updateWrapper) {
+        return SqlHelper.retBool(getBaseMapper().update(entity, updateWrapper));
+    }
+
+    /**
+     * 根据ID 批量更新
+     *
+     * @param entityList 实体对象集合
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean updateBatchById(Collection<T> entityList) {
+        return updateBatchById(entityList, DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 根据ID 批量更新
+     *
+     * @param entityList 实体对象集合
+     * @param batchSize  更新批次数量
+     */
+    boolean updateBatchById(Collection<T> entityList, int batchSize);
+
+    /**
+     * TableId 注解存在更新记录，否插入一条记录
+     *
+     * @param entity 实体对象
+     */
+    boolean saveOrUpdate(T entity);
+
+    /**
+     * 根据 ID 查询
+     *
+     * @param id 主键ID
+     */
+    default T getById(Serializable id) {
+        return getBaseMapper().selectById(id);
+    }
+
+    /**
+     * 查询（根据ID 批量查询）
+     *
+     * @param idList 主键ID列表
+     */
+    default List<T> listByIds(Collection<? extends Serializable> idList) {
+        return getBaseMapper().selectBatchIds(idList);
+    }
+
+    /**
+     * 查询（根据 columnMap 条件）
+     *
+     * @param columnMap 表字段 map 对象
+     */
+    default List<T> listByMap(Map<String, Object> columnMap) {
+        return getBaseMapper().selectByMap(columnMap);
+    }
+
+    /**
+     * 根据 Wrapper，查询一条记录 <br/>
+     * <p>结果集，如果是多个会抛出异常，随机取一条加上限制条件 wrapper.last("LIMIT 1")</p>
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default T getOne(Wrapper<T> queryWrapper) {
+        return getOne(queryWrapper, true);
+    }
+
+    /**
+     * 根据 Wrapper，查询一条记录
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     * @param throwEx      有多个 result 是否抛出异常
+     */
+    T getOne(Wrapper<T> queryWrapper, boolean throwEx);
+
+    /**
+     * 根据 Wrapper，查询一条记录
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    Map<String, Object> getMap(Wrapper<T> queryWrapper);
+
+    /**
+     * 根据 Wrapper，查询一条记录
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     * @param mapper       转换函数
+     */
+    <V> V getObj(Wrapper<T> queryWrapper, Function<? super Object, V> mapper);
+
+    /**
+     * 查询总记录数
+     *
+     * @see Wrappers#emptyWrapper()
+     */
+    default long count() {
+        return count(Wrappers.emptyWrapper());
+    }
+
+    /**
+     * 根据 Wrapper 条件，查询总记录数
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default long count(Wrapper<T> queryWrapper) {
+        return SqlHelper.retCount(getBaseMapper().selectCount(queryWrapper));
+    }
+
+    /**
+     * 查询列表
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default List<T> list(Wrapper<T> queryWrapper) {
+        return getBaseMapper().selectList(queryWrapper);
+    }
+
+    /**
+     * 查询所有
+     *
+     * @see Wrappers#emptyWrapper()
+     */
+    default List<T> list() {
+        return list(Wrappers.emptyWrapper());
+    }
+
+    /**
+     * 翻页查询
+     *
+     * @param page         翻页对象
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default <E extends IPage<T>> E page(E page, Wrapper<T> queryWrapper) {
+        return getBaseMapper().selectPage(page, queryWrapper);
+    }
+
+    /**
+     * 无条件翻页查询
+     *
+     * @param page 翻页对象
+     * @see Wrappers#emptyWrapper()
+     */
+    default <E extends IPage<T>> E page(E page) {
+        return page(page, Wrappers.emptyWrapper());
+    }
+
+    /**
+     * 查询列表
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default List<Map<String, Object>> listMaps(Wrapper<T> queryWrapper) {
+        return getBaseMapper().selectMaps(queryWrapper);
+    }
+
+    /**
+     * 查询所有列表
+     *
+     * @see Wrappers#emptyWrapper()
+     */
+    default List<Map<String, Object>> listMaps() {
+        return listMaps(Wrappers.emptyWrapper());
+    }
+
+    /**
+     * 查询全部记录
+     */
+    default List<Object> listObjs() {
+        return listObjs(Function.identity());
+    }
+
+    /**
+     * 查询全部记录
+     *
+     * @param mapper 转换函数
+     */
+    default <V> List<V> listObjs(Function<? super Object, V> mapper) {
+        return listObjs(Wrappers.emptyWrapper(), mapper);
+    }
+
+    /**
+     * 根据 Wrapper 条件，查询全部记录
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default List<Object> listObjs(Wrapper<T> queryWrapper) {
+        return listObjs(queryWrapper, Function.identity());
+    }
+
+    /**
+     * 根据 Wrapper 条件，查询全部记录
+     *
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     * @param mapper       转换函数
+     */
+    default <V> List<V> listObjs(Wrapper<T> queryWrapper, Function<? super Object, V> mapper) {
+        return getBaseMapper().selectObjs(queryWrapper).stream().filter(Objects::nonNull).map(mapper).collect(Collectors.toList());
+    }
+
+    /**
+     * 翻页查询
+     *
+     * @param page         翻页对象
+     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     */
+    default <E extends IPage<Map<String, Object>>> E pageMaps(E page, Wrapper<T> queryWrapper) {
+        return getBaseMapper().selectMapsPage(page, queryWrapper);
+    }
+
+    /**
+     * 无条件翻页查询
+     *
+     * @param page 翻页对象
+     * @see Wrappers#emptyWrapper()
+     */
+    default <E extends IPage<Map<String, Object>>> E pageMaps(E page) {
+        return pageMaps(page, Wrappers.emptyWrapper());
+    }
+
+    /**
+     * 获取对应 entity 的 BaseMapper
+     *
+     * @return BaseMapper
+     */
+    BaseMapper<T> getBaseMapper();
+
+    /**
+     * 获取 entity 的 class
+     *
+     * @return {@link Class<T>}
+     */
+    Class<T> getEntityClass();
+
+    /**
+     * 以下的方法使用介绍:
+     *
+     * 一. 名称介绍
+     * 1. 方法名带有 query 的为对数据的查询操作, 方法名带有 update 的为对数据的修改操作
+     * 2. 方法名带有 lambda 的为内部方法入参 column 支持函数式的
+     * 二. 支持介绍
+     *
+     * 1. 方法名带有 query 的支持以 {@link ChainQuery} 内部的方法名结尾进行数据查询操作
+     * 2. 方法名带有 update 的支持以 {@link ChainUpdate} 内部的方法名为结尾进行数据修改操作
+     *
+     * 三. 使用示例,只用不带 lambda 的方法各展示一个例子,其他类推
+     * 1. 根据条件获取一条数据: `query().eq("column", value).one()`
+     * 2. 根据条件删除一条数据: `update().eq("column", value).remove()`
+     *
+     */
+
+    /**
+     * 链式查询 普通
+     *
+     * @return QueryWrapper 的包装类
+     */
+    default QueryChainWrapper<T> query() {
+        return ChainWrappers.queryChain(getBaseMapper());
+    }
+
+    /**
+     * 链式查询 lambda 式
+     * <p>注意：不支持 Kotlin </p>
+     *
+     * @return LambdaQueryWrapper 的包装类
+     */
+    default LambdaQueryChainWrapper<T> lambdaQuery() {
+        return ChainWrappers.lambdaQueryChain(getBaseMapper());
+    }
+
+    /**
+     * 链式查询 lambda 式
+     * kotlin 使用
+     *
+     * @return KtQueryWrapper 的包装类
+     */
+    default KtQueryChainWrapper<T> ktQuery() {
+        return ChainWrappers.ktQueryChain(getBaseMapper(), getEntityClass());
+    }
+
+    /**
+     * 链式查询 lambda 式
+     * kotlin 使用
+     *
+     * @return KtQueryWrapper 的包装类
+     */
+    default KtUpdateChainWrapper<T> ktUpdate() {
+        return ChainWrappers.ktUpdateChain(getBaseMapper(), getEntityClass());
+    }
+
+    /**
+     * 链式更改 普通
+     *
+     * @return UpdateWrapper 的包装类
+     */
+    default UpdateChainWrapper<T> update() {
+        return ChainWrappers.updateChain(getBaseMapper());
+    }
+
+    /**
+     * 链式更改 lambda 式
+     * <p>注意：不支持 Kotlin </p>
+     *
+     * @return LambdaUpdateWrapper 的包装类
+     */
+    default LambdaUpdateChainWrapper<T> lambdaUpdate() {
+        return ChainWrappers.lambdaUpdateChain(getBaseMapper());
+    }
+
+    /**
+     * <p>
+     * 根据updateWrapper尝试更新，否继续执行saveOrUpdate(T)方法
+     * 此次修改主要是减少了此项业务代码的代码量（存在性验证之后的saveOrUpdate操作）
+     * </p>
+     *
+     * @param entity 实体对象
+     */
+    default boolean saveOrUpdate(T entity, Wrapper<T> updateWrapper) {
+        return update(entity, updateWrapper) || saveOrUpdate(entity);
+    }
+}
+```
+
+```java
+/**
+ * IService 实现类（ 泛型：M 是 mapper 对象，T 是实体 ）
+ *
+ * @author hubin
+ * @since 2018-06-23
+ */
+@SuppressWarnings("unchecked")
+public class ServiceImpl<M extends BaseMapper<T>, T> implements IService<T> {
+
+    protected Log log = LogFactory.getLog(getClass());
+
+    @Autowired
+    protected M baseMapper;
+
+    @Override
+    public M getBaseMapper() {
+        return baseMapper;
+    }
+
+    protected Class<T> entityClass = currentModelClass();
+
+    @Override
+    public Class<T> getEntityClass() {
+        return entityClass;
+    }
+
+    protected Class<M> mapperClass = currentMapperClass();
+
+    /**
+     * 判断数据库操作是否成功
+     *
+     * @param result 数据库操作返回影响条数
+     * @return boolean
+     * @deprecated 3.3.1
+     */
+    @Deprecated
+    protected boolean retBool(Integer result) {
+        return SqlHelper.retBool(result);
+    }
+
+    protected Class<M> currentMapperClass() {
+        return (Class<M>) ReflectionKit.getSuperClassGenericType(this.getClass(), ServiceImpl.class, 0);
+    }
+
+    protected Class<T> currentModelClass() {
+        return (Class<T>) ReflectionKit.getSuperClassGenericType(this.getClass(), ServiceImpl.class, 1);
+    }
+
+
+    /**
+     * 批量操作 SqlSession
+     *
+     * @deprecated 3.3.0
+     */
+    @Deprecated
+    protected SqlSession sqlSessionBatch() {
+        return SqlHelper.sqlSessionBatch(entityClass);
+    }
+
+    /**
+     * 释放sqlSession
+     *
+     * @param sqlSession session
+     * @deprecated 3.3.0
+     */
+    @Deprecated
+    protected void closeSqlSession(SqlSession sqlSession) {
+        SqlSessionUtils.closeSqlSession(sqlSession, GlobalConfigUtils.currentSessionFactory(entityClass));
+    }
+
+    /**
+     * 获取 SqlStatement
+     *
+     * @param sqlMethod ignore
+     * @return ignore
+     * @see #getSqlStatement(SqlMethod)
+     * @deprecated 3.4.0
+     */
+    @Deprecated
+    protected String sqlStatement(SqlMethod sqlMethod) {
+        return SqlHelper.table(entityClass).getSqlStatement(sqlMethod.getMethod());
+    }
+
+    /**
+     * 批量插入
+     *
+     * @param entityList ignore
+     * @param batchSize  ignore
+     * @return ignore
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveBatch(Collection<T> entityList, int batchSize) {
+        String sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE);
+        return executeBatch(entityList, batchSize, (sqlSession, entity) -> sqlSession.insert(sqlStatement, entity));
+    }
+
+    /**
+     * 获取mapperStatementId
+     *
+     * @param sqlMethod 方法名
+     * @return 命名id
+     * @since 3.4.0
+     */
+    protected String getSqlStatement(SqlMethod sqlMethod) {
+        return SqlHelper.getSqlStatement(mapperClass, sqlMethod);
+    }
+
+    /**
+     * TableId 注解存在更新记录，否插入一条记录
+     *
+     * @param entity 实体对象
+     * @return boolean
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveOrUpdate(T entity) {
+        if (null != entity) {
+            TableInfo tableInfo = TableInfoHelper.getTableInfo(this.entityClass);
+            Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!");
+            String keyProperty = tableInfo.getKeyProperty();
+            Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!");
+            Object idVal = tableInfo.getPropertyValue(entity, tableInfo.getKeyProperty());
+            return StringUtils.checkValNull(idVal) || Objects.isNull(getById((Serializable) idVal)) ? save(entity) : updateById(entity);
+        }
+        return false;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveOrUpdateBatch(Collection<T> entityList, int batchSize) {
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!");
+        String keyProperty = tableInfo.getKeyProperty();
+        Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!");
+        return SqlHelper.saveOrUpdateBatch(this.entityClass, this.mapperClass, this.log, entityList, batchSize, (sqlSession, entity) -> {
+            Object idVal = tableInfo.getPropertyValue(entity, keyProperty);
+            return StringUtils.checkValNull(idVal)
+                || CollectionUtils.isEmpty(sqlSession.selectList(getSqlStatement(SqlMethod.SELECT_BY_ID), entity));
+        }, (sqlSession, entity) -> {
+            MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
+            param.put(Constants.ENTITY, entity);
+            sqlSession.update(getSqlStatement(SqlMethod.UPDATE_BY_ID), param);
+        });
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean updateBatchById(Collection<T> entityList, int batchSize) {
+        String sqlStatement = getSqlStatement(SqlMethod.UPDATE_BY_ID);
+        return executeBatch(entityList, batchSize, (sqlSession, entity) -> {
+            MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
+            param.put(Constants.ENTITY, entity);
+            sqlSession.update(sqlStatement, param);
+        });
+    }
+
+    @Override
+    public T getOne(Wrapper<T> queryWrapper, boolean throwEx) {
+        if (throwEx) {
+            return baseMapper.selectOne(queryWrapper);
+        }
+        return SqlHelper.getObject(log, baseMapper.selectList(queryWrapper));
+    }
+
+    @Override
+    public Map<String, Object> getMap(Wrapper<T> queryWrapper) {
+        return SqlHelper.getObject(log, baseMapper.selectMaps(queryWrapper));
+    }
+
+    @Override
+    public <V> V getObj(Wrapper<T> queryWrapper, Function<? super Object, V> mapper) {
+        return SqlHelper.getObject(log, listObjs(queryWrapper, mapper));
+    }
+
+    /**
+     * 执行批量操作
+     *
+     * @param consumer consumer
+     * @since 3.3.0
+     * @deprecated 3.3.1 后面我打算移除掉 {@link #executeBatch(Collection, int, BiConsumer)} }.
+     */
+    @Deprecated
+    protected boolean executeBatch(Consumer<SqlSession> consumer) {
+        return SqlHelper.executeBatch(this.entityClass, this.log, consumer);
+    }
+
+    /**
+     * 执行批量操作
+     *
+     * @param list      数据集合
+     * @param batchSize 批量大小
+     * @param consumer  执行方法
+     * @param <E>       泛型
+     * @return 操作结果
+     * @since 3.3.1
+     */
+    protected <E> boolean executeBatch(Collection<E> list, int batchSize, BiConsumer<SqlSession, E> consumer) {
+        return SqlHelper.executeBatch(this.entityClass, this.log, list, batchSize, consumer);
+    }
+
+    /**
+     * 执行批量操作（默认批次提交数量{@link IService#DEFAULT_BATCH_SIZE}）
+     *
+     * @param list     数据集合
+     * @param consumer 执行方法
+     * @param <E>      泛型
+     * @return 操作结果
+     * @since 3.3.1
+     */
+    protected <E> boolean executeBatch(Collection<E> list, BiConsumer<SqlSession, E> consumer) {
+        return executeBatch(list, DEFAULT_BATCH_SIZE, consumer);
+    }
+
+    @Override
+    public boolean removeById(Serializable id) {
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(getEntityClass());
+        if (tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill()) {
+            return removeById(id, true);
+        }
+        return SqlHelper.retBool(getBaseMapper().deleteById(id));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeByIds(Collection<?> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return false;
+        }
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(getEntityClass());
+        if (tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill()) {
+            return removeBatchByIds(list, true);
+        }
+        return SqlHelper.retBool(getBaseMapper().deleteBatchIds(list));
+    }
+
+    @Override
+    public boolean removeById(Serializable id, boolean useFill) {
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        if (useFill && tableInfo.isWithLogicDelete()) {
+            if (!entityClass.isAssignableFrom(id.getClass())) {
+                T instance = tableInfo.newInstance();
+                tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), id);
+                return removeById(instance);
+            }
+        }
+        return SqlHelper.retBool(getBaseMapper().deleteById(id));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeBatchByIds(Collection<?> list, int batchSize) {
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        return removeBatchByIds(list, batchSize, tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeBatchByIds(Collection<?> list, int batchSize, boolean useFill) {
+        String sqlStatement = getSqlStatement(SqlMethod.DELETE_BY_ID);
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        return executeBatch(list, batchSize, (sqlSession, e) -> {
+            if (useFill && tableInfo.isWithLogicDelete()) {
+                if (entityClass.isAssignableFrom(e.getClass())) {
+                    sqlSession.update(sqlStatement, e);
+                } else {
+                    T instance = tableInfo.newInstance();
+                    tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), e);
+                    sqlSession.update(sqlStatement, instance);
+                }
+            } else {
+                sqlSession.update(sqlStatement, e);
+            }
+        });
+    }
+
+}
+```
+
+### 创建业务需求 Service 接口和实现类
+
+```java
+package cn.xisun.mybatisplus.springboot.service;
+
+import cn.xisun.mybatisplus.springboot.entity.User;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @date 2022/8/9 8:35
+ * @description UserService继承IService模板提供的基础功能
+ */
+public interface UserService extends IService<User> {
+}
+```
+
+```java
+package cn.xisun.mybatisplus.springboot.service.impl;
+
+import cn.xisun.mybatisplus.springboot.entity.User;
+import cn.xisun.mybatisplus.springboot.mapper.UserMapper;
+import cn.xisun.mybatisplus.springboot.service.UserService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @date 2022/8/14 19:59
+ * @description ServiceImpl实现了IService，提供了IService中基础功能的实现
+ * 若ServiceImpl无法满足业务需求，则可以在UserService自定义方法，并在实现类中实现
+ */
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+}
+```
+
+### 测试
+
+```java
+@SpringBootTest
+class UserMapperTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void test() {
+        long count = userService.count();
+        System.out.println(count);
+    }
+}
+```
+
+```java
+2022-08-14 21:18:41.759 [main] INFO  c.x.mybatisplus.springboot.mapper.UserMapperTest - Started UserMapperTest in 3.143 seconds (JVM running for 4.465)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73a8e994] was not registered for synchronization because synchronization is not active
+2022-08-14 21:18:42.156 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-14 21:18:42.408 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@847141861 wrapping com.mysql.cj.jdbc.ConnectionImpl@1084ac45] will not be managed by Spring
+==>  Preparing: SELECT COUNT( * ) FROM user
+==> Parameters: 
+<==    Columns: COUNT( * )
+<==        Row: 5
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73a8e994]
+5
+2022-08-14 21:18:42.514 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-14 21:18:42.524 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+```java
+@SpringBootTest
+class UserMapperTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void testSaveBatch() {
+        // SQL长度有限制，海量数据插入单条SQL无法实行，
+        // 因此MP将批量插入放在了通用Service中实现，而不是通用Mapper
+        List<User> users = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            User user = new User();
+            user.setName("ybc" + i);
+            user.setSex("male");
+            user.setAge(20 + i);
+            users.add(user);
+        }
+        userService.saveBatch(users);
+    }
+}
+```
+
+```java
+2022-08-14 21:22:45.048 [main] INFO  c.x.mybatisplus.springboot.mapper.UserMapperTest - Started UserMapperTest in 3.145 seconds (JVM running for 4.633)
+2022-08-14 21:22:45.342 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-14 21:22:45.579 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1743702241 wrapping com.mysql.cj.jdbc.ConnectionImpl@4214ae8f] will be managed by Spring
+==>  Preparing: INSERT INTO user ( name, sex, age ) VALUES ( ?, ?, ? )
+==> Parameters: ybc0(String), male(String), 20(Integer)
+==> Parameters: ybc1(String), male(String), 21(Integer)
+==> Parameters: ybc2(String), male(String), 22(Integer)
+==> Parameters: ybc3(String), male(String), 23(Integer)
+==> Parameters: ybc4(String), male(String), 24(Integer)
+2022-08-14 21:22:45.758 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-14 21:22:45.778 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+## 常用注解
+
+### @TableName
+
+MyBatis-Plus 在确定操作的表时，由 BaseMapper 的泛型决定，即实体类型决定，且`默认操作的表名和实体类型的类名一致`。若实体类类型的类名和要操作的表的表名不一致，可以在实体类类型上添加`@TableName("table_name")`注解，标识实体类对应的表。
+
+```java
+@Data
+@NoArgsConstructor
+@TableName("user")
+public class User {
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+    private String name;
+    private String sex;
+    private Integer age;
+}
+```
+
+在开发的过程中，实体类所对应的表可能存在固定的前缀，例如t_或tbl_此时，可以使用MyBatis-Plus提供的全局配置，为实体类所对应的表名设置默认的前缀，那么就不需要在每个实体类上通过@TableName标识实体类对应的表
 
 ## 本文参考
 
