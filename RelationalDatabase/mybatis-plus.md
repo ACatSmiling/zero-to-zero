@@ -1608,8 +1608,7 @@ class UserMapperTest {
 JDBC Connection [HikariProxyConnection@1743702241 wrapping com.mysql.cj.jdbc.ConnectionImpl@4214ae8f] will be managed by Spring
 ==>  Preparing: INSERT INTO user ( name, sex, age ) VALUES ( ?, ?, ? )
 ==> Parameters: ybc0(String), male(String), 20(Integer)
-==> Parameters: ybc1(String), male(String), 21(Integer)
-==> Parameters: ybc2(String), male(String), 22(Integer)
+==> Parameters: ybc1(String), male(String), 21(Integer)f
 ==> Parameters: ybc3(String), male(String), 23(Integer)
 ==> Parameters: ybc4(String), male(String), 24(Integer)
 2022-08-14 21:22:45.758 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
@@ -1635,7 +1634,24 @@ public class User {
 }
 ```
 
-在开发的过程中，实体类所对应的表可能存在固定的前缀，例如t_或tbl_此时，可以使用MyBatis-Plus提供的全局配置，为实体类所对应的表名设置默认的前缀，那么就不需要在每个实体类上通过@TableName标识实体类对应的表
+在开发的过程中，实体类所对应的表可能存在固定的前缀，此时，可以使用 MyBatis-Plus 提供的全局配置，为实体类所对应的表名设置默认的前缀。
+
+```yaml
+mybatis-plus:
+  configuration:
+    # 配置MyBatis日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 配置MyBatis-Plus操作表的默认前缀
+      table-prefix: t_
+```
+
+### @TableId
+
+MyBatis-Plus 在实现 CRUD 时，会`默认将 id 作为主键列`，并在插入数据时，`默认基于雪花算法的策略生成 id`。
+
+如果实体类中主键对应的属性，不是 id，可以使用`@Tableld`指定表中主键对应的属性；如果主键对应的属性与表中表示主键的字段不一致，则可以使用 @TableId 注解的 value 属性，指定表中的主键字段，例如：@TableId("uid") 或 @TableId(value="uid")。
 
 ## 本文参考
 
