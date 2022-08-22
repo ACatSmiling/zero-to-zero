@@ -128,6 +128,8 @@ pro20210406  pro20210406.rar  ROOT
 </web-app>
 ```
 
+> 本地部署 resin 服务，通过 httpd.exe 程序启动时，需要先安装 JDK。
+
 ## 本文参考
 
 http://auan.cn/server/1274.html
