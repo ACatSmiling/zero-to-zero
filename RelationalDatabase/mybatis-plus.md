@@ -2093,6 +2093,286 @@ User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
 
 ### UpdateWrapper
 
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void test08() {
+        // 将（年龄大于20或sex为null）并且用户名中包含有q的用户信息修改
+        // 组装set子句以及修改条件
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        // lambda表达式内的逻辑优先运算
+        updateWrapper
+                .set("age", 18)
+                .set("sex", "male")
+                .like("name", "q")
+                .and(i -> i.gt("age", 20).or().isNull("sex"));
+        // 方式一：自动填充，必须要创建User对象
+        User user = new User();
+        user.setName("张三");
+        int result = userMapper.update(user, updateWrapper);
+        // 方式二：非自动填充，可以设置为null
+        // int result = userMapper.update(null, updateWrapper);
+        System.out.println(result);
+    }
+}
+```
+
+方式一输出：
+
+```java
+2022-08-25 22:18:12.846 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.783 seconds (JVM running for 3.908)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72b43104] was not registered for synchronization because synchronization is not active
+2022-08-25 22:18:13.116 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 22:18:13.576 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1387174267 wrapping com.mysql.cj.jdbc.ConnectionImpl@f557c37] will not be managed by Spring
+==>  Preparing: UPDATE user SET name=?, age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age > ? OR sex IS NULL))
+==> Parameters: 张三(String), 18(Integer), male(String), %q%(String), 20(Integer)
+<==    Updates: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72b43104]
+0
+2022-08-25 22:18:13.636 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 22:18:13.639 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+方式二输出：
+
+```java
+2022-08-25 22:19:52.257 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.388 seconds (JVM running for 3.442)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72eb6200] was not registered for synchronization because synchronization is not active
+2022-08-25 22:19:52.499 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 22:19:52.662 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1902216702 wrapping com.mysql.cj.jdbc.ConnectionImpl@628b819d] will not be managed by Spring
+==>  Preparing: UPDATE user SET age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age > ? OR sex IS NULL))
+==> Parameters: 18(Integer), male(String), %q%(String), 20(Integer)
+<==    Updates: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72eb6200]
+0
+2022-08-25 22:19:52.719 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 22:19:52.725 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+> 方式一比方式二，多修改了 name 字段。
+
+### Condition
+
+在实际开发的过程中，组装条件是常见的功能，而这些条件数据来源于用户输入，是可选的，因此我们在组装这些条件时，必须先判断用户是否选择了这些条件，若选择则需要组装该条件，若没有选择则一定不能组装，以免影响 SQL 执行的结果。
+
+普通方式：
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void test09() {
+        // 定义查询条件，有可能为null（用户未输入或未选择）
+        String username = null;
+        Integer ageBegin = 10;
+        Integer ageEnd = 24;
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        // StringUtils.isNotBlank()判断某字符串是否不为空且长度不为0且不由空白符(whitespace)构成
+        if (StringUtils.isNotBlank(username)) {
+            queryWrapper.like("username", "q");
+        }
+        if (ageBegin != null) {
+            queryWrapper.ge("age", ageBegin);
+        }
+        if (ageEnd != null) {
+            queryWrapper.le("age", ageEnd);
+        }
+        List<User> users = userMapper.selectList(queryWrapper);
+        users.forEach(System.out::println);
+    }
+}
+```
+
+```java
+2022-08-25 22:24:44.953 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.904 seconds (JVM running for 3.997)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@611640f0] was not registered for synchronization because synchronization is not active
+2022-08-25 22:24:45.237 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 22:24:45.441 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@2000851008 wrapping com.mysql.cj.jdbc.ConnectionImpl@2d2b6960] will not be managed by Spring
+==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (age >= ? AND age <= ?)
+==> Parameters: 10(Integer), 24(Integer)
+<==    Columns: id, name, sex, age, is_deleted
+<==        Row: 4, 刘七, 女, 23, 0
+<==        Row: 6, ybc0, male, 20, 0
+<==        Row: 7, ybc1, male, 23, 0
+<==        Row: 8, ybc2, male, 22, 0
+<==        Row: 9, ybc3, male, 23, 0
+<==        Row: 10, ybc4, male, 24, 0
+<==      Total: 6
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@611640f0]
+User(id=4, name=刘七, sex=女, age=23, isDeleted=0)
+User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
+User(id=7, name=ybc1, sex=male, age=23, isDeleted=0)
+User(id=8, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=9, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
+2022-08-25 22:24:45.536 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 22:24:45.544 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+上面的实现方案没有问题，但是代码比较复杂，我们可以使用带 condition 参数的重载方法构建查询条件，简化代码的编写：
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void test10() {
+        // 定义查询条件，有可能为null（用户未输入或未选择）
+        String username = null;
+        Integer ageBegin = 10;
+        Integer ageEnd = 24;
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        // StringUtils.isNotBlank()判断某字符串是否不为空且长度不为0且不由空白符(whitespace)构成
+        queryWrapper
+                .like(StringUtils.isNotBlank(username), "username", "q")
+                .ge(ageBegin != null, "age", ageBegin)
+                .le(ageEnd != null, "age", ageEnd);
+        List<User> users = userMapper.selectList(queryWrapper);
+        users.forEach(System.out::println);
+    }
+
+}
+```
+
+```java
+2022-08-25 22:31:13.687 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.492 seconds (JVM running for 3.55)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d634127] was not registered for synchronization because synchronization is not active
+2022-08-25 22:31:13.951 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 22:31:14.142 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1886247880 wrapping com.mysql.cj.jdbc.ConnectionImpl@fd09e43] will not be managed by Spring
+==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (age >= ? AND age <= ?)
+==> Parameters: 10(Integer), 24(Integer)
+<==    Columns: id, name, sex, age, is_deleted
+<==        Row: 4, 刘七, 女, 23, 0
+<==        Row: 6, ybc0, male, 20, 0
+<==        Row: 7, ybc1, male, 23, 0
+<==        Row: 8, ybc2, male, 22, 0
+<==        Row: 9, ybc3, male, 23, 0
+<==        Row: 10, ybc4, male, 24, 0
+<==      Total: 6
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d634127]
+User(id=4, name=刘七, sex=女, age=23, isDeleted=0)
+User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
+User(id=7, name=ybc1, sex=male, age=23, isDeleted=0)
+User(id=8, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=9, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
+2022-08-25 22:31:14.221 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 22:31:14.227 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+### LambdaQueryWrapper
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+    
+    @Test
+    public void test11() {
+        // 定义查询条件，有可能为null（用户未输入）
+        String username = "q";
+        Integer ageBegin = 10;
+        Integer ageEnd = 24;
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        // 避免使用字符串表示字段，防止运行时错误
+        queryWrapper
+                .like(StringUtils.isNotBlank(username), User::getName, username)
+                .ge(ageBegin != null, User::getAge, ageBegin)
+                .le(ageEnd != null, User::getAge, ageEnd);
+        List<User> users = userMapper.selectList(queryWrapper);
+        users.forEach(System.out::println);
+    }
+}
+```
+
+```java
+2022-08-25 22:35:55.228 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.973 seconds (JVM running for 4.115)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@76ececd] was not registered for synchronization because synchronization is not active
+2022-08-25 22:35:55.593 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 22:35:55.810 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1714961449 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f7c420c] will not be managed by Spring
+==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (name LIKE ? AND age >= ? AND age <= ?)
+==> Parameters: %q%(String), 10(Integer), 24(Integer)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@76ececd]
+2022-08-25 22:35:55.901 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 22:35:55.908 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+### LambdaUpdateWrapper
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+    
+    @Test
+    public void test12() {
+        // 组装set子句
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        // lambda表达式内的逻辑优先运算
+        updateWrapper
+                .set(User::getAge, 18)
+                .set(User::getSex, "male")
+                .like(User::getName, "q")
+                .and(i -> i.lt(User::getAge, 24).or().isNull(User::getSex));
+        User user = new User();
+        int result = userMapper.update(user, updateWrapper);
+        System.out.println("受影响的行数：" + result);
+    }
+}
+```
+
+```java
+2022-08-25 23:02:10.264 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.079 seconds (JVM running for 4.355)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6c479fdf] was not registered for synchronization because synchronization is not active
+2022-08-25 23:02:10.606 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-25 23:02:10.843 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1561668557 wrapping com.mysql.cj.jdbc.ConnectionImpl@43cb5f38] will not be managed by Spring
+==>  Preparing: UPDATE user SET age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age < ? OR sex IS NULL))
+==> Parameters: 18(Integer), male(String), %q%(String), 24(Integer)
+<==    Updates: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6c479fdf]
+受影响的行数：0
+2022-08-25 23:02:10.920 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-25 23:02:10.929 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+## 插件
+
+### 分页插件
+
+`MyBatis-Plus 自带分页插件`，只要简单的配置即可实现分页功能。
+
+Step 1：添加配置类
+
+
+
+
+
+
+
 
 
 ## 本文参考
