@@ -2365,7 +2365,112 @@ Closing non transactional SqlSession [org.apache.ibatis.session.defaults.Default
 
 `MyBatis-Plus 自带分页插件`，只要简单的配置即可实现分页功能。
 
-Step 1：添加配置类
+Step1：添加配置类
+
+```java
+@Configuration
+// 可以将主类中的@MapperScan注解移到此处
+@MapperScan("cn.xisun.mybatisplus.springboot.mapper") 
+public class MybatisPlusConfig {
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        return interceptor;
+    }
+}
+```
+
+Step2：测试
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+    
+    @Test
+    public void testPage(){
+        // 设置分页参数
+        Page<User> page = new Page<>(1, 5);
+        userMapper.selectPage(page, null);
+        // 获取分页数据
+        List<User> list = page.getRecords();
+        list.forEach(System.out::println);
+        System.out.println("当前页："+page.getCurrent());
+        System.out.println("每页显示的条数："+page.getSize());
+        System.out.println("总记录数："+page.getTotal());
+        System.out.println("总页数："+page.getPages());
+        System.out.println("是否有上一页："+page.hasPrevious());
+        System.out.println("是否有下一页："+page.hasNext());
+    }
+}
+```
+
+
+
+### xml 自定义分页
+
+Step1：UserMapper 中定义接口方法
+
+```java
+@Mapper
+@Repository
+public interface UserMapper extends BaseMapper<User> {
+    /**
+     * 根据年龄查询用户列表，分页显示
+     *
+     * @param page 分页对象，xml中可以从里面进行取值，传递参数 Page 即自动分页，必须放在第一位
+     * @param age  年龄
+     * @return
+     */
+    Page<User> selectPageVo(@Param("page") Page<User> page, @Param("age") Integer age);
+}
+```
+
+Step2：UserMapper.xml 中编写 SQL
+
+```xml
+<!-- SQL片段，记录基础字段 -->
+<sql id="BaseColumns">id, name, age, sex</sql>
+
+<!-- Page<User> selectPageVo(Page<User> page, Integer age); -->
+<select id="selectPageVo" resultType="User">
+    SELECT <include refid="BaseColumns"></include> FROM user WHERE age > #{age}
+</select>
+```
+
+Step3：测试
+
+```java
+@SpringBootTest
+public class WrapperTest {
+    @Autowired
+    private UserService userService;
+    
+    @Test
+    public void test14() {
+        // 设置分页参数
+        Page<User> page = new Page<>(1, 5);
+        userMapper.selectPageVo(page, 20);
+        // 获取分页数据
+        List<User> list = page.getRecords();
+        list.forEach(System.out::println);
+        System.out.println("当前页：" + page.getCurrent());
+        System.out.println("每页显示的条数：" + page.getSize());
+        System.out.println("总记录数：" + page.getTotal());
+        System.out.println("总页数：" + page.getPages());
+        System.out.println("是否有上一页：" + page.hasPrevious());
+        System.out.println("是否有下一页：" + page.hasNext());
+    }
+}
+```
+
+
+
+### 乐观锁
+
+
 
 
 
