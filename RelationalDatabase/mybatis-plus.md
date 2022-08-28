@@ -2059,19 +2059,19 @@ public class WrapperTest {
         // 查询sex为male的用户信息
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.inSql("id", "select id from user where sex = 'male'");
-        List<User> list = userMapper.selectList(queryWrapper);
+        List<User> list = userService.list(queryWrapper);
         list.forEach(System.out::println);
     }
 }
 ```
 
 ```java
-2022-08-21 23:59:36.798 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.463 seconds (JVM running for 4.869)
+2022-08-27 20:55:06.166 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.175 seconds (JVM running for 4.252)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@42383cb0] was not registered for synchronization because synchronization is not active
-2022-08-21 23:59:37.186 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-21 23:59:37.481 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@776178157 wrapping com.mysql.cj.jdbc.ConnectionImpl@1b90fee4] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2577a95d] was not registered for synchronization because synchronization is not active
+2022-08-27 20:55:06.445 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 20:55:06.635 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1229754153 wrapping com.mysql.cj.jdbc.ConnectionImpl@4f379769] will not be managed by Spring
 ==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (id IN (select id from user where sex = 'male'))
 ==> Parameters: 
 <==    Columns: id, name, sex, age, is_deleted
@@ -2079,16 +2079,30 @@ JDBC Connection [HikariProxyConnection@776178157 wrapping com.mysql.cj.jdbc.Conn
 <==        Row: 7, ybc1, male, 23, 0
 <==        Row: 8, ybc2, male, 22, 0
 <==        Row: 9, ybc3, male, 23, 0
-<==        Row: 10, ybc4, male, 24, 0
-<==      Total: 5
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@42383cb0]
+<==        Row: 13, ybc2, male, 22, 0
+<==        Row: 14, ybc3, male, 23, 0
+<==        Row: 15, ybc4, male, 24, 0
+<==        Row: 17, ybc0, male, 20, 0
+<==        Row: 18, ybc1, male, 21, 0
+<==        Row: 19, ybc2, male, 22, 0
+<==        Row: 20, ybc3, male, 23, 0
+<==        Row: 21, ybc4, male, 24, 0
+<==      Total: 12
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2577a95d]
 User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
 User(id=7, name=ybc1, sex=male, age=23, isDeleted=0)
 User(id=8, name=ybc2, sex=male, age=22, isDeleted=0)
 User(id=9, name=ybc3, sex=male, age=23, isDeleted=0)
-User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
-2022-08-21 23:59:37.597 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-21 23:59:37.609 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+User(id=13, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=14, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=15, name=ybc4, sex=male, age=24, isDeleted=0)
+User(id=17, name=ybc0, sex=male, age=20, isDeleted=0)
+User(id=18, name=ybc1, sex=male, age=21, isDeleted=0)
+User(id=19, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=20, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=21, name=ybc4, sex=male, age=24, isDeleted=0)
+2022-08-27 20:55:06.720 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 20:55:06.728 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 ### UpdateWrapper
@@ -2111,11 +2125,11 @@ public class WrapperTest {
                 .like("name", "q")
                 .and(i -> i.gt("age", 20).or().isNull("sex"));
         // 方式一：自动填充，必须要创建User对象
-        User user = new User();
-        user.setName("张三");
-        int result = userMapper.update(user, updateWrapper);
+        // User user = new User();
+        // user.setName("张三");
+        // boolean result = userService.update(user, updateWrapper);
         // 方式二：非自动填充，可以设置为null
-        // int result = userMapper.update(null, updateWrapper);
+        boolean result = userService.update(null, updateWrapper);
         System.out.println(result);
     }
 }
@@ -2124,37 +2138,37 @@ public class WrapperTest {
 方式一输出：
 
 ```java
-2022-08-25 22:18:12.846 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.783 seconds (JVM running for 3.908)
+2022-08-27 20:59:44.033 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 4.657 seconds (JVM running for 5.87)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72b43104] was not registered for synchronization because synchronization is not active
-2022-08-25 22:18:13.116 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 22:18:13.576 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@1387174267 wrapping com.mysql.cj.jdbc.ConnectionImpl@f557c37] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7d97e06c] was not registered for synchronization because synchronization is not active
+2022-08-27 20:59:44.679 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 20:59:44.951 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@80504258 wrapping com.mysql.cj.jdbc.ConnectionImpl@574059d5] will not be managed by Spring
 ==>  Preparing: UPDATE user SET name=?, age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age > ? OR sex IS NULL))
 ==> Parameters: 张三(String), 18(Integer), male(String), %q%(String), 20(Integer)
 <==    Updates: 0
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72b43104]
-0
-2022-08-25 22:18:13.636 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 22:18:13.639 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7d97e06c]
+false
+2022-08-27 20:59:45.099 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 20:59:45.122 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 方式二输出：
 
 ```java
-2022-08-25 22:19:52.257 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.388 seconds (JVM running for 3.442)
+2022-08-27 21:04:12.857 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 4.9 seconds (JVM running for 7.132)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72eb6200] was not registered for synchronization because synchronization is not active
-2022-08-25 22:19:52.499 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 22:19:52.662 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@1902216702 wrapping com.mysql.cj.jdbc.ConnectionImpl@628b819d] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22c53d82] was not registered for synchronization because synchronization is not active
+2022-08-27 21:04:13.428 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:04:13.865 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@812415990 wrapping com.mysql.cj.jdbc.ConnectionImpl@664632e9] will not be managed by Spring
 ==>  Preparing: UPDATE user SET age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age > ? OR sex IS NULL))
 ==> Parameters: 18(Integer), male(String), %q%(String), 20(Integer)
 <==    Updates: 0
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72eb6200]
-0
-2022-08-25 22:19:52.719 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 22:19:52.725 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22c53d82]
+false
+2022-08-27 21:04:14.023 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:04:14.050 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 > 方式一比方式二，多修改了 name 字段。
@@ -2188,19 +2202,19 @@ public class WrapperTest {
         if (ageEnd != null) {
             queryWrapper.le("age", ageEnd);
         }
-        List<User> users = userMapper.selectList(queryWrapper);
+        List<User> users = userService.list(queryWrapper);
         users.forEach(System.out::println);
     }
 }
 ```
 
 ```java
-2022-08-25 22:24:44.953 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.904 seconds (JVM running for 3.997)
+2022-08-27 21:05:11.850 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.044 seconds (JVM running for 4.321)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@611640f0] was not registered for synchronization because synchronization is not active
-2022-08-25 22:24:45.237 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 22:24:45.441 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@2000851008 wrapping com.mysql.cj.jdbc.ConnectionImpl@2d2b6960] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71adfedd] was not registered for synchronization because synchronization is not active
+2022-08-27 21:05:12.216 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:05:12.428 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1929649021 wrapping com.mysql.cj.jdbc.ConnectionImpl@1235151c] will not be managed by Spring
 ==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (age >= ? AND age <= ?)
 ==> Parameters: 10(Integer), 24(Integer)
 <==    Columns: id, name, sex, age, is_deleted
@@ -2209,17 +2223,31 @@ JDBC Connection [HikariProxyConnection@2000851008 wrapping com.mysql.cj.jdbc.Con
 <==        Row: 7, ybc1, male, 23, 0
 <==        Row: 8, ybc2, male, 22, 0
 <==        Row: 9, ybc3, male, 23, 0
-<==        Row: 10, ybc4, male, 24, 0
-<==      Total: 6
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@611640f0]
+<==        Row: 13, ybc2, male, 22, 0
+<==        Row: 14, ybc3, male, 23, 0
+<==        Row: 15, ybc4, male, 24, 0
+<==        Row: 17, ybc0, male, 20, 0
+<==        Row: 18, ybc1, male, 21, 0
+<==        Row: 19, ybc2, male, 22, 0
+<==        Row: 20, ybc3, male, 23, 0
+<==        Row: 21, ybc4, male, 24, 0
+<==      Total: 13
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71adfedd]
 User(id=4, name=刘七, sex=女, age=23, isDeleted=0)
 User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
 User(id=7, name=ybc1, sex=male, age=23, isDeleted=0)
 User(id=8, name=ybc2, sex=male, age=22, isDeleted=0)
 User(id=9, name=ybc3, sex=male, age=23, isDeleted=0)
-User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
-2022-08-25 22:24:45.536 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 22:24:45.544 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+User(id=13, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=14, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=15, name=ybc4, sex=male, age=24, isDeleted=0)
+User(id=17, name=ybc0, sex=male, age=20, isDeleted=0)
+User(id=18, name=ybc1, sex=male, age=21, isDeleted=0)
+User(id=19, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=20, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=21, name=ybc4, sex=male, age=24, isDeleted=0)
+2022-08-27 21:05:12.530 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:05:12.541 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 上面的实现方案没有问题，但是代码比较复杂，我们可以使用带 condition 参数的重载方法构建查询条件，简化代码的编写：
@@ -2250,12 +2278,12 @@ public class WrapperTest {
 ```
 
 ```java
-2022-08-25 22:31:13.687 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.492 seconds (JVM running for 3.55)
+2022-08-27 21:05:55.636 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.025 seconds (JVM running for 4.503)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d634127] was not registered for synchronization because synchronization is not active
-2022-08-25 22:31:13.951 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 22:31:14.142 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@1886247880 wrapping com.mysql.cj.jdbc.ConnectionImpl@fd09e43] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4ceff87d] was not registered for synchronization because synchronization is not active
+2022-08-27 21:05:55.984 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:05:56.228 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1929649021 wrapping com.mysql.cj.jdbc.ConnectionImpl@1235151c] will not be managed by Spring
 ==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (age >= ? AND age <= ?)
 ==> Parameters: 10(Integer), 24(Integer)
 <==    Columns: id, name, sex, age, is_deleted
@@ -2264,17 +2292,31 @@ JDBC Connection [HikariProxyConnection@1886247880 wrapping com.mysql.cj.jdbc.Con
 <==        Row: 7, ybc1, male, 23, 0
 <==        Row: 8, ybc2, male, 22, 0
 <==        Row: 9, ybc3, male, 23, 0
-<==        Row: 10, ybc4, male, 24, 0
-<==      Total: 6
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d634127]
+<==        Row: 13, ybc2, male, 22, 0
+<==        Row: 14, ybc3, male, 23, 0
+<==        Row: 15, ybc4, male, 24, 0
+<==        Row: 17, ybc0, male, 20, 0
+<==        Row: 18, ybc1, male, 21, 0
+<==        Row: 19, ybc2, male, 22, 0
+<==        Row: 20, ybc3, male, 23, 0
+<==        Row: 21, ybc4, male, 24, 0
+<==      Total: 13
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4ceff87d]
 User(id=4, name=刘七, sex=女, age=23, isDeleted=0)
 User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
 User(id=7, name=ybc1, sex=male, age=23, isDeleted=0)
 User(id=8, name=ybc2, sex=male, age=22, isDeleted=0)
 User(id=9, name=ybc3, sex=male, age=23, isDeleted=0)
-User(id=10, name=ybc4, sex=male, age=24, isDeleted=0)
-2022-08-25 22:31:14.221 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 22:31:14.227 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+User(id=13, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=14, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=15, name=ybc4, sex=male, age=24, isDeleted=0)
+User(id=17, name=ybc0, sex=male, age=20, isDeleted=0)
+User(id=18, name=ybc1, sex=male, age=21, isDeleted=0)
+User(id=19, name=ybc2, sex=male, age=22, isDeleted=0)
+User(id=20, name=ybc3, sex=male, age=23, isDeleted=0)
+User(id=21, name=ybc4, sex=male, age=24, isDeleted=0)
+2022-08-27 21:05:56.327 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:05:56.334 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 ### LambdaQueryWrapper
@@ -2304,18 +2346,18 @@ public class WrapperTest {
 ```
 
 ```java
-2022-08-25 22:35:55.228 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 2.973 seconds (JVM running for 4.115)
+2022-08-27 21:26:33.921 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 4.396 seconds (JVM running for 6.344)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@76ececd] was not registered for synchronization because synchronization is not active
-2022-08-25 22:35:55.593 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 22:35:55.810 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@1714961449 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f7c420c] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2577a95d] was not registered for synchronization because synchronization is not active
+2022-08-27 21:26:34.466 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:26:34.768 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@64364705 wrapping com.mysql.cj.jdbc.ConnectionImpl@4f486211] will not be managed by Spring
 ==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 AND (name LIKE ? AND age >= ? AND age <= ?)
 ==> Parameters: %q%(String), 10(Integer), 24(Integer)
 <==      Total: 0
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@76ececd]
-2022-08-25 22:35:55.901 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 22:35:55.908 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2577a95d]
+2022-08-27 21:26:34.931 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:26:34.963 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 ### LambdaUpdateWrapper
@@ -2337,26 +2379,26 @@ public class WrapperTest {
                 .like(User::getName, "q")
                 .and(i -> i.lt(User::getAge, 24).or().isNull(User::getSex));
         User user = new User();
-        int result = userMapper.update(user, updateWrapper);
-        System.out.println("受影响的行数：" + result);
+        boolean result = userService.update(user, updateWrapper);
+        System.out.println("更新结果：" + result);
     }
 }
 ```
 
 ```java
-2022-08-25 23:02:10.264 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.079 seconds (JVM running for 4.355)
+2022-08-27 21:28:09.483 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.533 seconds (JVM running for 4.992)
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6c479fdf] was not registered for synchronization because synchronization is not active
-2022-08-25 23:02:10.606 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2022-08-25 23:02:10.843 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-JDBC Connection [HikariProxyConnection@1561668557 wrapping com.mysql.cj.jdbc.ConnectionImpl@43cb5f38] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@d3f4505] was not registered for synchronization because synchronization is not active
+2022-08-27 21:28:09.966 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:28:10.247 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1588976146 wrapping com.mysql.cj.jdbc.ConnectionImpl@4a50d04a] will not be managed by Spring
 ==>  Preparing: UPDATE user SET age=?,sex=? WHERE is_deleted=0 AND (name LIKE ? AND (age < ? OR sex IS NULL))
 ==> Parameters: 18(Integer), male(String), %q%(String), 24(Integer)
 <==    Updates: 0
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6c479fdf]
-受影响的行数：0
-2022-08-25 23:02:10.920 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2022-08-25 23:02:10.929 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@d3f4505]
+更新结果：false
+2022-08-27 21:28:10.339 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:28:10.351 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
 
 ## 插件
@@ -2365,7 +2407,7 @@ Closing non transactional SqlSession [org.apache.ibatis.session.defaults.Default
 
 `MyBatis-Plus 自带分页插件`，只要简单的配置即可实现分页功能。
 
-Step1：添加配置类
+Step1：添加分页插件配置
 
 ```java
 @Configuration
@@ -2375,6 +2417,7 @@ public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        // 分页插件配置
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
@@ -2390,24 +2433,59 @@ public class WrapperTest {
     private UserService userService;
     
     @Test
-    public void testPage(){
+    public void test13() {
         // 设置分页参数
         Page<User> page = new Page<>(1, 5);
-        userMapper.selectPage(page, null);
+        userService.page(page);
         // 获取分页数据
         List<User> list = page.getRecords();
         list.forEach(System.out::println);
-        System.out.println("当前页："+page.getCurrent());
-        System.out.println("每页显示的条数："+page.getSize());
-        System.out.println("总记录数："+page.getTotal());
-        System.out.println("总页数："+page.getPages());
-        System.out.println("是否有上一页："+page.hasPrevious());
-        System.out.println("是否有下一页："+page.hasNext());
+        System.out.println("当前页：" + page.getCurrent());
+        System.out.println("每页显示的条数：" + page.getSize());
+        System.out.println("总记录数：" + page.getTotal());
+        System.out.println("总页数：" + page.getPages());
+        System.out.println("是否有上一页：" + page.hasPrevious());
+        System.out.println("是否有下一页：" + page.hasNext());
     }
 }
 ```
 
-
+```java
+2022-08-27 21:57:51.070 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.WrapperTest - Started WrapperTest in 3.121 seconds (JVM running for 4.485)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3a2e9f5b] was not registered for synchronization because synchronization is not active
+2022-08-27 21:57:51.474 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-27 21:57:51.737 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1670627211 wrapping com.mysql.cj.jdbc.ConnectionImpl@76d7881e] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM user WHERE is_deleted = 0
+==> Parameters: 
+<==    Columns: total
+<==        Row: 18
+<==      Total: 1
+==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE is_deleted=0 LIMIT ?
+==> Parameters: 5(Long)
+<==    Columns: id, name, sex, age, is_deleted
+<==        Row: 1, 张三, 男, 27, 0
+<==        Row: 2, 李四, 男, 28, 0
+<==        Row: 4, 刘七, 女, 23, 0
+<==        Row: 5, 郑八, 男, 29, 0
+<==        Row: 6, ybc0, male, 20, 0
+<==      Total: 5
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3a2e9f5b]
+User(id=1, name=张三, sex=男, age=27, isDeleted=0)
+User(id=2, name=李四, sex=男, age=28, isDeleted=0)
+User(id=4, name=刘七, sex=女, age=23, isDeleted=0)
+User(id=5, name=郑八, sex=男, age=29, isDeleted=0)
+User(id=6, name=ybc0, sex=male, age=20, isDeleted=0)
+当前页：1
+每页显示的条数：5
+总记录数：18
+总页数：4
+是否有上一页：false
+是否有下一页：true
+2022-08-27 21:57:51.882 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-27 21:57:51.900 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
 
 ### xml 自定义分页
 
@@ -2466,19 +2544,729 @@ public class WrapperTest {
 }
 ```
 
-
-
 ### 乐观锁
 
+#### 场景复现
 
+一件商品，成本价是 80 元，售价是 100 元。老板先是通知小李，说你去把商品价格增加50元。小李正在玩游戏，耽搁了一个小时。正好一个小时后，老板觉得商品价格增加到 150 元，价格太高，可能会影响销量。又通知小王，你把商品价格降低 30 元。此时，小李和小王同时操作商品后台系统。小李操作的时候，系统先取出商品价格 100 元；小王也在操作，取出的商品价格也是 100 元。小李将价格加了 50 元，并将 100 + 50 = 150 元存入了数据库；小王将商品减了 30 元，并将 100 - 30 = 70 元存入了数据库。是的，如果没有锁，小李的操作就完全被小王的覆盖了。现在商品价格是 70 元，比成本价低 10 元。几分钟后，这个商品很快出售了 1000 多件商品，老板亏 1 万多。
 
+上面的场景，如果使用`乐观锁`，小王保存价格前，会检查下价格是否被人修改过了。如果被修改过了，则重新取出的被修改后的价格 150 元，这样他会将 120 元存入数据库。如果使用`悲观锁`，小李取出数据后，小王只能等小李操作完之后，才能对价格进行操作，也可以保证最终的价格是 120 元。
 
+#### 场景模拟
 
+Step1：数据库中增加商品表
 
+```sql
+CREATE TABLE IF NOT EXISTS mybatis.product (
+	`id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'id，主键',
+	`name` VARCHAR(30) NOT NULL COMMENT '商品名称',
+	`price` INT(11) DEFAULT 0 COMMENT '价格',
+	`version` INT(11) DEFAULT 0 COMMENT '乐观锁版本号',
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;
+```
 
+Step2：添加数据
 
+```sql
+INSERT INTO mybatisplus.product (NAME, price) VALUES ('外星人笔记本', 100);
+```
 
+Step3：添加实体
 
+```java
+@Data
+@NoArgsConstructor
+@TableName("product")
+public class Product {
+    private Long id;
+    private String name;
+    private Integer price;
+    private Integer version;
+}
+```
+
+Step4：添加 Mapper
+
+```java
+@Mapper
+@Repository
+public interface ProductMapper extends BaseMapper<Product> {
+}
+```
+
+Step5：添加 Service
+
+```java
+public interface ProductService extends IService<Product> {
+}
+```
+
+```java
+@Service
+public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
+}
+```
+
+Step6：测试，没有锁的情况
+
+```java
+@SpringBootTest
+public class ProductTest {
+    @Autowired
+    ProductService productService;
+
+    @Test
+    void test01() {
+        // 1.小李
+        Product product1 = productService.getById(1L);
+        System.out.println("小李取出的价格：" + product1.getPrice());
+        // 2.小王
+        Product product2 = productService.getById(1L);
+        System.out.println("小王取出的价格：" + product2.getPrice());
+        // 3.小李将价格加了50元，存入了数据库
+        product1.setPrice(product1.getPrice() + 50);
+        boolean result1 = productService.updateById(product1);
+        System.out.println("小李修改结果：" + result1);
+        // 4.小王将商品减了30元，存入了数据库
+        product2.setPrice(product2.getPrice() - 30);
+        boolean result2 = productService.updateById(product2);
+        System.out.println("小王修改结果：" + result2);
+        // 5.最后的结果
+        Product p3 = productService.getById(1L);
+        // 6.价格覆盖，最后的结果：70
+        System.out.println("最后的结果：" + p3.getPrice());
+    }
+}
+```
+
+```java
+2022-08-28 17:09:14.137 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.ProductTest - Started ProductTest in 3.511 seconds (JVM running for 5.296)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c663eaf] was not registered for synchronization because synchronization is not active
+2022-08-28 17:09:14.472 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-28 17:09:14.714 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@704530496 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f287b98] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c663eaf]
+小李取出的价格：100
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73c31181] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@64364705 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f287b98] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73c31181]
+小王取出的价格：100
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4bc59b27] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@162320368 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f287b98] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=?
+==> Parameters: 外星人笔记本(String), 150(Integer), 0(Integer), 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4bc59b27]
+小李修改结果：true
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b649efa] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1710180594 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f287b98] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=?
+==> Parameters: 外星人笔记本(String), 70(Integer), 0(Integer), 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b649efa]
+小王修改结果：true
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72543547] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1032382137 wrapping com.mysql.cj.jdbc.ConnectionImpl@7f287b98] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 70, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@72543547]
+最后的结果：70
+2022-08-28 17:09:14.892 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-28 17:09:14.910 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+Step7：乐观锁实现流程
+
+数据库表中添加 version 字段，取出记录时，获取当前 version：
+
+```sql
+SELECT id, name, price, version FROM product WHERE id = 1;
+```
+
+更新时，version + 1，如果 where 语句中的 version 版本不对，则更新失败:
+
+```sql
+UPDATE product SET price = price + 50, version = version + 1 WHERE id =1 AND version = 1;
+```
+
+#### Mybatis-Plus 实现乐观锁
+
+Step1：修改实体类
+
+```java
+@Data
+@NoArgsConstructor
+@TableName("product")
+public class Product {
+    private Long id;
+    private String name;
+    private Integer price;
+    @Version
+    private Integer version;
+}
+```
+
+Step2：添加乐观锁插件配置
+
+```java
+@Configuration
+@MapperScan("cn.xisun.mybatisplus.springboot.mapper")
+public class MybatisPlusConfig {
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        // 分页插件配置
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        // 乐观锁插件配置
+        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        return interceptor;
+    }
+}
+```
+
+Step3：测试
+
+```java
+@SpringBootTest
+public class ProductTest {
+    @Autowired
+    ProductService productService;
+
+    @Test
+    void test01() {
+        // 1.小李
+        Product product1 = productService.getById(1L);
+        System.out.println("小李取出的价格：" + product1.getPrice());
+        // 2.小王
+        Product product2 = productService.getById(1L);
+        System.out.println("小王取出的价格：" + product2.getPrice());
+        // 3.小李将价格加了50元，存入了数据库
+        product1.setPrice(product1.getPrice() + 50);
+        boolean result1 = productService.updateById(product1);
+        System.out.println("小李修改结果：" + result1);
+        // 4.小王将商品减了30元，存入了数据库
+        product2.setPrice(product2.getPrice() - 30);
+        boolean result2 = productService.updateById(product2);
+        System.out.println("小王修改结果：" + result2);
+        // 5.最后的结果
+        Product p3 = productService.getById(1L);
+        // 6.价格覆盖，最后的结果：70
+        System.out.println("最后的结果：" + p3.getPrice());
+        // 7.最终的version
+        Product product = productService.getById(1L);
+        System.out.println("version：" + product.getVersion());
+    }
+}
+```
+
+```java
+2022-08-28 18:49:20.654 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.ProductTest - Started ProductTest in 3.471 seconds (JVM running for 5.086)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3ba0ae41] was not registered for synchronization because synchronization is not active
+2022-08-28 18:49:21.057 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-28 18:49:21.346 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@840042838 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3ba0ae41]
+小李取出的价格：100
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@51e3d37e] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@977772506 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@51e3d37e]
+小王取出的价格：100
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6418e39e] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@33389111 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=? AND version=?
+==> Parameters: 外星人笔记本(String), 150(Integer), 1(Integer), 1(Long), 0(Integer)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6418e39e]
+小李修改结果：true
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22bf9122] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@545392109 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=? AND version=?
+==> Parameters: 外星人笔记本(String), 70(Integer), 1(Integer), 1(Long), 0(Integer)
+<==    Updates: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22bf9122]
+小王修改结果：false
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9687f55] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1459669467 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 150, 1
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9687f55]
+最后的结果：150
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6babffb5] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@561227586 wrapping com.mysql.cj.jdbc.ConnectionImpl@6975fb1c] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 150, 1
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6babffb5]
+version：1
+2022-08-28 18:49:21.530 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-28 18:49:21.545 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+可以看出，小王最终修改失败。
+
+#### 流程优化
+
+```java
+@SpringBootTest
+public class ProductTest {
+    @Autowired
+    ProductService productService;
+
+    @Test
+    public void test02() {
+        // 1.小李取数据
+        Product p1 = productService.getById(1L);
+        // 2.小王取数据
+        Product p2 = productService.getById(1L);
+        // 3.小李修改 + 50
+        p1.setPrice(p1.getPrice() + 50);
+        boolean result1 = productService.updateById(p1);
+        System.out.println("小李修改的结果：" + result1);
+        // 4.小王修改 - 30
+        p2.setPrice(p2.getPrice() - 30);
+        boolean result2 = productService.updateById(p2);
+        System.out.println("小王修改的结果：" + result2);
+        // 5.失败重试，重新获取version并更新
+        if (!result2) {
+            p2 = productService.getById(1L);
+            p2.setPrice(p2.getPrice() - 30);
+            result2 = productService.updateById(p2);
+        }
+        System.out.println("小王修改重试的结果：" + result2);
+        // 6.老板看价格
+        Product p3 = productService.getById(1L);
+        System.out.println("老板看价格：" + p3.getPrice());
+    }
+}
+```
+
+```java
+2022-08-28 19:03:19.791 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.ProductTest - Started ProductTest in 3.261 seconds (JVM running for 4.638)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2c9a6717] was not registered for synchronization because synchronization is not active
+2022-08-28 19:03:20.127 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-28 19:03:20.349 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1677115089 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2c9a6717]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5eb5da12] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1246810186 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5eb5da12]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3a479fda] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1727776231 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=? AND version=?
+==> Parameters: 外星人笔记本(String), 150(Integer), 1(Integer), 1(Long), 0(Integer)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3a479fda]
+小李修改的结果：true
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7186b202] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1801756410 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=? AND version=?
+==> Parameters: 外星人笔记本(String), 70(Integer), 1(Integer), 1(Long), 0(Integer)
+<==    Updates: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7186b202]
+小王修改的结果：false
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@36068727] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1918121287 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 150, 1
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@36068727]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22bf9122] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@545392109 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: UPDATE product SET name=?, price=?, version=? WHERE id=? AND version=?
+==> Parameters: 外星人笔记本(String), 120(Integer), 2(Integer), 1(Long), 1(Integer)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22bf9122]
+小王修改重试的结果：true
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9687f55] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1459669467 wrapping com.mysql.cj.jdbc.ConnectionImpl@7ef8eda7] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 120, 2
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9687f55]
+老板看价格：120
+2022-08-28 19:03:20.530 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-28 19:03:20.547 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+## 通用枚举
+
+表中的有些字段值是固定的，例如性别（男/女，male/female），此时，我们可以使用 MyBatis-Plus 的`通用枚举`来实现。
+
+Step1：创建通用枚举类型
+
+```java
+@Getter
+public enum SexEnum {
+    MALE(1, "男"),
+    FEMALE(2, "女");
+
+    @EnumValue
+    private Integer sex;
+    private String sexName;
+
+    SexEnum(Integer sex, String sexName) {
+        this.sex = sex;
+        this.sexName = sexName;
+    }
+}
+```
+
+Step2：修改原表中的 Sex 字段，以及实体类 Sex 属性的类型
+
+![image-20220828192418424](mybatis-plus/image-20220828192418424.png)
+
+```java
+@Data
+@NoArgsConstructor
+@TableName("user")
+public class User {
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+    private String name;
+    private SexEnum sex;
+    private Integer age;
+    @TableLogic
+    private Integer isDeleted;
+}
+```
+
+Step3：测试
+
+```java
+@SpringBootTest
+public class EnumTest {
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void testSexEnum() {
+        User user = new User();
+        user.setName("Enum");
+        user.setAge(20);
+        // 设置性别信息为枚举项，会将@EnumValue注解所标识的属性值存储到数据库
+        user.setSex(SexEnum.MALE);
+        boolean result = userService.save(user);
+        System.out.println("保存结果：" + result);
+    }
+}
+```
+
+```java
+2022-08-28 19:27:52.032 [main] INFO  cn.xisun.mybatisplus.springboot.mapper.EnumTest - Started EnumTest in 3.548 seconds (JVM running for 4.991)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@46039a21] was not registered for synchronization because synchronization is not active
+2022-08-28 19:27:52.538 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-08-28 19:27:52.870 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1907028305 wrapping com.mysql.cj.jdbc.ConnectionImpl@7061622] will not be managed by Spring
+==>  Preparing: INSERT INTO user ( name, sex, age ) VALUES ( ?, ?, ? )
+==> Parameters: Enum(String), 1(Integer), 20(Integer)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@46039a21]
+保存结果：true
+2022-08-28 19:27:53.095 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-08-28 19:27:53.142 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+```
+
+## 代码生成器
+
+Step1：Maven 引入依赖
+
+```xml
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-generator</artifactId>
+    <version>3.5.3</version>
+</dependency>
+
+<dependency>
+    <groupId>org.freemarker</groupId>
+    <artifactId>freemarker</artifactId>
+    <version>2.3.31</version>
+</dependency>
+```
+
+Step2：快速生成
+
+```java
+public class FastAutoGeneratorTest {
+    public static void main(String[] args) {
+        FastAutoGenerator
+                .create("jdbc:mysql://192.168.10.100:3306/mybatisplus?serverTimezone=GMT%2B8&characterEncoding" +
+                        "=utf-8&useSSL=false&allowPublicKeyRetrieval=true", " root", "root")
+                .globalConfig(builder -> {
+                    builder
+                            // 设置作者
+                            .author("XiSun")
+                            // 开启 swagger 模式
+                            // .enableSwagger()
+                            // 覆盖已生成文件，已弃用
+                            // .fileOverride()
+                            // 指定输出目录
+                            .outputDir("D://mybatis-plus");
+                })
+                .packageConfig(builder -> {
+                    builder
+                            .parent("com.xisun.mybatisplus.springboot.entity")
+                            // 设置父包模块名
+                            .moduleName("mybatisplus")
+                            // 设置entity生成路径
+                            .pathInfo(Collections.singletonMap(OutputFile.entity, "D://mybatis-plus"));
+                })
+                .strategyConfig(builder -> {
+                    builder
+                            // 设置需要生成实体类的表名
+                            .addInclude("user")
+                            // 设置过滤表前缀
+                            .addTablePrefix("t_", "c_");
+                })
+                // 使用Freemarker 引擎模板，默认的是Velocity引擎模板
+                .templateEngine(new FreemarkerTemplateEngine())
+                .execute();
+    }
+}
+```
+
+## 多数据源
+
+适用于多种场景：纯粹多库、 读写分离、 一主多从、 混合模式等。目前我们就来模拟一个纯粹多库的一个场景，其他场景类似。
+
+场景说明：我们创建两个库，分别为 mybatisplus 与 mybatisplus-1（新建），将 mybatisplus 库的 product 表移动到 mybatisplus-1 库，这样每个库一张表，通过一个测试用例分别获取用户数据与商品数据，如果获取到说明多库模拟成功。
+
+Step1：创建数据库及表
+
+```sql
+CREATE TABLE IF NOT EXISTS mybatisplus_1.product (
+	`id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'id，主键',
+	`name` VARCHAR(30) NOT NULL COMMENT '商品名称',
+	`price` INT(11) DEFAULT 0 COMMENT '价格',
+	`version` INT(11) DEFAULT 0 COMMENT '乐观锁版本号',
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;
+```
+
+```sql
+INSERT INTO mybatisplus_1.product (NAME, price) VALUES ('外星人笔记本', 100);
+```
+
+```sql
+DROP TABLE IF EXISTS mybatisplus.product;
+```
+
+![image-20220828214402433](mybatis-plus/image-20220828214402433.png)
+
+Step2：Maven 引入依赖
+
+```xml
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+    <version>3.5.1</version>
+</dependency>
+```
+
+Step3：配置多数据源
+
+```yaml
+spring:
+  application:
+    name: xisun-mybatisplus-server
+  #  单数据源配置
+  #  datasource:
+  #    # 配置数据源类型
+  #    type: com.zaxxer.hikari.HikariDataSource
+  #    # 配置连接数据库信息
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  #    url: jdbc:mysql://${MYSQL_HOST:192.168.10.100}:${MYSQL_PORT:3306}/${MYSQL_DB:mybatisplus}?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+  #    username: ${MYSQL_USERNAME:root}
+  #    password: ${MYSQL_PASSWORD:root}
+  # 多数据源配置
+  datasource:
+    dynamic:
+      # 设置默认的数据源或者数据源组，默认值即为master
+      primary: master
+      # 严格匹配数据源,默认false.true未匹配到指定数据源时抛异常，false使用默认数据源
+      strict: false
+      datasource:
+        master:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.10.100:3306/mybatisplus?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+          username: root
+          password: root
+        slave_1:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.10.100:3306/mybatisplus_1?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+          username: root
+          password: root
+```
+
+Step4：创建 UserMapper 和 UserService，使用`@DS`注解指定所操作的数据源。
+
+```java
+@Mapper
+@Repository
+public interface UserMapper extends BaseMapper<User> {
+}
+```
+
+```java
+public interface UserService extends IService<User> {
+}
+```
+
+```java
+@DS("master")
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+}
+```
+
+Step5：创建 ProductMapper 和 ProductService，使用`@DS`注解指定所操作的数据源。
+
+```java
+@Mapper
+@Repository
+public interface ProductMapper extends BaseMapper<Product> {
+}
+```
+
+```java
+public interface ProductService extends IService<Product> {
+}
+```
+
+```java
+@DS("slave_1")
+@Service
+public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
+}
+```
+
+Step6：测试
+
+```java
+@SpringBootTest
+public class DynamicDatasourceTest {
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ProductService productService;
+
+    @Test
+    public void testDynamicDataSource() {
+        System.out.println(userService.getById(1L));
+        System.out.println(productService.getById(1L));
+    }
+}
+```
+
+```java
+2022-08-28 21:56:21.228 [main] INFO  c.x.m.springboot.mapper.DynamicDatasourceTest - Started DynamicDatasourceTest in 4.571 seconds (JVM running for 6.35)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@738d37fc] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1901752553 wrapping com.mysql.cj.jdbc.ConnectionImpl@3bc69ce9] will not be managed by Spring
+==>  Preparing: SELECT id,name,sex,age,is_deleted FROM user WHERE id=? AND is_deleted=0
+==> Parameters: 1(Long)
+<==    Columns: id, name, sex, age, is_deleted
+<==        Row: 1, 张三, 1, 27, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@738d37fc]
+User(id=1, name=张三, sex=MALE, age=27, isDeleted=0)
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4e245739] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1567025476 wrapping com.mysql.cj.jdbc.ConnectionImpl@469a7575] will not be managed by Spring
+==>  Preparing: SELECT id,name,price,version FROM product WHERE id=?
+==> Parameters: 1(Long)
+<==    Columns: id, name, price, version
+<==        Row: 1, 外星人笔记本, 100, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4e245739]
+Product(id=1, name=外星人笔记本, price=100, version=0)
+2022-08-28 21:56:21.771 [SpringApplicationShutdownHook] INFO  c.b.dynamic.datasource.DynamicRoutingDataSource - dynamic-datasource start closing ....
+2022-08-28 21:56:21.772 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - master - Shutdown initiated...
+2022-08-28 21:56:21.794 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - master - Shutdown completed.
+2022-08-28 21:56:21.794 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - slave_1 - Shutdown initiated...
+2022-08-28 21:56:21.804 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - slave_1 - Shutdown completed.
+2022-08-28 21:56:21.804 [SpringApplicationShutdownHook] INFO  c.b.dynamic.datasource.DynamicRoutingDataSource - dynamic-datasource all closed success,bye
+```
+
+Step7：结论
+
+- 两个数据源，都能顺利获取对象。
+- 如果我们实现读写分离，将写操作方法加上主库数据源，读操作方法加上从库数据源，自动切换，也就实现了读写分离。
+
+## MyBatisX 插件
+
+MyBatis-Plus 为我们提供了强大的 Mapper 和 Service 模板，能够大大的提高开发效率。但是在真正开发过程中，MyBatis-Plus 并不能为我们解决所有问题，例如一些复杂的 SQL、多表联查等，我们就需要自己去编写代码和 SQL 语句，这个时候可以使用`MyBatisX 插件`。
+
+MyBatisX 是一款基于 IDEA 的快速开发插件，为效率而生，用法参考：https://baomidou.com/pages/ba5b24/
 
 ## 本文参考
 
