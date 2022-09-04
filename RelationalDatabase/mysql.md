@@ -336,11 +336,43 @@ $ docker images
 $ docker run -d --name mysql_8.0.29 -p 3306:3306 -v /home/xisun/MyDatas/mysql/:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mysql:8.0.29
 ```
 
-## MySQL 数据库的使用
+## MySQL 图形化管理工具
+
+### DBeaver
+
+官网：https://dbeaver.io/download/，下载方式如下：
+
+![image-20220531115809915](mysql/image-20220531115809915.png)
+
+Github：https://github.com/dbeaver/dbeaver/releases，下载方式如下：
+
+![image-20220531115703986](mysql/image-20220531115703986.png)
+
+安装程序下载后，点击安装即可。安装成功后，因为 DBeaver 是基于 Maven 构建的，数据库驱动也就是链接数据库的 JDBC 驱动是通过 Maven 仓库下载的，因此，第一步要做的是配置 Maven 镜像，否则在后续下载数据库驱动的时候会非常的慢。
+
+点击 "窗口" ---> "首选项" ---> "连接" ---> "驱动" ---> "Maven"，设置阿里云镜像`http://maven.aliyun.com/nexus/content/groups/public/`：
+
+![image-20220531123024201](mysql/image-20220531123024201.png)
+
+![image-20220531123127630](mysql/image-20220531123127630.png)
+
+配置完 Maven 仓库后，连接数据库：
+
+![image-20220531124034671](mysql/image-20220531124034671.png)
+
+![image-20220531123753835](mysql/image-20220531123753835.png)
+
+![image-20220531124007864](mysql/image-20220531124007864.png)
+
+更多关于 DBeaver 的使用方法，参考：https://juejin.cn/post/7065474476607012878
+
+>DBeaver 是用Java 开发的，使用前需要安装 JDK 环境。
+
+## MySQL 的基本使用
 
 MySQL 语法规范：
 
-- 不区分大小写；
+- `不区分大小写`；
 - 每句话用`;`或`\g`结尾；
 - 各子句一般分行写；
 - 关键字不能缩写，也不能分行；
@@ -373,80 +405,142 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql>
 ```
 
-- 查看全部的数据库：`show databases;`
+- 查看全部的数据库：`SHOW databases;`
 
   ```bash
-  mysql> show databases;
+  mysql> SHOW databases;
   +--------------------+
   | Database           |
   +--------------------+
   | information_schema |
+  | mybatis            |
+  | mybatisplus        |
+  | mybatisplus_1      |
   | mysql              |
   | performance_schema |
   | sys                |
   +--------------------+
-  4 rows in set (0.01 sec)
+  7 rows in set (0.00 sec)
   ```
 
-- 创建数据库：`create database 数据库名;`
+  - `information_schema`、`performance_schema`、`sys`和`mysql`，都是 MySQL 系统自带的数据库。
+
+  - `information_schema`库主要保存 MySQL 数据库服务器的系统信息，比如数据库的名称、数据表的名称、字段名称、存取权限、数据文件所在的文件夹和系统使用的文件夹，等等。
+
+  - `performance_schema`库可以用来监控 MySQL 的各类性能指标。
+
+  - `sys`库主要作用是以一种更容易被理解的方式，展示 MySQL 数据库服务器的各类性能指标，帮助系统管理员和开发人员监控 MySQL 的技术性能。
+
+  - `mysql`库保存了 MySQL 数据库服务器运行时需要的系统信息，比如数据文件夹、当前使用的字符集、约束检查信息，等等。
+
+- 创建数据库：`CREATE database 数据库名;`
 
   ```bash
-  mysql> create database test;
+  mysql> CREATE database test;
   Query OK, 1 row affected (0.02 sec)
   
-  mysql> show databases;
+  mysql> SHOW databases;
   +--------------------+
   | Database           |
   +--------------------+
   | information_schema |
+  | mybatis            |
+  | mybatisplus        |
+  | mybatisplus_1      |
   | mysql              |
   | performance_schema |
   | sys                |
   | test               |
   +--------------------+
-  5 rows in set (0.00 sec)
+  8 rows in set (0.00 sec)
   ```
 
-- 使用数据库：`use 数据库名;`
+- 使用数据库：`USE 数据库名;`
 
   ```bash
-  mysql> use test;
+  mysql> USE test;
   Database changed
   ```
 
-- 查看指定的数据库中有哪些数据表：`show tables;`
+  - 如果没有使用 USE 语句，对数据库的操作也没有加 "数据名" 的限定，那么会报 "ERROR 1046(3D000): No database selected"（没有选择数据库）。
+
+  - 使用完 USE 语句之后，如果接下来的 SQL 都是针对一个数据库操作的，那就不用重复 USE 了，如果要针对另一个数据库操作，那么要重新 USE。
+
+- 查看当前数据库中有哪些数据表：`SHOW tables;`
 
   ```bash
-  mysql> show tables;
+  mysql> SHOW tables;
   Empty set (0.00 sec)
   ```
 
-- 建表：`create table 表名(表结构);`
+- 查看指定数据库中有哪些数据表：`SHOW tables FROM 数据库名;`
 
   ```bash
-  mysql> create table students(id varchar(30), age int, name varchar(30));
-  Query OK, 0 rows affected (0.06 sec)
-  mysql> show tables;
+  mysql> SHOW tables FROM mybatisplus;
+  +-----------------------+
+  | Tables_in_mybatisplus |
+  +-----------------------+
+  | user                  |
+  +-----------------------+
+  1 row in set (0.01 sec)
+  ```
+
+- 建表：`CREATE table 表名(表结构);`
+
+  ```bash
+  mysql> CREATE table student (
+      ->   id int,
+      ->   name varchar(20)
+      -> );
+  Query OK, 0 rows affected (0.04 sec)
+  mysql> SHOW tables;
   +----------------+
   | Tables_in_test |
   +----------------+
-  | students       |
+  | student        |
   +----------------+
   1 row in set (0.00 sec)
   ```
 
-- 查看表结构：`desc[ribe] 表名;`
+  - 如果是最后一个字段，后面就不用加逗号，因为逗号的作用是分割每个字段。
+
+- 查看表结构：`DESC[RIBE] 表名;`，或者`SHOW FULL COLUMNS FROM 表名;`
 
   ```bash
-  mysql> desc students;
+  mysql> DESC student;
   +-------+-------------+------+-----+---------+-------+
   | Field | Type        | Null | Key | Default | Extra |
   +-------+-------------+------+-----+---------+-------+
-  | id    | varchar(30) | YES  |     | NULL    |       |
-  | age   | int         | YES  |     | NULL    |       |
-  | name  | varchar(30) | YES  |     | NULL    |       |
+  | id    | int         | YES  |     | NULL    |       |
+  | name  | varchar(20) | YES  |     | NULL    |       |
   +-------+-------------+------+-----+---------+-------+
-  3 rows in set (0.00 sec)
+  2 rows in set (0.01 sec)
+  
+  mysql> SHOW FULL COLUMNS FROM student;
+  +-------+-------------+--------------------+------+-----+---------+-------+---------------------------------+---------+
+  | Field | Type        | Collation          | Null | Key | Default | Extra | Privileges                      | Comment |
+  +-------+-------------+--------------------+------+-----+---------+-------+---------------------------------+---------+
+  | id    | int         | NULL               | YES  |     | NULL    |       | select,insert,update,references |         |
+  | name  | varchar(20) | utf8mb4_0900_ai_ci | YES  |     | NULL    |       | select,insert,update,references |         |
+  +-------+-------------+--------------------+------+-----+---------+-------+---------------------------------+---------+
+  2 rows in set (0.00 sec)
+  ```
+
+- 查看表中的所有记录：`SELECT * FROM 表名;`
+
+  ```bash
+  mysql> SELECT * FROM student;
+  Empty set (0.10 sec)
+  ```
+
+- 向表中添加一条记录：`INSERT INTO 表名 (表结构列表) VALUES (值列表);`
+
+  ```bash
+  mysql> INSERT INTO student VALUES (1, 'Tom');
+  Query OK, 1 row affected (0.00 sec)
+  
+  mysql> INSERT INTO student VALUES (1, 'Jerry');
+  Query OK, 1 row affected (0.01 sec)
   ```
 
 - 删除表：`drop table 表名;`
@@ -459,7 +553,7 @@ mysql>
   Empty set (0.00 sec)
   ```
 
-- 查看表中的所有记录：`select * from 表名;`
+- 
 
 - 向表中插入记录：`insert into 表名(列名列表) values(列对应的值的列表);`
 
@@ -475,31 +569,13 @@ mysql>
 
 因为 Navicat 收费，可以选择使用 DBeaver。
 
-`DBeaver`官网：https://dbeaver.io/download/，下载方式如下：
+`DBeaver`
 
-![image-20220531115809915](mysql/image-20220531115809915.png)
 
-DBeaver Github：https://github.com/dbeaver/dbeaver/releases，下载方式如下：
 
-![image-20220531115703986](mysql/image-20220531115703986.png)
 
-安装程序下载后，点击安装即可。安装成功后，因为 DBeaver 是基于 Maven 构建的，数据库驱动也就是链接数据库的 JDBC 驱动是通过 Maven 仓库下载的，因此，第一步要做的是配置 Maven 镜像，否则在后续下载数据库驱动的时候会非常的慢。
 
-点击 "窗口" ---> "首选项" ---> "连接" ---> "驱动" ---> "Maven"，设置阿里云镜像`http://maven.aliyun.com/nexus/content/groups/public/`：
 
-![image-20220531123024201](mysql/image-20220531123024201.png)
-
-![image-20220531123127630](mysql/image-20220531123127630.png)
-
-配置完 Maven 仓库后，连接数据库：
-
-![image-20220531124034671](mysql/image-20220531124034671.png)
-
-![image-20220531123753835](mysql/image-20220531123753835.png)
-
-![image-20220531124007864](mysql/image-20220531124007864.png)
-
-更多关于 DBeaver 的使用方法，参考：https://juejin.cn/post/7065474476607012878
 
 ## MySQL 数据处理之查询
 
