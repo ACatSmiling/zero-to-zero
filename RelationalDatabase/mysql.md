@@ -75,49 +75,6 @@ PostgreSQL 的稳定性极强，最符合 SQL 标准，开放源码，具备商�
 
 IBM 公司出品，取自 Information 和 Unix 的结合，它是第一个被移植到 Linux 上的商业数据库产品。仅运行于 unix/linux 平台，命令行操作。 性能较高，支持集群，适应于安全性要求极高的系统，尤其是银行，证券系统的应用。
 
-### MySQL 介绍
-
-![image-20220531232307913](mysql/image-20220531232307913.png)
-
-- MySQL 是一个`开放源代码的关系型数据库管理系统` ，由瑞典 MySQL AB（创始人Michael Widenius）公司 1995 年开发，迅速成为开源数据库的 No.1。
-- 2008 被 Sun 收购（10 亿美金），2009 年 Sun 被 Oracle 收购。`MariaDB`应运而生。（MySQL 的创造者担心 MySQL 有闭源的风险，因此创建了 MySQL 的分支项目 MariaDB）
-- MySQL 6.x 版本之后分为`社区版`和`商业版`。
-- MySQL 是一种关联数据库管理系统，将数据保存在不同的表中，而不是将所有数据放在一个大仓库内，这样就增加了速度并提高了灵活性。
-- MySQL 是开源的，所以你不需要支付额外的费用。
-- MySQL 是可以定制的，采用了`GPL (GNU General Public License) 协议`，你可以修改源码来开发自己的 MySQL 系统。
-- MySQL 支持大型的数据库。可以处理拥有上千万条记录的大型数据库。
-- MySQL 支持大型数据库，支持 5000 万条记录的数据仓库，32 位系统表文件最大可支持 4 GB ，64 位系统支持最大的表文件为`8 TB`。
-- MySQL 使用`标准的SQL数据语言`形式。
-- MySQL 可以允许运行于多个系统上，并且支持多种语言。这些编程语言包括 C、C++、Python、Java、Perl、PHP 和 Ruby 等。
-
-#### MySQL 发展史重大事件
-
-MySQL 的历史就是整个互联网的发展史。互联网业务从社交领域、电商领域到金融领域的发展，推动着应用对数据库的需求提升，对传统的数据库服务能力提出了挑战。高并发、高性能、高可用、轻资源、易维护、易扩展的需求，促进了 MySQL 的长足发展。
-
-![image-20220531232824970](mysql/image-20220531232824970.png)
-
-#### 关于 MySQL 8.0
-
-`MySQL 从 5.7 版本直接跳跃发布了 8.0 版本`，可见这是一个令人兴奋的里程碑版本。MySQL 8版本在功能上做了显著的改进与增强，开发者对MySQL的源代码进行了重构，最突出的一点是多MySQL Optimizer优化器进行了改进。不仅在速度上得到了改善，还为用户带来了更好的性能和更棒的体验。
-
-#### Why choose MySQL
-
-![image-20220531233419499](mysql/image-20220531233419499.png)
-
-为什么如此多的厂商要选用 MySQL？大概总结的原因主要有以下几点：
-
-1. 开放源代码，使用成本低。
-2. 性能卓越，服务稳定。
-3. 软件体积小，使用简单，并且易于维护。
-4. 历史悠久，社区用户非常活跃，遇到问题可以寻求帮助。
-5. 许多互联网公司在用，经过了时间的验证。
-
-#### Oracle VS MySQL
-
-Oracle 更适合大型跨国企业的使用，因为他们对费用不敏感，但是对性能要求以及安全性有更高的要求。
-
-MySQL 由于其`体积小`、`速度快`、`总体拥有成本低`，`可处理上千万条记录`的大型数据库，尤其是`开放源码`这一特点，使得很多互联网公司、中小型网站选择了 MySQL 作为网站数据库（Facebook，Twitter，YouTube，阿里巴巴/蚂蚁金服，去哪儿，美团外卖，腾讯）。
-
 ### RDBMS 与非 RDBMS
 
 从排名中我们能看出来，关系型数据库绝对是 DBMS 的主流，其中使用最多的 DBMS 分别是 Oracle、MySQL 和 SQL Server。这些都是关系型数据库（RDBMS）。
@@ -309,6 +266,110 @@ NoSQL 对 SQL 做出了很好的补充，比如实际开发中，有很多业务
 ##### 自我引用（Self reference）
 
 ![image-20220601140611310](mysql/image-20220601140611310.png)
+
+### MySQL 介绍
+
+![image-20220531232307913](mysql/image-20220531232307913.png)
+
+- MySQL 是一个`开放源代码的关系型数据库管理系统` ，由瑞典 MySQL AB（创始人Michael Widenius）公司 1995 年开发，迅速成为开源数据库的 No.1。
+- 2008 被 Sun 收购（10 亿美金），2009 年 Sun 被 Oracle 收购。`MariaDB`应运而生。（MySQL 的创造者担心 MySQL 有闭源的风险，因此创建了 MySQL 的分支项目 MariaDB）
+- MySQL 6.x 版本之后分为`社区版`和`商业版`。
+- MySQL 是一种关联数据库管理系统，将数据保存在不同的表中，而不是将所有数据放在一个大仓库内，这样就增加了速度并提高了灵活性。
+- MySQL 是开源的，所以你不需要支付额外的费用。
+- MySQL 是可以定制的，采用了`GPL (GNU General Public License) 协议`，你可以修改源码来开发自己的 MySQL 系统。
+- MySQL 支持大型的数据库。可以处理拥有上千万条记录的大型数据库。
+- MySQL 支持大型数据库，支持 5000 万条记录的数据仓库，32 位系统表文件最大可支持 4 GB ，64 位系统支持最大的表文件为`8 TB`。
+- MySQL 使用`标准的SQL数据语言`形式。
+- MySQL 可以允许运行于多个系统上，并且支持多种语言。这些编程语言包括 C、C++、Python、Java、Perl、PHP 和 Ruby 等。
+
+#### MySQL 发展史重大事件
+
+MySQL 的历史就是整个互联网的发展史。互联网业务从社交领域、电商领域到金融领域的发展，推动着应用对数据库的需求提升，对传统的数据库服务能力提出了挑战。高并发、高性能、高可用、轻资源、易维护、易扩展的需求，促进了 MySQL 的长足发展。
+
+![image-20220531232824970](mysql/image-20220531232824970.png)
+
+#### 关于 MySQL 8.0
+
+`MySQL 从 5.7 版本直接跳跃发布了 8.0 版本`，可见这是一个令人兴奋的里程碑版本。MySQL 8版本在功能上做了显著的改进与增强，开发者对MySQL的源代码进行了重构，最突出的一点是多MySQL Optimizer优化器进行了改进。不仅在速度上得到了改善，还为用户带来了更好的性能和更棒的体验。
+
+#### Why choose MySQL
+
+![image-20220531233419499](mysql/image-20220531233419499.png)
+
+为什么如此多的厂商要选用 MySQL？大概总结的原因主要有以下几点：
+
+1. 开放源代码，使用成本低。
+2. 性能卓越，服务稳定。
+3. 软件体积小，使用简单，并且易于维护。
+4. 历史悠久，社区用户非常活跃，遇到问题可以寻求帮助。
+5. 许多互联网公司在用，经过了时间的验证。
+
+#### Oracle VS MySQL
+
+Oracle 更适合大型跨国企业的使用，因为他们对费用不敏感，但是对性能要求以及安全性有更高的要求。
+
+MySQL 由于其`体积小`、`速度快`、`总体拥有成本低`，`可处理上千万条记录`的大型数据库，尤其是`开放源码`这一特点，使得很多互联网公司、中小型网站选择了 MySQL 作为网站数据库（Facebook，Twitter，YouTube，阿里巴巴/蚂蚁金服，去哪儿，美团外卖，腾讯）。
+
+### SQL 语言
+
+1946 年，世界上第一台电脑诞生，如今，借由这台电脑发展起来的互联网已经自成江湖。在这几十年里，无数的技术、产业在这片江湖里沉浮，有的方兴未艾，有的已经几幕兴衰。但在这片浩荡的波动里，有一门技术从未消失，甚至老当益壮，那就是 SQL。
+
+45 年前，也就是 1974 年，IBM 研究员发布了一篇揭开数据库技术的论文《SEQUEL：一门结构化的英语查询语言》，直到今天这门结构化的查询语言并没有太大的变化，相比于其他语言， SQL 的半衰期可以说是非常长了。
+
+不论是前端工程师，还是后端算法工程师，都一定会和数据打交道，都需要了解如何又快又准确地提取自己想要的数据。更别提数据分析师了，他们的工作就是和数据打交道，整理不同的报告，以便指导业务决策。
+
+`SQL (Structured Query Language，结构化查询语言)`是使用关系模型的数据库应用语言，与数据直接打交道 ，由 IBM 上世纪70年代开发出来。后由美国国家标准局（ANSI）开始着手制定SQL标准，先后有 SQL-86 ， SQL-89 ， SQL-92 ， SQL-99 等标准。
+
+SQL 有两个重要的标准，分别是`SQL-92`和`SQL-99`，它们分别代表了 92 年和 99 年颁布的 SQL 标准，我们今天使用的 SQL 语言依然遵循这些标准。
+
+不同的数据库生产厂商都支持 SQL 语句，但都有特有内容：
+
+![image-20220912195710669](mysql/image-20220912195710669.png)
+
+#### SQL 语言的分类
+
+SQL 语言在功能上主要分为如下三大类：
+
+- `DDL (Data Definition Languages、数据定义语言)`：这些语句定义了不同的数据库、表、视图、索引等数据库对象，还可以用来创建、删除、修改数据库和数据表的结构。
+  - 主要的语句关键字包括`CREATE` 、`DROP`、`ALTER`等。
+- `DML (Data Manipulation Language、数据操作语言)`：用于添加、删除、更新和查询数据库记录，并检查数据完整性。
+  - 主要的语句关键字包括`INSERT`、`DELETE`、`UPDATE`、`SELECT`等。
+  - `SELECT 是 SQL 语言的基础，最为重要。`
+- `DCL (Data Control Language、数据控制语言)`：用于定义数据库、表、字段、用户的访问权限和安全级别。
+  - 主要的语句关键字包括`GRANT`、`REVOKE`、`COMMIT`、`ROLLBACK`、`SAVEPOINT`等。
+
+>因为查询语句使用的非常的频繁，所以很多人把查询语句单拎出来一类：DQL（数据查询语言）。
+>
+>还有单独将 COMMIT 、 ROLLBACK 取出来的，称为 TCL （Transaction Control Language，事务控制语言）。
+
+#### SQL 语言的规则与规范
+
+##### 基本规则
+
+- SQL 可以写在一行或者多行。为了提高可读性，各子句分行写，必要时使用缩进。
+- 每条命令以`;`或`\g`或`\G`结束。
+- 关键字不能被缩写也不能分行。
+- 关于标点符号：
+  - 必须保证所有的 ()、单引号、双引号是成对结束的。
+  - 必须使用英文状态下的半角输入方式。
+  - 字符串型和日期时间类型的数据可以使用单引号（''）表示。
+  - 列的别名，尽量使用双引号（""），而且不建议省略 as。
+
+##### SQL大小写规范
+
+- MySQL 在 Windows 环境下是大小写不敏感的。
+- MySQL 在 Linux 环境下是大小写敏感的。
+- 数据库名、表名、表的别名、变量名是严格区分大小写的。
+  - 关键字、函数名、列名（字段名）、列的别名（字段的别名）是忽略大小写的。
+- 推荐采用统一的书写规范：
+  - `数据库名、表名、表别名、字段名、字段别名等都小写。`
+  - `SQL 关键字、函数名、绑定变量等都大写。`
+
+- 以上规范，建议遵守。
+
+##### 注释
+
+
 
 ##  Docker 安装 MySQL
 
@@ -533,7 +594,7 @@ mysql>
   Empty set (0.10 sec)
   ```
 
-- 向表中添加一条记录：`INSERT INTO 表名 (表结构列表) VALUES (值列表);`
+- 向表中添加一条记录：`INSERT INTO 表名 (表字段列表) VALUES (值列表);`
 
   ```bash
   mysql> INSERT INTO student VALUES (1, 'Tom');
@@ -543,204 +604,60 @@ mysql>
   Query OK, 1 row affected (0.01 sec)
   ```
 
-- 删除表：`drop table 表名;`
+- 修改表中的记录：`UPDATE 表名 SET 表字段1 = 值1, 表字段2 = 值2 ... WHERE 条件;`
 
-  ```bash
-  mysql> drop table students;
-  Query OK, 0 rows affected (0.03 sec)
+  ```sql
+  mysql> UPDATE student SET id = 2 WHERE name = 'Jerry';
+  Query OK, 1 row affected (0.04 sec)
+  Rows matched: 1  Changed: 1  Warnings: 0
+  ```
   
-  mysql> show tables;
-  Empty set (0.00 sec)
+- 删除表中的记录：`DELETE FROM  表名 WHERE 条件;`
+
+  ```sql
+  mysql> DELETE FROM student WHERE id = 3;
+  Query OK, 1 row affected (0.01 sec)
+  ```
+  
+- 查看表的创建信息：`SHOW CREATE TABLE 表名;`
+
+  ```sql
+  mysql> SHOW CREATE TABLE student;
+  +---------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+  | Table   | Create Table                                                                                                                                           |
+  +---------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+  | student | CREATE TABLE `student` (
+    `id` int DEFAULT NULL,
+    `name` varchar(20) DEFAULT NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+  +---------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+  1 row in set (0.00 sec)-
   ```
 
-- 
-
-- 向表中插入记录：`insert into 表名(列名列表) values(列对应的值的列表);`
-
-  - 注意：插入 varchar 或 date 型的数据要用单引号`''`引起来。
-
-- 修改记录：`update 表名 set 列1 = 列1的值, 列2 = 列2的值... where 条件;`
-
-- 删除记录：`delete from 表名 where 条件;`
-
-使用`Navicat`连接创建的 MySQL 容器： 
-
-![image-20220531103311229](mysql/image-20220531103311229.png)
-
-因为 Navicat 收费，可以选择使用 DBeaver。
-
-`DBeaver`
-
-
-
-
-
-
-
-## MySQL 数据处理之查询
-
-### SELECT 语句
-
-语法：`SELECT *|{[DISTINCT] column|expression [alias],...} FROM table;`
-
-- `SELECT`：标识选择哪些列。
-- `FROM`：标识从哪个表中选择。
-- `*`：选择全部列。
-
-列的别名：
-
-![image-20220531153910449](mysql/image-20220531153910449.png)
-
-- 重命名一个列。
-- 便于计算。
-- 紧跟列名，或者在列名和别名之间加入关键字`AS`，别名使用双引号，以便在别名中包含空格或特殊的字符，并区分大小写。
-
-字符串：
-
-- 字符串可以是 SELECT 列表中的一个字符、数字、日期。
-- 日期和字符只能在单引号中出现。
-- 每当返回一行时，字符串被输出一次。
-
-### 过滤和排序数据
-
-#### WHERE 语句
-
-语法：`SELECT *|{[DISTINCT] column|expression [alias],...} FROM table [WHERE condition(s)];`
-
-- WHERE 子句紧随 FROM 子句。
-- 例如：`SELECT employee_id, last_name, job_id, department_id FROM employees WHERE department_id = 90;`
-
-#### 比较运算
-
-| 操作符           | 含义                     |
-| ---------------- | ------------------------ |
-| =                | 等于（不是 ==）          |
-| >                | 大于                     |
-| >=               | 大于等于                 |
-| <                | 小于                     |
-| <=               | 小于等于                 |
-| <>               | 不等于（也可以是 !=）    |
-| BETWEEN...AND... | 在两个值之间（包含边界） |
-| IN(set)          | 等于值列表中的一个       |
-| LIKE             | 模糊查询                 |
-| IS NULL          | 空值                     |
-
-- 赋值使用`:=`符号。
-- 例如：`SELECT last_name, salary FROM employees WHERE salary <= 3000;`
-
-`BETWEEN`：
-
-- 使用 BETWEEN 运算来显示在一个区间内的值。
-- 例如：`SELECT last_name, salary FROM employees WHERE salary BETWEEN 2500 AND 3500;`
-
-`In`:
-
-- 使用 IN 运算显示列表中的值。
-- 例如：`SELECT employee_id, last_name, salary, manager_id FROM employees WHERE manager_id IN (100, 101, 201);`
-
-`LIKE`：
-
-- 使用 LIKE 运算选择类似的值。
-
-- 选择条件可以包含字符或数字。
-
-  - `%`代表零个或多个字符（任意个字符）。
-  - `_`代表一个字符。
-  - `%`和`-`可以同时使用。
-
-- 例如：`SELECT first_name FROM employees WHERE first_name LIKE 'S%';`
-
-- 例如：`SELECT last_name FROM employees WHERE last_name LIKE '_o%';`
-
-  ![image-20220531165610888](mysql/image-20220531165610888.png)
-
-`NULL`：
-
-- 使用`IS (NOT) NULL`判断空值。
-
-- 例如：`SELECT last_name, manager_id FROM employees WHERE manager_id IS NULL;`
-
-  ![image-20220531165646887](mysql/image-20220531165646887.png)
-
-#### 逻辑运算
-
-| 操作符 | 含义   |
-| ------ | ------ |
-| AND    | 逻辑并 |
-| OR     | 逻辑或 |
-| NOT    | 逻辑否 |
-
-- AND 要求并的关系为真，例如：`SELECT employee_id, last_name, job_id, salary FROM employees WHERE salary >=10000 AND job_id LIKE '%MAN%';`
-
-  ![image-20220531170230665](mysql/image-20220531170230665.png)
-
-- OR 要求或关系为真，例如：`SELECT employee_id, last_name, job_id, salary FROM employees WHERE salary >= 10000 OR job_id LIKE '%MAN%';`
-
-  ![image-20220531170523560](mysql/image-20220531170523560.png)
-
-- NOT 要求不存在条件中，例如：`SELECT last_name, job_id FROM employees WHERE job_id NOT IN ('IT_PROG', 'ST_CLERK', 'SA_REP');`
-
-  ![image-20220531170652738](mysql/image-20220531170652738.png)
-
-#### ORDER BY 语句
-
-使用`ORDER BY`子句排序：
-
-- ORDER BY 子句在 SELECT 语句的结尾，例如：`SELECT last_name, job_id, department_id, hire_date FROM employees ORDER BY hire_date;`
-
-  ![image-20220531173507587](mysql/image-20220531173507587.png)
-
-- `ASC (ascend)`：升序。
-
-- `DESC (descend)`：降序。
-
-降序排序，例如：`SELECT last_name, job_id, department_id, hire_date FROM employees ORDER BY hire_date DESC;`
-
-![image-20220531173430891](mysql/image-20220531173430891.png)
-
-按别名排序，例如：`SELECT employee_id, last_name, salary*12 annsal FROM employees ORDER BY annsal;`
-
-![image-20220531173252195](mysql/image-20220531173252195.png)
-
-多个列排序，例如：`SELECT last_name, department_id, salary FROM employees ORDER BY department_id, salary DESC;`
-
-![image-20220531173806781](mysql/image-20220531173806781.png)
-
-- 上述 SQL，先按 department_id 升序排序，然后再按 salary 降序排序。
-- 排序时，可以使用不在 SELECT 列表中的列排序。
-
-#### 分组函数
-
-分组函数作用于一组数据，并对一组数据返回一个值。
-
-语法：`SELECT [column,] group_function(column), ... FROM table [WHERE condition] [GROUP BY column] [ORDER BY column];`
-
-分组函数类型：
-
-- `AVG()`
-
-- `SUM()`
-
-- `MAX()`
-
-- `MIN()`
-
-- `COUNT()`
-
-- 可以对`数值型数据`使用 AVG 和 SUM 函数。例如：`SELECT AVG(salary), MAX(salary), MIN(salary), SUM(salary) FROM employees WHERE job_id LIKE '%REP%';`
-
-  ![image-20220531201452650](mysql/image-20220531201452650.png)
-
-- 可以对`任意数据类型`的数据使用 MIN 和 MAX 函数。例如：`SELECT MIN(hire_date), MAX(hire_date) FROM employees;`
-
-  ![image-20220531201717351](mysql/image-20220531201717351.png)
-
-- `COUNT(*)`返回表中记录总数，适用于`任意数据类型`。例如：`SELECT COUNT(*) FROM employees WHERE department_id = 50;`
-
-  ![image-20220531202103824](mysql/image-20220531202103824.png)
-
-- `COUNT(expr)`返回 expr 不为空的记录总数。例如：`SELECT COUNT(commission_pct) FROM employees WHERE department_id = 50;`
-
-  ![image-20220531202304962](mysql/image-20220531202304962.png)
-
-- s
+- 查看数据库的创建信息：`SHOW CREATE DATABASES 表名;`
+
+  ```sql
+  mysql> SHOW CREATE DATABASE test;
+  +----------+--------------------------------------------------------------------------------------------------------------------------------+
+  | Database | Create Database                                                                                                                |
+  +----------+--------------------------------------------------------------------------------------------------------------------------------+
+  | test     | CREATE DATABASE `test` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */ |
+  +----------+--------------------------------------------------------------------------------------------------------------------------------+
+  1 row in set (0.05 sec)
+  ```
+
+- 删除表：`DROP TABLE 表名;`
+
+  ```sql
+  mysql> DROP TABLE student;
+  Query OK, 0 rows affected (0.32 sec)
+  ```
+  
+- 删除数据库：`DROP DATABASE 表名;`
+
+  ```sql
+  mysql> DROP DATABASE test;
+  Query OK, 0 rows affected (0.13 sec)
+  ```
+
+## MySQL 的编码
