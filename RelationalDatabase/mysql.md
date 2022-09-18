@@ -369,7 +369,30 @@ SQL 语言在功能上主要分为如下三大类：
 
 ##### 注释
 
+可以使用如下格式的注释结构：
 
+- 单行注释：`#注释文字 (MySQL 特有的方式)`
+- 单行注释：`-- 注释文字 (--后面必须包含一个空格。)`
+- 多行注释：`/* 注释文字 */`
+
+##### 命名规则
+
+- 数据库、表名不能超过 30 个字符，变量名限制为 29 个字符。
+- 只能包含 A–Z，a–z，0–9 和 _ 共 63 个字符。
+- 数据库名、表名、字段名等对象名中间不要包含空格。
+- 同一个 MySQL 软件中，数据库不能同名；同一个库中，表不能重名；同一个表中，字段不能重名。
+- 字段不能和保留字、数据库系统或常用方法冲突。如果必须使用，需在 SQL 语句中使用`` (着重号)`引起来。
+- 保持字段名和类型的一致性，在命名字段并为其指定数据类型的时候一定要保证一致性。假如数据类型在一个表里是整数，那在另一个表里可就别变成字符型了
+
+##### 导入指令
+
+命令行登录 MySQL 客户端，使用`source`指令导入 sql 文件：
+
+```sql
+mysql> source /tmp/insert.sql
+```
+
+> /tmp/insert.sql 是 sql 文件在服务器上的路径。
 
 ##  Docker 安装 MySQL
 
@@ -661,3 +684,36 @@ mysql>
   ```
 
 ## MySQL 的编码
+
+查看编码命令：
+
+```sql
+mysql> SHOW VARIABLES LIKE 'character_%';
++--------------------------+--------------------------------+
+| Variable_name            | Value                          |
++--------------------------+--------------------------------+
+| character_set_client     | latin1                         |
+| character_set_connection | latin1                         |
+| character_set_database   | utf8mb4                        |
+| character_set_filesystem | binary                         |
+| character_set_results    | latin1                         |
+| character_set_server     | utf8mb4                        |
+| character_set_system     | utf8mb3                        |
+| character_sets_dir       | /usr/share/mysql-8.0/charsets/ |
++--------------------------+--------------------------------+
+8 rows in set (0.00 sec)
+
+mysql> SHOW VARIABLES LIKE 'collation_%';
++----------------------+--------------------+
+| Variable_name        | Value              |
++----------------------+--------------------+
+| collation_connection | latin1_swedish_ci  |
+| collation_database   | utf8mb4_0900_ai_ci |
+| collation_server     | utf8mb4_0900_ai_ci |
++----------------------+--------------------+
+3 rows in set (0.00 sec)
+```
+
+
+
+在 MySQL 8.0 版本之前，默认字符集为`latin1`，utf8 字符集指向的是 utf8mb3。网站开发人员在数据库设计的时候往往会将编码修改为 utf8 字符集，如果遗忘修改默认的编码，就会出现乱码的问题。从 MySQL 8.0 开始，数据库的默认字符集为`utf8mb4`，从而避免了上述的乱码问题。
