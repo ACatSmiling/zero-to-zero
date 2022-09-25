@@ -714,6 +714,116 @@ mysql> SHOW VARIABLES LIKE 'collation_%';
 3 rows in set (0.00 sec)
 ```
 
-
-
 在 MySQL 8.0 版本之前，默认字符集为`latin1`，utf8 字符集指向的是 utf8mb3。网站开发人员在数据库设计的时候往往会将编码修改为 utf8 字符集，如果遗忘修改默认的编码，就会出现乱码的问题。从 MySQL 8.0 开始，数据库的默认字符集为`utf8mb4`，从而避免了上述的乱码问题。
+
+## 基本的 SELECT 语句
+
+### 常数
+
+```sql
+mysql> SELECT 1;
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> SELECT 9/2;
++--------+
+| 9/2    |
++--------+
+| 4.5000 |
++--------+
+1 row in set (0.00 sec)
+
+mysql> SELECT 4*3;
++-----+
+| 4*3 |
++-----+
+|  12 |
++-----+
+1 row in set (0.00 sec)
+```
+
+### 常规语法
+
+```sql
+SELECT [标识选择哪些列] FROM [标识从哪个表中选择] ;
+```
+
+查询所有列的所有数据：
+
+```sql
+mysql> SELECT * FROM employee;
++----+----------+--------+-----+--------+
+| id | emp_name | sex    | age | dep_id |
++----+----------+--------+-----+--------+
+|  1 | Tom      | male   |  27 |      1 |
+|  2 | Jerry    | male   |  28 |      2 |
+|  3 | Lucy     | female |  29 |      2 |
++----+----------+--------+-----+--------+
+3 rows in set (0.00 sec)
+```
+
+- 一般情况下，除非需要使用表中所有的字段数据，最好不要使用通配符`*`。使用通配符虽然可以节省输入查询语句的时间，但是获取不需要的列数据，通常会降低查询和所使用的应用程序的效率。
+- 通配符的优势是，当不知道所需要的列的名称时，可以通过它获取它们。
+- `在生产环境下，不推荐直接使用 SELECT * 进行查询。`
+
+查询特定列的所有数据：
+
+```sql
+mysql> SELECT emp_name, sex FROM employee;
++----------+--------+
+| emp_name | sex    |
++----------+--------+
+| Tom      | male   |
+| Jerry    | male   |
+| Lucy     | female |
++----------+--------+
+3 rows in set (0.00 sec)
+```
+
+### 别名
+
+语法：`在表名或列名，与其别名之间加入关键字 AS，如果别名中包含空格或特殊的字符或区分大小写，则别名使用双引号。`
+
+```sql
+mysql> SELECT emp_name AS name, sex, age FROM employee;
++-------+--------+-----+
+| name  | sex    | age |
++-------+--------+-----+
+| Tom   | male   |  27 |
+| Jerry | male   |  28 |
+| Lucy  | female |  29 |
++-------+--------+-----+
+3 rows in set (0.00 sec)
+
+mysql> SELECT e.emp_name AS name, e.sex, e.age FROM employee e;
++-------+--------+-----+
+| name  | sex    | age |
++-------+--------+-----+
+| Tom   | male   |  27 |
+| Jerry | male   |  28 |
+| Lucy  | female |  29 |
++-------+--------+-----+
+3 rows in set (0.01 sec)
+```
+
+> AS 可以省略。
+
+### 去除重复行
+
+默认情况下，查询会返回全部行，包括重复行。`在 SELECT 语句中使用关键字 DISTINCT 去除重复行。`
+
+```sql
+mysql> SELECT DISTINCT dep_id FROM employee;
++--------+
+| dep_id |
++--------+
+|      1 |
+|      2 |
++--------+
+2 rows in set (0.00 sec)
+```
+
