@@ -1084,3 +1084,36 @@ mysql> SELECT 1 <> 1, 1 != 2, 'a' != 'b', (3+4) <> (2+6), 'a' != NULL, NULL <> N
 | RLIKE       | 正则表达式运算符 | 判断一个值是否符合正则表达式的规则       |                                          |
 |             |                  |                                          |                                          |
 
+
+
+
+
+
+MySQL：
+
+查看某张表属于哪个库：
+
+```sql
+SELECT table_schema FROM information_schema.TABLES WHERE table_name = '表名';
+```
+
+导出文件：
+
+```sql
+mysql -h127.0.0.1 -uhap -pshsh@MyCatHAydEn -P28000 -e "use mycat_pc; select * from sy_user where identity_card is null and sex is null;" > 202208101.sql
+```
+
+https://developer.aliyun.com/article/521437
+
+docker cp /opt/a.sql bteye-mysql:/home/tmp/
+
+https://blog.csdn.net/u012340794/article/details/71440604
+
+表结构：
+
+```sql
+desc tabl_name;
+```
+
+https://blog.csdn.net/yageeart/article/details/7973381
+>>>>>>> Stashed changes
