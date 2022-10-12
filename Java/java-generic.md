@@ -115,7 +115,7 @@ JDK 1.5 改写了集合框架中的全部接口和类，为这些接口、类增
 
 ## 自定义泛型结构
 
-`自定义泛型类和接口`：
+### 自定义泛型类和接口
 
 - 泛型类和接口的声明：`class GenericClass<K, V>`和`interface GenericInterface<T>`。其中，K，V，T 不代表值，而是表示类型，可以使用任意字母，常用 T 表示，是 Type 的缩写。
 
@@ -288,7 +288,7 @@ JDK 1.5 改写了集合框架中的全部接口和类，为这些接口、类增
   public class SubOrder1<T> extends Order<T> {}// SubOrder1<T>: 仍然是泛型类
   ```
 
-`自定义泛型方法 `：
+### 自定义泛型方法 
 
 -  泛型方法的格式：
 
