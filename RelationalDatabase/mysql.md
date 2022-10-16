@@ -1069,20 +1069,106 @@ mysql> SELECT 1 <> 1, 1 != 2, 'a' != 'b', (3+4) <> (2+6), 'a' != NULL, NULL <> N
 
 #### 非符号类型运算符
 
-| 运算符      | 名称             | 作用                                     | 示例                                     |
-| ----------- | ---------------- | ---------------------------------------- | ---------------------------------------- |
-| IS NULL     | 为空运算符       | 判断值、字符串或表达式是否为空           | SELECT B FROM TABLE WHERE A IS NULL;     |
-| IS NOT NULL | 不为空运算符     | 判断值、字符串或表达式是否不为空         | SELECT B FROM TABLE WHERE A IS NOT NULL; |
-| LEAST       | 最小值运算符     | 在多个值中返回最小值                     | SELECT D FROM TABLE WHERE C LEAST(A, B); |
-| GREATEST    | 最大值运算符     | 在多个值中返回最大值                     |                                          |
-| BETWEEN AND | 两值之间的运算符 | 判断一个值是否在两个值之间               |                                          |
-| ISNULL      | 为空运算符       | 判断一个值、字符串或表达式是否为空       |                                          |
-| IN          | 属于运算符       | 判断一个值是否为列表中的任意一个值       |                                          |
-| NOT IN      | 不属于运算符     | 判断一个值是否不是一个列表中的任意一个值 |                                          |
-| LIKE        | 模糊匹配运算符   | 判断一个值是否符合模糊匹配规则           |                                          |
-| REGEXP      | 正则表达式运算符 | 判断一个值是否符合正则表达式的规则       |                                          |
-| RLIKE       | 正则表达式运算符 | 判断一个值是否符合正则表达式的规则       |                                          |
-|             |                  |                                          |                                          |
+| 运算符      | 名称             | 作用                                     | 示例                                         |
+| ----------- | ---------------- | ---------------------------------------- | -------------------------------------------- |
+| IS NULL     | 为空运算符       | 判断值、字符串或表达式是否为空           | SELECT B FROM TABLE WHERE A IS NULL;         |
+| IS NOT NULL | 不为空运算符     | 判断值、字符串或表达式是否不为空         | SELECT B FROM TABLE WHERE A IS NOT NULL;     |
+| LEAST       | 最小值运算符     | 在多个值中返回最小值                     | SELECT D FROM TABLE WHERE C LEAST(A, B);     |
+| GREATEST    | 最大值运算符     | 在多个值中返回最大值                     | SELECT D FROM TABLE WHERE C GREATEST(A, B);  |
+| BETWEEN AND | 两值之间的运算符 | 判断一个值是否在两个值之间               | SELECT D FROM TABLE WHERE C BETWEEN A AND B; |
+| ISNULL      | 为空运算符       | 判断一个值、字符串或表达式是否为空       | SELECT B FROM TABLE WHERE A ISNULL;          |
+| IN          | 属于运算符       | 判断一个值是否为列表中的任意一个值       | SELECT D FROM TABLE WHERE C IN (A, B);       |
+| NOT IN      | 不属于运算符     | 判断一个值是否不是一个列表中的任意一个值 | SELECT D FROM TABLE WHERE C NOT IN (A, B);   |
+| LIKE        | 模糊匹配运算符   | 判断一个值是否符合模糊匹配规则           | SELECT C FROM TABLE WHERE A LIKE B;          |
+| REGEXP      | 正则表达式运算符 | 判断一个值是否符合正则表达式的规则       | SELECT C FROM TABLE WHERE A REGEXP B;        |
+| RLIKE       | 正则表达式运算符 | 判断一个值是否符合正则表达式的规则       | SELECT C FROM TABLE WHERE A RLIKE B;         |
+
+#### 空运算符
+
+空运算符（`IS NULL`或者`ISNULL`）判断一个值是否为 NULL，如果为 NULL 则返回 1，否则返回 0。
+
+```sql
+mysql> SELECT NULL IS NULL, ISNULL(NULL), ISNULL('a'), 1 IS NULL;
++--------------+--------------+-------------+-----------+
+| NULL IS NULL | ISNULL(NULL) | ISNULL('a') | 1 IS NULL |
++--------------+--------------+-------------+-----------+
+| 1            | 1            | 0           | 0         |
++--------------+--------------+-------------+-----------+
+1 row in set (0.00 sec)
+```
+
+```sql
+# 查询commission_pct等于NULL。比较如下的四种写法：
+SELECT employee_id,commission_pct FROM employees WHERE commission_pct IS NULL;
+SELECT employee_id,commission_pct FROM employees WHERE commission_pct <=> NULL;
+SELECT employee_id,commission_pct FROM employees WHERE ISNULL(commission_pct);
+SELECT employee_id,commission_pct FROM employees WHERE commission_pct = NULL;
+```
+
+#### 非空运算符
+
+非空运算符（`IS NOT NULL`）判断一个值是否不为 NULL，如果不为 NULL 则返回 1，否则返回 0。
+
+```sql
+mysql> SELECT NULL IS NOT NULL, 'a' IS NOT NULL, 1 IS NOT NULL;
++------------------+-----------------+---------------+
+| NULL IS NOT NULL | 'a' IS NOT NULL | 1 IS NOT NULL |
++------------------+-----------------+---------------+
+| 0                | 1               | 1             |
++------------------+-----------------+---------------+
+1 row in set (0.01 sec)
+```
+
+```sql
+# 查询commission_pct不等于NULL。比较如下的三种写法：
+SELECT employee_id,commission_pct FROM employees WHERE commission_pct IS NOT NULL;
+SELECT employee_id,commission_pct FROM employees WHERE NOT commission_pct <=> NULL;
+SELECT employee_id,commission_pct FROM employees WHERE NOT ISNULL(commission_pct);
+```
+
+#### 最小值运算符
+
+语法格式为：`LEAST(值1, 值2, ..., 值n)`。其中，n 表示参数列表中有 n 个值。在有两个或多个参数时，返回最小值。
+
+```sql
+mysql> SELECT LEAST (1, 0, 2), LEAST('b', 'a', 'c'), LEAST(1, NULL, 2);
++-----------------+----------------------+-------------------+
+| LEAST (1, 0, 2) | LEAST('b', 'a', 'c') | LEAST(1, NULL, 2) |
++-----------------+----------------------+-------------------+
+| 0               | a                    | NULL              |
++-----------------+----------------------+-------------------+
+1 row in set (0.00 sec)
+```
+
+- 当参数是整数或者浮点数时，LEAST 将返回其中最小的值；
+- 当参数为字符串时，返回字母表中顺序最靠前的字符；
+- 当比较值列表中有 NULL 时，不能判断大小，返回值为 NULL。
+
+#### 最大值运算符
+
+语法格式为：`GREATEST(值1, 值2, ..., 值n)`。其中，n 表示参数列表中有 n 个值。在有两个或多个参数时，返回最大值。
+
+```sql
+mysql> SELECT GREATEST(1,0,2), GREATEST('b','a','c'), GREATEST(1,NULL,2);
++-----------------+-----------------------+--------------------+
+| GREATEST(1,0,2) | GREATEST('b','a','c') | GREATEST(1,NULL,2) |
++-----------------+-----------------------+--------------------+
+| 2 | c | NULL |
++-----------------+-----------------------+--------------------+
+1 row in set (0.00 sec)
+```
+
+- 当参数是整数或者浮点数时，GREATEST 将返回其中最大的值；
+- 当参数为字符串时，返回字母表中顺序最靠后的字符；
+- 当比较值列表中有 NULL 时，不能判断大小，返回值为 NULL。
+
+####  BETWEEN AND 运算符
+
+BETWEEN AND 运算符使用的格式通常为SELECT D FROM TABLE WHERE C BETWEEN A AND B，此时，当C大于或等于A，并且C小于或等于B时，结果为1，否则结果为0。
+
+
+
+
 
 
 
