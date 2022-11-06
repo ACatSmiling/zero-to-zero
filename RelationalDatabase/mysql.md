@@ -1592,6 +1592,15 @@ MySQL 中使用 REGEXP 关键字指定正则表达式的字符匹配模式。下
 
 ## 排序与分页
 
+### 排序规则
+
+使用 ORDER BY 子句排序：
+
+- `ASC`（ascend）: 升序。
+
+- `DESC`（descend）：降序。
+
+- ORDER BY 子句在 SELECT 语句的结尾。
 
 
 
@@ -1602,8 +1611,7 @@ MySQL 中使用 REGEXP 关键字指定正则表达式的字符匹配模式。下
 
 
 
-
-MySQL：
+MySQL： 
 
 查看某张表属于哪个库：
 
