@@ -920,6 +920,8 @@ $ hostname
 配置虚拟机静态 IP 地址，Ubuntu 从 17.10 开始，放弃在 /etc/network/interfaces 里面配置 IP，改为在`/etc/netplan/XX-installer-config.yaml`的 yaml 文件中配置 IP 地址。（以下命令需要使用 root 权限执行）
 
 > 关于 VMware 和 Windows 主机的地址修改，参考 Centos，下面的内容只涉及虚拟机的静态 IP 配置。
+>
+> Hyper-V 管理虚拟机时，网络设置不参考下面描述，详细参考：https://learn.microsoft.com/zh-cn/windows-server/virtualization/hyper-v/get-started/create-a-virtual-switch-for-hyper-v-virtual-machines?tabs=hyper-v-manager
 
 查看网络配置信息：
 
@@ -1037,12 +1039,35 @@ xisun@xisun-virtual-machine:~$ ip addr
        valid_lft forever preferred_lft forever
 ```
 
+修改 apt 源：
+
+```bash
+# 备份
+root@XiSun-Virtual-Machine:~# cp /etc/apt/sources.list /etc/apt/sources.list.bat
+# 查看版本代号
+root@XiSun-Virtual-Machine:~# lsb_release -c
+Codename:       jammy
+# 替换中科大源
+# https://blog.csdn.net/xiangxianghehe/article/details/122856771
+```
+
 安装 OpenJDK 8：
 
 ```bash
 $ sudo apt update
 $ sudo apt install openjdk-8-jdk
 $ java -version
+```
+
+```bash
+root@develop:/etc/apt# java -version
+Command 'java' not found, but can be installed with:
+apt install openjdk-11-jre-headless  # version 11.0.18+10-0ubuntu1~22.04, or
+apt install default-jre              # version 2:1.11-72build2
+apt install openjdk-17-jre-headless  # version 17.0.6+10-0ubuntu1~22.04
+apt install openjdk-18-jre-headless  # version 18.0.2+9-2~22.04
+apt install openjdk-19-jre-headless  # version 19.0.2+7-0ubuntu3~22.04
+apt install openjdk-8-jre-headless   # version 8u362-ga-0ubuntu1~22.04
 ```
 
 设置 JAVA_HOME 环境变量：
@@ -1056,7 +1081,7 @@ java-1.8.0-openjdk-amd64  java-8-openjdk-amd64
 # 设置
 root@xisun-develop:/usr/lib/jvm# export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-amd64'
 # 查看
-root@xisun-develop:/usr/lib/jvm# echo 'JAVA_HOME'
+root@xisun-develop:/usr/lib/jvm# echo $JAVA_HOME
 ```
 
 > export 命令用于声明一个环境变量，只在当前 shell 的使用中，才能访问这个变量，或者在当前 shell 启动的启动程序中，也是可以访问这个变量的，因为它们是当前 shell 的子进程。**新开 shell 连接及重启服务器，该环境变量都会失效。**
