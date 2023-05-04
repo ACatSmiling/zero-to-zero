@@ -4,209 +4,288 @@
 
 ### Windows 的命令行
 
-- 用户界面分成两种：TUI（文本交互界面）和 GUI（图形化交互界面）。
+**用户界面分成两种：TUI（文本交互界面）和 GUI（图形化交互界面）。**命令行就是文本交互界面，通过命令行可以使用一个一个的指令来操作计算机。
 
-- 命令行就是文本交互界面，通过命令行可以使用一个一个的指令来操作计算机。
+任何计算机的操作系统中都包含有命令行（Windows、Linux、MacOS），命令行有多个不同的名字：命令行、命令行窗口、DOS 窗口、命令提示符、CMD 窗口、Shell、终端、Terminal。
 
-- 任何计算机的操作系统中都包含有命令行（Windows、Linux、MacOS），命令行有多个不同的名字：命令行、命令行窗口、DOS 窗口、命令提示符、CMD 窗口、Shell、终端、Terminal。
+Windows 系统命令行的进入方式：`win 键 + R`，出现运行窗口，输入cmd，然后回车。
 
-- 命令行的进入方式：`win 键 + R`，出现运行窗口，输入cmd，然后回车。
+命令行的结构：
 
-- 命令行的结构：
+```cmd
+Microsoft Windows [版本 10.0.19042.1165]
+(c) Microsoft Corporation。保留所有权利。
 
-  ```cmd
-  Microsoft Windows [版本 10.0.19042.1165]
-  (c) Microsoft Corporation。保留所有权利。
-  
-  C:\Users\Xisun>
-  ```
+C:\Users\Xisun>
+```
 
-     - 上面两行为版本及版权声明（一般没有什么用）。
-     - 最下面一行为命令提示符：
-             - `C`：当前所在的磁盘根目录，通过 `x:` 来切换盘符（x 表示你的盘符）。
-             - `\Users\Xisun`：当前所在磁盘的路径，通过 `cd` 来切换目录。
-             - `>`：命令提示符，在符号后边可以直接输入指令。
+   - 上面两行为版本及版权声明（一般没有什么用）。
+   - 最下面一行为命令提示符：
+           - `C`：当前所在的磁盘根目录，通过`x:`来切换盘符（x 表示你的盘符）。
+           - `\Users\Xisun`：当前所在磁盘的路径，通过`cd`来切换目录。
+           - `>`：命令提示符，在符号后边可以直接输入指令。
 
-- 常用的 DOS 命令：
-  - 语法：`命令 [参数] [选项]`。
-  - `dir`：查看当前目录下的所有文件（夹）。
-  - `cd`：进入到指定的目录。
-    - `.`：表示当前目录。
-    - `..`：表示上一级目录。
-  - `md`：创建一个目录。
-  - `rd`：删除一个目录。
-  - `del`：删除一个文件。
-  - `cls`：清除屏幕。
-  - 小技巧：方向键上下，可以查看命令的历史记录；tab 键能够自动补全命令。
+常用的 DOS 命令：
+- 语法：`命令 [参数] [选项]`。
+- `dir`：查看当前目录下的所有文件（夹）。
+- `cd`：进入到指定的目录。
+  - `.`：表示当前目录。
+  - `..`：表示上一级目录。
+- `md`：创建一个目录。
+- `rd`：删除一个目录。
+- `del`：删除一个文件。
+- `cls`：清除屏幕。
+- 小技巧：方向键上下，可以查看命令的历史记录；tab 键能够自动补全命令。
 
 ### 环境变量
 
-- 环境变量指的就是操作系统当中的一些变量。可以通过修改环境变量，来对计算机进行配置（主要是来配置一些路径的）。
-- 查看环境变量：
-  - 右键计算机（此电脑）---> 选择属性 ---> 系统界面左侧选择高级系统设置 ---> 选择环境变量。
-  - 环境变量界面分成了两个部分，上边是用户环境变量，下边是系统环境变量。
-  - 用户环境变量只对当前用户有效，系统环境变量对所有用户有效。
-- 添加环境变量：
-  - 通过新建按钮添加环境变量。
-  - 一个环境变量可以有多个值，值与值之间使用 `;` 隔开。
-- 修改环境变量：
-  - 通过编辑按钮来修改环境变量。
-- 删除环境变量：
-  - 通过删除按钮来删除环境变量。
+环境变量指的就是操作系统当中的一些变量。可以通过修改环境变量，来对计算机进行配置（主要是来配置一些路径的）。
+
+查看环境变量：
+- 右键计算机（此电脑）---> 选择属性 ---> 系统界面左侧选择高级系统设置 ---> 选择环境变量。
+- 环境变量界面分成了两个部分，上边是用户环境变量，下边是系统环境变量。
+- 用户环境变量只对当前用户有效，系统环境变量对所有用户有效。
+
+添加环境变量：
+- 通过新建按钮添加环境变量。
+- 一个环境变量可以有多个值，值与值之间使用`;`隔开。
+
+修改环境变量：
+- 通过编辑按钮来修改环境变量。
+
+删除环境变量：
+- 通过删除按钮来删除环境变量。
 
 ### path 环境变量
 
-- path 环境变量中保存的是一个一个的路径。当我们在命令行中输入一个命令（或访问一个文件时），系统首先会在当前目录下寻找，如果找到了则直接执行或打开；如果没有找到，则会依次去 path 环境变量的路径中寻找，直到找到为止；如果 path 环境变量中的路径都没有找到，则报错：`'xxx' 不是内部或外部命令，也不是可运行的程序或批处理文件`。
-- 日常工作中，将一些经常需要访问到的文件或程序的路径，添加到 path 环境变量中，这样就可以在任意的位置访问到这些文件或程序。
-- 注意事项：
-  - 如果环境变量中没有 path，可以手动添加。
-  - path 环境变量不区分大小写：PATH、Path 或 path。
-  - 修改完环境变量必须重新启动命令行窗口。
-  - 多个路径之间使用 `;` 隔开。
+path 环境变量中保存的是一个一个的路径。当我们在命令行中输入一个命令（或访问一个文件时），系统首先会在当前目录下寻找，如果找到了则直接执行或打开；如果没有找到，则会依次去 path 环境变量的路径中寻找，直到找到为止；如果 path 环境变量中的路径都没有找到，则报错：`'xxx' 不是内部或外部命令，也不是可运行的程序或批处理文件`。
+
+日常工作中，将一些经常需要访问到的文件或程序的路径，添加到 path 环境变量中，这样就可以在任意的位置访问到这些文件或程序。
+
+注意事项：
+- 如果环境变量中没有 path，可以手动添加。
+- path 环境变量不区分大小写：PATH、Path 或 path。
+- 修改完环境变量必须重新启动命令行窗口。
+- 多个路径之间使用`;`隔开。
 
 ### 进制
 
-- 十进制
-  - 十进制是最常用的进制。
-  - 十进制算法：满十进一。
-  - 十进制当中一共有 10 个数字：0，1，2，3，4，5，6，7，8，9。
-  - 十进制如何计数：0，1，2，3，4，5，6，7，8，9；10，11，12，。。。，19；20，。。。，29；30，...
-    - 个位表示有几个 1，十位表示有几个 10，百位表示有几个 100，千位表示有几个 1000，以此类推。如：5421。
-- 二进制
-  - 二进制是计算机底层使用的进制。
-    - 所有的数据在计算机底层都是以二进制的形式保存的，计算机只认二进制。
-    - 可以将内存想象为一个一个的小格子，小格子中可以存储一个 0 或一个 1。
-    - 内存中的每一个小格子，我们称为 1 bit（1 位）。
-      - bit 是计算机中的最小的单位。
-      - byte 是我们可操作的最小的单位。
-        - 8 bit = 1 byte（字节）
-        - 1024 byte = 1 kb（千字节）
-        - 1024 kb = 1 mb（兆字节）
-        - 1024 mb = 1 gb（吉字节）
-        - 1024 gb = 1 tb（太字节）
-  - 二进制算法：满二进一。
-  - 二进制中一共有 2 个数字：0，1。
-  - 二进制如何计数：0，1；10，11；100，101，110，111；1000，...
-    - 第一位表示有几个 1，第二位表示有几个 2，第三位表示有几个 4，第四位表示有几个 8，依次类推。如：1011。
-- 八进制
-  - 一般不用。
-  - 八进制算法：满八进一。
-  - 八进制中一共有 8 个数字：0，1，2，3，4，5，6，7。
-  - 八进制如何计数：0，1，2，3，4，5，6，7；10，11，...，17；20，21，...，27；...
-- 十六进制
-  - 在查看二进制数据时，一般会以十六进制的形式显示。
-  - 十六进制算法：满十六进一。
-  - 十六进制中一共有 16 个数字：0，1，2，3，4，5，6，7，8，9，a，b，c，d，e，f 。
-    - 由于十六进制是满 16 才进位，所以十六进制中引入了 a，b，c，d，e，f 来表示 10，11，12，13，14，15。
-  - 十六进制如何计数：0，1，2，3，4，5，6，7，8，9，a，b，c，d，e，f ；10，11，12 ，...，1a，1b，1c，1d，1e，1f，20，21，22，...，2a，2b，2c，2d，2e，2f；30，...   
+`十进制`：
+
+- 十进制是最常用的进制。
+- 十进制算法：满十进一。
+- 十进制当中一共有 10 个数字：0，1，2，3，4，5，6，7，8，9。
+- 十进制如何计数：0，1，2，3，4，5，6，7，8，9；10，11，12，。。。，19；20，。。。，29；30，...
+  - 个位表示有几个 1，十位表示有几个 10，百位表示有几个 100，千位表示有几个 1000，以此类推。如：5421。
+
+`二进制`：
+
+- 二进制是计算机底层使用的进制。
+  - 所有的数据在计算机底层都是以二进制的形式保存的，计算机只认二进制。
+  - 可以将内存想象为一个一个的小格子，小格子中可以存储一个 0 或一个 1。
+  - 内存中的每一个小格子，我们称为 1 bit（1 位）。
+    - bit 是计算机中的最小的单位。
+    - byte 是我们可操作的最小的单位。
+      - 8 bit = 1 byte（字节）
+      - 1024 byte = 1 kb（千字节）
+      - 1024 kb = 1 mb（兆字节）
+      - 1024 mb = 1 gb（吉字节）
+      - 1024 gb = 1 tb（太字节）
+- 二进制算法：满二进一。
+- 二进制中一共有 2 个数字：0，1。
+- 二进制如何计数：0，1；10，11；100，101，110，111；1000，...
+  - 第一位表示有几个 1，第二位表示有几个 2，第三位表示有几个 4，第四位表示有几个 8，依次类推。如：1011。
+
+`八进制`：
+
+- 一般不用。
+- 八进制算法：满八进一。
+- 八进制中一共有 8 个数字：0，1，2，3，4，5，6，7。
+- 八进制如何计数：0，1，2，3，4，5，6，7；10，11，...，17；20，21，...，27；...
+
+`十六进制`：
+
+- 在查看二进制数据时，一般会以十六进制的形式显示。
+- 十六进制算法：满十六进一。
+- 十六进制中一共有 16 个数字：0，1，2，3，4，5，6，7，8，9，a，b，c，d，e，f 。
+  - 由于十六进制是满 16 才进位，所以十六进制中引入了 a，b，c，d，e，f 来表示 10，11，12，13，14，15。
+- 十六进制如何计数：0，1，2，3，4，5，6，7，8，9，a，b，c，d，e，f ；10，11，12 ，...，1a，1b，1c，1d，1e，1f，20，21，22，...，2a，2b，2c，2d，2e，2f；30，...   
 
 ### 文本文件和字符集
 
-- 文本分成两种，一种叫做纯文本，还有一种叫做富文本。
-- 纯文本中只能保存单一的文本内容，无法保存内容无关的东西（如字体、颜色、图片等）。常见的纯文本如记事本。
-- 富文本中可以保存文本以外的内容。常见的富文本如 word 文档。
-- 在开发时，编写程序使用的全都是纯文本！
-- 纯文本在计算机底层也会转换为二进制保存：
-  - 将字符转换为二进制码的过程，称为编码。
-  - 将二进制码转换为字符的过程，称为解码。
-  - 编码和解码时所采用的规则，称为字符集。
-- 常见的字符集：
-  - ASCII
-    - 美国的编码，使用 7 位来对美国常用的字符进行编码。
-    - 包含 128 个字符。
-  - ISO-8859-1
-    - 欧洲的编码，使用 8 位来对欧洲常用的字符进行编码。
-    - 包含 256 个字符。
-  - GB2312，GBK
-    - 国标码，中国的编码。
-  - Unicode
-    - 万国码，包含世界上所有的语言和符号，编写程序时一般都会使用 Unicode 编码。
-    - Unicode 编码有多种实现，如  UTF-8，UTF-16，UTF-32，最常用的就是 UTF-8。
+文本分成两种，一种叫做**纯文本**，还有一种叫做**富文本**。
 
-- 乱码：编写程序时，如果发现程序代码出现乱码的情况，就要马上去检查字符集是否正确。
+- 纯文本中只能保存单一的文本内容，无法保存内容无关的东西（如字体、颜色、图片等）。常见的纯文本如记事本。
+
+- 富文本中可以保存文本以外的内容。常见的富文本如 word 文档。
+
+- 在开发时，编写程序使用的全都是纯文本！
+
+- 纯文本在计算机底层也会转换为二进制保存：
+  - **将字符转换为二进制码的过程，称为编码。**
+
+  - **将二进制码转换为字符的过程，称为解码。**
+
+  - 编码和解码时所采用的规则，称为字符集。
+
+常见的字符集：
+- ASCII
+  - 美国的编码，使用 7 位来对美国常用的字符进行编码。
+  - 包含 128 个字符。
+- ISO-8859-1
+  - 欧洲的编码，使用 8 位来对欧洲常用的字符进行编码。
+  - 包含 256 个字符。
+- GB2312，GBK
+  - 国标码，中国的编码。
+- Unicode
+  - 万国码，包含世界上所有的语言和符号，编写程序时一般都会使用 Unicode 编码。
+  - Unicode 编码有多种实现，如  UTF-8，UTF-16，UTF-32，最常用的就是 UTF-8。
+
+乱码：编写程序时，如果发现程序代码出现乱码的情况，就要马上去检查字符集是否正确。
 
 ### 计算机语言
 
-- 计算机语言就是用来控制计算机的编程语言。
-- 计算机语言发展经历了三个阶段：
-  - 机器语言
-    - 机器语言通过二进制编码来编写程序。
-    - 执行效率好，但编写起来太麻烦。
-  - 符号语言/汇编语言
-    - 使用符号来代替机器码。
-    - 编写程序时，不需要使用二进制，而是直接编写符号。
-    - 编写完成后，需要将符号转换为机器码，然后再由计算机执行。
-    - 将符号转换为机器码的过程，称为汇编。
-    - 将机器码转换为符号的过程，称为反汇编。
-    - 汇编语言一般只适用于某些硬件，兼容性比较差。
-  - 高级语言
-    - 高级语言的语法基本和现在英语语法类似，并且和硬件的关系没有那么紧密了。
-    - 也就是说我们通过高级语言开发的程序，可以在不同的硬件系统中执行。
-    - 并且高级语言学习起来也更加的容易，现在我们知道的语言基本都是高级语言。比如：C、C++、C#、Java、JavaScript、Python 等。
+计算机语言就是用来控制计算机的编程语言。
+
+计算机语言发展经历了三个阶段：
+- 机器语言
+  - 机器语言通过二进制编码来编写程序。
+  - 执行效率好，但编写起来太麻烦。
+- 符号语言/汇编语言
+  - 使用符号来代替机器码。
+  - 编写程序时，不需要使用二进制，而是直接编写符号。
+  - 编写完成后，需要将符号转换为机器码，然后再由计算机执行。
+  - 将符号转换为机器码的过程，称为汇编。
+  - 将机器码转换为符号的过程，称为反汇编。
+  - 汇编语言一般只适用于某些硬件，兼容性比较差。
+- 高级语言
+  - 高级语言的语法基本和现在英语语法类似，并且和硬件的关系没有那么紧密了。
+  - 也就是说我们通过高级语言开发的程序，可以在不同的硬件系统中执行。
+  - 并且高级语言学习起来也更加的容易，现在我们知道的语言基本都是高级语言。比如：C、C++、C#、Java、JavaScript、Python 等。
 
 ### 编译型语言和解释型语言
 
-- 计算机只能识别二进制编码（机器码），所以任何的语言在交由计算机执行时必须要先转换为机器码，也就是像 `print('hello')` 必需要转换为类似 `1010101` 这样的机器码。
+计算机只能识别二进制编码（机器码），所以任何的语言在交由计算机执行时必须要先转换为机器码，也就是像`print('hello')`必须要转换为类似`1010101`这样的机器码。
 
-- 根据转换时机的不同，语言分成了两大类：
+根据转换时机的不同，语言分成了两大类：
 
-  - 编译型语言
-
-    - 会在代码执行前将代码编译为机器码，然后将机器码交由计算机执行。最典型的就是 C 语言。
-    - 过程：a（源码）---> 编译 ---> b（编译后的机器码）。
-    - 特点：
-      - 执行速度特别快。
-      - 跨平台性比较差。
-
-  - 解释型语言 
-
-    - 不会在执行前对代码进行编译，而是在执行的同时一边执行一边编译。比如 Python，JS，Java 等。
-
-    - 过程：a（源码）---> 解释器 ---> 解释执行。
-    - 特点：
-      - 执行速度比较慢。
-      - 跨平台性比较好  。
+- `编译型语言`
+  - 会在代码执行前将代码编译为机器码，然后将机器码交由计算机执行。最典型的就是 C 语言。
+  - 过程：a（源码）---> 编译 ---> b（编译后的机器码）。
+  - 特点：
+    - 执行速度特别快。
+    - 跨平台性比较差。
+  
+- `解释型语言 `
+  - 不会在执行前对代码进行编译，而是在执行的同时一边执行一边编译。比如 Python，JS，Java 等。
+  
+  - 过程：a（源码）---> 解释器 ---> 解释执行。
+  - 特点：
+    - 执行速度比较慢。
+    - 跨平台性比较好  。
 
 ## Python 简介
 
-- 现在，全世界差不多有 600 多种编程语言，但流行的编程语言也就那么 20 来种。
-- 总的来说，每种编程语言各有千秋。C 语言是可以用来编写操作系统的贴近硬件的语言，所以，C 语言适合开发那些追求运行速度、充分发挥硬件性能的程序。而 Python 是用来编写应用程序的高级编程语言。
-- Python 提供了非常完善的基础代码库，覆盖了网络、文件、GUI、数据库、文本等大量内容，被形象地称作“内置电池（batteries included）”。用 Python 开发，许多功能不必从零编写，直接使用现成的即可。
-- 除了内置的库外，Python 还有大量的第三方库，也就是别人开发的，供你直接使用的东西。当然，如果你开发的代码通过很好的封装，也可以作为第三方库给别人使用。
-- Python 的定位是“优雅”、“明确”、“简单”。Python 的哲学就是简单优雅，尽量写容易看明白的代码，尽量写少的代码。
-- Python 适合开发的应用类型：
-  - 首选是网络应用，包括网站、后台服务等等。
-  - 其次是许多日常需要的小工具，包括系统管理员需要的脚本任务等等。
-  - 另外就是把其他语言开发的程序再包装起来，方便使用。
-- Python 的缺点：
-  - 第一个缺点就是运行速度慢，和 C 程序相比非常慢，因为 Python 是解释型语言，编写的代码在执行时会一行一行地翻译成 CPU 能理解的机器码，这个翻译过程非常耗时，所以很慢。而 C 程序是运行前直接编译成 CPU 能执行的机器码，所以非常快。
-  - 第二个缺点就是代码不能加密。如果要发布编写的 Python 程序，实际上就是发布源代码，这一点跟 C 语言不同，C 语言不用发布源代码，只需要把编译后的机器码（也就是在 Windows 上常见的 xxx.exe 文件）发布出去。要从机器码反推出 C 代码是不可能的，所以，凡是编译型的语言，都没有这个问题，而解释型的语言，则必须把源码发布出去。
+现在，全世界差不多有 600 多种编程语言，但流行的编程语言也就那么 20 来种。总的来说，每种编程语言各有千秋。C 语言是可以用来编写操作系统的贴近硬件的语言，所以，C 语言适合开发那些追求运行速度、充分发挥硬件性能的程序。而 Python 是用来编写应用程序的高级编程语言。
+
+Python 提供了非常完善的基础代码库，覆盖了网络、文件、GUI、数据库、文本等大量内容，被形象地称作 "内置电池（batteries included）"。用 Python 开发，许多功能不必从零编写，直接使用现成的即可。除了内置的库外，Python 还有大量的第三方库，也就是别人开发的，供你直接使用的东西。当然，如果你开发的代码通过很好的封装，也可以作为第三方库给别人使用。
+
+Python 的定位是 "优雅"、"明确"、"简单"。Python 的哲学就是简单优雅，尽量写容易看明白的代码，尽量写少的代码。
+
+Python 适合开发的应用类型：
+- 首选是网络应用，包括网站、后台服务等等。
+- 其次是许多日常需要的小工具，包括系统管理员需要的脚本任务等等。
+- 另外就是把其他语言开发的程序再包装起来，方便使用。
+
+Python 的缺点：
+- 第一个缺点就是运行速度慢，和 C 程序相比非常慢，因为 Python 是解释型语言，编写的代码在执行时会一行一行地翻译成 CPU 能理解的机器码，这个翻译过程非常耗时，所以很慢。而 C 程序是运行前直接编译成 CPU 能执行的机器码，所以非常快。
+- 第二个缺点就是代码不能加密。如果要发布编写的 Python 程序，实际上就是发布源代码，这一点跟 C 语言不同，C 语言不用发布源代码，只需要把编译后的机器码（也就是在 Windows 上常见的 xxx.exe 文件）发布出去。要从机器码反推出 C 代码是不可能的，所以，凡是编译型的语言，都没有这个问题，而解释型的语言，则必须把源码发布出去。
 
 ## Python 安装
 
-- Python 是跨平台的，它可以运行在 Windows、Mac 和各种 Linux/Unix 系统上。在 Windows 上写 Python 程序，放到 Linux 上也是能够运行的。
+Python 是跨平台的，它可以运行在 Windows、Mac 和各种 Linux/Unix 系统上。在 Windows 上写 Python 程序，放到 Linux 上也是能够运行的。要开始学习 Python 编程，首先就得把 Python 安装到你的电脑里。安装后，你会得到 Python 解释器（就是负责运行 Python 程序的），一个命令行交互环境，还有一个简单的集成开发环境。
 
-- 要开始学习 Python 编程，首先就得把 Python 安装到你的电脑里。安装后，你会得到 Python 解释器（就是负责运行 Python 程序的），一个命令行交互环境，还有一个简单的集成开发环境。
-
-- 目前，Python 有两个版本，一个是 2.x 版，一个是 3.x 版，这两个版本是不兼容的。由于 3.x 版越来越普及，此处选择安装 Python 3.8 版本。
+目前，Python 有两个版本，一个是 2.x 版，一个是 3.x 版，这两个版本是不兼容的。由于 3.x 版越来越普及，此处选择安装 Python 3.8 版本。
 
 ### 安装包安装 Python
 
-- Python 官网：https://www.python.org/
+Python 官网：https://www.python.org/
 
-- Python 下载：
+Python 下载：
 
-  ![image-20210906103336559](python/image-20210906103336559.png)
+<img src="python/image-20210906103336559.png" alt="image-20210906103336559" style="zoom:80%;" />
 
-  ![image-20210906110140935](python/image-20210906110140935.png)
+<img src="python/image-20210906110140935.png" alt="image-20210906110140935" style="zoom:80%;" />
 
-- Python 安装：
+Python 安装：
 
-  ![image-20210906111014938](python/image-20210906111014938.png)
+<img src="python/image-20210906111014938.png" alt="image-20210906111014938" style="zoom:80%;" />
 
-  ![image-20210906111414435](python/image-20210906111414435.png)
+<img src="python/image-20210906111414435.png" alt="image-20210906111414435" style="zoom:80%;" />
 
-- 验证 Python 是否安装完成：
+验证 Python 是否安装完成：
+
+```powershell
+Windows PowerShell
+版权所有 (C) Microsoft Corporation。保留所有权利。
+
+尝试新的跨平台 PowerShell https://aka.ms/pscore6
+
+加载个人及系统配置文件用了 1011 毫秒。
+PS C:\Users\Xisun> python
+Python 3.8.3 (default, May 19 2020, 06:50:17) [MSC v.1916 64 bit (AMD64)] :: Anaconda, Inc. on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> exit()
+PS C:\Users\Xisun>
+```
+
+- 提示符`>>>`表示已经处于 Python 的交互模式中，可以输入任何 Python 代码，输入完的指令将会被 Python 的解释器立即执行。
+- 输入`exit()`并回车，可以退出 Python 交互模式（直接关掉命令行窗口也可以）。
+
+- 安装 Python 的同时，会自动安装一个 Python 的开发工具 IDLE，通过 IDLE 也可以进入到交互模式。IDLE 中可以通过 tab 键来查看语句的提示，并且可以将代码保存。
+
+  <img src="python/image-20211008172411453.png" alt="image-20211008172411453" style="zoom:80%;" />
+
+- 交互模式下只能输入一行代码，执行一行，所以不适用于我们日常的开发，仅可以用来做一些日常的简单的测试！
+
+- 我们一般会将 Python 代码编写到一个`.py`文件中，然后通过 python 指令来执行文件中的代码。
+
+### Miniconda 安装 Python
+
+一般开发时，不推荐直接使用 Python 安装包安装 Python，建议使用第三方管理工具 Miniconda。
+
+Miniconda 是一款小巧的 Python 环境管理工具，其安装程序中包含 conda 软件包管理器和 Python。一旦安装了 Miniconda，就可以使用 conda 命令安装任何其他软件工具包并创建环境等。
+
+官网：https://conda.io/en/latest/miniconda.html
+
+#### Windows 环境
+
+官网下载 Miniconda Windows 安装包：
+
+![image-20211008200831511](python/image-20211008200831511.png)
+
+Windows 安装 Minicoda：
+
+![image-20211008202344037](python/image-20211008202344037.png)
+
+![image-20211008202554151](python/image-20211008202554151.png)
+
+添加系统环境变量：
+
+![image-20211008204725711](python/image-20211008204725711.png)
+
+初次安装 Miniconda，应执行一次初始化命令：
+
+```powershell
+PS C:\Users\XiSun> conda init
+PS C:\Users\XiSun>conda activate base
+# 查看miniconda中python的版本
+(base) PS  C:\Users\XiSun>python -v
+```
+
+创建 Python 3.8 环境：
+
+- 打开 Windows PowerShell：
 
   ```powershell
   Windows PowerShell
@@ -214,561 +293,509 @@
   
   尝试新的跨平台 PowerShell https://aka.ms/pscore6
   
-  加载个人及系统配置文件用了 1011 毫秒。
-  PS C:\Users\Xisun> python
-  Python 3.8.3 (default, May 19 2020, 06:50:17) [MSC v.1916 64 bit (AMD64)] :: Anaconda, Inc. on win32
-  Type "help", "copyright", "credits" or "license" for more information.
-  >>> exit()
-  PS C:\Users\Xisun>
+  加载个人及系统配置文件用了 907 毫秒。
+  (base) PS C:\Users\XiSun>
   ```
 
-  - 提示符 `>>>` 表示已经处于 Python 的交互模式中，可以输入任何 Python 代码，输入完的指令将会被 Python 的解释器立即执行。
-  - 输入 `exit()` 并回车，可以退出 Python 交互模式（直接关掉命令行窗口也可以）。
-
-- 安装 Python 的同时，会自动安装一个 Python 的开发工具 IDLE，通过 IDLE 也可以进入到交互模式。IDLE 中可以通过 tab 键来查看语句的提示，并且可以将代码保存。
-
-  ![image-20211008172411453](python/image-20211008172411453.png)
-
-- 交互模式下只能输入一行代码，执行一行，所以不适用于我们日常的开发，仅可以用来做一些日常的简单的测试！
-
-- 我们一般会将 Python 代码编写到一个 `.py` 文件中，然后通过 python 指令来执行文件中的代码。
-
-### Miniconda 安装 Python
-
-- 一般开发时，不推荐直接使用 Python 安装包安装 Python，建议使用第三方管理工具 Miniconda。
-- Miniconda 是一款小巧的 Python 环境管理工具，其安装程序中包含 conda 软件包管理器和 Python。一旦安装了 Miniconda，就可以使用 conda 命令安装任何其他软件工具包并创建环境等。
-- 官网：https://conda.io/en/latest/miniconda.html
-
-#### Windows 环境
-
-- 官网下载 Miniconda Windows 安装包：
-
-  ![image-20211008200831511](python/image-20211008200831511.png)
-
-- Windows 安装 Minicoda：
-
-  ![image-20211008202344037](python/image-20211008202344037.png)
-
-  ![image-20211008202554151](python/image-20211008202554151.png)
-
-  - 添加系统环境变量：
-
-
-  ![image-20211008204725711](python/image-20211008204725711.png)
-
-  - 初次安装 Miniconda，应执行一次初始化命令：
-
-    ```powershell
-    (base) PS C:\Users\XiSun> conda init
-    ```
-
-- 创建 Python 3.8 环境：
-
-  - 打开 Windows PowerShell：
-
-    ```powershell
-    Windows PowerShell
-    版权所有 (C) Microsoft Corporation。保留所有权利。
-    
-    尝试新的跨平台 PowerShell https://aka.ms/pscore6
-    
-    加载个人及系统配置文件用了 907 毫秒。
-    (base) PS C:\Users\XiSun>
-    ```
-
-  - 查看所有的环境：
-
-    ```powershell
-    (base) PS C:\Users\XiSun>conda env list
-    # conda environments:
-    #
-    base                  *  D:\Program\Miniconda3
-    ```
-
-    - `(base)` 和 `*` 表示当前所处的环境。
-    - base 是 Miniconda 自身的 Python环境。
-
-  - 创建一个新环境：
-
-    ```powershell
-    (base) PS C:\Users\XiSun>conda create -n py38 python=3.8
-    ```
-
-    - 建议针对不同的 Python 版本，创建不同的环境，`-n` 参数后是待创建环境的名字，可以自取。
-    - Miniconda 自身的 Python 环境，不建议直接使用，避免污染。
-    - 新创建的环境位于 Miniconda 安装目录的 envs 路径下，如 `D:\miniconda3\envs\py38`。
-
-  - 查看新创建的环境：
-
-    ```powershell
-    (base) PS C:\Users\XiSun> conda env list
-    # conda environments:
-    #
-    base                  *  D:\Program\Miniconda3
-    py38                     D:\Program\Miniconda3\envs\py38
-    ```
-
-  - 激活新创建的环境：
-
-    ```powershell
-    (base) PS C:\Users\XiSun> conda activate py38
-    (py38) PS C:\Users\XiSun>
-    ```
-
-- 在新创建的 py38 环境中安装模块：
+- 查看所有的环境：
 
   ```powershell
-  (py38) PS C:\Users\XiSun> pip install pandas
+  (base) PS C:\Users\XiSun>conda env list
+  # conda environments:
+  #
+  base                  *  D:\Program\Miniconda3
+  ```
+
+  - `(base)`和`*`表示当前所处的环境。
+  - base 是 Miniconda 自身的 Python环境。
+
+- 创建一个新环境：
+
+  ```powershell
+  (base) PS C:\Users\XiSun>conda create -n py38 python=3.8
+  ```
+
+  - 建议针对不同的 Python 版本，创建不同的环境，`-n`参数后是待创建环境的名字，可以自取。
+  - Miniconda 自身的 Python 环境，不建议直接使用，避免污染。
+  - 新创建的环境位于 Miniconda 安装目录的 envs 路径下，如`D:\miniconda3\envs\py38`。
+
+- 查看新创建的环境：
+
+  ```powershell
+  (base) PS C:\Users\XiSun> conda env list
+  # conda environments:
+  #
+  base                  *  D:\Program\Miniconda3
+  py38                     D:\Program\Miniconda3\envs\py38
+  ```
+
+- 激活新创建的环境：
+
+  ```powershell
+  (base) PS C:\Users\XiSun> conda activate py38
+  (py38) PS C:\Users\XiSun>
+  ```
+
+在新创建的 py38 环境中安装模块：
+
+```powershell
+(py38) PS C:\Users\XiSun> pip install pandas
+(py38) PS C:\Users\XiSun> pip list
+Package               Version
+--------------------- -----------
+pandas                1.3.3
+```
+
+- 如果下载较慢，可以设置 pip 的国内源：
+
+  ```powershell
+  # 设置前查看源
+  (py38) PS C:\Users\XiSun> pip config list
+  # 设置阿里云镜像源
+  (py38) PS C:\Users\XiSun> pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+  Writing to C:\Users\XiSun\AppData\Roaming\pip\pip.ini
+  # 设置后查看源
+  (py38) PS C:\Users\XiSun> pip config list
+  global.index-url='https://mirrors.aliyun.com/pypi/simple/'
+  ```
+
+  - 阿里云镜像源：http://mirrors.aliyun.com/pypi/simple/
+  - 清华大学镜像源：https://pypi.tuna.tsinghua.edu.cn/simple/
+  - 中国科技大学镜像源：https://pypi.mirrors.ustc.edu.cn/simple/
+  - 中国科学技术大学镜像源：http://pypi.mirrors.ustc.edu.cn/simple/
+  - 豆瓣镜像源：https://pypi.douban.com/simple/
+
+- 在安装新的模块之前，可以使用 pip-search 命令查找模块是否存在：
+
+  ```powershell
+  # 安装pip_search
+  (py38) PS C:\Users\XiSun> pip install pip_search
+  
   (py38) PS C:\Users\XiSun> pip list
   Package               Version
   --------------------- -----------
-  pandas                1.3.3
+  pip-search            0.0.10
+  
+  # 使用pip_search
+  (py38) PS C:\Users\XiSun> pip_search dotenv
   ```
 
-  - 如果下载较慢，可以设置 pip 的国内源：
+Pycharm 引用新创建的 py38 环境：
 
-    ```powershell
-    # 设置前查看源
-    (py38) PS C:\Users\XiSun> pip config list
-    # 设置阿里云镜像源
-    (py38) PS C:\Users\XiSun> pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
-    Writing to C:\Users\XiSun\AppData\Roaming\pip\pip.ini
-    # 设置后查看源
-    (py38) PS C:\Users\XiSun> pip config list
-    global.index-url='https://mirrors.aliyun.com/pypi/simple/'
-    ```
+![image-20230410105845166](C:\Users\XiSun\AppData\Roaming\Typora\typora-user-images\image-20230410105845166.png)
 
-    - 阿里云镜像源：http://mirrors.aliyun.com/pypi/simple/
-    - 清华大学镜像源：https://pypi.tuna.tsinghua.edu.cn/simple/
-    - 中国科技大学镜像源：https://pypi.mirrors.ustc.edu.cn/simple/
-    - 中国科学技术大学镜像源：http://pypi.mirrors.ustc.edu.cn/simple/
-    - 豆瓣镜像源：https://pypi.douban.com/simple/
+![image-20211009104033079](python/image-20211009104033079.png)
 
-  - 在安装新的模块之前，可以使用 pip-search 命令查找模块是否存在：
-
-    ```powershell
-    # 安装pip_search
-    (py38) PS C:\Users\XiSun> pip install pip_search
-    
-    (py38) PS C:\Users\XiSun> pip list
-    Package               Version
-    --------------------- -----------
-    pip-search            0.0.10
-    
-    # 使用pip_search
-    (py38) PS C:\Users\XiSun> pip_search dotenv
-    ```
-
-- Pycharm 引用新创建的 py38 环境：
-
-  ![image-20211009104033079](python/image-20211009104033079.png)
-
-  ![image-20211009104233732](python/image-20211009104233732.png)
+![image-20211009104233732](python/image-20211009104233732.png)
 
 #### Linux 环境
 
-- 此处以 WSL 为例进行说明。
+> 此处以 WSL 为例进行说明。
 
-- 官网下载 Miniconda Linux 安装程序：
+官网下载 Miniconda Linux 安装程序：
 
-  ![image-20220215160307231](img/python/image-20220215160307231.png)
+![image-20220215160307231](img/python/image-20220215160307231.png)
 
-- WSL 中创建 Python 3.8 环境：
+WSL 中创建 Python 3.8 环境：
 
-  - 打开 Windows PowerShell，并启动 WSL：
-
-    ```powershell
-    Windows PowerShell
-    版权所有 (C) Microsoft Corporation。保留所有权利。
-    
-    尝试新的跨平台 PowerShell https://aka.ms/pscore6
-    
-    加载个人及系统配置文件用了 869 毫秒。
-    (base) PS C:\Users\XiSun> wsl
-    (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$
-    ```
-  
-  - 安装 Miniconda：
-  
-    ```powershell
-    # 切换到Miniconda安装程序的路径
-    (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$ cd /mnt/d/Program\ Files/
-    (base) xisun@DESKTOP-OM8IACS:/mnt/d/Program Files$ ll
-    total 380636
-    drwxrwxrwx 1 xisun xisun      4096 Jan 25 10:29  ./
-    drwxrwxrwx 1 xisun xisun      4096 Jan 19 16:16  ../
-    -rwxrwxrwx 1 xisun xisun  85055499 Jun 10  2020  Miniconda3-latest-Linux-x86_64.sh*
-    # 执行Miniconda安装程序
-    (base) xisun@DESKTOP-OM8IACS:/mnt/d/Program Files$ sh Miniconda3-latest-Linux-x86_64.sh
-    ```
-  
-  - 创建一个新环境：
-  
-    ```powershell
-    (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/Ziyoo$ cd ~
-    (base) xisun@DESKTOP-OM8IACS:~$ ll
-    total 108
-    drwxr-xr-x  9 xisun xisun  4096 Jan 25 10:32 ./
-    drwxr-xr-x  3 root  root   4096 Apr 26  2021 ../
-    -rw-------  1 xisun xisun 19888 Jan 25 10:33 .bash_history
-    -rw-r--r--  1 xisun xisun   220 Apr 26  2021 .bash_logout
-    -rw-r--r--  1 xisun xisun  4250 Jan 25 10:32 .bashrc
-    drwxr-xr-x  2 xisun xisun  4096 Jan 25 10:32 .conda/
-    drwxr-xr-x  8 xisun xisun  4096 Jun  3  2021 .dotnet/
-    drwxr-xr-x  2 xisun xisun  4096 Apr 26  2021 .landscape/
-    -rw-------  1 xisun xisun    32 May 21  2021 .lesshst
-    -rw-r--r--  1 xisun xisun     0 Jan 25 10:26 .motd_shown
-    -rw-r--r--  1 xisun xisun   807 Apr 26  2021 .profile
-    drwx------  2 xisun xisun  4096 Jul 13  2021 .ssh/
-    -rw-r--r--  1 xisun xisun     0 Apr 26  2021 .sudo_as_admin_successful
-    drwxr-xr-x  2 xisun xisun  4096 Jul  6  2021 .vim/
-    -rw-------  1 xisun xisun  9488 Jul 22  2021 .viminfo
-    drwxr-xr-x  5 xisun xisun  4096 Jun  3  2021 .vscode-server/
-    -rw-r--r--  1 xisun xisun   183 Jan 14 10:08 .wget-hsts
-    -rw-rw-r--  1 xisun xisun 14750 Jun  3  2021 get-docker.sh
-    drwxr-xr-x 15 xisun xisun  4096 Jan 25 10:32 miniconda3/
-    (base) xisun@DESKTOP-OM8IACS:~$ conda env list
-    # conda environments:
-    #
-    base                  *  /home/xisun/miniconda3
-    
-    (base) xisun@DESKTOP-OM8IACS:~$ conda create -n py38 python=3.8
-    Collecting package metadata (current_repodata.json): done
-    Solving environment: done
-    
-    
-    ==> WARNING: A newer version of conda exists. <==
-      current version: 4.8.2
-      latest version: 4.11.0
-    
-    Please update conda by running
-    
-        $ conda update -n base -c defaults conda
-    
-    
-    
-    ## Package Plan ##
-    
-      environment location: /home/xisun/miniconda3/envs/py38
-    
-      added / updated specs:
-        - python=3.8
-    
-    
-    The following packages will be downloaded:
-    
-        package                    |            build
-        ---------------------------|-----------------
-        _openmp_mutex-4.5          |            1_gnu          22 KB
-        ca-certificates-2021.10.26 |       h06a4308_2         115 KB
-        certifi-2021.10.8          |   py38h06a4308_2         152 KB
-        ld_impl_linux-64-2.35.1    |       h7274673_9         586 KB
-        libffi-3.3                 |       he6710b0_2          50 KB
-        libgcc-ng-9.3.0            |      h5101ec6_17         4.8 MB
-        libgomp-9.3.0              |      h5101ec6_17         311 KB
-        libstdcxx-ng-9.3.0         |      hd4cf53a_17         3.1 MB
-        ncurses-6.3                |       h7f8727e_2         782 KB
-        openssl-1.1.1m             |       h7f8727e_0         2.5 MB
-        pip-21.2.4                 |   py38h06a4308_0         1.8 MB
-        python-3.8.12              |       h12debd9_0        18.3 MB
-        readline-8.1.2             |       h7f8727e_1         354 KB
-        setuptools-58.0.4          |   py38h06a4308_0         790 KB
-        sqlite-3.37.0              |       hc218d9a_0         999 KB
-        tk-8.6.11                  |       h1ccaba5_0         3.0 MB
-        wheel-0.37.1               |     pyhd3eb1b0_0          33 KB
-        xz-5.2.5                   |       h7b6447c_0         341 KB
-        zlib-1.2.11                |       h7f8727e_4         108 KB
-        ------------------------------------------------------------
-                                               Total:        38.0 MB
-    
-    The following NEW packages will be INSTALLED:
-    
-      _libgcc_mutex      pkgs/main/linux-64::_libgcc_mutex-0.1-main
-      _openmp_mutex      pkgs/main/linux-64::_openmp_mutex-4.5-1_gnu
-      ca-certificates    pkgs/main/linux-64::ca-certificates-2021.10.26-h06a4308_2
-      certifi            pkgs/main/linux-64::certifi-2021.10.8-py38h06a4308_2
-      ld_impl_linux-64   pkgs/main/linux-64::ld_impl_linux-64-2.35.1-h7274673_9
-      libffi             pkgs/main/linux-64::libffi-3.3-he6710b0_2
-      libgcc-ng          pkgs/main/linux-64::libgcc-ng-9.3.0-h5101ec6_17
-      libgomp            pkgs/main/linux-64::libgomp-9.3.0-h5101ec6_17
-      libstdcxx-ng       pkgs/main/linux-64::libstdcxx-ng-9.3.0-hd4cf53a_17
-      ncurses            pkgs/main/linux-64::ncurses-6.3-h7f8727e_2
-      openssl            pkgs/main/linux-64::openssl-1.1.1m-h7f8727e_0
-      pip                pkgs/main/linux-64::pip-21.2.4-py38h06a4308_0
-      python             pkgs/main/linux-64::python-3.8.12-h12debd9_0
-      readline           pkgs/main/linux-64::readline-8.1.2-h7f8727e_1
-      setuptools         pkgs/main/linux-64::setuptools-58.0.4-py38h06a4308_0
-      sqlite             pkgs/main/linux-64::sqlite-3.37.0-hc218d9a_0
-      tk                 pkgs/main/linux-64::tk-8.6.11-h1ccaba5_0
-      wheel              pkgs/main/noarch::wheel-0.37.1-pyhd3eb1b0_0
-      xz                 pkgs/main/linux-64::xz-5.2.5-h7b6447c_0
-      zlib               pkgs/main/linux-64::zlib-1.2.11-h7f8727e_4
-    
-    
-    Proceed ([y]/n)? y
-    
-    
-    Downloading and Extracting Packages
-    _openmp_mutex-4.5    | 22 KB     | ############################################################################# | 100%
-    libgomp-9.3.0        | 311 KB    | ############################################################################# | 100%
-    ld_impl_linux-64-2.3 | 586 KB    | ############################################################################# | 100%
-    python-3.8.12        | 18.3 MB   | ############################################################################# | 100%
-    zlib-1.2.11          | 108 KB    | ############################################################################# | 100%
-    openssl-1.1.1m       | 2.5 MB    | ############################################################################# | 100%
-    libstdcxx-ng-9.3.0   | 3.1 MB    | ############################################################################# | 100%
-    tk-8.6.11            | 3.0 MB    | ############################################################################# | 100%
-    wheel-0.37.1         | 33 KB     | ############################################################################# | 100%
-    sqlite-3.37.0        | 999 KB    | ############################################################################# | 100%
-    setuptools-58.0.4    | 790 KB    | ############################################################################# | 100%
-    pip-21.2.4           | 1.8 MB    | ############################################################################# | 100%
-    libffi-3.3           | 50 KB     | ############################################################################# | 100%
-    libgcc-ng-9.3.0      | 4.8 MB    | ############################################################################# | 100%
-    ncurses-6.3          | 782 KB    | ############################################################################# | 100%
-    certifi-2021.10.8    | 152 KB    | ############################################################################# | 100%
-    readline-8.1.2       | 354 KB    | ############################################################################# | 100%
-    xz-5.2.5             | 341 KB    | ############################################################################# | 100%
-    ca-certificates-2021 | 115 KB    | ############################################################################# | 100%
-    Preparing transaction: done
-    Verifying transaction: done
-    Executing transaction: done
-    #
-    # To activate this environment, use
-    #
-    #     $ conda activate py38
-    #
-    # To deactivate an active environment, use
-    #
-    #     $ conda deactivate
-    
-    (base) xisun@DESKTOP-OM8IACS:~$ conda env list
-    # conda environments:
-    #
-    base                  *  /home/xisun/miniconda3
-    py38                     /home/xisun/miniconda3/envs/py38
-    ```
-  
-    - 新创建的环境的位置：`/home/xisun/miniconda3/envs/py38`。
-  
-  - 激活新创建的环境：
-  
-    ```powershell
-    (base) xisun@DESKTOP-OM8IACS:~$ conda activate py38
-    (py38) xisun@DESKTOP-OM8IACS:~$
-    ```
-  
-- 安装模块:
+- 打开 Windows PowerShell，并启动 WSL：
 
   ```powershell
-  (py38) xisun@DESKTOP-OM8IACS:~$ pip install pandas
+  Windows PowerShell
+  版权所有 (C) Microsoft Corporation。保留所有权利。
+  
+  尝试新的跨平台 PowerShell https://aka.ms/pscore6
+  
+  加载个人及系统配置文件用了 869 毫秒。
+  (base) PS C:\Users\XiSun> wsl
+  (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$
+  ```
+
+- 安装 Miniconda：
+
+  ```powershell
+  # 切换到Miniconda安装程序的路径
+  (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/XiSun$ cd /mnt/d/Program\ Files/
+  (base) xisun@DESKTOP-OM8IACS:/mnt/d/Program Files$ ll
+  total 380636
+  drwxrwxrwx 1 xisun xisun      4096 Jan 25 10:29  ./
+  drwxrwxrwx 1 xisun xisun      4096 Jan 19 16:16  ../
+  -rwxrwxrwx 1 xisun xisun  85055499 Jun 10  2020  Miniconda3-latest-Linux-x86_64.sh*
+  # 执行Miniconda安装程序
+  (base) xisun@DESKTOP-OM8IACS:/mnt/d/Program Files$ sh Miniconda3-latest-Linux-x86_64.sh
+  ```
+
+- 创建一个新环境：
+
+  ```powershell
+  (base) xisun@DESKTOP-OM8IACS:/mnt/c/Users/Ziyoo$ cd ~
+  (base) xisun@DESKTOP-OM8IACS:~$ ll
+  total 108
+  drwxr-xr-x  9 xisun xisun  4096 Jan 25 10:32 ./
+  drwxr-xr-x  3 root  root   4096 Apr 26  2021 ../
+  -rw-------  1 xisun xisun 19888 Jan 25 10:33 .bash_history
+  -rw-r--r--  1 xisun xisun   220 Apr 26  2021 .bash_logout
+  -rw-r--r--  1 xisun xisun  4250 Jan 25 10:32 .bashrc
+  drwxr-xr-x  2 xisun xisun  4096 Jan 25 10:32 .conda/
+  drwxr-xr-x  8 xisun xisun  4096 Jun  3  2021 .dotnet/
+  drwxr-xr-x  2 xisun xisun  4096 Apr 26  2021 .landscape/
+  -rw-------  1 xisun xisun    32 May 21  2021 .lesshst
+  -rw-r--r--  1 xisun xisun     0 Jan 25 10:26 .motd_shown
+  -rw-r--r--  1 xisun xisun   807 Apr 26  2021 .profile
+  drwx------  2 xisun xisun  4096 Jul 13  2021 .ssh/
+  -rw-r--r--  1 xisun xisun     0 Apr 26  2021 .sudo_as_admin_successful
+  drwxr-xr-x  2 xisun xisun  4096 Jul  6  2021 .vim/
+  -rw-------  1 xisun xisun  9488 Jul 22  2021 .viminfo
+  drwxr-xr-x  5 xisun xisun  4096 Jun  3  2021 .vscode-server/
+  -rw-r--r--  1 xisun xisun   183 Jan 14 10:08 .wget-hsts
+  -rw-rw-r--  1 xisun xisun 14750 Jun  3  2021 get-docker.sh
+  drwxr-xr-x 15 xisun xisun  4096 Jan 25 10:32 miniconda3/
+  (base) xisun@DESKTOP-OM8IACS:~$ conda env list
+  # conda environments:
+  #
+  base                  *  /home/xisun/miniconda3
+  
+  (base) xisun@DESKTOP-OM8IACS:~$ conda create -n py38 python=3.8
+  Collecting package metadata (current_repodata.json): done
+  Solving environment: done
+  
+  
+  ==> WARNING: A newer version of conda exists. <==
+    current version: 4.8.2
+    latest version: 4.11.0
+  
+  Please update conda by running
+  
+      $ conda update -n base -c defaults conda
+  
+  
+  
+  ## Package Plan ##
+  
+    environment location: /home/xisun/miniconda3/envs/py38
+  
+    added / updated specs:
+      - python=3.8
+  
+  
+  The following packages will be downloaded:
+  
+      package                    |            build
+      ---------------------------|-----------------
+      _openmp_mutex-4.5          |            1_gnu          22 KB
+      ca-certificates-2021.10.26 |       h06a4308_2         115 KB
+      certifi-2021.10.8          |   py38h06a4308_2         152 KB
+      ld_impl_linux-64-2.35.1    |       h7274673_9         586 KB
+      libffi-3.3                 |       he6710b0_2          50 KB
+      libgcc-ng-9.3.0            |      h5101ec6_17         4.8 MB
+      libgomp-9.3.0              |      h5101ec6_17         311 KB
+      libstdcxx-ng-9.3.0         |      hd4cf53a_17         3.1 MB
+      ncurses-6.3                |       h7f8727e_2         782 KB
+      openssl-1.1.1m             |       h7f8727e_0         2.5 MB
+      pip-21.2.4                 |   py38h06a4308_0         1.8 MB
+      python-3.8.12              |       h12debd9_0        18.3 MB
+      readline-8.1.2             |       h7f8727e_1         354 KB
+      setuptools-58.0.4          |   py38h06a4308_0         790 KB
+      sqlite-3.37.0              |       hc218d9a_0         999 KB
+      tk-8.6.11                  |       h1ccaba5_0         3.0 MB
+      wheel-0.37.1               |     pyhd3eb1b0_0          33 KB
+      xz-5.2.5                   |       h7b6447c_0         341 KB
+      zlib-1.2.11                |       h7f8727e_4         108 KB
+      ------------------------------------------------------------
+                                             Total:        38.0 MB
+  
+  The following NEW packages will be INSTALLED:
+  
+    _libgcc_mutex      pkgs/main/linux-64::_libgcc_mutex-0.1-main
+    _openmp_mutex      pkgs/main/linux-64::_openmp_mutex-4.5-1_gnu
+    ca-certificates    pkgs/main/linux-64::ca-certificates-2021.10.26-h06a4308_2
+    certifi            pkgs/main/linux-64::certifi-2021.10.8-py38h06a4308_2
+    ld_impl_linux-64   pkgs/main/linux-64::ld_impl_linux-64-2.35.1-h7274673_9
+    libffi             pkgs/main/linux-64::libffi-3.3-he6710b0_2
+    libgcc-ng          pkgs/main/linux-64::libgcc-ng-9.3.0-h5101ec6_17
+    libgomp            pkgs/main/linux-64::libgomp-9.3.0-h5101ec6_17
+    libstdcxx-ng       pkgs/main/linux-64::libstdcxx-ng-9.3.0-hd4cf53a_17
+    ncurses            pkgs/main/linux-64::ncurses-6.3-h7f8727e_2
+    openssl            pkgs/main/linux-64::openssl-1.1.1m-h7f8727e_0
+    pip                pkgs/main/linux-64::pip-21.2.4-py38h06a4308_0
+    python             pkgs/main/linux-64::python-3.8.12-h12debd9_0
+    readline           pkgs/main/linux-64::readline-8.1.2-h7f8727e_1
+    setuptools         pkgs/main/linux-64::setuptools-58.0.4-py38h06a4308_0
+    sqlite             pkgs/main/linux-64::sqlite-3.37.0-hc218d9a_0
+    tk                 pkgs/main/linux-64::tk-8.6.11-h1ccaba5_0
+    wheel              pkgs/main/noarch::wheel-0.37.1-pyhd3eb1b0_0
+    xz                 pkgs/main/linux-64::xz-5.2.5-h7b6447c_0
+    zlib               pkgs/main/linux-64::zlib-1.2.11-h7f8727e_4
+  
+  
+  Proceed ([y]/n)? y
+  
+  
+  Downloading and Extracting Packages
+  _openmp_mutex-4.5    | 22 KB     | ############################################################################# | 100%
+  libgomp-9.3.0        | 311 KB    | ############################################################################# | 100%
+  ld_impl_linux-64-2.3 | 586 KB    | ############################################################################# | 100%
+  python-3.8.12        | 18.3 MB   | ############################################################################# | 100%
+  zlib-1.2.11          | 108 KB    | ############################################################################# | 100%
+  openssl-1.1.1m       | 2.5 MB    | ############################################################################# | 100%
+  libstdcxx-ng-9.3.0   | 3.1 MB    | ############################################################################# | 100%
+  tk-8.6.11            | 3.0 MB    | ############################################################################# | 100%
+  wheel-0.37.1         | 33 KB     | ############################################################################# | 100%
+  sqlite-3.37.0        | 999 KB    | ############################################################################# | 100%
+  setuptools-58.0.4    | 790 KB    | ############################################################################# | 100%
+  pip-21.2.4           | 1.8 MB    | ############################################################################# | 100%
+  libffi-3.3           | 50 KB     | ############################################################################# | 100%
+  libgcc-ng-9.3.0      | 4.8 MB    | ############################################################################# | 100%
+  ncurses-6.3          | 782 KB    | ############################################################################# | 100%
+  certifi-2021.10.8    | 152 KB    | ############################################################################# | 100%
+  readline-8.1.2       | 354 KB    | ############################################################################# | 100%
+  xz-5.2.5             | 341 KB    | ############################################################################# | 100%
+  ca-certificates-2021 | 115 KB    | ############################################################################# | 100%
+  Preparing transaction: done
+  Verifying transaction: done
+  Executing transaction: done
+  #
+  # To activate this environment, use
+  #
+  #     $ conda activate py38
+  #
+  # To deactivate an active environment, use
+  #
+  #     $ conda deactivate
+  
+  (base) xisun@DESKTOP-OM8IACS:~$ conda env list
+  # conda environments:
+  #
+  base                  *  /home/xisun/miniconda3
+  py38                     /home/xisun/miniconda3/envs/py38
+  ```
+
+  - 新创建的环境的位置：`/home/xisun/miniconda3/envs/py38`。
+
+- 激活新创建的环境：
+
+  ```powershell
+  (base) xisun@DESKTOP-OM8IACS:~$ conda activate py38
+  (py38) xisun@DESKTOP-OM8IACS:~$
+  ```
+
+安装模块:
+
+```powershell
+(py38) xisun@DESKTOP-OM8IACS:~$ pip install pandas
+(py38) xisun@DESKTOP-OM8IACS:~$ pip list
+Package                Version
+---------------------- -------------------
+pandas                1.4.1
+```
+
+- 如果下载较慢，可以设置 pip 的国内源：
+
+  ```powershell
+  # 设置前查看源
+  (py38) xisun@DESKTOP-OM8IACS:~$ pip config list
+  # 设置阿里云镜像源
+  (py38) xisun@DESKTOP-OM8IACS:~$ pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+  Writing to /home/xisun/.config/pip/pip.conf
+  # 设置后查看源
+  (py38) xisun@DESKTOP-OM8IACS:~$ pip config list
+  global.index-url='https://pypi.tuna.tsinghua.edu.cn/simple'
+  ```
+  
+- pip 安装 pip-search：
+
+  ```powershell
+  (py38) xisun@DESKTOP-OM8IACS:~$ pip install pip_search
+  
   (py38) xisun@DESKTOP-OM8IACS:~$ pip list
   Package                Version
   ---------------------- -------------------
-  pandas                1.4.1
+  pip-search            0.0.10
+  
+  (py38) xisun@DESKTOP-OM8IACS:~$ pip_search dotenv
   ```
   
-  - 如果下载较慢，可以设置 pip 的国内源：
+  - 备用方式，pipx 安装 pip-search：
   
     ```powershell
-    # 设置前查看源
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip config list
-    # 设置阿里云镜像源
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
-    Writing to /home/xisun/.config/pip/pip.conf
-    # 设置后查看源
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip config list
-    global.index-url='https://pypi.tuna.tsinghua.edu.cn/simple'
+    (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pip install pipx
+    Collecting pipx
+      Downloading pipx-1.0.0-py3-none-any.whl (54 kB)
+         |████████████████████████████████| 54 kB 47 kB/s
+    Collecting packaging>=20.0
+      Downloading packaging-21.3-py3-none-any.whl (40 kB)
+         |████████████████████████████████| 40 kB 337 kB/s
+    Collecting userpath>=1.6.0
+      Downloading userpath-1.7.0-py2.py3-none-any.whl (14 kB)
+    Collecting argcomplete>=1.9.4
+      Downloading argcomplete-2.0.0-py2.py3-none-any.whl (37 kB)
+    Collecting pyparsing!=3.0.5,>=2.0.2
+      Downloading pyparsing-3.0.7-py3-none-any.whl (98 kB)
+         |████████████████████████████████| 98 kB 416 kB/s
+    Collecting click
+      Downloading click-8.0.3-py3-none-any.whl (97 kB)
+         |████████████████████████████████| 97 kB 537 kB/s
+    Installing collected packages: pyparsing, click, userpath, packaging, argcomplete, pipx
+    Successfully installed argcomplete-2.0.0 click-8.0.3 packaging-21.3 pipx-1.0.0 pyparsing-3.0.7 userpath-1.7.0
+    (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pipx install pip-search
+      installed package pip-search 0.0.10, installed using Python 3.8.12
+      These apps are now globally available
+        - pip_search
+    ⚠️  Note: '/home/xisun/.local/bin' is not on your PATH environment variable. These apps will not be globally
+        accessible until your PATH is updated. Run `pipx ensurepath` to automatically add it, or manually modify your PATH
+        in your shell's config file (i.e. ~/.bashrc).
+    done! ✨ 🌟 ✨
+    (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pipx ensurepath
+    Success! Added /home/xisun/.local/bin to the PATH environment variable.
+    
+    Consider adding shell completions for pipx. Run 'pipx completions' for instructions.
+    
+    You will need to open a new terminal or re-login for the PATH changes to take effect.
+    
+    Otherwise pipx is ready to go! ✨ 🌟 ✨
     ```
-    
-  - pip 安装 pip-search：
   
-    ```powershell
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip install pip_search
-    
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip list
-    Package                Version
-    ---------------------- -------------------
-    pip-search            0.0.10
-    
-    (py38) xisun@DESKTOP-OM8IACS:~$ pip_search dotenv
-    ```
-    
-    - 备用方式，pipx 安装 pip-search：
-    
-      ```powershell
-      (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pip install pipx
-      Collecting pipx
-        Downloading pipx-1.0.0-py3-none-any.whl (54 kB)
-           |████████████████████████████████| 54 kB 47 kB/s
-      Collecting packaging>=20.0
-        Downloading packaging-21.3-py3-none-any.whl (40 kB)
-           |████████████████████████████████| 40 kB 337 kB/s
-      Collecting userpath>=1.6.0
-        Downloading userpath-1.7.0-py2.py3-none-any.whl (14 kB)
-      Collecting argcomplete>=1.9.4
-        Downloading argcomplete-2.0.0-py2.py3-none-any.whl (37 kB)
-      Collecting pyparsing!=3.0.5,>=2.0.2
-        Downloading pyparsing-3.0.7-py3-none-any.whl (98 kB)
-           |████████████████████████████████| 98 kB 416 kB/s
-      Collecting click
-        Downloading click-8.0.3-py3-none-any.whl (97 kB)
-           |████████████████████████████████| 97 kB 537 kB/s
-      Installing collected packages: pyparsing, click, userpath, packaging, argcomplete, pipx
-      Successfully installed argcomplete-2.0.0 click-8.0.3 packaging-21.3 pipx-1.0.0 pyparsing-3.0.7 userpath-1.7.0
-      (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pipx install pip-search
-        installed package pip-search 0.0.10, installed using Python 3.8.12
-        These apps are now globally available
-          - pip_search
-      ⚠️  Note: '/home/xisun/.local/bin' is not on your PATH environment variable. These apps will not be globally
-          accessible until your PATH is updated. Run `pipx ensurepath` to automatically add it, or manually modify your PATH
-          in your shell's config file (i.e. ~/.bashrc).
-      done! ✨ 🌟 ✨
-      (py38) xisun@DESKTOP-OM8IACS:/etc/apt$ pipx ensurepath
-      Success! Added /home/xisun/.local/bin to the PATH environment variable.
-      
-      Consider adding shell completions for pipx. Run 'pipx completions' for instructions.
-      
-      You will need to open a new terminal or re-login for the PATH changes to take effect.
-      
-      Otherwise pipx is ready to go! ✨ 🌟 ✨
-      ```
-    
-    - 重新打开 terminal，即可使用 pip-search 命令。
-  
-- Visual Studio Code 引用新创建的 py38 环境。
+  - 重新打开 terminal，即可使用 pip-search 命令。
 
-  - 在待打开的 Pyhon 文件所处的目录下，使用 `shift + 鼠标右键`，然后点击 `在此处打开 Linux shell(L)`，或者使用 `cd` 命令切换到 Python 文件所处的目录下，输入 `code .` ，命令：
-  
-    ```powershell
-    (py38) xisun@DESKTOP-OM8IACS:/mnt/c/Users/Ziyoo$ cd /mnt/d/JetBrainsWorkSpace/PycharmProjects/
-    (py38) xisun@DESKTOP-OM8IACS:/mnt/d/JetBrainsWorkSpace/PycharmProjects$ code .
-    ```
-  
-  - 在打开的 Visual Studio Code 中，可以查看和引用 Python 环境：
-  
-    ![image-20220215172616901](img/python/image-20220215172616901.png)
-  
-    ![image-20220215172707420](img/python/image-20220215172707420.png)
-  
+Visual Studio Code 引用新创建的 py38 环境。
+
+- 在待打开的 Pyhon 文件所处的目录下，使用`shift + 鼠标右键`，然后点击`在此处打开 Linux shell(L)`，或者使用`cd`命令切换到 Python 文件所处的目录下，输入`code .`，命令：
+
+  ```powershell
+  (py38) xisun@DESKTOP-OM8IACS:/mnt/c/Users/Ziyoo$ cd /mnt/d/JetBrainsWorkSpace/PycharmProjects/
+  (py38) xisun@DESKTOP-OM8IACS:/mnt/d/JetBrainsWorkSpace/PycharmProjects$ code .
+  ```
+
+- 在打开的 Visual Studio Code 中，可以查看和引用 Python 环境：
+
+  ![image-20220215172616901](img/python/image-20220215172616901.png)
+
+  ![image-20220215172707420](img/python/image-20220215172707420.png)
 
 #### Jupyter 的使用
 
-- 安装 jupyter：
+安装 jupyter：
 
-  ```powershell
-  (py38) PS C:\Users\XiSun> pip install jupyter
-  (py38) PS C:\Users\XiSun> pip list
-  Package               Version
-  --------------------- -----------
-  jupyter               1.0.0
-  ```
+```powershell
+(py38) PS C:\Users\XiSun> pip install jupyter
+(py38) PS C:\Users\XiSun> pip list
+Package               Version
+--------------------- -----------
+jupyter               1.0.0
+```
 
-- 使用 jupyter 前，首先创建一个目录，用于存放文件，如 `D:\notebook`。
+> 使用 jupyter 前，首先创建一个目录，用于存放文件，如`D:\notebook`。
 
-- 启用 jupyter：
+启用 jupyter：
 
-  ```powershell
-  (py38) PS C:\Users\XiSun>  jupyter notebook --notebook-dir D:\notebook\
-  ```
+```powershell
+(py38) PS C:\Users\XiSun>  jupyter notebook --notebook-dir D:\notebook\
+```
 
-  ![image-20211008232457805](img/python/image-20211008232457805-16448974818031.png)
+![image-20211008232457805](python/image-20211008232457805.png)
 
-- jupyter 的部分操作：
+jupyter 的部分操作：
 
-  ![image-20211008232723547](img/python/image-20211008232723547.png)
+![image-20211008232723547](python/image-20211008232723547.png)
 
-  ![image-20211008232622015](img/python/image-20211008232622015.png)
+![image-20211008232622015](python/image-20211008232622015.png)
 
-  ![image-20211008233557395](img/python/image-20211008233557395.png)
+![image-20211008233557395](python/image-20211008233557395.png)
 
-  ![image-20211009142625478](python/image-20211009142625478.png)
+![image-20211009142625478](python/image-20211009142625478.png)
 
 ## Python 解释器
 
-- 当编写 Python 代码时，得到的是一个包含 Python 代码的以 `.py` 为扩展名的文本文件。要运行代码，就需要 Python 解释器去执行 `.py `文件。
-- 由于整个 Python 语言从规范到解释器都是开源的，所以理论上，只要水平够高，任何人都可以编写 Python 解释器来执行 Python 代码（当然难度很大）。事实上，确实存在多种 Python 解释器。
-- Python 的解释器很多，但使用最广泛的还是 CPython。如果要和 Java 或 .Net 平台交互，最好的办法不是用 Jython 或 IronPython，而是通过网络调用来交互，确保各程序之间的独立性。
+当编写 Python 代码时，得到的是一个包含 Python 代码的以`.py`为扩展名的文本文件。要运行代码，就需要 Python 解释器去执行`.py `文件。
+
+由于整个 Python 语言从规范到解释器都是开源的，所以理论上，只要水平够高，任何人都可以编写 Python 解释器来执行 Python 代码（当然难度很大）。事实上，确实存在多种 Python 解释器。
+
+Python 的解释器很多，但使用最广泛的还是 CPython。如果要和 Java 或 .Net 平台交互，最好的办法不是用 Jython 或 IronPython，而是通过网络调用来交互，确保各程序之间的独立性。
 
 #### CPython
 
-- 从 Python 官网下载并安装好 Python 3.x 后，我们就直接获得了一个官方版本的解释器：CPython。这个解释器是用 C 语言开发的，所以叫 CPython。在命令行下运行 `python` 命令就是启动 CPython 解释器。
-- CPython 是使用最广的 Python 解释器。
+从 Python 官网下载并安装好 Python 3.x 后，我们就直接获得了一个官方版本的解释器：CPython。这个解释器是用 C 语言开发的，所以叫 CPython。在命令行下运行`python`命令就是启动 CPython 解释器。
+
+> CPython 是使用最广的 Python 解释器。
 
 #### IPython
 
-- IPython 是基于 CPython 之上的一个交互式解释器，也就是说，IPython 只是在交互方式上有所增强，但是执行 Python 代码的功能和 CPython 是完全一样的。好比很多国产浏览器虽然外观不同，但内核其实都是调用了 IE。
-- CPython 用 `>>>` 作为提示符，而 IPython 用 `In [序号]:` 作为提示符。
+IPython 是基于 CPython 之上的一个交互式解释器，也就是说，IPython 只是在交互方式上有所增强，但是执行 Python 代码的功能和 CPython 是完全一样的。好比很多国产浏览器虽然外观不同，但内核其实都是调用了 IE。
+
+> CPython 用`>>>`作为提示符，而 IPython 用`In [序号]:`作为提示符。
 
 #### PyPy
 
-- PyPy 是另一个 Python 解释器，它的目标是执行速度。PyPy 采用 [JIT 技术](http://en.wikipedia.org/wiki/Just-in-time_compilation)，对 Python 代码进行动态编译（注意不是解释），所以可以显著提高 Python 代码的执行速度。
-- 绝大部分 Python 代码都可以在 PyPy 下运行，但是 PyPy 和 CPython 有一些是不同的，这就导致相同的 Python 代码在两种解释器下执行可能会有不同的结果。如果你的代码要放到 PyPy 下执行，就需要了解 [PyPy和CPython的不同点](http://pypy.readthedocs.org/en/latest/cpython_differences.html)。
+PyPy 是另一个 Python 解释器，它的目标是执行速度。PyPy 采用[JIT 技术](http://en.wikipedia.org/wiki/Just-in-time_compilation)，对 Python 代码进行动态编译（注意不是解释），所以可以显著提高 Python 代码的执行速度。
+
+绝大部分 Python 代码都可以在 PyPy 下运行，但是 PyPy 和 CPython 有一些是不同的，这就导致相同的 Python 代码在两种解释器下执行可能会有不同的结果。如果你的代码要放到 PyPy 下执行，就需要了解[PyPy和CPython的不同点](http://pypy.readthedocs.org/en/latest/cpython_differences.html)。
 
 #### Jython
 
-- Jython 是运行在 Java 平台上的 Python 解释器，可以直接把 Python 代码编译成 Java 字节码执行。
+Jython 是运行在 Java 平台上的 Python 解释器，可以直接把 Python 代码编译成 Java 字节码执行。
 
 #### IronPython
 
-- IronPython 和 Jython 类似，只不过 IronPython 是运行在微软 .Net 平台上的 Python 解释器，可以直接把 Python 代码编译成 .Net 字节码。
+IronPython 和 Jython 类似，只不过 IronPython 是运行在微软 .Net 平台上的 Python 解释器，可以直接把 Python 代码编译成 .Net 字节码。
 
 ## Python 基础
 
-- Python 的语法比较简单，采用缩进方式，写出来的代码就像下面的样子：
+Python 的语法比较简单，采用缩进方式，写出来的代码就像下面的样子：
 
-  ```python
-  # print absolute value of an integer:
-  a = 100
-  if a >= 0:
-      print(a)
-  else:
-      print(-a)
-  ```
+```python
+# print absolute value of an integer:
+a = 100
+if a >= 0:
+    print(a)
+else:
+    print(-a)
+```
 
 - Python 程序是大小写敏感的，如果写错了大小写，程序会报错。
 
-- Python 中的每一行就是一条语句，每条语句以换行结束，每一行语句不要过长（规范中建议每行不要超过 80 个字符）。当语句以冒号 `:` 结尾时，缩进的语句视为代码块。
+- Python 中的每一行就是一条语句，每条语句以换行结束，每一行语句不要过长（规范中建议每行不要超过 80 个字符）。当语句以冒号`:`结尾时，缩进的语句视为代码块。
 
-- Python 中一条语句可以分多行编写，多行编写时语句后边以 `\` 结尾。
+- Python 中一条语句可以分多行编写，多行编写时语句后边以`\`结尾。
 
-- Python 是缩进严格的语言，所以在 Python 中不要随便写缩进。按照约定俗成的惯例，应该始终坚持使用 4 个空格的缩进。当重构代码时，粘贴过去的代码必须重新检查缩进是否正确。此外，IDE 很难像格式化 Java 代码那样格式化 Python 代码。
+- Python 是**`缩进严格`**的语言，所以在 Python 中不要随便写缩进。按照约定俗成的惯例，应该始终坚持使用 4 个空格的缩进。当重构代码时，粘贴过去的代码必须重新检查缩进是否正确。此外，IDE 很难像格式化 Java 代码那样格式化 Python 代码。
 
-- Python 中使用 `#` 来表示注释，`#` 后的内容都属于注释，注释的内容将会被解释器所忽略。注释要求简单明了，一般习惯上 `#` 后边会跟着一个空格。
+- Python 中使用`#`来表示注释，`#`后的内容都属于注释，注释的内容将会被解释器所忽略。注释要求简单明了，一般习惯上`#`后边会跟着一个空格。
 
 ### 字面量和变量
 
-- 字面量就是一个一个的值，比如：`1`，`2`，`3`，`4`，`5`，`6`，`‘HELLO’`。字面量所表示的意思就是它的字面的值，在程序中可以直接使用字面量。
+字面量就是一个一个的值，比如：`1`，`2`，`3`，`4`，`5`，`6`，`‘HELLO’`。字面量所表示的意思就是它的字面的值，在程序中可以直接使用字面量。
 
-- 变量（variable）可以用来保存字面量，并且变量中保存的字面量是不定的。变量本身没有任何意思，它会根据不同的字面量表示不同的意思。
+变量（variable）可以用来保存字面量，并且变量中保存的字面量是不定的。变量本身没有任何意思，它会根据不同的字面量表示不同的意思。
 
-  - 在 Python 中，等号是赋值语句，可以把任意数据类型赋值给变量，同一个变量可以反复赋值，而且可以是不同类型的变量。
+- 在 Python 中，等号是赋值语句，可以把任意数据类型赋值给变量，同一个变量可以反复赋值，而且可以是不同类型的变量。
 
-    ```python
-    a = 123 # a是整数
-    print(a) # 123
-    a = 'ABC' # a变为字符串
-    print(a) # ABC
-    ```
+  ```python
+  a = 123 # a是整数
+  print(a) # 123
+  a = 'ABC' # a变为字符串
+  print(a) # ABC
+  ```
 
-    - 这种变量本身类型不固定的语言称之为动态语言，与之对应的是静态语言。静态语言在定义变量时必须指定变量类型，如果赋值的时候类型不匹配，就会报错。例如 Java 是静态语言。
+  - 这种变量本身类型不固定的语言称之为动态语言，与之对应的是静态语言。静态语言在定义变量时必须指定变量类型，如果赋值的时候类型不匹配，就会报错。例如 Java 是静态语言。
 
-  - 等号也可以把一个变量 `a` 赋值给另一个变量 `b`，这个操作实际上是把变量 `b` 指向变量 `a` 所指向的数据。
+- 等号也可以把一个变量`a`赋值给另一个变量`b`，这个操作实际上是把变量`b`指向变量`a`所指向的数据。
 
-    ```python
-    a = 'ABC'
-    b = a
-    a = 'XYZ'
-    print(b) # ABC，不是XYZ
-    ```
+  ```python
+  a = 'ABC'
+  b = a
+  a = 'XYZ'
+  print(b) # ABC，不是XYZ
+  ```
 
-  - 常量就是不能变的变量，比如常用的数学常数 π 就是一个常量。在 Python 中，通常用全部大写的变量名表示常量：
+- 常量就是不能变的变量，比如常用的数学常数 π 就是一个常量。在 Python 中，通常用全部大写的变量名表示常量：
 
-    ```python
-    PI = 3.14159265359
-    ```
+  ```python
+  PI = 3.14159265359
+  ```
 
-    - 事实上 `PI` 仍然是一个变量，Python 根本没有任何机制保证 `PI` 不会被改变，所以，用全部大写的变量名表示常量只是一个习惯上的用法，如果你一定要改变变量 `PI` 的值，也没人能拦住你。
+  - 事实上`PI`仍然是一个变量，Python 根本没有任何机制保证`PI`不会被改变，所以，用全部大写的变量名表示常量只是一个习惯上的用法，如果你一定要改变变量`PI`的值，也没人能拦住你。
 
-- 一般在开发时，很少直接使用字面量，都是将字面量保存到变量中，通过变量来引用字面量。
+> 一般在开发时，很少直接使用字面量，都是将字面量保存到变量中，再通过变量来引用字面量。
 
 ### 变量和标识符
 
