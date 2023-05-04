@@ -6,9 +6,9 @@
 
 Github：https://github.com/baomidou/mybatis-plus
 
-`MyBatis-Plus`（简称 MP）是`一个 MyBatis 的增强工具`，在 MyBatis 的基础上`只做增强不做改变`，为简化开发、提高效率而生。
+**`MyBatis-Plus`**（简称 MP）是`一个 MyBatis 的增强工具`，在 MyBatis 的基础上`只做增强不做改变`，为简化开发、提高效率而生。
 
-<img src="mybatis-plus/image-20220727094854512.png" alt="image-20220727094854512" style="zoom:50%;" />
+<img src="mybatis-plus/image-20220727094854512.png" alt="image-20220727094854512" style="zoom: 33%;" />
 
 MyBatis-Plus 提供了通用的 mapper 和 service，可以在不编写任何 SQL 语句的情况下，快速实现对单表的 CRUD、批量、逻辑删除、分页等操作。
 
@@ -47,7 +47,7 @@ MyBatis-Plus 提供了通用的 mapper 和 service，可以在不编写任何 SQ
 
 ### 框架结构
 
-<img src="mybatis-plus/image-20220727100032206.png" alt="image-20220727100032206" style="zoom:50%;" />
+<img src="mybatis-plus/image-20220727100032206.png" alt="image-20220727100032206" style="zoom: 33%;" />
 
 ## quick start
 
