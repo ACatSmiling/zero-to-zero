@@ -447,6 +447,54 @@ $ docker exec -it mysql /bin/bash
 >
 > <img src="mysql/image-20230423142507442.png" alt="image-20230423142507442" style="zoom:80%;" />
 
+docker 镜像相比源码，会缺少一部分工具，比如 mysqlbinlog，此时，可以下载 MySQL 服务端源码到宿主机，然后使用。
+
+下载地址：https://downloads.mysql.com/archives/community/
+
+选择对应宿主机的版本：
+
+![image-20230506125202062](D:\zero_to_zero\RelationalDatabase\mysql\image-20230506125202062.png)
+
+下载完成后，上传到宿主机：
+
+```powershell
+PS C:\Users\XiSun\Downloads> scp -P 10218 .\mysql-8.0.31-linux-glibc2.17-x86_64-minimal.tar.xz centos@192.168.3.22:/tmp
+```
+
+解压：
+
+```bash
+[centos@develop tmp]$ tar -xf mysql-8.0.31-linux-glibc2.17-x86_64-minimal.tar.xz
+```
+
+解压完成后，进入 bin 目录：
+
+```bash
+[centos@develop tmp]$ cd mysql-8.0.31-linux-glibc2.17-x86_64-minimal/bin/
+[centos@develop bin]$ ls
+data_sync-20230506.sql  myisamchk      my_print_defaults  mysqlcheck           mysqld_multi   mysqlimport                mysqlshow            mysql_upgrade
+ibd2sdi                 myisam_ftdump  mysql              mysql_config         mysqld_safe    mysql_migrate_keyring      mysqlslap            perror
+innochecksum            myisamlog      mysqladmin         mysql_config_editor  mysqldump      mysqlpump                  mysql_ssl_rsa_setup  zlib_decompress
+lz4_decompress          myisampack     mysqlbinlog        mysqld               mysqldumpslow  mysql_secure_installation  mysql_tzinfo_to_sql
+[centos@develop bin]$ ./mysql -h127.0.0.1 -uroot -proot -P3306
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 18810
+Server version: 8.0.31 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> 
+```
+
+> 诸如 mysql，mysqldump，mysqlbinlog 等命令，都可以直接在宿主机使用。
+
 ## MySQL 图形化管理工具
 
 ### DBeaver
@@ -6033,11 +6081,119 @@ mysql>  SELECT UNIX_TIMESTAMP();
 
 ### 文本字符串类型
 
+MySQL 中，文本字符串总体上分为 CHAR、VARCHAR、TINYTEXT、TEXT、MEDIUMTEXT、LONGTEXT、ENUM、SET 等类型。
 
+<img src="D:\zero_to_zero\RelationalDatabase\mysql\image-20230506005724783.png" alt="image-20230506005724783" style="zoom:67%;" />
+
+#### CHAR 与 VARCHAR 类型
+
+CHAR 类型：
+
+- CHAR(M) 类型一般需要预先定义字符串长度。如果不指定 (M)，则表示长度默认是 1 个字符。
+- 如果保存时，数据的实际长度比 CHAR 类型声明的长度小，则会在`右侧填充空格`以达到指定的长度。**MySQL 检索 CHAR 类型的字段数据时，会去除尾部的空格。**
+- 定义 CHAR 类型字段时，声明的字段长度即为 CHAR 类型字段所占的存储空间的字节数。
+
+VARCHAR 类型：
+
+- VARCHAR(M) 定义时，`必须指定长度 M`，否则报错。
+- MySQL 4.0 版本以下，varchar(20)：指的是 20 字节，如果存放 UTF8 汉字时，只能存 6 个（每个汉字 3 字节）；MySQL 5.0 版本以上，varchar(20)：指的是 20 字符。
+- **MySQL 检索 VARCHAR 类型的字段数据时，会保留数据尾部的空格。**
+- VARCHAR 类型的字段所占用的存储空间，为字符串实际长度加 1 个字节。
+
+CHAR 和 VARCHAR 对比：
+
+| 类型       | 特点     | 空间上       | 时间上 | 适用场景             |
+| ---------- | -------- | ------------ | ------ | -------------------- |
+| CHAR(M)    | 固定长度 | 浪费存储空间 | 效率高 | 存储不大，速度要求高 |
+| VARCHAR(M) | 可变长度 | 节省存储空间 | 效率低 | 非 CHAR 的情况       |
+
+- 情况 1：存储很短的信息。比如门牌号码 101，201 这样很短的信息应该用 CHAR，因为 VARCHAR 还要占个 byte 用于存储信息长度，本来打算节约存储的，结果得不偿失。
+- 情况 2：固定长度的。比如使用 uuid 作为主键，那用 CHAR 应该更合适。因为它固定长度，VARCHAR 动态根据长度的特性就消失了，而且还要占个长度信息。
+- 情况 3：十分频繁改变的 COLUMN。因为 VARCHAR 每次存储都要有额外的计算，得到长度等工作，如果一个非常频繁改变的，那就要有很多的精力用于计算，而这些对于 CHAR 来说是不需要的。
+- 情况 4：具体存储引擎中的情况：
+  - MyISAM 数据存储引擎和数据列：MyISAM 数据表，最好使用固定长度（CHAR）的数据列代替可变长度（VARCHAR）的数据列。这样使得整个表静态化，从而使数据检索更快，用空间换时间。
+  - MEMORY 存储引擎和数据列：MEMORY 数据表目前都使用固定长度的数据行存储，因此无论使用 CHAR 或 VARCHAR 列都没有关系，两者都是作为 CHAR 类型处理的。
+  - InnoDB 存储引擎，建议使用 VARCHAR 类型。因为对于 InnoDB 数据表，内部的行存储格式并没有区分固定长度和可变长度列（所有数据行都使用指向数据列值的头指针），而且主要影响性能的因素是数据行使用的存储总量，由于 char 平均占用的空间多于 VARCHAR，所以除了简短并且固定长度的，其他考虑 VARCHAR。这样节省空间，对磁盘 I/O 和数据存储总量比较好。
+
+#### TEXT 类型
+
+在 MySQL 中，TEXT 用来保存文本类型的字符串，总共包含4种类型，分别为TINYTEXT、TEXT、MEDIUMTEXT 和 LONGTEXT 类型。
+
+在向 TEXT 类型的字段保存和查询数据时，**系统自动按照实际长度存储**，不需要预先定义长度，这一点和 VARCHAR 类型相同。
+
+每种 TEXT 类型保存的数据长度和所占用的存储空间不同，如下：
+
+| 文本字符串类型 | 特点               | 长度 | 长度范围                            | 占用的存储空间 |
+| -------------- | ------------------ | ---- | ----------------------------------- | -------------- |
+| TINYTEXT       | 小文本、可变长度   | L    | 0 <= L <= 255                       | L + 2 个字节   |
+| TEXT           | 文本、可变长度     | L    | 0 <= L <= 65535                     | L + 2 个字节   |
+| MEDIUMTEXT     | 中等文本、可变长度 | L    | 0 <= L <= 16777215                  | L + 3 个字节   |
+| LONGTEXT       | 大文本、可变长度   | L    | 0 <= L <= 4294967295（相当于 4 GB） | L + 4 个字节   |
+
+- `由于实际存储的长度不确定，MySQL 不允许 TEXT 类型的字段做主键。`遇到这种情况，只能采用 CHAR(M)，或者 VARCHAR(M)。
+- TEXT 文本类型，可以存比较大的文本段，搜索速度稍慢，因此如果不是特别大的内容，建议使用 CHAR，VARCHAR 来代替。
+- TEXT 类型不用加默认值，加了也没用。
+- **TEXT 和 BLOB 类型的数据，删除后容易导致 "空洞"，使得文件碎片比较多，所以频繁使用的表不建议包含 TEXT 类型字段，建议单独分出去，单独用一个表。**
 
 ### 枚举类型
 
+ENUM 类型也叫作枚举类型，ENUM 类型的取值范围需要在定义字段时进行指定。设置字段值时，ENUM 类型只允许从成员中选取单个值，不能一次选取多个值。
+
+ENUM 类型所需要的存储空间，由定义 ENUM 类型时指定的成员个数决定。
+
+| 类型     | 长度 | 长度范围        | 占用的存储空间 |
+| -------- | ---- | --------------- | -------------- |
+| TINYTEXT | L    | 1 <= L <= 65535 | 1 或 2 个字节  |
+
+- 当 ENUM 类型包含 1～255 个成员时，需要 1 个字节的存储空间；
+- 当 ENUM 类型包含 256～65535 个成员时，需要 2 个字节的存储空间。
+- ENUM 类型的成员个数的上限为 65535 个。
+
+示例：
+
+```mysql
+mysql> CREATE TABLE test_enum(
+    -> 		season ENUM('spring', 'summer', 'autumn', 'winter', 'unknow')
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> INSERT INTO test_enum VALUES('spring'), ('winter');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+# 忽略大小写
+mysql> INSERT INTO test_enum VALUES('UNKNOW');
+Query OK, 1 row affected (0.00 sec)
+
+# 允许按照角标的方式获取指定索引位置的枚举值
+mysql> INSERT INTO test_enum VALUES('2'), (3);
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO test_enum VALUES('rain');
+ERROR 1265 (01000): Data truncated for column 'season' at row 1
+
+# 当ENUM类型的字段没有声明为NOT NULL时, 插入NULL也是有效的
+mysql> INSERT INTO test_enum VALUES(NULL);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM test_enum;
++--------+
+| season |
++--------+
+| spring |
+| winter |
+| unknow |
+| summer |
+| autumn |
+| NULL   |
++--------+
+6 rows in set (0.00 sec)
+```
+
 ### 集合类型
+
+
 
 ### 二进制字符串类型
 
