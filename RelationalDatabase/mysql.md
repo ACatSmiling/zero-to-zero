@@ -6085,7 +6085,7 @@ MySQL 中，文本字符串总体上分为 CHAR、VARCHAR、TINYTEXT、TEXT、ME
 
 <img src="D:\zero_to_zero\RelationalDatabase\mysql\image-20230506005724783.png" alt="image-20230506005724783" style="zoom:67%;" />
 
-#### CHAR 与 VARCHAR 类型
+#### CHAR 和 VARCHAR 类型
 
 CHAR 类型：
 
@@ -6193,13 +6193,275 @@ mysql> SELECT * FROM test_enum;
 
 ### 集合类型
 
+SET 表示一个字符串对象，可以包含 0 个或多个成员，但成员个数的上限为 64 。设置字段值时，可以取取值范围内的 0 个或多个值。
 
+当 SET 类型包含的成员个数不同时，其所占用的存储空间也是不同的，具体如下：
+
+| 成员个数范围（L 表示实际成员个数） | 占用的存储空间 |
+| ---------------------------------- | -------------- |
+| 1 <= L <= 8                        | 1 个字节       |
+| 9 <= L <= 16                       | 2 个字节       |
+| 17 <= L <= 24                      | 3 个字节       |
+| 25 <= L <= 32                      | 4 个字节       |
+| 33 <= L <= 64                      | 8 个字节       |
+
+- SET 类型在存储数据时成员个数越多，其占用的存储空间越大。
+- SET 类型在选取成员时，可以一次选择多个成员，这一点与ENUM类型不同。
+
+示例：
+
+```mysql
+mysql> CREATE TABLE test_set(
+    -> 		s SET ('A', 'B', 'C')
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO test_set (s) VALUES ('A'), ('A,B');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+# 逗号分隔, 不能有空格
+mysql> INSERT INTO test_set (s) VALUES ('A'), ('A, B');
+ERROR 1265 (01000): Data truncated for column 's' at row 2
+
+# #插入重复的SET类型成员时, MySQL会自动删除重复的成员
+mysql> INSERT INTO test_set (s) VALUES ('A,B,C,A');
+Query OK, 1 row affected (0.01 sec)
+
+# 向SET类型的字段插入SET成员中不存在的值时, MySQL会抛出错误。
+mysql> INSERT INTO test_set (s) VALUES ('A,B,C,D');
+ERROR 1265 (01000): Data truncated for column 's' at row 1
+
+mysql> SELECT * FROM test_set;
++-------+
+| s     |
++-------+
+| A     |
+| A,B   |
+| A,B,C |
++-------+
+3 rows in set (0.00 sec)
+```
 
 ### 二进制字符串类型
 
+MySQL 中的二进制字符串类型主要存储一些二进制数据，比如可以存储图片、音频和视频等二进制数据。
+
+MySQL 中支持的二进制字符串类型主要包括 BINARY、VARBINARY、TINYBLOB、BLOB、MEDIUMBLOB 和 LONGBLOB 类型。
+
+#### BINARY 和 VARBINARY 类型
+
+BINARY 和 VARBINARY 类似于 CHAR 和 VARCHAR，只是它们存储的是二进制字符串。
+
+BINARY(M) 为固定长度的二进制字符串，M 表示最多能存储的字节数，取值范围是 0~255 个字符。如果未指定 (M)，表示只能存储 1 个字节。例如 BINARY(8)，表示最多能存储 8 个字节，如果字段值不足 (M) 个字节，将在右边填充 '\0' 以补齐指定长度。
+
+VARBINARY(M) 为可变长度的二进制字符串，M 表示最多能存储的字节数，总字节数不能超过行的字节长度限制 65535，另外还要考虑额外字节开销，VARBINARY 类型的数据除了存储数据本身外，还需要 1 或 2 个字节来存储数据的字节数。VARBINARY 类型必须指定(M)，否则报错。
+
+| 二进制字符串类型 | 特点     | 值的长度              | 占用空间     |
+| ---------------- | -------- | --------------------- | ------------ |
+| BINARY(M)        | 固定长度 | M （0 <= M <= 255）   | M 个字节     |
+| VARBINARY(M)     | 可变长度 | M （0 <= M <= 65535） | M + 1 个字节 |
+
+#### BLOB 类型
+
+BLOB 是一个二进制大对象，可以容纳可变数量的数据。
+
+MySQL 中的 BLOB 类型包括 TINYBLOB、BLOB、MEDIUMBLOB 和 LONGBLOB 四种类型，它们可容纳值的最大长度不同。可以存储一个二进制的大对象，比如图片、音频和视频等。
+
+需要注意的是，**在实际工作中，往往不会在 MySQL 数据库中使用 BLOB 类型存储大对象数据。**通常会将图片、音频和视频文件存储到服务器的磁盘上，并将图片、音频和视频的访问路径存储到 MySQL 中。
+
+| 二进制字符串类型 | 值的长度 | 长度范围                            | 占用空间     |
+| ---------------- | -------- | ----------------------------------- | ------------ |
+| TINYBLOB         | L        | 0 <= M <= 255                       | L + 1 个字节 |
+| BLOB             | L        | 0 <= M <= 65535（相当于 64 KB）     | L + 2 个字节 |
+| MEDIUMBLOB       | L        | 0 <= M <= 16777215（相当于 16 MB）  | L + 3 个字节 |
+| LONGBLOB         | L        | 0 <= M <= 4294967295（相当于 4 GB） | L + 4 个字节 |
+
+#### TEXT 和 BLOB 的使用注意事项
+
+在使用 TEXT 和 BLOB 字段类型时要注意以下几点，以便更好的发挥数据库的性能：
+
+- BLOB 和 TEXT 值也会引起自己的一些问题，特别是执行了大量的删除或更新操作的时候。删除这种值会在数据表中留下很大的 "空洞"，以后填入这些 "空洞" 的记录可能长度不同。为了提高性能，建议`定期使用 OPTIMIZE TABLE 功能对这类表进行碎片整理`。
+- 如果需要对大文本字段进行模糊查询，MySQL 提供了`前缀索引`。但是仍然要在不必要的时候避免检索大型的 BLOB 或 TEXT 值。例如，SELECT * 查询就不是很好的想法，除非你能够确定作为约束条件的 WHERE 子句只会找到所需要的数据行。否则，你可能毫无目的地在网络上传输大量的值。
+- 把 BLOB 或 TEXT 列`分离到单独的表`中。在某些环境中，如果把这些数据列移动到第二张数据表中，可以让你把原数据表中的数据列转换为固定长度的数据行格式，那么它就是有意义的。这会`减少主表中的碎片`，使你得到固定长度数据行的性能优势。它还使你在主数据表上运行 SELECT * 查询的时候不会通过网络传输大量的 BLOB 或 TEXT 值。
+
 ### JSON 类型
 
+JSON（JavaScript Object Notation）是一种轻量级的数据交换格式。简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言，它易于人阅读和编写，同时也易于机器解析和生成，并有效地提升网络传输效率。JSON 可以将 JavaScript 对象中表示的一组数据转换为字符串，然后就可以在网络或者程序之间轻松地传递这个字符串，并在需要的时候将它还原为各编程语言所支持的数据格式。
+
+在 MySQL 5.7 中，就已经支持 JSON 数据类型。在 MySQL 8.x 版本中，JSON 类型提供了可以进行自动验证的 JSON 文档和优化的存储结构，使得在 MySQL 中存储和读取 JSON 类型的数据更加方便和高效。 
+
+示例：
+
+```mysql
+mysql> CREATE TABLE test_json(
+    -> 		js json
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> INSERT INTO test_json (js) VALUES ('{"name":"songhk", "age":18, "address":{"province":"beijing", "city":"beijing"}}');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT * FROM test_json;
++--------------------------------------------------------------------------------------+
+| js                                                                                   |
++--------------------------------------------------------------------------------------+
+| {"age": 18, "name": "songhk", "address": {"city": "beijing", "province": "beijing"}} |
++--------------------------------------------------------------------------------------+
+1 rows in set (0.00 sec)
+```
+
+当需要检索 JSON 类型的字段中数据的某个具体值时，可以使用 "->" 和 "->>" 符号。
+
+```mysql
+mysql> SELECT js -> '$.name' AS NAME, js -> '$.age' AS age, js -> '$.address.province' AS province, js -> '$.address.city' AS city FROM test_json;
++----------+------+-----------+-----------+
+| NAME     | age  | province  | city      |
++----------+------+-----------+-----------+
+| "songhk" | 18   | "beijing" | "beijing" |
++----------+------+-----------+-----------+
+1 rows in set (0.00 sec)
+```
+
 ### 空间数据类型
+
+MySQL 空间类型扩展支持地理特征的生成、存储和分析。这里的地理特征表示世界上具有位置的任何东西，可以是一个实体，例如一座山；可以是空间，例如一座办公楼；也可以是一个可定义的位置，例如一个十字路口等等。MySQL 中使用 Geometry（几何） 来表示所有地理特征。Geometry 指一个点或点的集合，代表世界上任何具有位置的事物。
+
+MySQL 的空间数据类型（Spatial Data Type）对应于 OpenGIS 类，包括单值类型：GEOMETRY、POINT、LINESTRING、POLYGON以及集合类型：MULTIPOINT、MULTILINESTRING、MULTIPOLYGON、GEOMETRYCOLLECTION 。
+
+- Geometry 是所有空间集合类型的基类，其他类型如 POINT、LINESTRING、POLYGON 都是 Geometry 的子类。
+  - Point：顾名思义就是点，有一个坐标值。例如 POINT(121.213342 31.234532)，POINT(30 10)，坐标值支持 DECIMAL 类型，经度（longitude）在前，维度（latitude）在后，用空格分隔。
+  - LineString：线，由一系列点连接而成。如果线从头至尾没有交叉，那就是简单的（simple）；如果起点和终点重叠，那就是封闭的（closed）。例如 LINESTRING(30 10,10 30,40 40)，点与点之间用逗号分隔，一个点中的经纬度用空格分隔，与 POINT 格式一致。
+  - Polygon：多边形。可以是一个实心平面形，即没有内部边界，也可以有空洞，类似纽扣。最简单的就是只有一个外边界的情况，例如POLYGON((0 0,10 0,10 10, 0 10))。
+
+下面展示几种常见的几何图形元素：
+
+<img src="mysql/image-20230507013500692.png" alt="image-20230507013500692" style="zoom:50%;" />
+
+- MultiPoint、MultiLineString、MultiPolygon、GeometryCollection 这 4 种类型都是集合类，是多个 Point、LineString 或 Polygon 组合而成。
+
+下面展示的是多个同类或异类几何图形元素的组合：
+
+<img src="mysql/image-20230507013644057.png" alt="image-20230507013644057" style="zoom:50%;" />
+
+### 小结
+
+在定义数据类型时，如果确定是整数，就用 INT；如果是小数，一定用定点数类型 DECIMAL(M,D) ； 如果是日期与时间，就用 DATETIME。
+
+这样做的好处是，首先确保你的系统不会因为数据类型定义出错。不过，凡事都是有两面的，可靠性好，并不意味着高效。比如，TEXT 虽然使用方便，但是效率不如 CHAR(M) 和 VARCHAR(M)。
+
+关于字符串的选择，建议参考如下阿里巴巴的《Java开发手册》规范：
+
+>阿里巴巴《Java 开发手册》之 MySQL 数据库：
+>
+>- 任何字段如果为非负数，必须是 UNSIGNED。
+>- 【 强制 】小数类型为 DECIMAL，禁止使用 FLOAT 和 DOUBLE。
+>  - 说明：在存储的时候，FLOAT 和 DOUBLE 都存在精度损失的问题，很可能在比较值的时候，得到不正确的结果。如果存储的数据范围超过 DECIMAL 的范围，建议将数据拆成整数和小数并分开存储。
+>- 【 强制 】如果存储的字符串长度几乎相等，使用 CHAR 定长字符串类型。
+>- 【 强制 】VARCHAR 是可变长字符串，不预先分配存储空间，长度不要超过 5000。如果存储长度大于此值，定义字段类型为 TEXT，独立出来一张表，用主键来对应，避免影响其它字段索引效率。
+
+## 约束
+
+### 概述
+
+#### 为什么需要约束
+
+**数据完整性（Data Integrity）是指数据的精确性（Accuracy）和可靠性（Reliability）。**它是防止数据库中存在不符合语义规定的数据和防止因错误信息的输入输出造成无效操作或错误信息而提出的。
+
+为了保证数据的完整性，SQL 规范以约束的方式对表数据进行额外的条件限制。从以下四个方面考虑：
+
+- `实体完整性 (Entity Integrity)`：例如，同一个表中，不能存在两条完全相同无法区分的记录。
+- `域完整性 (Domain Integrity)` ：例如：年龄范围 0~120，性别范围 "男/女"。
+- `引用完整性 (Referential Integrity)`：例如：员工所在部门，在部门表中要能找到这个部门。
+- `用户自定义完整性 (User-defined Integrity)` ：例如：用户名唯一、密码不能为空等，本部门经理的工资不得高于本部门职工的平均工资的 5 倍。
+
+#### 什么是约束
+
+`约束，constraint，是表级的强制规定。`可以在创建表时规定约束（通过 CREATE TABLE 语句），或者在表创建之后通过 ALTER TABLE 语句规定
+约束。
+
+#### 约束的分类
+
+根据约束`数据列的限制`，约束可分为：
+
+- `单列约束`：每个约束只约束一列。
+- `多列约束`：每个约束可约束多列数据。
+
+根据约束的`作用范围`，约束可分为：
+
+<img src="mysql/image-20230507123142168.png" alt="image-20230507123142168" style="zoom:75%;" />
+
+- `列级约束`：只能作用在一个列上，跟在列的定义后面。
+- `表级约束`：可以作用在多个列上，不与列一起，而是单独定义。
+
+根据约束`起的作用`，约束可分为：
+
+- `NOT NULL`：非空约束，规定某个字段不能为空。
+- `UNIQUE`：唯一约束，规定某个字段在整个表中是唯一的。
+- `PRIMARY KEY`：主键（非空且唯一）约束。
+- `FOREIGN KEY`：外键约束。
+- `CHECK`：检查约束。**MySQL 不支持 CHECK 约束**，但可以使用 CHECK 约束，只是没有任何效果。
+- `DEFAULT`：默认值约束。
+
+查看某个表已有的约束：
+
+```mysql
+# information_schema数据库名(系统库)
+# table_constraints表名称(专门存储各个表的约束)
+SELECT * FROM information_schema.table_constraints WHERE table_name = '表名称';
+```
+
+```mysql
+mysql> SELECT * FROM information_schema.table_constraints WHERE table_name = 'employees';
++--------------------+-------------------+-----------------+--------------+------------+-----------------+----------+
+| CONSTRAINT_CATALOG | CONSTRAINT_SCHEMA | CONSTRAINT_NAME | TABLE_SCHEMA | TABLE_NAME | CONSTRAINT_TYPE | ENFORCED |
++--------------------+-------------------+-----------------+--------------+------------+-----------------+----------+
+| def                | atguigudb         | emp_email_uk    | atguigudb    | employees  | UNIQUE          | YES      |
+| def                | atguigudb         | emp_emp_id_pk   | atguigudb    | employees  | UNIQUE          | YES      |
+| def                | atguigudb         | PRIMARY         | atguigudb    | employees  | PRIMARY KEY     | YES      |
+| def                | atguigudb         | emp_dept_fk     | atguigudb    | employees  | FOREIGN KEY     | YES      |
+| def                | atguigudb         | emp_job_fk      | atguigudb    | employees  | FOREIGN KEY     | YES      |
+| def                | atguigudb         | emp_manager_fk  | atguigudb    | employees  | FOREIGN KEY     | YES      |
++--------------------+-------------------+-----------------+--------------+------------+-----------------+----------+
+6 rows in set (0.00 sec)
+```
+
+### 非空约束
+
+作用：限定某个字段/某列的值，不允许为空。
+
+关键字：`NOT NULL`。
+
+特点：
+
+- 默认，所有的类型的值都可以是 NULL，包括 INT、FLOAT 等数据类型。
+- 非空约束只能出现在表对象的列上，只能某个列单独限定非空，不能组合非空。
+- 一个表可以有很多列都分别限定了非空。
+- 空字符串 '' 不等于 NULL，0 也不等于 NULL。
+
+添加非空约束：
+
+```mysql
+# 建表时
+CREATE TABLE 表名称(
+    字段名 数据类型,
+    字段名 数据类型 NOT NULL,
+    字段名 数据类型 NOT NULL
+);
+
+# 建表后
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 NOT NULL;
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
