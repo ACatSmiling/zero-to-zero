@@ -6453,7 +6453,107 @@ CREATE TABLE 表名称(
 ALTER TABLE 表名称 MODIFY 字段名 数据类型 NOT NULL;
 ```
 
+删除非空约束：
 
+```mysql
+# 去掉NOT NULL, 相当于修改某个非注解字段, 该字段允许为空
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 NULL;
+
+# 去掉not null, 相当于修改某个非注解字段, 该字段允许为空
+ALTER TABLE 表名称 MODIFY 字段名 数据类型;
+```
+
+### 唯一性约束
+
+作用：用来限制某个字段/某列的值不能重复。
+
+关键字：`UNIQUE`。
+
+特点：
+
+- 同一个表可以有多个唯一约束。
+- 唯一约束可以是某一个列的值唯一，也可以多个列组合的值唯一。
+- 唯一性约束允许列值为空，也允许出现多个 NULL 值。
+- 在创建唯一约束的时候，如果不给唯一约束命名，就默认和列名相同。
+- `MySQL 会给唯一约束的列上默认创建一个唯一索引。`
+
+添加唯一约束：
+
+```mysql
+# 建表时
+CREATE TABLE 表名称(
+    字段名 数据类型,
+    字段名 数据类型 UNIQUE,
+    字段名 数据类型 UNIQUE KEY,
+    字段名 数据类型
+);
+
+# 字段列表中如果是一个字段, 表示该列的值唯一, 如果是两个或更多个字段, 那么复合唯一, 即多个字段的组合是唯一的
+CREATE TABLE 表名称(
+    字段名 数据类型,
+    字段名 数据类型,
+    字段名 数据类型,
+    [CONSTRAINT 约束名] UNIQUE KEY(字段名)
+);
+
+# 建表后
+# 方式1
+ALTER TABLE 表名称 ADD UNIQUE KEY(字段列表);
+
+# 方式2
+ALTER TABLE 表名称 MODIFY 字段名 字段类型 UNIQUE;
+```
+
+示例：
+
+```mysql
+mysql> CREATE TABLE USER(
+    ->     id INT NOT NULL,
+    ->     NAME VARCHAR(25),
+    ->     PASSWORD VARCHAR(16),
+    ->     -- 使用表级约束语法, 表示用户名和密码组合不能重复
+    ->     CONSTRAINT uk_name_pwd UNIQUE(NAME,PASSWORD)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+
+```
+
+删除唯一约束：
+
+- 添加唯一性约束的列上也会自动创建唯一索引。
+- `删除唯一约束只能通过删除唯一索引的方式删除。`
+- 删除时需要指定唯一索引名，唯一索引名就和唯一约束名一样。
+- 如果创建唯一约束时未指定名称，如果是单列，就默认和列名相同；如果是组合列，那么默认和 () 中排在第一个的列名相同。也可以自定义唯一性约束名。
+
+```mysql
+# 查看都有哪些约束
+SELECT * FROM information_schema.table_constraints WHERE table_name = 表名; 
+
+# 删除约束
+ALTER TABLE 表名 DROP INDEX 约束名;
+```
+
+关于复合唯一约束：
+
+```mysql
+CREATE TABLE 表名称(
+    字段名 数据类型,
+    字段名 数据类型,
+    字段名 数据类型,
+    UNIQUE KEY(字段列表) # 字段列表中写的是多个字段名, 多个字段名用逗号分隔, 表示复合唯一约束, 即多个字段的组合是唯一的
+);
+```
+
+### 主键约束
+
+### 外键约束
+
+### 检查约束
+
+### 默认约束
+
+### 自增
 
 
 
