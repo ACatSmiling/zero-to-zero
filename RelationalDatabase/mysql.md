@@ -453,7 +453,7 @@ docker 镜像相比源码，会缺少一部分工具，比如 mysqlbinlog，此�
 
 选择对应宿主机的版本：
 
-![image-20230506125202062](D:\zero_to_zero\RelationalDatabase\mysql\image-20230506125202062.png)
+![image-20230506125202062](mysql/image-20230506125202062.png)
 
 下载完成后，上传到宿主机：
 
@@ -6083,7 +6083,7 @@ mysql>  SELECT UNIX_TIMESTAMP();
 
 MySQL 中，文本字符串总体上分为 CHAR、VARCHAR、TINYTEXT、TEXT、MEDIUMTEXT、LONGTEXT、ENUM、SET 等类型。
 
-<img src="D:\zero_to_zero\RelationalDatabase\mysql\image-20230506005724783.png" alt="image-20230506005724783" style="zoom:67%;" />
+<img src="mysql/image-20230506005724783.png" alt="image-20230506005724783" style="zoom:67%;" />
 
 #### CHAR 和 VARCHAR 类型
 
@@ -6640,7 +6640,7 @@ CREATE TABLE 从表名称(
 -- REFERENCES: 标示在父表中的列
 
 # 建表后
-ALTER TABLE 从表名 ADD [CONSTRAINT 约束名] FOREIGN KEY (从表的字段) REFERENCES 主表名 (被引用字段) [ON UPDATE xx][ON DELETE xx];
+ALTER TABLE 从表名 ADD [CONSTRAINT 约束名] FOREIGN KEY (从表的字段) REFERENCES 主表名 (被引用字段) [ON UPDATE 约束等级][ON DELETE 约束等级];
 ```
 
 >一般情况下，表与表的关联都是提前设计好了的，因此，会在创建表的时候就把外键约束定义好。不过，如果需要修改表的设计（比如添加新的字段，增加新的关联关系），但没有预先定义外键约束，那么，就要用修改表的方式来补充定义。
@@ -6652,6 +6652,8 @@ ALTER TABLE 从表名 ADD [CONSTRAINT 约束名] FOREIGN KEY (从表的字段) R
 - 在从表上建立外键，要求主表必须存在。
 - 删除主表时，要求从表从表先删除，或将从表中外键引用该主表的关系先删除。
 
+>在 MySQL 里，外键约束是有成本的，需要消耗系统资源。对于大并发的 SQL 操作，有可能会不适合。比如大型网站的中央数据库，可能会 因为外键约束的系统开销而变得非常慢 。所以，MySQL 允许不使用系统自带的外键约束，应在应用层面完成检查数据一致性的逻辑。也就是说，即使不用外键约束，也要想办法通过应用层面的附加逻辑，来实现外键约束的功能，确保数据的一致性。
+
 `约束等级`：
 
 - `Cascade`方式 ：在父表上 UPDATE/DELETE 记录时，同步 UPDATE/DELETE 子表的匹配记录。
@@ -6662,17 +6664,114 @@ ALTER TABLE 从表名 ADD [CONSTRAINT 约束名] FOREIGN KEY (从表的字段) R
 - 如果没有指定等级，就相当于 Restrict 方式。
 - 对于外键约束，最好是采用`ON UPDATE CASCADE ON DELETE RESTRICT`的方式。
 
+删除外键约束：
+
+```mysql
+# 第一步, 先查看约束名和删除外键约束
+SELECT * FROM information_schema.table_constraints WHERE table_name = 表名称;# 查看某个表的约束名
+
+ALTER TABLE 从表名 DROP FOREIGN KEY 外键约束名;
+
+# 第二步查看索引名和删除索引, 注意, 只能手动删除
+SHOW INDEX FROM 表名称; # 查看某个表的索引名
+
+ALTER TABLE 从表名 DROP INDEX 索引名;
+```
+
+> 阿里开发规范：
+>
+> **【 强制 】不得使用外键与级联，一切外键概念必须在应用层解决。**
+>
+> 说明：（概念解释）学生表中的 student_id 是主键，那么成绩表中的 student_id 则为外键。如果更新学生表中的 student_id，同时触发成绩表中的 student_id 更新，即为`级联更新`。**外键与级联更新适用于单机低并发，不适合分布式、高并发集群；级联更新是强阻塞，存在数据库更新风暴的风险；外键影响数据库的插入速度。**
+
 ### 检查约束
+
+作用：检查某个字段的值是否符号某种要求，一般指的是值的范围。
+
+关键字：`CHECK`。
+
+>MySQL 5.7 可以使用 CHECK 约束，但 CHECK 约束对数据验证没有任何作用，添加数据时，没有任何错误或警告，MySQL 8.0 中可以使用 CHECK 约束。
 
 ### 默认约束
 
-### 自增
+作用：给某个字段/某列指定默认值，一旦设置默认值，在插入数据时，如果此字段没有显式赋值，则赋值为默认值。
 
+关键字：`DEFAULT`。
 
+添加默认约束：
 
+```mysql
+# 建表时
+CREATE TABLE 表名称(
+    字段名 数据类型 PRIMARY KEY,
+    字段名 数据类型 UNIQUE KEY NOT NULL,
+    字段名 数据类型 UNIQUE KEY,
+    字段名 数据类型 NOT NULL DEFAULT 默认值
+);
 
+CREATE TABLE 表名称(
+    字段名 数据类型 DEFAULT 默认值 ,
+    字段名 数据类型 NOT NULL DEFAULT 默认值,
+    字段名 数据类型 NOT NULL DEFAULT 默认值,
+    PRIMARY KEY(字段名),
+    UNIQUE KEY(字段名)
+);
 
+# 建表后
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 DEFAULT 默认值;
 
+# 如果这个字段原来有非空约束, 那么在加默认值约束时, 还得保留非空约束, 否则非空约束就被删除了
+# 同理, 在给某个字段加非空约束也一样, 如果这个字段原来有默认值约束, 你想保留, 也要在modify语句中保留默认值约束, 否则就删除了
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 DEFAULT 默认值 NOT NULL;
+```
+
+>`说明：默认值约束一般不在唯一键和主键列上加。`
+
+删除默认值约束：
+
+```mysql
+# 删除默认值约束, 也不保留非空约束
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 ;
+
+# 删除默认值约束, 保留非空约束
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 NOT NULL; 
+```
+
+### 自增约束
+
+作用：设置某个字段的值自增。
+
+关键字：`AUTO_INCREMENT`。
+
+特点：
+
+- `一个表最多只能有一个自增长列。`
+- 当需要产生唯一标识符或顺序值时，可设置自增长。
+- 自增长列约束的列必须是键列（主键列，唯一键列）。
+- 自增约束的列的数据类型必须是整数类型。
+- 如果自增列指定了 0 和 NULL，会在当前最大值的基础上自增；如果自增列手动指定了具体值，直接赋值为具体值。
+
+添加自增约束：
+
+```mysql
+# 建表时
+CREATE TABLE 表名称(
+    字段名 数据类型 PRIMARY KEY AUTO_INCREMENT,
+    字段名 数据类型 UNIQUE KEY NOT NULL,
+    字段名 数据类型 UNIQUE KEY,
+    字段名 数据类型 NOT NULL DEFAULT 默认值
+);
+
+CREATE TABLE 表名称(
+    字段名 数据类型 DEFAULT 默认值 ,
+    字段名 数据类型 UNIQUE KEY AUTO_INCREMENT,
+    字段名 数据类型 NOT NULL DEFAULT 默认值,
+    PRIMARY KEY(字段名)
+);
+
+# 建表后
+ALTER TABLE 表名称 MODIFY 字段名 数据类型 AUTO_INCREMENT;
+```
 
 
 
