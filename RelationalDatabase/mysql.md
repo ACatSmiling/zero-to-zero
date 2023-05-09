@@ -6362,6 +6362,19 @@ MySQL 的空间数据类型（Spatial Data Type）对应于 OpenGIS 类，包括
 
 ## 约束
 
+### 常见的数据库对象
+
+| 对象                  | 描述                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| 表（TABLE）           | 表是存储数据的逻辑单元，以行和列的形式存在，列就是字段，行就是记录 |
+| 数据字典              | 即系统表，存放数据库相关信息的表。系统表的数据通常由数据库系统维护，程序员通常不应该修改，只可查看 |
+| 约束（CONSTRAINT）    | 执行数据校验的规则，用于保证数据完整性的规则                 |
+| 视图（VIEW）          | 一个或者多个数据表里的数据的逻辑显示，视图并不存储数据       |
+| 索引（INDEX）         | 用于提高查询性能，相当于书的目录                             |
+| 存储过程（PROCEDURE） | 用于完成一次完整的业务处理，没有返回值，但可通过传出参数将多个值传给调用环境 |
+| 存储函数（FUNCTION）  | 用于完成一次特定的计算，具有一个返回值                       |
+| 触发器（TRIGGER）     | 相当于一个事件监听器，当数据库发生特定事件后，触发器被触发，完成相应的处理 |
+
 ### 概述
 
 #### 为什么需要约束
@@ -6772,6 +6785,383 @@ CREATE TABLE 表名称(
 # 建表后
 ALTER TABLE 表名称 MODIFY 字段名 数据类型 AUTO_INCREMENT;
 ```
+
+删除自增约束：
+
+```mysql
+# ALTER TABLE 表名称 MODIFY 字段名 数据类型 AUTO_INCREMENT;# 给这个字段增加自增约束
+ALTER TABLE 表名称 MODIFY 字段名 数据类型; # 去掉AUTO_INCREMENT, 相当于删除
+```
+
+>MySQL 8.0 新特性 - 自增变量的持久化：
+>
+>在 MySQL 8.0 之前，自增主键 AUTO_INCREMENT 的值如果大于 max(primary key) + 1，此时，如果删除最大的数据，然后重庆 MySQL 后，会重置 AUTO_INCREMENT=max(primary key)+1，再次新增数据时，主键会等于重启前被删除的数据的主键值，这种现象在某些情况下会导致业务主键冲突或者其他难以发现的问题。
+>
+>在 MySQL 5.7 系统中，对于自增主键的分配规则，是由 InnoDB 数据字典内部一个`计数器`来决定的，而该计数器只在`内存中维护`，并不会持久化到磁盘中，当数据库重启时，该计数器会被初始化。
+>
+>MySQL 8.0 将自增主键的计数器持久化到`重做日志`中。每次计数器发生改变，都会将其写入重做日志中。如果数据库重启，InnoDB 会根据重做日志中的信息来初始化计数器的内存值。
+
+## 视图
+
+### 概述
+
+<img src="mysql/image-20230509233813667.png" alt="image-20230509233813667" style="zoom: 50%;" />
+
+视图，VIEW，一方面可以帮我们使用表的一部分而不是所有的表，另一方面也可以针对不同的用户制定不同的查询视图。比如，针对一个公司的销售人员，我们只想给他看部分数据，而某些特殊的数据，比如采购的价格，则不会提供给他。再比如，人员薪酬是个敏感的字段，那么只给某个级别以上的人员开放，其他人的查询视图中则不提供这个字段。
+
+### 视图的理解
+
+<img src="mysql/image-20230509234031123.png" alt="image-20230509234031123" style="zoom: 50%;" />
+
+- 视图是一种`虚拟表`，本身是`不具有数据`的，占用很少的内存空间，它是 SQL 中的一个重要概念。
+
+- 视图建立在已有表的基础上，视图赖以建立的这些表称为`基表`。
+- **视图的创建和删除只影响视图本身，不影响对应的基表。但是当对视图中的数据进行增加、删除和修改操作时，数据表中的数据会相应地发生变化，反之亦然。**
+  - 在数据库中，视图不会保存数据，数据真正保存在数据表中。当对视图中的数据进行增加、删除和修改操作时，数据表中的数据会相应地发生变化；反之亦然。
+- 向视图提供数据内容的语句为 SELECT 语句，可以将视图理解为存储起来的 SELECT 语句。
+- 视图，是向用户提供基表数据的另一种表现形式。通常情况下，小型项目的数据库可以不使用视图，但是在大型项目中，以及数据表比较复杂的情况下，视图的价值就凸显出来了，它可以帮助我们把经常查询的结果集放到虚拟表中，提升使用效率。
+
+### 创建视图
+
+在 CREATE VIEW 语句中嵌入子查询：
+
+```mysql
+CREATE [OR REPLACE]
+[ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}]
+VIEW 视图名称 [(字段列表)]
+AS 查询语句
+[WITH [CASCADED|LOCAL] CHECK OPTION];
+
+# 简化
+CREATE VIEW 视图名称
+AS 查询语句;
+```
+
+#### 创建单表视图
+
+```mysql
+mysql> CREATE VIEW empvu80
+    -> AS
+    -> SELECT employee_id, last_name, salary
+    -> FROM employees
+    -> WHERE department_id = 80;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM empvu80;
++-------------+------------+----------+
+| employee_id | last_name  | salary   |
++-------------+------------+----------+
+|         145 | Russell    | 14000.00 |
+|         146 | Partners   | 13500.00 |
+|         147 | Errazuriz  | 12000.00 |
+|         148 | Cambrault  | 11000.00 |
+|         149 | Zlotkey    | 10500.00 |
+|         150 | Tucker     | 10000.00 |
+|         151 | Bernstein  |  9500.00 |
+|         152 | Hall       |  9000.00 |
+|         176 | Taylor     |  8600.00 |
+|         177 | Livingston |  8400.00 |
+|         179 | Johnson    |  6200.00 |
++-------------+------------+----------+
+34 rows in set (0.00 sec)
+```
+
+```mysql
+mysql> CREATE VIEW emp_year_salary (ename, year_salary)
+    -> AS
+    -> SELECT last_name, salary * 12 * (1 + IFNULL(commission_pct, 0))
+    -> FROM employees;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM emp_year_salary;
++-------------+-------------+
+| ename       | year_salary |
++-------------+-------------+
+| King        |   288000.00 |
+| Kochhar     |   204000.00 |
+| De Haan     |   204000.00 |
+| Hunold      |   108000.00 |
+| Ernst       |    72000.00 |
+| Hartstein   |   156000.00 |
+| Fay         |    72000.00 |
+| Mavris      |    78000.00 |
+| Baer        |   120000.00 |
+| Higgins     |   144000.00 |
+| Gietz       |    99600.00 |
++-------------+-------------+
+107 rows in set (0.00 sec)
+    
+mysql> CREATE VIEW salvu50
+    -> AS
+    -> SELECT employee_id ID_NUMBER, last_name NAME, salary * 12 ANN_SALARY
+    -> FROM employees
+    -> WHERE department_id = 50;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM salvu50;
++-----------+-------------+------------+
+| ID_NUMBER | NAME        | ANN_SALARY |
++-----------+-------------+------------+
+|       120 | Weiss       |   96000.00 |
+|       121 | Fripp       |   98400.00 |
+|       122 | Kaufling    |   94800.00 |
+|       123 | Vollman     |   78000.00 |
+|       124 | Mourgos     |   69600.00 |
+|       125 | Nayer       |   38400.00 |
+|       126 | Mikkilineni |   32400.00 |
+|       193 | Everett     |   46800.00 |
+|       194 | McCain      |   38400.00 |
+|       195 | Jones       |   33600.00 |
+|       196 | Walsh       |   37200.00 |
+|       197 | Feeney      |   36000.00 |
+|       198 | OConnell    |   31200.00 |
+|       199 | Grant       |   31200.00 |
++-----------+-------------+------------+
+45 rows in set (0.00 sec)
+```
+
+>说明 1：实际上就是在 SQL 查询语句的基础上封装了视图 VIEW，这样就会基于 SQL 语句的结果集形成一张虚拟表。
+>
+>说明 2：**在创建视图时，没有在视图名后面指定字段列表，则视图中字段列表默认和 SELECT 语句中的字段列表一致。如果 SELECT 语句中给字段取了别名，那么视图中的字段名和别名相同。**
+
+#### 创建多表联合视图
+
+```mysql
+mysql> CREATE VIEW empview
+    -> AS
+    -> SELECT e.employee_id emp_id, e.last_name, d.department_name
+    -> FROM employees e, departments d
+    -> WHERE e.department_id = d.department_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM empview;
++--------+-------------+------------------+
+| emp_id | last_name   | department_name  |
++--------+-------------+------------------+
+|    200 | Whalen      | Administration   |
+|    201 | Hartstein   | Marketing        |
+|    202 | Fay         | Marketing        |
+|    114 | Raphaely    | Purchasing       |
+|    160 | Doran       | Sales            |
+|    161 | Sewall      | Sales            |
+|    113 | Popp        | Finance          |
+|    205 | Higgins     | Accounting       |
+|    206 | Gietz       | Accounting       |
++--------+-------------+------------------+
+106 rows in set (0.00 sec)
+
+# 左外连接, 比上面的内连接数据多了一条
+mysql> CREATE VIEW empview2
+    -> AS
+    -> SELECT e.employee_id emp_id, e.last_name, d.department_name
+    -> FROM employees e LEFT JOIN departments d
+    -> ON e.department_id = d.department_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM empview2;
++--------+-------------+------------------+
+| emp_id | last_name   | department_name  |
++--------+-------------+------------------+
+|    100 | King        | Executive        |
+|    101 | Kochhar     | Executive        |
+|    102 | De Haan     | Executive        |
+|    164 | Marvins     | Sales            |
+|    172 | Bates       | Sales            |
+|    173 | Kumar       | Sales            |
+|    174 | Abel        | Sales            |
+|    175 | Hutton      | Sales            |
+|    176 | Taylor      | Sales            |
+|    177 | Livingston  | Sales            |
+|    178 | Grant       | NULL             |
+|    204 | Baer        | Public Relations |
+|    205 | Higgins     | Accounting       |
+|    206 | Gietz       | Accounting       |
++--------+-------------+------------------+
+107 rows in set (0.00 sec)
+
+mysql> CREATE VIEW emp_dept
+	-> AS
+	-> SELECT e.last_name, e.department_name
+	-> FROM employees e LEFT JOIN departments d
+	-> ON e.department_id = d.department_id;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT * FROM emp_dept;
++-------------+------------------+
+| last_name   | department_name  |
++-------------+------------------+
+| King        | Executive        |
+| Kochhar     | Executive        |
+| De Haan     | Executive        |
+| Hunold      | IT               |
+| Livingston  | Sales            |
+| Grant       | NULL             |
+| Johnson     | Sales            |
+| Taylor      | Shipping         |
+| Mavris      | Human Resources  |
+| Baer        | Public Relations |
+| Higgins     | Accounting       |
+| Gietz       | Accounting       |
++-------------+------------------+
+107 rows in set (0.00 sec)
+
+mysql> CREATE VIEW dept_sum_vu(name, minsal, maxsal, avgsal)
+    -> AS
+    -> SELECT d.department_name, MIN(e.salary), MAX(e.salary), AVG(e.salary)
+    -> FROM employees e, departments d
+    -> WHERE e.department_id = d.department_id
+    -> GROUP BY d.department_name;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM dept_sum_vu;
++------------------+----------+----------+--------------+
+| name             | minsal   | maxsal   | avgsal       |
++------------------+----------+----------+--------------+
+| Executive        | 17000.00 | 24000.00 | 19333.333333 |
+| IT               |  4200.00 |  9000.00 |  5760.000000 |
+| Finance          |  6900.00 | 12000.00 |  8600.000000 |
+| Purchasing       |  2500.00 | 11000.00 |  4150.000000 |
+| Shipping         |  2100.00 |  8200.00 |  3475.555556 |
+| Sales            |  6100.00 | 14000.00 |  8955.882353 |
+| Administration   |  4400.00 |  4400.00 |  4400.000000 |
+| Marketing        |  6000.00 | 13000.00 |  9500.000000 |
+| Human Resources  |  6500.00 |  6500.00 |  6500.000000 |
+| Public Relations | 10000.00 | 10000.00 | 10000.000000 |
+| Accounting       |  8300.00 | 12000.00 | 10150.000000 |
++------------------+----------+----------+--------------+
+11 rows in set (0.00 sec)
+```
+
+#### 基于视图创建视图
+
+当创建好一张视图之后，还可以在它的基础上继续创建视图。
+
+举例：联合 emp_dept 视图和 emp_year_salary 视图查询员工姓名、部门名称、年薪信息，创建 emp_dept_ysalary 视图。
+
+```mysql
+mysql> CREATE VIEW emp_dept_ysalary
+    -> AS
+    -> SELECT emp_dept.last_name, emp_dept.department_name, emp_year_salary.year_salary
+    -> FROM emp_dept INNER JOIN emp_year_salary
+    -> ON emp_dept.last_name = emp_year_salary.last_name;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM emp_dept_ysalary;
++-------------+------------------+-------------+
+| last_name   | department_name  | year_salary |
++-------------+------------------+-------------+
+| King        | Sales            |   288000.00 |
+| King        | Executive        |   288000.00 |
+| Kochhar     | Executive        |   204000.00 |
+| De Haan     | Executive        |   204000.00 |
+| Hunold      | IT               |   108000.00 |
+| Ernst       | IT               |    72000.00 |
+| Grant       | NULL             |    31200.00 |
+| Whalen      | Administration   |    52800.00 |
+| Hartstein   | Marketing        |   156000.00 |
+| Fay         | Marketing        |    72000.00 |
+| Mavris      | Human Resources  |    78000.00 |
+| Baer        | Public Relations |   120000.00 |
+| Higgins     | Accounting       |   144000.00 |
+| Gietz       | Accounting       |    99600.00 |
++-------------+------------------+-------------+
+117 rows in set (0.01 sec)
+```
+
+#### 利用视图对数据进行格式化
+
+开发中，经常需要输出某个格式的内容，比如想输出员工姓名和对应的部门名，对应格式为 emp_name(department_name)，就可以使用视图来完成数据格式化的操作：
+
+```mysql
+mysql> CREATE VIEW emp_depart AS SELECT CONCAT(e.last_name, '(', d.department_name, ')') AS emp_dept FROM employees e JOIN departments d W
+HERE e.department_id = d.department_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM emp_depart;
++-------------------------+
+| emp_dept                |
++-------------------------+
+| Whalen(Administration)  |
+| Hartstein(Marketing)    |
+| Fay(Marketing)          |
+| Raphaely(Purchasing)    |
+| Khoo(Purchasing)        |
+| Urman(Finance)          |
+| Popp(Finance)           |
+| Higgins(Accounting)     |
+| Gietz(Accounting)       |
++-------------------------+
+106 rows in set (0.00 sec)
+```
+
+### 查看视图
+
+```mysql
+# 语法1: 查看数据库的表对象, 视图对象
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_atguigudb |
++---------------------+
+| countries           |
+| departments         |
+| dept_sum_vu         |
+| emp                 |
+| emp_depart          |
+| emp_dept            |
+| emp_dept_ysalary    |
+| emp_details_view    |
+| emp_year_salary     |
+| employees           |
+| empview             |
+| empview2            |
+| empvu80             |
+| job_grades          |
+| job_history         |
+| jobs                |
+| locations           |
+| order               |
+| regions             |
+| salvu50             |
++---------------------+
+20 rows in set (0.00 sec)
+
+# 语法2: 查看视图的结构
+# DESC/DESCRIBE 视图名称;
+mysql> DESC emp_depart;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| emp_dept | varchar(57) | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+# 语法3: 查看视图的属性信息
+# 查看视图信息(显示数据表的存储引擎, 版本, 数据行数和数据大小等)
+# 执行结果显示, 注释Comment为VIEW, 说明该表为视图, 其他的信息为NULL, 说明这是一个虚表
+mysql> SHOW TABLE STATUS LIKE 'emp_depart';
++------------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+-------------+------------+-----------+----------+----------------+---------+
+| Name       | Engine | Version | Row_format | Rows | Avg_row_length | Data_length | Max_data_length | Index_length | Data_free | Auto_increment | Create_time         | Update_time | Check_time | Collation | Checksum | Create_options | Comment |
++------------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+-------------+------------+-----------+----------+----------------+---------+
+| emp_depart | NULL   |    NULL | NULL       | NULL |           NULL |        NULL |            NULL |         NULL |      NULL |           NULL | 2023-05-09 16:45:51 | NULL        | NULL       | NULL      |     NULL | NULL           | VIEW    |
++------------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+-------------+------------+-----------+----------+----------------+---------+
+1 row in set (0.00 sec)
+
+# 语法4: 查看视图的详细定义信息
+# SHOW CREATE VIEW 视图名称;
+mysql> SHOW CREATE VIEW emp_depart;
++------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+| View       | Create View                                                                                                                                                                                                                                                        | character_set_client | collation_connection |
++------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+| emp_depart | CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `emp_depart` AS select concat(`e`.`last_name`,'(',`d`.`department_name`,')') AS `emp_dept` from (`employees` `e` join `departments` `d`) where (`e`.`department_id` = `d`.`department_id`) | utf8mb3              | utf8_general_ci      |
++------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+1 row in set (0.00 sec)
+```
+
+### 更新视图的数据
+
+
+
+
 
 
 
