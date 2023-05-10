@@ -7073,8 +7073,11 @@ mysql> SELECT * FROM emp_dept_ysalary;
 开发中，经常需要输出某个格式的内容，比如想输出员工姓名和对应的部门名，对应格式为 emp_name(department_name)，就可以使用视图来完成数据格式化的操作：
 
 ```mysql
-mysql> CREATE VIEW emp_depart AS SELECT CONCAT(e.last_name, '(', d.department_name, ')') AS emp_dept FROM employees e JOIN departments d W
-HERE e.department_id = d.department_id;
+mysql> CREATE VIEW emp_depart
+	-> AS
+	-> SELECT CONCAT(e.last_name, '(', d.department_name, ')') AS emp_dept
+	-> FROM employees e JOIN departments d
+	-> WHERE e.department_id = d.department_id;
 Query OK, 0 rows affected (0.01 sec)
 
 mysql> SELECT * FROM emp_depart;
@@ -7159,15 +7162,85 @@ mysql> SHOW CREATE VIEW emp_depart;
 
 ### 更新视图的数据
 
+#### 一般情况
 
+MySQL 支持使用 INSERT、UPDATE 和 DELETE 语句对视图中的数据进行插入、更新和删除操作。当视图中的数据发生变化时，数据表中的数据也会发生变化，反之亦然。
 
+#### 不可更新的视图
 
+要使视图可更新，视图中的行和底层基本表中的行之间必须存在`一对一`的关系。另外当视图定义出现如下情况时，视图不支持更新操作：
 
+- 在定义视图的时候指定了`ALGORITHM = TEMPTABLE`，视图将不支持 INSERT 和 DELETE 操作；
+- 视图中不包含基表中所有被定义为非空又未指定默认值的列，视图将不支持 INSERT 操作；
+- 在定义视图的 SELECT 语句中使用了 JOIN 联合查询 ，视图将不支持 INSERT 和 DELETE 操作；
+- 在定义视图的 SELECT 语句后的字段列表中使用了`数学表达式`或`子查询`，视图将不支持 INSERT，也不支持 UPDATE 使用了数学表达式、子查询的字段值；
+- 在定义视图的 SELECT 语句后的字段列表中使用`DISTINCT`、`聚合函数`、`GROUP BY`、`HAVING`、`UNION`等，视图将不支持 INSERT、UPDATE、DELETE；
+- 在定义视图的 SELECT 语句中包含了子查询，而子查询中引用了FROM后面的表，视图将不支持 INSERT、UPDATE、DELETE；
+- 视图定义基于一个`不可更新视图`；
+- 常量视图。
 
+>虽然可以更新视图数据，但总的来说，视图作为`虚拟表`，主要用于`方便查询`，不建议更新视图的数据。对视图数据的更改，都是通过对实际数据表里数据的操作来完成的。
 
+### 修改和删除视图
 
+#### 修改视图
 
+方式 1：使用`CREATE OR REPLACE VIEW`子句修改视图。
 
+```mysql
+CREATE OR REPLACE VIEW empvu80(id_number, name, sal, department_id)
+AS
+SELECT employee_id, first_name || ' ' || last_name, salary, department_id
+FROM employees
+WHERE department_id = 80;
+```
+
+方式 2：使用`ALTER VIEW`子句修改视图。
+
+```mysql
+ALTER VIEW 视图名称
+AS
+查询语句
+```
+
+#### 删除视图
+
+删除视图只是删除视图的定义，并不会删除基表的数据。
+
+语法：
+
+```mysql
+DROP VIEW IF EXISTS 视图名称;
+
+DROP VIEW IF EXISTS 视图名称1, 视图名称2, 视图名称3, ...;
+```
+
+>说明：基于视图 a、b 创建了新的视图 c，如果将视图 a 或者视图 b 删除，会导致视图 c 的查询失败。这样的视图 c 需要手动删除或修改，否则影响使用。
+
+### 总结
+
+#### 视图优点
+
+**操作简单：**
+
+- 将经常使用的查询操作定义为视图，可以使开发人员不需要关心视图对应的数据表的结构、表与表之间的关联关系，也不需要关心数据表之间的业务逻辑和查询条件，而只需要简单地操作视图即可，极大简化了开发人员对数据库的操作。
+
+**减少数据冗余：**
+
+- 视图跟实际数据表不一样，它存储的是查询语句。所以，在使用的时候，需要通过定义视图的查询语句来获取结果集。而视图本身不存储数据，不占用数据存储的资源，减少了数据冗余。
+
+**数据安全：**
+
+- MySQL 将用户对数据的访问限制在某些数据的结果集上，而这些数据的结果集可以使用视图来实现，用户不必直接查询或操作数据表。这也可以理解为`视图具有隔离性`。视图相当于在用户和实际的数据表之间加了一层虚拟表。
+
+- 同时，MySQL 可以根据权限将用户对数据的访问限制在某些视图上，用户不需要查询数据表，可以直接通过视图获取数据表中的信息。这在一定程度上保障了数据表中数据的安全性。
+
+适应灵活多变的需求：
+
+当业务系统的需求发生变化后，如果需要改动数据表的结构，则工作量相对较
+大，可以使用视图来减少改动的工作量。这种方式在实际工作中使用得比较多。
+
+#### 视图缺点
 
 
 
