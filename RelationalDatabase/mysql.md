@@ -3482,10 +3482,10 @@ mysql> SELECT SEC_TO_TIME(38801);
 
 第 1 组：
 
-| 函数                                                         | 用法                                             |
-| ------------------------------------------------------------ | ------------------------------------------------ |
-| DATE_ADD(datetime, INTERVAL expr type) 或 ADDDATE(date, INTERVAL expr type) | 返回与给定日期时间相差 INTERVAL 时间段的日期时间 |
-| DATE_SUB(date, INTERVAL expr type) 或 SUBDATE(date, INTERVAL expr type) | 返回与 date 相差 INTERVAL 时间间隔的日期         |
+| 函数                                                         | 用法                                               |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| `DATE_ADD(date, INTERVAL expr type)`或 ADDDATE(date, INTERVAL expr type) | 返回与给定日期时间`增加 INTERVAL 时间段`的日期时间 |
+| `DATE_SUB(date, INTERVAL expr type)`或 SUBDATE(date, INTERVAL expr type) | 返回与给定日期时间`减少 INTERVAL 时间段`的日期时间 |
 
 type 的取值与含义：
 
@@ -3494,6 +3494,14 @@ type 的取值与含义：
 示例：
 
 ```mysql
+mysql> SELECT NOW() AS col1, DATE_SUB(NOW(), INTERVAL 1 HOUR) AS col2, DATE_ADD(NOW(), INTERVAL 1 HOUR) AS col3;
++---------------------+---------------------+---------------------+
+| col1                | col2                | col3                |
++---------------------+---------------------+---------------------+
+| 2023-05-12 16:32:16 | 2023-05-12 15:32:16 | 2023-05-12 17:32:16 |
++---------------------+---------------------+---------------------+
+1 row in set (0.01 sec)
+
 mysql> SELECT DATE_ADD(NOW(), INTERVAL 1 DAY) AS col1, DATE_ADD('2023-04-13 10:50:12', INTERVAL 1 SECOND) AS col2, ADDDATE('2023-04-13 10
 :50:12', INTERVAL 1 SECOND) AS col3, DATE_ADD('2023-04-13 10:50:12', INTERVAL '1_1' MINUTE_SECOND) AS col4, DATE_ADD(NOW(), INTERVAL -1 YEAR) AS col5, DATE_ADD(NOW(), INTERVAL '1_1' YEAR_MONTH) AS col6 FROM DUAL;
 +---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+
@@ -7270,7 +7278,7 @@ MySQL 从 5.0 版本开始支持存储过程和函数。存储过程和函数能
 **和视图、函数的对比：**
 
 - 它和视图有着同样的优点，清晰、安全，还可以减少网络传输量。不过它和视图不同，`视图是虚拟表`，通常不对底层数据表直接操作，而`存储过程是程序化的 SQL`，可以直接操作底层数据表，相比于面向集合的操作方式，能够实现一些更复杂的数据处理。
-- 一旦存储过程被创建出来，使用它就像使用函数一样简单，直接通过调用存储过程名即可。相较于函数，`存储过程是没有返回值的`。
+- 一旦存储过程被创建出来，使用它就像使用函数一样简单，直接通过调用存储过程名即可。**`相较于函数，存储过程是没有返回值的。`**
 
 `存储过程的参数类型可以是 IN、OUT 和 INOUT`。根据这点分类如下：
 
@@ -7289,7 +7297,7 @@ MySQL 从 5.0 版本开始支持存储过程和函数。存储过程和函数能
 CREATE PROCEDURE 存储过程名(IN|OUT|INOUT 参数名 参数类型,...)
 [characteristics ...]
 BEGIN
-存储过程体
+	存储过程体
 END;
 ```
 
@@ -7328,10 +7336,10 @@ END;
 - 存储过程体中可以有多条 SQL 语句，如果仅仅一条 SQL 语句，则可以省略 BEGIN 和 END。编写存储过程并不是一件简单的事情，可能存储过程中需要复杂的 SQL 语句。
 
   ```mysql
-  BEGIN…END：BEGIN…END 中间包含了多个语句，每个语句都以（;）号为结束符。
-  DECLARE：DECLARE 用来声明变量，使用的位置在于 BEGIN…END 语句中间，而且需要在其他语句使用之前进行变量的声明。
-  SET：赋值语句，用于对变量进行赋值。
-  SELECT… INTO：把从数据表中查询的结果存放到变量中，也就是为变量赋值。
+  BEGIN…END: BEGIN…END中间包含了多个语句, 每个语句都以';'号为结束符
+  DECLARE: DECLARE用来声明变量, 使用的位置在于BEGIN…END语句中间, 而且需要在其他语句使用之前进行变量的声明
+  SET: 赋值语句, 用于对变量进行赋值
+  SELECT… INTO: 把从数据表中查询的结果存放到变量中, 也就是为变量赋值
   ```
 
 - 需要设置新的结束标记。
@@ -7340,11 +7348,46 @@ END;
   DELIMITER 新的结束标记
   ```
 
+  ```mysql
+  # 示例
+  DELIMITER $
   
+  CREATE PROCEDURE 存储过程名(IN|OUT|INOUT 参数名 参数类型,...)
+  [characteristics ...]
+      BEGIN
+          sql语句1;
+          sql语句2;
+      END $
+  
+  DELIMITER ;
+  ```
 
-- s
+  - MySQL 默认的语句结束符号为分号 ";"，为了避免与存储过程中 SQL 语句结束符相冲突，需要使用 DELIMITER 重新设置存储过程的结束符。比如："DELIMITER //" 语句的作用是将 MySQL 的结束符设置为 //，并以 "END //" 结束存储过程。存储过程定义完毕之后再使用 "DELIMITER ;" 恢复默认结束符。
+  - DELIMITER 也可以指定其他符号作为结束符。当使用 DELIMITER 命令时，应该避免使用反斜杠 "\\" 字符，因为反斜线是 MySQL 的转义字符。
 
+示例：
 
+```mysql
+# 创建存储过程select_all_data(), 查看employees表的所有数据
+DELIMITER $
+
+CREATE PROCEDURE select_all_data()
+BEGIN
+    SELECT * FROM employees;
+END $
+
+DELIMITER ;
+
+# 创建存储过程avg_employee_salary(), 返回所有员工的平均工资
+DELIMITER //
+
+CREATE PROCEDURE avg_employee_salary()
+BEGIN
+	SELECT AVG(salary) AS avg_salary FROM employees;
+END //
+
+DELIMITER ;
+```
 
 
 
