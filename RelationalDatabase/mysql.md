@@ -7296,9 +7296,9 @@ MySQL 从 5.0 版本开始支持存储过程和函数。存储过程和函数能
 ```mysql
 CREATE PROCEDURE 存储过程名(IN|OUT|INOUT 参数名 参数类型,...)
 [characteristics ...]
-BEGIN
-	存储过程体
-END;
+    BEGIN
+        存储过程体
+    END
 ```
 
 - 参数前面的符号的意思：
@@ -7372,9 +7372,9 @@ END;
 DELIMITER $
 
 CREATE PROCEDURE select_all_data()
-BEGIN
-    SELECT * FROM employees;
-END $
+    BEGIN
+        SELECT * FROM employees;
+    END $
 
 DELIMITER ;
 
@@ -7382,12 +7382,326 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE avg_employee_salary()
-BEGIN
-	SELECT AVG(salary) AS avg_salary FROM employees;
-END //
+    BEGIN
+        SELECT AVG(salary) AS avg_salary FROM employees;
+    END //
 
 DELIMITER ;
+
+# 创建存储过程show_max_salary(), 用来查看employees表的最高薪资值
+DELIMITER //
+
+CREATE PROCEDURE show_max_salary()
+    LANGUAGE SQL
+    NOT DETERMINISTIC
+    CONTAINS SQL
+    SQL SECURITY DEFINER
+    COMMENT '查看最高薪资'
+    BEGIN
+        SELECT MAX(salary) FROM employees;
+    END //
+
+DELIMITER ;
+
+# 创建存储过程show_min_salary(), 查看employees表的最低薪资值, 并将最低薪资通过OUT参数ms输出
+DELIMITER //
+
+CREATE PROCEDURE show_min_salary(OUT ms DOUBLE)
+    BEGIN
+    	SELECT MIN(salary) INTO ms FROM employees;
+    END //
+
+DELIMITER ;
+
+# 创建存储过程show_someone_salary(), 查看employees表的某个员工的薪资, 并用IN参数empname输入员工姓名
+DELIMITER //
+
+CREATE PROCEDURE show_someone_salary(IN empname VARCHAR(20))
+    BEGIN
+    	SELECT salary FROM employees WHERE ename = empname;
+    END //
+    
+DELIMITER ;
+
+# 创建存储过程show_someone_salary2(), 查看employees表的某个员工的薪资, 并用IN参数empname输入员工姓名, 用OUT参数empsalary输出员工薪资
+DELIMITER //
+
+    CREATE PROCEDURE show_someone_salary2(IN empname VARCHAR(20), OUT empsalary DOUBLE)
+    BEGIN
+    	SELECT salary INTO empsalary FROM emps WHERE ename = empname;
+    END //
+    
+DELIMITER ;
+
+# 创建存储过程show_mgr_name(), 查询某个员工领导的姓名, 并用INOUT参数empname输入员工姓名, 输出领导的姓名
+DELIMITER //
+
+CREATE PROCEDURE show_mgr_name(INOUT empname VARCHAR(20))
+    BEGIN
+    	SELECT ename INTO empname FROM emps
+    	WHERE eid = (SELECT MID FROM emps WHERE ename = empname);
+    END //
+    
+DELIMITER ;
 ```
+
+### 调用存储过程
+
+存储过程有多种调用方法。存储过程必须`使用 CALL 语句调用`，并且存储过程和数据库相关，如果要执行其他数据库中的存储过程，需要指定数据库名称，例如 CALL dbname.procname。
+
+语法：
+
+```mysql
+CALL 存储过程名(实参列表);
+```
+
+- 调用 IN 模式的参数：
+
+  ```mysql
+  CALL sp1('值');
+  ```
+
+- 调用 OUT 模式的参数：
+
+  ```mysql
+  SET @name;
+  CALL sp1(@name);
+  SELECT @name;
+  ```
+
+- 调用 INOUT 模式的参数：
+
+  ```mysql
+  SET @name=值;
+  CALL sp1(@name);
+  SELECT @name;
+  ```
+
+示例：
+
+```mysql
+# 创建存储过程, 实现累加运算
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE `add_num`(IN n INT)
+    -> 	BEGIN
+    -> 		DECLARE i INT;
+    -> 		DECLARE sum INT;
+    -> 		SET i = 1;
+    -> 		SET sum = 0;
+    -> 		WHILE i <= n DO
+    -> 			SET sum = sum + i;
+    -> 			SET i = i +1;
+    -> 		END WHILE;
+    -> 		SELECT sum;
+    -> 	END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL add_num(50); 
++------+
+| sum  |
++------+
+| 1275 |
++------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+```
+
+### 存储函数的使用
+
+语法：
+
+```mysql
+CREATE FUNCTION 函数名(参数名 参数类型,...)
+RETURNS 返回值类型
+[characteristics ...]
+    BEGIN
+        函数体 # 函数体中肯定有RETURN语句
+    END
+```
+
+- 参数列表：指定参数为 IN、OUT 或 INOUT 只对 PROCEDURE 是合法的，`FUNCTION 中总是默认为 IN 参数`。
+- RETURNS type 语句表示函数返回数据的类型；RETURNS 子句只能对 FUNCTION 做指定，对函数而言这是`强制`的。它用来指定函数的返回类型，而且函数体中也必须包含一个 RETURN value 语句。
+- characteristic 为创建函数时指定的对函数的约束，取值与创建存储过程时相同。
+- 函数体使用 BEGIN…END 来表示 SQL 代码的开始和结束，如果函数体只有一条语句，可以省略 BEGIN…END。
+
+### 调用存储函数
+
+在 MySQL 中，存储函数的使用方法与 MySQL 内部函数的使用方法是一样的。换言之，用户自己定义的存储函数与 MySQL 内部函数是一个性质的。**区别在于，存储函数是用户自己定义的，而内部函数是 MySQL 的开发者定义的。**
+
+语法：
+
+```mysql
+SELECT 函数名(实参列表);
+```
+
+示例：
+
+```mysql
+# 创建存储函数email_by_name(), 参数定义为空, 该函数查询Abel的email并返回, 数据类型为字符串型
+mysql> DELIMITER //
+mysql> CREATE FUNCTION email_by_name()
+    -> RETURNS VARCHAR(25)
+    -> DETERMINISTIC
+    -> CONTAINS SQL
+    -> 	BEGIN
+    -> 		RETURN (SELECT email FROM employees WHERE last_name = 'Abel');
+    -> 	END //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> DELIMITER ;
+mysql> SELECT email_by_name();
++-----------------+
+| email_by_name() |
++-----------------+
+| EABEL           |
++-----------------+
+1 row in set (0.00 sec)
+
+# 创建存储函数email_by_id(), 参数传入emp_id, 该函数查询emp_id的email并返回, 数据类型为字符串型
+mysql> DELIMITER //
+mysql> CREATE FUNCTION email_by_id(emp_id INT)
+    -> RETURNS VARCHAR(25)
+    -> DETERMINISTIC
+    -> CONTAINS SQL
+    -> 	BEGIN
+    -> 		RETURN (SELECT email FROM employees WHERE employee_id = emp_id);
+    -> 	END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+mysql> SET @emp_id = 102;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT email_by_id(102);
++------------------+
+| email_by_id(102) |
++------------------+
+| LDEHAAN          |
++------------------+
+1 row in set (0.00 sec)
+
+# 创建存储函数count_by_id(), 参数传入dept_id, 该函数查询dept_id部门的员工人数并返回, 数据类型为整型
+mysql> DELIMITER //
+mysql> CREATE FUNCTION count_by_id(dept_id INT)
+    -> RETURNS INT
+    -> LANGUAGE SQL
+    -> NOT DETERMINISTIC
+    -> READS SQL DATA
+    -> SQL SECURITY DEFINER
+    -> COMMENT '查询部门平均工资'
+    -> 	BEGIN
+    -> 		RETURN (SELECT COUNT(*) FROM employees WHERE department_id = dept_id);
+    -> 	END //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> DELIMITER ;
+mysql> SET @dept_id = 50;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT count_by_id(@dept_id);
++-----------------------+
+| count_by_id(@dept_id) |
++-----------------------+
+|                    45 |
++-----------------------+
+1 row in set (0.00 sec
+```
+
+### 存储过程与存储函数对比
+
+
+
+|          | 关键字    | 调用语法          | 返回值              | 应用场景                         |
+| -------- | --------- | ----------------- | ------------------- | -------------------------------- |
+| 存储过程 | PROCEDURE | `CALL 存储过程()` | 理解为有 0 个或多个 | 一般用于更新                     |
+| 存储函数 | FUNCTION  | `SELECT 函数()`   | 只能是一个          | 一般用于查询结果为一个值并返回时 |
+
+此外，`存储函数可以放在查询语句中使用，存储过程不行。`反之，存储过程的功能更加强大，包括能够执行对表的操作（比如创建表，删除表等）和事务操作，这些功能是存储函数不具备的。
+
+### 存储过程和存储函数的查看、修改、删除
+
+#### 查看
+
+MySQL 存储了存储过程和函数的状态信息，用户可以使用 SHOW STATUS 语句或 SHOW CREATE 语句来查看，也可直接从系统的 information_schema 数据库中查询。
+
+**方式 1 ：使用`SHOW CREATE`语句查看存储过程和存储函数的创建信息。**
+
+语法：
+
+```mysql
+SHOW CREATE {PROCEDURE | FUNCTION} 存储过程名或函数名
+```
+
+示例：
+```mysql
+mysql> SHOW CREATE FUNCTION count_by_id;
++-------------+-----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+--------------------+
+| Function    | sql_mode                                                                                                              | Create Function                                                                                                                                                               | character_set_client | collation_connection | Database Collation |
++-------------+-----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+--------------------+
+| count_by_id | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | CREATE DEFINER=`root`@`%` FUNCTION `count_by_id`(dept_id INT) RETURNS int
+    READS SQL DATA
+BEGIN
+RETURN (SELECT COUNT(*) FROM employees WHERE department_id = dept_id);
+END | utf8mb3              | utf8_general_ci      | utf8mb4_0900_ai_ci |
++-------------+-----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+--------------------+
+1 row in set (0.00 sec)
+```
+
+**方式 2：使用`SHOW STATUS`语句查看存储过程和存储函数的状态信息。**
+
+语法：
+
+```mysql
+SHOW {PROCEDURE | FUNCTION} STATUS [LIKE 'pattern']
+```
+
+- 返回子程序的特征，如数据库、名字、类型、创建者及创建和修改日期。
+- [LIKE 'pattern']：匹配存储过程或函数的名称，可以省略。当省略不写时，会列出MySQL数据库中存在的所有存储过程或函数的信息。
+
+示例：
+
+```mysql
+ mysql> SHOW FUNCTION STATUS LIKE 'count_by_id';
++-----------+-------------+----------+---------+---------------------+---------------------+---------------+---------+----------------------+----------------------+--------------------+
+| Db        | Name        | Type     | Definer | Modified            | Created             | Security_type | Comment | character_set_client | collation_connection | Database Collation |
++-----------+-------------+----------+---------+---------------------+---------------------+---------------+---------+----------------------+----------------------+--------------------+
+| atguigudb | count_by_id | FUNCTION | root@%  | 2023-05-13 05:37:31 | 2023-05-13 05:37:31 | DEFINER       |         | utf8mb3              | utf8_general_ci      | utf8mb4_0900_ai_ci |
++-----------+-------------+----------+---------+---------------------+---------------------+---------------+---------+----------------------+----------------------+--------------------+
+1 row in set (0.00 sec)
+```
+
+**方式 3：从 information_schema.Routines 表中查看存储过程和函数的信息。**
+
+语法：
+
+```mysql
+SELECT * FROM information_schema.Routines
+WHERE ROUTINE_NAME = '存储过程或存储函数名' [AND ROUTINE_TYPE = {'PROCEDURE|FUNCTION'}];
+```
+
+>MySQL 中存储过程和函数的信息存储在 information_schema 数据库下的 Routines 表中，可以通过查询该表的记录来查询存储过程和函数的信息。
+>
+>如果在 MySQL 数据库中存在存储过程和函数名称相同的情况，最好指定 ROUTINE_TYPE 查询条件来指明查询的是存储过程还是存储函数。
+
+示例：
+
+```mysql
+mysql> SELECT * FROM information_schema.Routines WHERE ROUTINE_NAME = 'count_by_id' AND ROUTINE_TYPE = 'FUNCTION';
++---------------+-----------------+----------------+--------------+--------------+-----------+--------------------------+------------------------+-------------------+---------------+--------------------+--------------------+----------------+----------------+--------------+----------------------------------------------------------------------------------+---------------+-------------------+-----------------+------------------+-----------------+----------+---------------+---------------------+---------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------+---------+----------------------+----------------------+--------------------+
+| SPECIFIC_NAME | ROUTINE_CATALOG | ROUTINE_SCHEMA | ROUTINE_NAME | ROUTINE_TYPE | DATA_TYPE | CHARACTER_MAXIMUM_LENGTH | CHARACTER_OCTET_LENGTH | NUMERIC_PRECISION | NUMERIC_SCALE | DATETIME_PRECISION | CHARACTER_SET_NAME | COLLATION_NAME | DTD_IDENTIFIER | ROUTINE_BODY | ROUTINE_DEFINITION                                                               | EXTERNAL_NAME | EXTERNAL_LANGUAGE | PARAMETER_STYLE | IS_DETERMINISTIC | SQL_DATA_ACCESS | SQL_PATH | SECURITY_TYPE | CREATED             | LAST_ALTERED        | SQL_MODE                                                                                                              | ROUTINE_COMMENT | DEFINER | CHARACTER_SET_CLIENT | COLLATION_CONNECTION | DATABASE_COLLATION |
++---------------+-----------------+----------------+--------------+--------------+-----------+--------------------------+------------------------+-------------------+---------------+--------------------+--------------------+----------------+----------------+--------------+----------------------------------------------------------------------------------+---------------+-------------------+-----------------+------------------+-----------------+----------+---------------+---------------------+---------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------+---------+----------------------+----------------------+--------------------+
+| count_by_id   | def             | atguigudb      | count_by_id  | FUNCTION     | int       |                     NULL |                   NULL |                10 |             0 |               NULL | NULL               | NULL           | int            | SQL          | BEGIN
+RETURN (SELECT COUNT(*) FROM employees WHERE department_id = dept_id);
+END |          NULL | SQL               | SQL             | NO               | READS SQL DATA  |     NULL | DEFINER       | 2023-05-13 05:37:31 | 2023-05-13 05:37:31 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |                 | root@%  | utf8mb3              | utf8_general_ci      | utf8mb4_0900_ai_ci |
++---------------+-----------------+----------------+--------------+--------------+-----------+--------------------------+------------------------+-------------------+---------------+--------------------+--------------------+----------------+----------------+--------------+----------------------------------------------------------------------------------+---------------+-------------------+-----------------+------------------+-----------------+----------+---------------+---------------------+---------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------+---------+----------------------+----------------------+--------------------+
+1 row in set (0.00 sec)
+```
+
+#### 修改
+
+
 
 
 
