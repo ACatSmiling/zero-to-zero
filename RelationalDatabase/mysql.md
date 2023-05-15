@@ -7701,7 +7701,13 @@ END |          NULL | SQL               | SQL             | NO               | R
 
 #### 修改
 
+修改存储过程或存储函数，不影响存储过程或存储函数功能，只是修改相关特性。
 
+语法：
+
+```mysql
+ALTER {PROCEDURE | FUNCTION} 存储过程或函数的名 [characteristic ...]
+```
 
 
 
