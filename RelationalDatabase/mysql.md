@@ -7472,7 +7472,7 @@ CALL 存储过程名(实参列表);
 - 调用 INOUT 模式的参数：
 
   ```mysql
-  SET @name=值;
+  SET @name = 值;
   CALL sp1(@name);
   SELECT @name;
   ```
@@ -7708,6 +7708,2282 @@ END |          NULL | SQL               | SQL             | NO               | R
 ```mysql
 ALTER {PROCEDURE | FUNCTION} 存储过程或函数的名 [characteristic ...]
 ```
+
+>修改存储过程使用 ALTER PROCEDURE 语句，修改存储函数使用 ALTER FUNCTION 语句。除此之外，这两个语句的结构是一样的，语句中的所有参数也是一样的。
+
+其中，characteristic 指定存储过程或函数的特性，其取值信息与创建存储过程、函数时的取值信息略有不同。
+
+```mysql
+{ CONTAINS SQL | NO SQL | READS SQL DATA | MODIFIES SQL DATA }
+| SQL SECURITY { DEFINER | INVOKER }
+| COMMENT 'string'
+```
+
+- CONTAINS SQL：表示子程序包含 SQL 语句，但不包含读或写数据的语句。
+- NO SQL：表示子程序中不包含 SQL 语句。
+- READS SQL DATA：表示子程序中包含读数据的语句。
+- MODIFIES SQL DATA：表示子程序中包含写数据的语句。
+- SQL SECURITY { DEFINER | INVOKER }：指明谁有权限来执行。
+  - DEFINER：表示只有定义者自己才能够执行。
+  - INVOKER：表示调用者可以执行。
+- COMMENT 'string'：表示注释信息。
+
+示例：
+
+```mysql
+# 修改存储过程, 将读写权限改为MODIFIES SQL DATA, 并指明调用者可以执行
+ALTER PROCEDURE CountProc
+MODIFIES SQL DATA
+SQL SECURITY INVOKER
+
+# 修改存储函数, 将读写权限改为READS SQL DATA, 并加上注释信息'FIND NAME'
+ALTER FUNCTION CountProc
+READS SQL DATA
+COMMENT 'FIND NAME'
+```
+
+#### 删除
+
+语法：
+
+```mysql
+DROP {PROCEDURE | FUNCTION} [IF EXISTS] 存储过程或函数的名
+```
+
+### 存储过程的优缺点
+
+#### 优点
+
+**存储过程可以一次编译多次使用。**存储过程只在创建时进行编译，之后的使用都不需要重新编译，这就提升了 SQL 的执行效率。
+
+**可以减少开发工作量。**将代码封装成模块，实际上是编程的核心思想之一，这样可以把复杂的问题拆解成不同的模块，然后模块之间可以重复使用，在减少开发工作量的同时，还能保证代码的结构清晰。
+
+**存储过程的安全性强。**在设定存储过程的时候可以设置对用户的使用权限，这样就和视图一样具有较强的安全性。
+
+**可以减少网络传输量。**因为代码封装到存储过程中，每次使用只需要调用存储过程即可，这样就减少了网络传输量。
+
+**良好的封装性。**在进行相对复杂的数据库操作时，原本需要使用一条一条的 SQL 语句，可能要连接多次数据库才能完成的操作，现在变成了一次存储过程，只需要连接一次即可。
+
+#### 缺点
+
+**可移植性差。**存储过程不能跨数据库移植，比如在 MySQL、Oracle 和 SQL Server 里编写的存储过程，在换成其他数据库时都需要重新编写。
+
+**调试困难。**只有少数 DBMS 支持存储过程的调试。对于复杂的存储过程来说，开发和维护都不容易。虽然也有一些第三方工具可以对存储过程进行调试，但要收费。
+
+**存储过程的版本管理很困难。**比如数据表索引发生变化了，可能会导致存储过程失效。在开发软件的时候往往需要进行版本管理，但是存储过程本身没有版本控制，版本迭代更新的时候很麻烦。
+
+**不适合高并发的场景。**高并发的场景需要减少数据库的压力，有时数据库会采用分库分表的方式，而且对可扩展性要求很高，在这种情况下，存储过程会变得难以维护， 增加数据库的压力 ，显然就不适用了。
+
+>阿里开发规范
+>
+>【强制】禁止使用存储过程，存储过程难以调试和扩展，更没有移植性。
+
+## 变量、流程控制与游标
+
+### 变量
+
+在 MySQL 数据库中，变量分为`系统变量`以及`用户自定义变量`。
+
+#### 系统变量
+
+##### 系统变量分类
+
+系统变量由系统定义，不是用户定义，属于`服务器层面`。启动 MySQL 服务，生成 MySQL 服务实例期间，MySQL 将为 MySQL 服务器内存中的系统变量赋值，这些系统变量定义了当前 MySQL 服务实例的属性、特征。这些系统变量的值要么是`编译 MySQL 时参数的默认值`，要么是`配置文件 (例如 my.ini 等) 中的参数值`。
+
+> 可以通过网址 https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html 查看 MySQL 文档的系统变量。
+
+系统变量分为`全局系统变量 (需要添加 global 关键字)`以及`会话系统变量 (需要添加 session 关键字)`，有时也把全局系统变量简称为全局变量，把会话系统变量称为 local 变量。如果不添加关键字，`默认会话级别`。静态变量（在 MySQL 服务实例运行期间，它们的值不能使用 set 动态修改）属于特殊的全局系统变量。
+
+> **MySQL 8.0 的新特性 — 全局变量的持久化。**
+>
+> 在 MySQL 数据库中，全局变量可以通过 SET GLOBAL 语句来设置。例如，设置服务器语句超时的限制，可以通过设置系统变量 max_execution_time 来实现：
+>
+> ```mysql
+> SET GLOBAL MAX_EXECUTION_TIME = 2000;
+> ```
+>
+> 使用 SET GLOBAL 语句设置的变量值只会`临时生效`。数据库重启后，服务器又会从 MySQL 配置文件中读取变量的默认值。 MySQL 8.0 版本新增了`SET PERSIST`命令。例如，设置服务器的最大连接数为 1000：
+>
+> ```mysql
+> SET PERSIST GLOBAL max_connections = 1000;
+> ```
+>
+> MySQL 会将该命令的配置保存到数据目录下的`mysqld-auto.cnf`文件中，下次启动时会读取该文件，用其中的配置来覆盖默认的配置文件。
+>
+> 示例：
+>
+> ```mysql
+> # 查看全局变量max_connections的值
+> mysql> SHOW VARIABLES LIKE '%max_connections%';
+> +------------------------+-------+
+> | Variable_name          | Value |
+> +------------------------+-------+
+> | max_connections        | 1000  |
+> | mysqlx_max_connections | 100   |
+> +------------------------+-------+
+> 2 rows in set (0.00 sec)
+> 
+> # 设置全局变量max_connections的值
+> mysql> SET PERSIST max_connections = 1500;
+> Query OK, 0 rows affected (0.00 sec)
+> 
+> # 重启MySQL服务器, 再次查询max_connections的值
+> mysql> SHOW VARIABLES LIKE '%max_connections%';
+> +------------------------+-------+
+> | Variable_name          | Value |
+> +------------------------+-------+
+> | max_connections        | 1500  |
+> | mysqlx_max_connections | 100   |
+> +------------------------+-------+
+> 2 rows in set (0.01 sec)
+> ```
+
+每一个 MySQL 客户机成功连接 MySQL 服务器后，都会产生与之对应的会话。会话期间，MySQL 服务实例会在 MySQL 服务器内存中生成与该会话对应的会话系统变量，这些会话系统变量的初始值是全局系统变量值的复制。如下图：
+
+<img src="mysql/image-20230520211210885.png" alt="image-20230520211210885" style="zoom:80%;" />
+
+- 全局系统变量针对于所有会话（连接）有效，但`不能跨重启`。
+- 会话系统变量仅针对于当前会话（连接）有效。会话期间，当前会话对某个会话系统变量值的修改，不会影响其他会话同一个会话系统变量的值。
+- 会话 1 对某个全局系统变量值的修改，会导致会话 2 中同一个全局系统变量值的修改。
+- MySQL 中，有些系统变量只能是全局的，例如 max_connections，用于限制服务器的最大连接数；有些系统变量作用域既可以是全局又可以是会话，例如 character_set_client，用于设置客户端的字符集；有些系统变量的作用域只能是当前会话，例如 pseudo_thread_id，用于标记当前会话的 MySQL 连接 ID。
+
+##### 查看系统变量
+
+**查看所有或部分系统变量：**
+
+```mysql
+# 查看所有全局变量
+SHOW GLOBAL VARIABLES
+
+# 查看所有会话变量
+SHOW SESSION VARIABLES
+# 或
+SHOW VARIABLES
+
+# 查看满足条件的部分全局变量
+SHOW GLOBAL VARIABLES LIKE '%标识符%'
+
+# 查看满足条件的部分会话变量
+SHOW SESSION VARIABLES LIKE '%标识符%'
+```
+
+示例：
+
+```mysql
+mysql> SHOW GLOBAL VARIABLES LIKE 'admin_%';
++------------------------+-----------------+
+| Variable_name          | Value           |
++------------------------+-----------------+
+| admin_address          |                 |
+| admin_port             | 33062           |
+| admin_ssl_ca           |                 |
+| admin_ssl_capath       |                 |
+| admin_ssl_cert         |                 |
+| admin_ssl_cipher       |                 |
+| admin_ssl_crl          |                 |
+| admin_ssl_crlpath      |                 |
+| admin_ssl_key          |                 |
+| admin_tls_ciphersuites |                 |
+| admin_tls_version      | TLSv1.2,TLSv1.3 |
++------------------------+-----------------+
+11 rows in set (0.01 sec)
+
+mysql> SHOW SESSION VARIABLES LIKE 'admin_%';
++------------------------+-----------------+
+| Variable_name          | Value           |
++------------------------+-----------------+
+| admin_address          |                 |
+| admin_port             | 33062           |
+| admin_ssl_ca           |                 |
+| admin_ssl_capath       |                 |
+| admin_ssl_cert         |                 |
+| admin_ssl_cipher       |                 |
+| admin_ssl_crl          |                 |
+| admin_ssl_crlpath      |                 |
+| admin_ssl_key          |                 |
+| admin_tls_ciphersuites |                 |
+| admin_tls_version      | TLSv1.2,TLSv1.3 |
++------------------------+-----------------+
+11 rows in set (0.00 sec)
+```
+
+**查看指定系统变量：**
+
+作为 MySQL 编码规范，MySQL 中的`系统变量以 @@ 开头`，其中`@@global.`仅用于标记全局系统变量，`@@session.`仅用于标记会话系统变量。@@ 首先标记会话系统变量，如果会话系统变量不存在，则标记全局系统变量。
+
+```mysql
+# 查看指定的系统变量的值
+SELECT @@global.变量名
+
+# 查看指定的会话变量的值
+SELECT @@session.变量名
+# 或者
+SELECT @@变量名
+```
+
+**修改系统变量的值：**
+
+有些时候，数据库管理员需要修改系统变量的默认值，以便修改当前会话或者 MySQL 服务实例的属性、特征。具体方法：
+
+方式 1：`修改 MySQL 配置文件`，继而修改 MySQL 系统变量的值（该方法`需要重启 MySQL 服务`）。
+方式 2：在 MySQL 服务运行期间，`使用 set 命令`重新设置系统变量的值。
+
+```mysql
+# 为某个全局变量赋值
+SET @@global.变量名 = 变量值
+# 或者
+SET GLOBAL 变量名 = 变量值
+
+# 为某个会话变量赋值
+SET @@session.变量名 = 变量值
+# 或者
+SET SESSION 变量名 = 变量值
+```
+
+示例：
+
+```mysql
+mysql> SELECT @@global.autocommit;
++---------------------+
+| @@global.autocommit |
++---------------------+
+|                   1 |
++---------------------+
+1 row in set (0.01 sec)
+
+mysql> SET GLOBAL autocommit = 0;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @@global.autocommit;
++---------------------+
+| @@global.autocommit |
++---------------------+
+|                   0 |
++---------------------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT @@global.max_connections;
++--------------------------+
+| @@global.max_connections |
++--------------------------+
+|                      151 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> SET GLOBAL max_connections = 1000;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @@global.max_connections;
++--------------------------+
+| @@global.max_connections |
++--------------------------+
+|                     1000 |
++--------------------------+
+1 row in set (0.00 sec)
+```
+
+#### 用户变量
+
+##### 用户变量分类
+
+用户变量是用户自己定义的，作为 MySQL 编码规范，MySQL 中的`用户变量以 @ 开头`。根据作用范围不同，又分为`会话用户变量`和`局部变量`。
+
+- 会话用户变量：作用域和会话变量一样，`只对当前连接会话有效`。
+- 局部变量：`只在 BEGIN 和 END 语句块中有效`，局部变量`只能在存储过程和函数中使用`。
+
+##### 会话用户变量
+
+定义会话用户变量：
+
+```mysql
+# 方式1: '='或':='
+SET @用户变量 = 值
+SET @用户变量 := 值
+
+# 方式2: ':='或INTO关键字
+SELECT @用户变量 := 表达式 [FROM 等子句]
+SELECT 表达式 INTO @用户变量 [FROM 等子句]
+```
+
+查看用户变量的值 （查看、比较、运算等）:
+
+```mysql
+SELECT @用户变量
+```
+
+示例：
+
+```mysql
+mysql> SET @a = 1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @a;
++------+
+| @a   |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT @num := COUNT(*) FROM employees;
++------------------+
+| @num := COUNT(*) |
++------------------+
+|              107 |
++------------------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> SELECT @num;
++------+
+| @num |
++------+
+|  107 |
++------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT AVG(salary) INTO @avgsalary FROM employees;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT @avgsalary;
++-------------------+
+| @avgsalary        |
++-------------------+
+| 6461.682242990654 |
++-------------------+
+1 row in set (0.00 sec)
+
+
+# 查看某个未声明的变量时, 将得到NULL值
+mysql> SELECT @big; 
++------------+
+| @big       |
++------------+
+| NULL       |
++------------+
+1 row in set (0.00 sec)
+```
+
+##### 局部变量
+
+定义：可以使用`DECLARE`语句定义一个局部变量。
+
+作用域：仅仅在定义它的 BEGIN ... END 中有效。
+
+位置：只能放在 BEGIN ... END 中，而且只能放在第一句。
+
+```mysql
+BEGIN
+    # 声明局部变量
+    DECLARE 变量名1 变量数据类型 [DEFAULT 变量默认值];
+    DECLARE 变量名2, 变量名3, ... 变量数据类型 [DEFAULT 变量默认值];
+    
+    # 为局部变量赋值
+    SET 变量名1 = 值;
+    SELECT 值 INTO 变量名2 [FROM 子句];
+    
+    # 查看局部变量的值
+    SELECT 变量1, 变量2, 变量3;
+END
+```
+
+**定义变量：**
+
+```mysql
+# 如果没有DEFAULT子句, 初始值为NULL
+DECLARE 变量名 类型 [default 值]
+```
+
+**变量赋值：**
+
+```mysql
+# 方式1: 一般用于赋简单的值
+SET 变量名 = 值;
+SET 变量名 := 值;
+
+# 方式2: 一般用于赋表中的字段值
+SELECT 字段名或表达式 INTO 变量名 FROM 表;
+```
+
+**使用变量（查看、比较、运算等）:**
+
+```mysql
+SELECT 局部变量名;
+```
+
+##### 会话用户变量 VS 局部变量
+
+![image-20230521005741612](mysql/image-20230521005741612.png)
+
+### 定义条件与处理程序
+
+`定义条件`是事先定义程序执行过程中可能遇到的问题，`处理程序`定义了在遇到问题时应当采取的处理方式，并且保证存储过程或函数在遇到警告或错误时能继续执行。这样可以增强存储程序处理问题的能力，避免程序异常停止运行。
+
+> 说明：定义条件和处理程序在存储过程、存储函数中都是支持的。
+
+##### 案例分析
+
+创建一个名称为 UpdateDataNoCondition 的存储过程：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE UpdateDataNoCondition()
+    -> BEGIN
+    -> SET @x = 1;
+    -> UPDATE employees SET email = NULL WHERE last_name = 'Abel';
+    -> SET @x = 2;
+    -> UPDATE employees SET email = 'aabbel' WHERE last_name = 'Abel';
+    -> SET @x = 3;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+调用存储过程：
+
+```mysql
+mysql> CALL UpdateDataNoCondition();
+ERROR 1048 (23000): Column 'email' cannot be null
+
+mysql> SELECT @x;
++------+
+| @x   |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+```
+
+可以看到，此时 @x 变量的值为 1。结合创建存储过程的 SQL 语句代码可以得出：在存储过程中未定义条件和处理程序，且当存储过程中执行的 SQL 语句报错时，MySQL 数据库会抛出错误，并退出当前 SQL 逻辑，不再向下继续执行。
+
+##### 定义条件
+
+定义条件就是给 MySQL 中的错误码命名，这有助于存储的程序代码更清晰。它将一个`错误名字`和`指定的错误条件`关联起来。这个名字可以随后被用在定义处理程序的 DECLARE HANDLER 语句中。
+
+定义条件使用 DECLARE 语句，语法：
+
+```mysql
+DECLARE 错误名称 CONDITION FOR 错误码(或错误条件)
+```
+
+错误码说明：
+
+- `MySQL_error_code`和`sqlstate_value`都可以表示 MySQL 的错误。
+  - MySQL_error_code 是数值类型错误代码。
+  - sqlstate_value 是长度为 5 的字符串类型错误代码。
+- 例如，在 ERROR 1418 (HY000) 中，1418 是 MySQL_error_code，'HY000' 是 sqlstate_value。
+- 例如，在 ERROR 1142 (42000) 中，1142 是 MySQL_error_code，'42000' 是 sqlstate_value。
+
+示例：
+
+```mysql
+# 定义'Field_Not_Be_NULL'错误名, 与MySQL中违反非空约束的错误类型'ERROR 1048 (23000)'对应
+# 使用MySQL_error_code
+DECLARE Field_Not_Be_NULL CONDITION FOR 1048;
+# 使用sqlstate_value
+DECLARE Field_Not_Be_NULL CONDITION FOR SQLSTATE '23000';
+
+# 定义'ERROR 1148(42000)'错误, 名称为command_not_allowed
+# 使用MySQL_error_code
+DECLARE command_not_allowed CONDITION FOR 1148;
+# 使用sqlstate_value
+DECLARE command_not_allowed CONDITION FOR SQLSTATE '42000';
+```
+
+##### 定义处理程序
+
+可以为 SQL 执行过程中发生的某种类型的错误定义特殊的处理程序。
+
+定义处理程序使用 DECLARE 语句，语法：
+
+```mysql
+DECLARE 处理方式 HANDLER FOR 错误类型 处理语句
+```
+
+**处理方式：**有 3 个取值，CONTINUE、EXIT、UNDO。
+
+- CONTINUE：表示遇到错误不处理，继续执行。
+- EXIT：表示遇到错误马上退出。
+- UNDO：表示遇到错误后撤回之前的操作，MySQL 中暂时不支持这样的操作。
+
+**错误类型：**即条件，可以有如下取值。
+
+- SQLSTATE '字符串错误码'：表示长度为 5 的 sqlstate_value 类型的错误代码。
+- MySQL_error_code：匹配数值类型错误代码。
+- 错误名称：表示 DECLARE ... CONDITION 定义的错误条件名称。
+
+- SQLWARNING：匹配所有以 01 开头的 SQLSTATE 错误代码。
+- NOT FOUND：匹配所有以 02 开头的 SQLSTATE 错误代码。
+- SQLEXCEPTION：匹配所有没有被 SQLWARNING 或 NOT FOUND 捕获的 SQLSTATE 错误代码。
+
+**处理语句：**如果出现上述条件之一，则采用对应的处理方式，并执行指定的处理语句。语句可以是像 "SET 变量 = 值" 这样的简单语句，也可以是使用 "BEGIN ... END" 编写的复合语句。
+
+定义处理程序的几种方式，代码如下：
+
+```mysql
+# 方法1: 捕获sqlstate_value
+DECLARE CONTINUE HANDLER FOR SQLSTATE '42S02' SET @info = 'NO_SUCH_TABLE';
+
+# 方法2: 捕获mysql_error_value
+DECLARE CONTINUE HANDLER FOR 1146 SET @info = 'NO_SUCH_TABLE';
+
+# 方法3: 先定义条件, 再调用
+DECLARE no_such_table CONDITION FOR 1146;
+DECLARE CONTINUE HANDLER FOR NO_SUCH_TABLE SET @info = 'NO_SUCH_TABLE';
+
+# 方法4: 使用SQLWARNING
+DECLARE EXIT HANDLER FOR SQLWARNING SET @info = 'ERROR';
+
+# 方法5: 使用NOT FOUND
+DECLARE EXIT HANDLER FOR NOT FOUND SET @info = 'NO_SUCH_TABLE';
+
+# 方法6: 使用SQLEXCEPTION
+DECLARE EXIT HANDLER FOR SQLEXCEPTION SET @info = 'ERROR';
+```
+
+##### 案例解决
+
+在存储过程中，定义处理程序，捕获 sqlstate_value 值，当遇到 MySQL_error_code 值为 1048 时，执行 CONTINUE 操作，并且将 @proc_value 的值设置为 -1。
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE UpdateDataWithCondition()
+    -> BEGIN
+    -> # 定义处理程序
+    -> DECLARE CONTINUE HANDLER FOR 1048 SET @proc_value = -1;
+    -> SET @x = 1;
+    -> UPDATE employees SET email = NULL WHERE last_name = 'Abel';
+    -> SET @x = 2;
+    -> UPDATE employees SET email = 'aabbel' WHERE last_name = 'Abel';
+    -> SET @x = 3;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL UpdateDataWithCondition();
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT @x, @proc_value;
++------+-------------+
+| @x   | @proc_value |
++------+-------------+
+|    3 |          -1 |
++------+-------------+
+1 row in set (0.00 sec)
+```
+
+### 流程控制
+
+解决复杂问题不可能通过一个 SQL 语句完成，而是需要执行多个 SQL 操作。`流程控制语句`的作用就是控制存储过程中 SQL 语句的执行顺序，是完成复杂操作必不可少的一部分。只要是执行的程序，流程就分为三大类：
+
+- `顺序结构`：程序从上往下依次执行。
+- `分支结构`：程序按条件进行选择执行，从两条或多条路径中选择一条执行。
+- `循环结构`：程序满足一定条件下，重复执行一组语句。
+
+针对 MySQL 的流程控制语句主要有 3 类。`注意：只能用于存储程序。`
+
+- `条件判断语句`：IF 语句和 CASE 语句。
+- `循环语句`：LOOP、WHILE 和 REPEAT 语句。
+- `跳转语句`：ITERATE 和 LEAVE 语句。
+
+#### 分支结构之 IF
+
+语法：
+
+```mysql
+IF 表达式1 THEN 操作1
+[ELSEIF 表达式2 THEN 操作2]……
+[ELSE 操作N]
+END IF
+```
+
+- 根据表达式的结果为 TRUE 或 FALSE 执行相应的语句。"[]" 中的内容是可选的。
+- 特点：① 不同的表达式对应不同的操作；② 使用在 BEGIN…END 中。
+
+示例：
+
+```mysql
+# 存储过程update_salary_by_eid1, 定义IN参数emp_id, 输入员工编号, 判断其薪资如果低于8000元且入职时间超过5年, 就涨薪500元, 否则不变
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE update_salary_by_eid1(IN emp_id INT)
+    -> BEGIN
+    -> DECLARE emp_salary DOUBLE;
+    -> DECLARE hire_year DOUBLE;
+    -> SELECT salary INTO emp_salary FROM employees WHERE employee_id = emp_id;
+    -> SELECT DATEDIFF(CURDATE(), hire_date)/365 INTO hire_year
+    -> FROM employees WHERE employee_id = emp_id;
+    -> IF emp_salary < 8000 AND hire_year > 5
+    -> THEN UPDATE employees SET salary = salary + 500 WHERE employee_id = emp_id;
+    -> END IF;
+    -> END //
+Query OK, 0 rows affected (0.00 sec)
+mysql> DELIMITER ;
+
+mysql> SELECT employee_id, hire_date, salary FROM employees WHERE employee_id = 105;
++-------------+------------+---------+
+| employee_id | hire_date  | salary  |
++-------------+------------+---------+
+|         105 | 1997-06-25 | 4800.00 |
++-------------+------------+---------+
+1 row in set (0.00 sec)
+
+mysql> CALL update_salary_by_eid1(105);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT employee_id, hire_date, salary FROM employees WHERE employee_id = 105;
++-------------+------------+---------+
+| employee_id | hire_date  | salary  |
++-------------+------------+---------+
+|         105 | 1997-06-25 | 5300.00 |
++-------------+------------+---------+
+1 row in set (0.00 sec)
+```
+
+#### 分支结构之 CASE
+
+语法 1：
+
+```mysql
+# 情况一: 类似switch
+CASE 表达式
+WHEN 值1 THEN 结果1或语句1(如果是语句, 需要加分号)
+WHEN 值2 THEN 结果2或语句2(如果是语句, 需要加分号)
+...
+ELSE 结果n或语句n(如果是语句, 需要加分号)
+END [case](如果是放在BEGIN...END中, 需要加上case, 如果放在SELECT后面不需要)
+```
+
+语法 2：
+
+```mysql
+# 情况二: 类似多重if
+CASE
+WHEN 条件1 THEN 结果1或语句1(如果是语句, 需要加分号)
+WHEN 条件2 THEN 结果2或语句2(如果是语句, 需要加分号)
+...
+ELSE 结果n或语句n(如果是语句, 需要加分号)
+END [case](如果是放在BEGIN...END, 中需要加上case, 如果放在SELECT后面不需要)
+```
+
+示例：
+
+```mysql
+# 语法1
+CASE val
+WHEN 1 THEN SELECT 'val is 1';
+WHEN 2 THEN SELECT 'val is 2';
+ELSE SELECT 'val is not 1 or 2';
+END CASE;
+
+# 语法2
+CASE
+WHEN val IS NULL THEN SELECT 'val is null';
+WHEN val < 0 THEN SELECT 'val is less than 0';
+WHEN val > 0 THEN SELECT 'val is greater than 0';
+ELSE SELECT 'val is 0';
+END CASE;
+```
+
+#### 循环结构之 LOOP
+
+LOOP 循环语句用来重复执行某些语句。LOOP 内的语句一直重复执行直到循环被退出（使用 LEAVE 子句），跳出循环过程。
+
+语法：
+
+```mysql
+[loop_label:] LOOP
+循环执行的语句
+END LOOP [loop_label]
+```
+
+- loop_label 表示 LOOP 语句的标注名称，可以省略。
+
+示例：
+
+```mysql
+# 使用LOOP语句进行循环操作, id值小于10时将重复执行循环过程
+DECLARE id INT DEFAULT 0;
+add_loop:LOOP
+    SET id = id +1;
+    IF id >= 10 THEN LEAVE add_loop;
+    END IF;
+END LOOP add_loop;
+
+# 存储过程update_salary_loop(), 声明OUT参数num, 存储过程中实现循环涨薪, 薪资涨为原来的1.1倍, 直到全公司的平均薪资达到12000结束
+DELIMITER //
+CREATE PROCEDURE update_salary_loop(OUT num INT)
+BEGIN
+    DECLARE avg_salary DOUBLE;
+    DECLARE loop_count INT DEFAULT 0;
+    SELECT AVG(salary) INTO avg_salary FROM employees;
+    label_loop:LOOP
+        IF avg_salary >= 12000 THEN LEAVE label_loop;
+        END IF;
+        UPDATE employees SET salary = salary * 1.1;
+        SET loop_count = loop_count + 1;
+        SELECT AVG(salary) INTO avg_salary FROM employees;
+    END LOOP label_loop;
+    SET num = loop_count;
+END //
+DELIMITER ;
+```
+
+#### 循环结构之 WHILE
+
+WHILE 语句创建一个带条件判断的循环过程。WHILE 在执行语句时，先对指定的表达式进行判断，如果为真，就执行循环内的语句，否则退出循环。
+
+语法：
+
+```mysql
+[while_label:] WHILE 循环条件 DO
+循环体
+END WHILE [while_label];
+```
+
+- while_label 为 WHILE 语句的标注名称，可以省略；如果循环条件结果为真，WHILE 语句内的语句或语句群被执行，直至循环条件为假，退出循环。
+
+示例：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE test_while()
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> WHILE i < 10 DO
+    -> SET i = i + 1;
+    -> END WHILE;
+    -> SELECT i;
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+mysql> CALL test_while();
++------+
+| i    |
++------+
+|   10 |
++------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+# 存储过程update_salary_while()，声明OUT参数num，存储过程中实现循环降薪, 薪资降为原来的90%, 直到全公司的平均薪资达到5000结束
+DELIMITER //
+CREATE PROCEDURE update_salary_while(OUT num INT)
+BEGIN
+    DECLARE avg_sal DOUBLE ;
+    DECLARE while_count INT DEFAULT 0;
+    SELECT AVG(salary) INTO avg_sal FROM employees;
+    WHILE avg_sal > 5000 DO
+        UPDATE employees SET salary = salary * 0.9;
+        SET while_count = while_count + 1;
+        SELECT AVG(salary) INTO avg_sal FROM employees;
+    END WHILE;
+    SET num = while_count;
+END //
+DELIMITER ;
+```
+
+#### 循环结构之 REPEAT
+
+REPEAT 语句创建一个带条件判断的循环过程。与 WHILE 循环不同的是，REPEAT 循环首先会执行一次循环，然后在 UNTIL 中进行表达式的判断，如果满足条件就退出，即 END REPEAT；如果条件不满足，则会就继续执行循环，直到满足退出条件为止。
+
+语法：
+
+```mysql
+[repeat_label:] REPEAT
+循环体的语句
+UNTIL 结束循环的条件表达式
+END REPEAT [repeat_label]
+```
+
+- repeat_label 为 REPEAT 语句的标注名称，可以省略；REPEAT 语句内的语句或语句群被重复，直至 expr_condition 为真。
+
+示例：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE test_repeat()
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> REPEAT
+    -> SET i = i + 1;
+    -> UNTIL i >= 10
+    -> END REPEAT;
+    -> SELECT i;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL test_repeat();
++------+
+| i    |
++------+
+|   10 |
++------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+# 存储过程update_salary_repeat(), 声明OUT参数num, 存储过程中实现循环涨薪, 薪资涨为原来的1.15倍, 直到全公司的平均薪资达到13000结束
+DELIMITER //
+CREATE PROCEDURE update_salary_repeat(OUT num INT)
+BEGIN
+    DECLARE avg_sal DOUBLE ;
+    DECLARE repeat_count INT DEFAULT 0;
+    SELECT AVG(salary) INTO avg_sal FROM employees;
+    REPEAT
+        UPDATE employees SET salary = salary * 1.15;
+        SET repeat_count = repeat_count + 1;
+        SELECT AVG(salary) INTO avg_sal FROM employees;
+        UNTIL avg_sal >= 13000
+    END REPEAT;
+    SET num = repeat_count;
+END //
+DELIMITER ;
+```
+
+#### 循环结构对比
+
+- 三种循环都可以省略名称，但如果循环中添加了循环控制语句（LEAVE 或 ITERATE），则必须添加名称。 
+
+- LOOP：一般用于实现简单的 "死" 循环；WHILE：先判断后执行；REPEAT：先执行后判断，无条件至少执行一次。
+
+#### 跳转语句之 LEAVE
+
+LEAVE 语句：可以用在循环语句内，或者以 BEGIN 和 END 包裹起来的程序体内，表示跳出循环或者跳出程序体的操作，可以把 LEAVE 理解为 break。
+
+语法：
+
+```mysql
+LEAVE 标记名
+```
+
+- label 参数表示循环的标志。LEAVE 和 BEGIN ... END 或循环一起被使用。
+
+示例：
+
+```mysql
+# 存储过程leave_begin(), 声明INT类型的IN参数num, 给BEGIN...END加标记名, 并在BEGIN...END中使用IF语句判断num参数的值:
+# 	如果num <= 0, 则使用LEAVE语句退出BEGIN...END
+# 	如果num = 1, 则查询employees表的平均薪资
+# 	如果num = 2, 则查询employees表的最低薪资
+# 	如果num > 2, 则查询employees表的最高薪资
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE leave_begin(IN num INT)
+    -> begin_label: BEGIN
+    -> IF num<=0
+    -> THEN LEAVE begin_label;
+    -> ELSEIF num=1
+    -> THEN SELECT AVG(salary) FROM employees;
+    -> ELSEIF num=2
+    -> THEN SELECT MIN(salary) FROM employees;
+    -> ELSE
+    -> SELECT MAX(salary) FROM employees;
+    -> END IF;
+    -> SELECT COUNT(*) FROM employees;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL leave_begin(0);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL leave_begin(1);
++-------------+
+| AVG(salary) |
++-------------+
+| 6466.355140 |
++-------------+
+1 row in set (0.00 sec)
+
++----------+
+| COUNT(*) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL leave_begin(2);
++-------------+
+| MIN(salary) |
++-------------+
+|     2100.00 |
++-------------+
+1 row in set (0.00 sec)
+
++----------+
+| COUNT(*) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL leave_begin(3);
++-------------+
+| MAX(salary) |
++-------------+
+|    24000.00 |
++-------------+
+1 row in set (0.00 sec)
+
++----------+
+| COUNT(*) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+```
+
+```mysql
+# 存储过程leave_while(), 声明OUT参数num, 存储过程中使用WHILE循环降低薪资为原来薪资的90%, 直到全公司的平均薪资小于等于10000
+DELIMITER //
+CREATE PROCEDURE leave_while(OUT num INT)
+BEGIN
+    DECLARE avg_sal DOUBLE;# 记录平均工资
+    DECLARE while_count INT DEFAULT 0;# 记录循环次数
+    SELECT AVG(salary) INTO avg_sal FROM employees;# ① 初始化条件
+    while_label:WHILE TRUE DO# ② 循环条件
+        # ③ 循环体
+        IF avg_sal <= 10000 THEN
+        LEAVE while_label;
+        END IF;
+        UPDATE employees SET salary = salary * 0.9;
+        SET while_count = while_count + 1;
+        # ④ 迭代条件
+        SELECT AVG(salary) INTO avg_sal FROM employees;
+    END WHILE;
+    # 赋值
+    SET num = while_count;
+END //
+DELIMITER ;
+```
+
+#### 跳转语句之 ITERATE
+
+ITERATE 语句：只能用在循环语句（LOOP、REPEAT 和 WHILE 语句）内，表示重新开始循环，将执行顺序转到语句段开头处。可以把 ITERATE 理解为 continue。
+
+语法：
+
+```mysql
+ITERATE label
+```
+
+- label 参数表示循环的标志。ITERATE 语句必须跟在循环标志前面。
+
+示例：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE test_iterate()
+    -> BEGIN
+    -> DECLARE num INT DEFAULT 0;
+    -> my_loop:LOOP
+    -> SET num = num + 1;
+    -> IF num < 10
+    -> THEN ITERATE my_loop;
+    -> ELSEIF num > 15
+    -> THEN LEAVE my_loop;
+    -> END IF;
+    -> SELECT 'AABBCC';
+    -> END LOOP my_loop;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL test_iterate();
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
++--------+
+| AABBCC |
++--------+
+| AABBCC |
++--------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+```
+
+### 游标
+
+#### 游标是什么
+
+虽然可以通过筛选条件 WHERE 和 HAVING，或者是限定返回记录的关键字 LIMIT 返回一条记录，但是，却无法在结果集中像指针一样，向前定位一条记录、向后定位一条记录，或者是`随意定位到某一条记录`，并对记录的数据进行处理。
+
+这个时候，就可以用到`游标 (或光标)`。游标，提供了一种灵活的操作方式，让我们能够对结果集中的每一条记录进行定位，并对指向的记录中的数据进行操作的数据结构。`游标让 SQL 这种面向集合的语言有了面向过程开发的能力。`
+
+在 SQL 中，游标是一种临时的数据库对象，可以指向存储在数据库表中的数据行指针。这里游标 充当了
+指针的作用 ，我们可以通过操作游标来对数据行进行操作。
+
+**MySQL 中游标可以在存储过程和函数中使用。**
+
+#### 游标使用步骤
+
+游标必须在声明处理程序之前被声明，并且变量和条件还必须在声明游标或处理程序之前被声明。
+
+如果想要使用游标，一般需要经历四个步骤。不同的 DBMS 中，使用游标的语法可能略有不同。
+
+**第一步，声明游标。**
+
+在 MySQL 中，使用`DECLARE 关键字声明游标`，语法：
+
+```mysql
+DECLARE cursor_name CURSOR FOR select_statement;
+```
+
+上述语法适用于 MySQL，SQL Server，DB2 和 MariaDB。如果是用 Oracle 或者 PostgreSQL，需要写成：
+
+```postgresql
+DECLARE cursor_name CURSOR IS select_statement;
+```
+
+要使用 SELECT 语句来获取数据结果集，而此时还没有开始遍历数据，**select_statement 代表的是 SELECT 语句，返回一个用于创建游标的结果集。**
+
+示例：
+
+```mysql
+DECLARE cur_emp CURSOR FOR SELECT employee_id, salary FROM employees;
+```
+
+**第二步，打开游标。**
+
+当定义好游标之后，如果想要使用游标，必须先打开游标。打开游标的时候，SELECT 语句的查询结果集就会送到游标工作区，为后面游标的`逐条读取`结果集中的记录做准备。语法：
+
+```mysql
+OPEN cursor_name;
+```
+
+示例：
+
+```mysql
+OPEN cur_emp;
+```
+
+**第三步，使用游标（从游标中取得数据）。**
+
+语法：
+
+```mysql
+FETCH cursor_name INTO var_name [, var_name] ...
+```
+
+作用是使用 cursor_name 这个游标来读取当前行，并且将数据保存到 var_name 这个变量中，然后游标指针指到下一行。如果游标读取的数据行有多个列名，则在 INTO 关键字后面赋值给多个变量名即可。
+
+> 注意：
+>
+> - `var_name 必须在声明游标之前就定义好。`
+>
+> - `游标的查询结果集中的字段数，必须跟 INTO 后面的变量数一致。`否则，在存储过程执行的时候，MySQL 会提示错误。
+
+示例：
+
+```mysql
+FETCH cur_emp INTO emp_id, emp_sal;
+```
+
+**第四步，关闭游标。**
+
+有 OPEN 就会有 CLOSE，也就是打开和关闭游标。**当使用完游标后需要关闭掉该游标，因为游标会占用系统资源 ，如果不及时关闭，游标会一直保持到存储过程结束，影响系统运行的效率。**关闭游标的操作，会释放游标占用的系统资源。
+
+语法：
+
+```mysql
+CLOSE cursor_name;
+```
+
+关闭游标之后，就不能再检索查询结果中的数据行，如果需要检索只能再次打开游标。
+
+示例：
+
+```mysql
+CLOSE cur_emp;
+```
+
+#### 游标使用示例
+
+创建存储过程 get_count_by_limit_total_salary()，声明 IN 参数 limit_total_salary，DOUBLE类型；声明 OUT 参数 total_count，INT 类型。存储过程的功能：实现累加薪资最高的几个员工的薪资值，直到薪资总和达到 limit_total_salary 参数的值，返回累加的人数给 total_count。
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE get_count_by_limit_total_salary(IN limit_total_salary DOUBLE,OUT total_count INT)
+    -> BEGIN
+    -> DECLARE sum_salary DOUBLE DEFAULT 0; # 记录累加的总工资
+    -> DECLARE cursor_salary DOUBLE DEFAULT 0; # 记录某一个工资值
+    -> DECLARE emp_count INT DEFAULT 0; # 记录循环个数
+    -> # 定义游标
+    -> DECLARE emp_cursor CURSOR FOR SELECT salary FROM employees ORDER BY salary DESC;
+    -> # 打开游标
+    -> OPEN emp_cursor;
+    -> REPEAT
+    -> # 使用游标(从游标中获取数据)
+    -> FETCH emp_cursor INTO cursor_salary;
+    -> SET sum_salary = sum_salary + cursor_salary;
+    -> SET emp_count = emp_count + 1;
+    -> UNTIL sum_salary >= limit_total_salary
+    -> END REPEAT;
+    -> SET total_count = emp_count;
+    -> # 关闭游标
+    -> CLOSE emp_cursor;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+
+mysql> SET @total_count='';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL get_count_by_limit_total_salary(100000, @total_count);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @total_count;
++--------------+
+| @total_count |
++--------------+
+|            7 |
++--------------+
+
+mysql> CALL get_count_by_limit_total_salary(150000, @total_count);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @total_count;
++--------------+
+| @total_count |
++--------------+
+|           11 |
++--------------+
+1 row in set (0.00 sec)
+```
+
+#### 游标总结
+
+游标是 MySQL 的一个重要的功能，为逐条读取结果集中的数据，提供了完美的解决方案。跟在应用层面实现相同的功能相比，游标可以在存储程序中使用，效率高，程序也更加简洁。
+
+但同时也会带来一些性能问题，比如在使用游标的过程中，会对数据行进行`加锁`，这样在业务并发量大的时候，不仅会影响业务之间的效率，还会消耗系统资源，造成内存不足，这是因为`游标是在内存中进行的处理`。
+
+## 触发器
+
+在实际开发中，经常会遇到这样的情况：有 2 个或者多个相互关联的表，如商品信息和库存信息，分别存放在 2 个不同的数据表中，在添加一条新商品记录的时候，为了保证数据的完整性，必须同时在库存表中添加一条库存记录。
+
+这样一来，我们就必须把这两个关联的操作步骤写到程序里面，而且要用事务包裹起来，确保这两个操作成为一个原子操作，要么全部执行，要么全部不执行。要是遇到特殊情况，可能还需要对数据进行手动维护，这样就很容易忘记其中的一步，导致数据缺失。
+
+这个时候，可以使用`触发器`。创建一个触发器，让商品信息数据的插入操作自动触发库存数据的插入操作。这样一来，就不用担心因为忘记添加库存数据而导致的数据缺失了。
+
+### 概述
+
+MySQL 从 5.0.2 版本开始支持触发器。MySQL 的触发器和存储过程一样，都是嵌入到 MySQL 服务器的一段程序。
+
+触发器是由`事件来触发某个操作`，这些事件包括`INSERT`、`UPDATE`、`DELETE`事件。所谓事件就是指用户的动作或者触发某项行为。如果定义了触发程序，当数据库执行这些语句时候，就相当于事件发生了，就会`自动`激发触发器执行相应的操作。
+
+当对数据表中的数据执行插入、更新和删除操作，需要自动执行一些数据库逻辑时，可以使用触发器来实现。
+
+### 触发器的创建
+
+语法：
+
+```mysql
+CREATE TRIGGER 触发器名称
+{BEFORE|AFTER} {INSERT|UPDATE|DELETE} ON 表名
+FOR EACH ROW
+触发器执行的语句块;
+```
+
+- `表名`：表示触发器监控的对象。
+- `BEFORE|AFTER`：表示触发的时间。BEFORE 表示在事件之前触发；AFTER 表示在事件之后触发。
+- `INSERT|UPDATE|DELETE`：表示触发的事件。
+  - INSERT：表示插入记录时触发；
+  - UPDATE：表示更新记录时触发；
+  - DELETE：表示删除记录时触发。
+- `触发器执行的语句块`：可以是单条 SQL 语句，也可以是由 BEGIN…END 结构组成的复合语句块。
+
+示例：
+
+```mysql
+# 创建数据表
+mysql> CREATE TABLE test_trigger (
+    -> id INT PRIMARY KEY AUTO_INCREMENT,
+    -> t_note VARCHAR(30)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> CREATE TABLE test_trigger_log (
+    -> id INT PRIMARY KEY AUTO_INCREMENT,
+    -> t_log VARCHAR(30)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+# 创建名称为before_insert的触发器, 向test_trigger数据表插入数据之前, 向test_trigger_log数据表中插入before_insert的日志信息
+mysql> DELIMITER //
+mysql> CREATE TRIGGER before_insert
+    -> BEFORE INSERT ON test_trigger
+    -> FOR EACH ROW
+    -> BEGIN
+    -> INSERT INTO test_trigger_log (t_log)
+    -> VALUES('before_insert');
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+
+# 向test_trigger数据表中插入数据
+mysql> INSERT INTO test_trigger (t_note) VALUES ('TEST BEFORE INSERT TRIGGER');
+Query OK, 1 row affected (0.00 sec)
+
+# 查看test_trigger_log数据表中的数据
+mysql> SELECT * FROM test_trigger;
++----+----------------------------+
+| id | t_note                     |
++----+----------------------------+
+|  1 | TEST BEFORE INSERT TRIGGER |
++----+----------------------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM test_trigger_log;
++----+---------------+
+| id | t_log         |
++----+---------------+
+|  1 | before_insert |
++----+---------------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+# 创建名称为after_insert的触发器, 向test_trigger数据表插入数据之后, 向test_trigger_log数据表中插入after_insert的日志信息
+mysql> DELIMITER //
+mysql> CREATE TRIGGER after_insert
+    -> AFTER INSERT ON test_trigger
+    -> FOR EACH ROW
+    -> BEGIN
+    -> INSERT INTO test_trigger_log (t_log)
+    -> VALUES('after_insert');
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+
+# 向test_trigger数据表中插入数据
+mysql> INSERT INTO test_trigger (t_note) VALUES ('TEST AFTER INSERT TRIGGER');
+Query OK, 1 row affected (0.01 sec)
+
+# 查看test_trigger_log数据表中的数据
+mysql> SELECT * FROM test_trigger;
++----+----------------------------+
+| id | t_note                     |
++----+----------------------------+
+|  1 | TEST BEFORE INSERT TRIGGER |
+|  2 | TEST AFTER INSERT TRIGGER  |
++----+----------------------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT * FROM test_trigger_log;
++----+---------------+
+| id | t_log         |
++----+---------------+
+|  1 | before_insert |
+|  2 | before_insert |
+|  3 | after_insert  |
++----+---------------+
+3 rows in set (0.00 sec)
+
+```
+
+### 触发器的查看和删除
+
+#### 查看触发器
+
+查看触发器是查看数据库中已经存在的触发器的定义、状态和语法信息等。
+
+方式 1：查看当前数据库的所有触发器的定义。
+
+```mysql
+SHOW TRIGGERS
+```
+
+方式 2：查看当前数据库中某个触发器的定义。
+
+```mysql
+SHOW CREATE TRIGGER 触发器名
+```
+
+方式 3：从系统库 information_schema 的 TRIGGERS 表中查询 salary_check_trigger 触发器的信息。
+
+```mysql
+SELECT * FROM information_schema.TRIGGERS;
+```
+
+#### 删除触发器
+
+触发器也是数据库对象，删除触发器也用 DROP 语句，语法：
+
+```mysql
+DROP TRIGGER IF EXISTS 触发器名称
+```
+
+### 触发器的优缺点
+
+#### 优点
+
+**1、触发器可以确保数据的完整性。**
+
+假设用进货单头表（demo.importhead）来保存进货单的总体信息，包括进货单编号、供货商编号、仓库编号、总计进货数量、总计进货金额和验收日期。用进货单明细表（demo.importdetails）来保存进货商品的明细，包括进货单编号、商品编号、进货数量、进货价格和进货金额。
+
+<img src="mysql/image-20230521232114165.png" alt="image-20230521232114165" style="zoom:67%;" />
+
+每当录入、删除和修改一条进货单明细数据的时候，进货单明细表里的数据就会发生变动。这个时候，在进货单头表中的总计数量和总计金额就必须重新计算，否则，进货单头表中的总计数量和总计金额就不等于进货单明细表中数量合计和金额合计了，这就是数据不一致。
+
+<img src="mysql/image-20230521232141988.png" alt="image-20230521232141988" style="zoom:67%;" />
+
+为了解决这个问题，可以使用触发器，规定每当进货单明细表有数据插入、修改和删除的操作时，自动触发 2 步操作：
+
+- 1）重新计算进货单明细表中的数量合计和金额合计；
+- 2）用第一步中计算出来的值更新进货单头表中的合计数量与合计金额。
+
+这样一来，进货单头表中的合计数量与合计金额的值，就始终与进货单明细表中计算出来的合计数量与合计金额的值相同，数据就是一致的，不会互相矛盾。
+
+**2、触发器可以帮助我们记录操作日志。**
+利用触发器，可以具体记录什么时间发生了什么。比如，记录修改会员储值金额的触发器，就是一个很好的例子。这对还原操作执行时的具体场景，更好地定位问题原因很有帮助。
+
+**3、触发器还可以用在操作数据前，对数据进行合法性检查。**
+
+比如，超市进货的时候，需要库管录入进货价格。但是，人为操作很容易犯错误，比如说在录入数量的时候，把条形码扫进去了；录入金额的时候，看串了行，录入的价格远超售价，导致账面上的巨亏……
+
+这些都可以通过触发器，在实际插入或者更新操作之前，对相应的数据进行检查，及时提示错误，防止错误数据进入系统。
+
+#### 缺点
+
+**1、触发器最大的一个问题就是可读性差。**
+
+因为触发器存储在数据库中，并且由事件驱动，这就意味着触发器有可能`不受应用层的控制`，这对系统维护是非常有挑战的。
+
+比如，创建触发器用于修改会员储值操作。如果触发器中的操作出了问题，会导致会员储值金额更新失败。例如：
+
+```mysql
+mysql> update demo.membermaster set memberdeposit = 20 where memberid = 2;
+ERROR 1054 (42S22): Unknown column 'aa' in 'field list'
+```
+
+结果显示，系统提示错误，字段 aa 不存在。这是因为，触发器中的数据插入操作多了一个字段，系统提示错误。可是，如果你不了解这个触发器，很可能会认为是更新语句本身的问题，或者是会员信息表的结构出了问题。说不定你还会给会员信息表添加一个叫 aa 的字段，试图解决这个问题，结果只能是白费力。
+
+**2、相关数据的变更，可能会导致触发器出错。**
+
+特别是数据表结构的变更，都可能会导致触发器出错，进而影响数据操作的正常运行。这些都会由于触发器本身的隐蔽性，影响到应用中错误原因排查的效率。
+
+#### 注意点
+
+注意，如果在子表中定义了外键约束，并且外键指定了 ON UPDATE/DELETE CASCADE/SET NULL 子句，此时修改父表被引用的键值或删除父表被引用的记录行时，也会引起子表的修改和删除操作，此时基于子表的 UPDATE 和 DELETE 语句定义的触发器并不会被激活。
+
+例如：基于子表员工表（t_employee）的 DELETE 语句定义了触发器 t1，而子表的部门编号（did）字段定义了外键约束，引用了父表部门表（t_department）的主键列部门编号（did），并且该外键加了 ON DELETE SET NULL 子句，那么如果此时删除父表部门表（t_department）在子表员工表（t_employee）有匹配记录的部门记录时，会引起子表员工表（t_employee）匹配记录的部门编号（did）修改为NULL。但是，此时不会激活触发器 t1，只有直接对子表员工表（t_employee）执行 DELETE 语句时，才会激活触发器 t1。
+
+## MySQL 8 其它新特性
+
+// TODO
+
+## 逻辑架构
+
+### 服务器处理客户端请求
+
+首先，MySQL 是典型的 C/S 架构，即`Client/Server`架构，服务器端程序使用的是`mysqld`。
+
+不论客户端进程和服务器进程是采用哪种方式进行通信，最后实现的效果都是：`客户端进程向服务器进程发送一段文本 (SQL 语句)，服务器进程处理后再向客户端进程发送一段文本 (处理结果)`。
+
+那服务器进程对客户端进程发送的请求做了什么处理，才能产生最后的处理结果呢？这里以查询请求为例展示：
+
+<img src="mysql/image-20230523231756382.png" alt="image-20230523231756382" style="zoom:67%;" />
+
+下面具体展开看一下：
+
+<img src="mysql/image-20230523231845664.png" alt="image-20230523231845664" style="zoom:67%;" />
+
+### Connectors
+
+#### 第 1 层：连接层
+
+系统（客户端）访问 MySQL 服务器前，做的第一件事就是`建立 TCP 连接`。经过三次握手建立连接成功后， MySQL 服务器对 TCP 传输过来的账号密码做身份认证、权限获取。
+
+- 用户名或密码不对，会收到一个Access denied for user错误，客户端程序结束执行
+- 用户名密码认证通过，会从权限表查出账号拥有的权限与连接关联，之后的权限判断逻辑，都将依赖于此时读到的权限
+
+TCP 连接收到请求后，必须要分配给一个线程专门与这个客户端的交互。所以还会有个线程池，去走后面的流程，每一个连接从线程池中获取线程，省去了创建和销毁线程的开销。
+
+#### 第 2 层：服务层
+
+**`SQL Interface：SQL 接口`**
+
+- 接收用户的 SQL 命令，并且返回用户需要查询的结果。比如 SELECT ... FROM 就是调用 SQL Interface。
+- MySQL 支持 DML（数据操作语言）、DDL（数据定义语言）、视图、存储过程、触发器、自定义函数等多种 SQL 语言接口。
+
+**`Parser：解析器`**
+
+- 在解析器中对 SQL 语句进行语法分析、语义分析。将 SQL 语句分解成数据结构，并将这个结构传递到后续步骤，以后 SQL 语句的传递和处理就是基于这个结构的。如果在分解构成中遇到错误，那么就说明这个 SQL 语句是不合理的。
+- SQL 命令传递到解析器的时候会被解析器验证和解析，并为其创建`语法树`，并根据数据字典丰富查询语法树，会`验证该客户端是否具有执行该查询的权限`。创建好语法树后，MySQL 还会对 SQl 查询进行语法上的优化，进行查询重写。
+
+**`Optimizer：查询优化器`**
+
+- SQL 语句在语法解析之后、查询之前会使用查询优化器确定 SQL 语句的执行路径，生成一个`执行计划`。
+- 这个执行计划表明应该使用哪些索引进行查询（全表检索还是使用索引检索），表之间的连接顺序如何，最后会按照执行计划中的步骤调用存储引擎提供的方法来真正的执行查询，并将查询结果返回给用户。
+- 它使用`选取-投影-连接`策略进行查询。例如`SELECT id, name FROM student WHERE gender = '女';`。
+  - 这个 SELECT 查询先根据 WHERE语句进行`选取`，而不是将表全部查询出来以后再进行 gender 过滤；
+  - 这个 SELECT 查询先根据 id 和 name 进行属性 投影 ，而不是将属性全部取出以后再进行过滤；
+  - 然后，将这两个查询条件`连接`起来，生成最终查询结果。
+
+**`Caches & Buffers：查询缓存组件`**
+
+- MySQL 内部维持着一些 Cache 和 Buffer，比如 Query Cache 用来缓存一条 SELECT 语句的执行结果，如果能够在其中找到对应的查询结果，那么就不必再进行查询解析、优化和执行的整个过程了，直接将结果反馈给客户端。
+- 这个缓存机制是由一系列小缓存组成的。比如表缓存，记录缓存，key 缓存，权限缓存等。
+- 这个查询缓存可以在不同客户端之间共享。
+- **从 MySQL 5.7.20 开始，不推荐使用查询缓存，并在 MySQL 8.0 中删除。**
+
+#### 第 3 层：引擎层
+
+**插件式存储引擎层（Storage Engines），真正的负责了 MySQL 中数据的存储和提取，对物理服务器级别维护的底层数据执行操作，服务器通过 API 与存储引擎进行通信。**不同的存储引擎具有的功能不同，这样就可以根据实际需要进行选取。
+
+MySQL 8.0.29 默认支持的存储引擎如下：
+
+![image-20230525084914426](mysql/image-20230525084914426.png)
+
+```mysql
+mysql> SHOW ENGINES;
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+9 rows in set (0.00 sec)
+```
+
+#### 存储层
+
+所有的数据，数据库、表的定义，表的每一行的内容，索引，都是存在`文件系统`上，以`文件`的方式存在的，并完成与存储引擎的交互。当然有些存储引擎比如 InnoDB，也支持不使用文件系统直接管理裸设备，但现代文件系统的实现使得这样做没有必要了。在文件系统之下，可以使用本地磁盘，可以使用 DAS、NAS、SAN 等各种存储系统。
+
+#### 小结
+
+本节开篇所示的 MySQL 架构图，为了熟悉 SQL 执行流程方便，可以简化如下：
+
+<img src="mysql/image-20230525085307729.png" alt="image-20230525085307729" style="zoom: 50%;" />
+
+简化为三层结构：
+- **连接层**：客户端和服务器端建立连接，客户端发送 SQL 至服务器端。
+- **SQL 层（服务层）**：对 SQL 语句进行查询处理；与数据库文件的存储方式无关。
+- **存储引擎层**：与数据库文件打交道，负责数据的存储和读取。
+
+### SQL 执行流程
+
+#### MySQL 中的 SQL执行流程
+
+<img src="mysql/image-20230525085940826.png" alt="image-20230525085940826" style="zoom:67%;" />
+
+##### 查询缓存
+
+Server 如果在查询缓存中发现了这条 SQL 语句，就会直接将结果返回给客户端；如果没有，就进入到解析器阶段。需要说明的是，**因为查询缓存往往效率不高，所以在 MySQL 8.0 之后舍弃了这个功能。**
+
+查询缓存是提前把查询结果缓存起来，这样下次不需要执行就可以直接拿到结果。需要说明的是，**在 MySQL 中的查询缓存，不是缓存查询计划，而是查询对应的结果。**这就意味着查询匹配的鲁棒性大大降低，`只有相同的查询操作才会命中查询缓存`。**两个查询请求在任何字符上的不同（例如：空格、注释、大小写），都会导致缓存不会命中，因此 MySQL 的查询缓存命中率不高。**
+
+**同时，如果查询请求中包含某些系统函数、用户自定义变量和函数、一些系统表，如 mysql 、information_schema、 performance_schema 数据库中的表，那这个请求就不会被缓存。**以某些系统函数举例，可能同样的函数的两次调用会产生不一样的结果，比如函数 NOW()，每次调用都会产生最新的当前时间，如果在一个查询请求中调用了这个函数，那即使查询请求的文本信息都一样，那不同时间的两次查询也应该得到不同的结果，如果在第一次查询时就缓存了，那第二次查询的时候直接使用第一次查询的结果就是错误的！
+
+此外，既然是缓存，那就有缓存失效的时候。MySQL 的缓存系统会监测涉及到的每张表，只要该表的结构或者数据被修改，如对该表使用了 INSERT、UPDATE、DELETE、TRUNCATE TABLE、ALTER TABLE、DROP TABLE 或 DROP DATABASE 语句，那使用该表的所有高速缓存查询都将变为无效并从高速缓存中删除！对于更新压力大的数据库来说，查询缓存的命中率会非常低。
+
+##### 解析器
+
+在解析器中对 SQL 语句进行语法分析、语义分析。
+
+<img src="mysql/image-20230526204038015.png" alt="image-20230526204038015" style="zoom:80%;" />
+
+`分析器先做词法分析。`输入的是由多个字符串和空格组成的一条 SQL 语句，MySQL 需要识别出里面的字符串分别是什么，代表什么。 例如，MySQL 从输入的 SELECT 关键字识别出来，这是一个查询语句。另外，MySQL 也要把字符串 T 识别成表名 T，把字符串 ID 识别成列 ID等。接着，要做语法分析。根据词法分析的结果，语法分析器（比如：Bison）会根据语法规则，判断输入的这个 SQL 语句是否满足 MySQL 语法。
+
+```mysql
+SELECT username, ismale FROM userinfo WHERE age >= 20 AND level >= 5 AND 1 = 1;
+```
+
+例如上述语句，如果 SQL 语句正确，则会生成一个这样的语法树：
+
+<img src="mysql/image-20230526195340246.png" alt="image-20230526195340246" style="zoom:80%;" />
+
+##### 优化器
+
+在`优化器中会确定 SQL 语句的执行路径`，比如是根据全表检索，还是根据索引检索等。
+
+例如，如下语句是执行两个表的 JOIN：
+
+```mysql
+SELECT * FROM test1 JOIN test2 USING(ID) WHERE test1.name = 'aaa' AND test2.name = 'bbb'
+```
+
+方案 1：可以先从表 test1 里面取出 name = 'aaa' 的记录的 ID 值，再根据 ID 值关联到表 test2，再判断 test2 里面 name 的值是否等于 'bbb'。
+
+方案 2：可以先从表 test2 里面取出 name = 'bbb' 的记录的 ID 值，再根据 ID 值关联到表 test1，再判断 test1 里面 name 的值是否等于 'aaa'。
+
+这两种执行方法的逻辑结果是一样的，但是执行的效率会有不同，而优化器的作用就是决定选择使用哪一个方案。**优化器阶段完成后，SQL 语句的执行方案就确定下来了，然后进入执行器阶段。**
+
+> 至于优化器是怎么选择索引的，有没有可能选择错等，索引章节再次说明。
+
+在查询优化器中，可以分为`逻辑查询优化阶段`和`物理查询优化阶段`。
+
+- 逻辑查询优化，是通过改变 SQL 语句的内容，来使得 SQL 查询更高效，同时为物理查询优化提供更多的候选执行计划。通常采用的方式是对 SQL 语句进行`等价变换`，对查询进行`重写`，而查询重写的数学基础就是关系代数。对条件表达式进行等价谓词重写、条件简化，对视图进行重写，对子查询进行优化，对连接语义进行了外连接消除、嵌套连接消除等。
+- 物理查询优化，是基于`关系代数`进行的查询重写，而关系代数的每一步都对应着物理计算，这些物理计算往往存在多种算法，因此需要计算各种物理路径的代价，从中选择`代价最小的作为执行计划`。在这个阶段里，对于单表和多表连接的操作，需要高效的`使用索引`，提升查询效率。
+
+##### 执行器
+
+截止到现在，还没有真正去读写真实的表，仅仅只是产出了一个`执行计划`，接下来，就进入了`执行器阶段`。
+
+<img src="mysql/image-20230526204148548.png" alt="image-20230526204148548" style="zoom:80%;" />
+
+<img src="mysql/image-20230527100027557.png" alt="image-20230527100027557" style="zoom:80%;" />
+
+**在执行之前需要判断该用户是否具备权限。**如果没有，就会返回权限错误；如果具备权限，就执行 SQL 查询并返回结果。在 MySQL 8.0 以下的版本，如果设置了查询缓存，这时会将查询结果进行缓存。
+
+例如，表 test 中，name 字段没有索引，对于以下 SQL，执行器的执行流程是这样的：
+
+```mysql
+SELECT * FROM test WHERE name = 'a'
+```
+
+- 调用 InnoDB 引擎接口取 test 表的第一行，判断 name 值是不是 a，如果不是则跳过，如果是则将这行存在结果集中。
+- 调用引擎接口取下一行，重复相同的判断逻辑，直到取到这个表的最后一行。
+- 执行器将上述遍历过程中，所有满足条件的行组成的记录集作为结果集返回给客户端。
+- 至此，这个语句就执行完成了。对于有索引的表，执行的逻辑也差不多。
+
+##### 执行流程
+
+综上，SQL 语句在 MySQL 中的流程是：`SQL 语句 ---> [查询缓存] ---> 解析器 ---> 优化器 ---> 执行器。`
+
+![image-20230526204834548](mysql/image-20230526204834548.png)
+
+#### MySQL 8 中的 SQL 执行原理
+
+**第一步，确认 profiling 是否开启。**
+
+```mysql
+mysql> SELECT @@profiling;
++-------------+
+| @@profiling |
++-------------+
+|           0 |
++-------------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> SHOW VARIABLES LIKE '%profiling%';
++------------------------+-------+
+| Variable_name          | Value |
++------------------------+-------+
+| have_profiling         | YES   |
+| profiling              | OFF   |
+| profiling_history_size | 15    |
++------------------------+-------+
+3 rows in set (0.01 sec)
+
+# profiling=0代表关闭, 需要把profiling打开, 即设置为1
+mysql> SET profiling = 1;
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+```
+
+**第二步，多次执行相同的 SQL 查询。**
+
+```mysql
+mysql> SELECT COUNT(1) FROM employees;
++----------+
+| COUNT(1) |
++----------+
+|      107 |
++----------+
+1 row in set (0.01 sec)
+
+mysql> SELECT COUNT(1) FROM employees;
++----------+
+| COUNT(1) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT COUNT(1) FROM employees;
++----------+
+| COUNT(1) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT COUNT(1) FROM employees;
++----------+
+| COUNT(1) |
++----------+
+|      107 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT COUNT(1) FROM employees;
++----------+
+| COUNT(1) |
++----------+
+|      107 |
++----------+
+1 row in set (0.01 sec)
+```
+
+**第三步，查看 profiles。**
+
+```mysql
+# 查看当前会话产生的所有profiles
+mysql> SHOW profiles;
++----------+------------+-----------------------------------+
+| Query_ID | Duration   | Query                             |
++----------+------------+-----------------------------------+
+|        1 | 0.00148825 | SHOW VARIABLES LIKE '%profiling%' |
+|        2 | 0.00018850 | SELECT DATABASE()                 |
+|        3 | 0.00016375 | SELECT DATABASE()                 |
+|        4 | 0.00073875 | show databases                    |
+|        5 | 0.00081400 | show tables                       |
+|        6 | 0.00087100 | SELECT COUNT(1) FROM employees    |
+|        7 | 0.00092375 | SELECT COUNT(1) FROM employees    |
+|        8 | 0.00126200 | SELECT COUNT(1) FROM employees    |
+|        9 | 0.00078000 | SELECT COUNT(1) FROM employees    |
+|       10 | 0.00096625 | SELECT COUNT(1) FROM employees    |
++----------+------------+-----------------------------------+
+10 rows in set, 1 warning (0.00 sec)
+```
+
+**第四步，查看 profile。**
+
+```mysql
+# 显示最后一次查询的执行计划, 查看程序的执行步骤
+mysql> SHOW profile;
++--------------------------------+----------+
+| Status                         | Duration |
++--------------------------------+----------+
+| starting                       | 0.000132 |
+| Executing hook on transaction  | 0.000029 |
+| starting                       | 0.000022 |
+| checking permissions           | 0.000013 |  # 权限检查
+| Opening tables                 | 0.000079 |  # 打开表
+| init                           | 0.000009 |  # 初始化
+| System lock                    | 0.000013 |  # 锁系统
+| optimizing                     | 0.000006 |  # 优化查询
+| statistics                     | 0.000024 |
+| preparing                      | 0.000019 |  # 准备
+| executing                      | 0.000537 |  # 执行
+| end                            | 0.000006 |
+| query end                      | 0.000003 |
+| waiting for handler commit     | 0.000006 |
+| closing tables                 | 0.000005 |
+| freeing items                  | 0.000060 |
+| cleaning up                    | 0.000007 |
++--------------------------------+----------+
+17 rows in set, 1 warning (0.00 sec)
+```
+
+```mysql
+# 也可以查询指定的Query ID, Query 10即为最后一次查询的ID, 与上面的结果相同
+mysql> SHOW profile FOR QUERY 10;
++--------------------------------+----------+
+| Status                         | Duration |
++--------------------------------+----------+
+| starting                       | 0.000132 |
+| Executing hook on transaction  | 0.000029 |
+| starting                       | 0.000022 |
+| checking permissions           | 0.000013 |
+| Opening tables                 | 0.000079 |
+| init                           | 0.000009 |
+| System lock                    | 0.000013 |
+| optimizing                     | 0.000006 |
+| statistics                     | 0.000024 |
+| preparing                      | 0.000019 |
+| executing                      | 0.000537 |
+| end                            | 0.000006 |
+| query end                      | 0.000003 |
+| waiting for handler commit     | 0.000006 |
+| closing tables                 | 0.000005 |
+| freeing items                  | 0.000060 |
+| cleaning up                    | 0.000007 |
++--------------------------------+----------+
+17 rows in set, 1 warning (0.00 sec)
+```
+
+```mysql
+# 还可以查询更丰富的内容
+mysql> SHOW profile cpu, block io FOR QUERY 10;
++--------------------------------+----------+----------+------------+--------------+---------------+
+| Status                         | Duration | CPU_user | CPU_system | Block_ops_in | Block_ops_out |
++--------------------------------+----------+----------+------------+--------------+---------------+
+| starting                       | 0.000132 | 0.000075 |   0.000061 |            0 |             0 |
+| Executing hook on transaction  | 0.000029 | 0.000013 |   0.000011 |            0 |             0 |
+| starting                       | 0.000022 | 0.000011 |   0.000010 |            0 |             0 |
+| checking permissions           | 0.000013 | 0.000008 |   0.000006 |            0 |             0 |
+| Opening tables                 | 0.000079 | 0.000043 |   0.000036 |            0 |             0 |
+| init                           | 0.000009 | 0.000005 |   0.000003 |            0 |             0 |
+| System lock                    | 0.000013 | 0.000007 |   0.000006 |            0 |             0 |
+| optimizing                     | 0.000006 | 0.000003 |   0.000003 |            0 |             0 |
+| statistics                     | 0.000024 | 0.000013 |   0.000010 |            0 |             0 |
+| preparing                      | 0.000019 | 0.000011 |   0.000009 |            0 |             0 |
+| executing                      | 0.000537 | 0.000849 |   0.000000 |            0 |             0 |
+| end                            | 0.000006 | 0.000006 |   0.000000 |            0 |             0 |
+| query end                      | 0.000003 | 0.000002 |   0.000000 |            0 |             0 |
+| waiting for handler commit     | 0.000006 | 0.000006 |   0.000000 |            0 |             0 |
+| closing tables                 | 0.000005 | 0.000005 |   0.000000 |            0 |             0 |
+| freeing items                  | 0.000060 | 0.000060 |   0.000000 |            0 |             0 |
+| cleaning up                    | 0.000007 | 0.000006 |   0.000000 |            0 |             0 |
++--------------------------------+----------+----------+------------+--------------+---------------+
+17 rows in set, 1 warning (0.00 sec)
+
+mysql> SHOW profile cpu, block io FOR QUERY 9;
++--------------------------------+----------+----------+------------+--------------+---------------+
+| Status                         | Duration | CPU_user | CPU_system | Block_ops_in | Block_ops_out |
++--------------------------------+----------+----------+------------+--------------+---------------+
+| starting                       | 0.000073 | 0.000039 |   0.000032 |            0 |             0 |
+| Executing hook on transaction  | 0.000003 | 0.000002 |   0.000001 |            0 |             0 |
+| starting                       | 0.000006 | 0.000003 |   0.000003 |            0 |             0 |
+| checking permissions           | 0.000004 | 0.000002 |   0.000002 |            0 |             0 |
+| Opening tables                 | 0.000027 | 0.000015 |   0.000012 |            0 |             0 |
+| init                           | 0.000004 | 0.000002 |   0.000001 |            0 |             0 |
+| System lock                    | 0.000006 | 0.000003 |   0.000003 |            0 |             0 |
+| optimizing                     | 0.000004 | 0.000002 |   0.000002 |            0 |             0 |
+| statistics                     | 0.000014 | 0.000008 |   0.000006 |            0 |             0 |
+| preparing                      | 0.000012 | 0.000007 |   0.000006 |            0 |             0 |
+| executing                      | 0.000524 | 0.000477 |   0.000390 |            0 |             0 |
+| end                            | 0.000009 | 0.000003 |   0.000003 |            0 |             0 |
+| query end                      | 0.000003 | 0.000002 |   0.000001 |            0 |             0 |
+| waiting for handler commit     | 0.000006 | 0.000003 |   0.000002 |            0 |             0 |
+| closing tables                 | 0.000006 | 0.000003 |   0.000003 |            0 |             0 |
+| freeing items                  | 0.000073 | 0.000040 |   0.000033 |            0 |             0 |
+| cleaning up                    | 0.000008 | 0.000004 |   0.000003 |            0 |             0 |
++--------------------------------+----------+----------+------------+--------------+---------------+
+17 rows in set, 1 warning (0.00 sec)
+```
+
+#### SQL 语法顺序
+
+随着 MySQL 版本的更新换代，其优化器也在不断的升级，优化器会分析不同执行顺序产生的性能消耗的不同，而动态调整执行顺序。
+
+需求：查询每个部门年龄高于 20 岁的人数，且高于 20 岁人数不能少于 2 人，显示人数最多的部门信息。
+
+下面是经常出现的查询顺序：
+
+<img src="mysql/image-20230526211707843.png" alt="image-20230526211707843" style="zoom:80%;" />
+
+### 数据库缓冲池（Buffer Pool）
+
+InnoDB 存储引擎是以页为单位来管理存储空间的，我们进行的增删改查操作其实本质上都是在访问页面（包括读页面、写页面、创建新页面等操作）。`磁盘 I/O 需要消耗的时间很多，而在内存中进行操作，效率则会高很多。`为了能让数据表或者索引中的数据随时被所用，DBMS 会申请`占用内存来作为数据缓冲池`，在真正访问页面之前，需要把在磁盘上的页缓存到内存中的 Buffer Pool 之后才可以访问。
+
+这样做的好处是可以让磁盘活动最小化，从而`减少与磁盘直接进行 I/O 的时间`。要知道，这种策略对提升 SQL 语句的查询性能来说至关重要，如果索引的数据在缓冲池里，那么访问的成本就会降低很多。
+
+#### 查询缓存 VS 缓冲池
+
+##### 查询缓存
+
+查询缓存是提前把`查询结果缓存`起来，这样下次不需要执行就可以直接拿到结果。需要说明的是，在 MySQL 中的查询缓存，不是缓存查询计划，而是查询对应的结果。因为命中条件苛刻，而且只要数据表发生变化，查询缓存就会失效，因此命中率低。
+
+##### 缓冲池
+
+首先需要了解在 InnoDB 存储引擎中，缓冲池都包括了哪些。
+
+在 InnoDB 存储引擎中有一部分数据会放到内存中，缓冲池则占了这部分内存的大部分，它用来存储各种数据的缓存，如下图所示：
+
+<img src="mysql/image-20230527231237273.png" alt="image-20230527231237273" style="zoom: 67%;" />
+
+从图中，能看到 InnoDB 缓冲池包括了数据页、索引页、插入缓冲、锁信息、自适应 Hash 和数据字典信息等。
+
+**缓存池的重要性：**
+
+对于使用 InnoDB 作为存储引擎的表来说，不管是用于存储用户数据的索引（包括聚簇索引和二级索引），还是各种系统数据，都是以`页`的形式存放在`表空间`中的，而所谓的表空间只不过是 InnoDB 对文件系统上一个或几个实际文件的抽象，也就是说数据归根结底还是存储在磁盘上。同时，磁盘的速度，远远跟不上 CPU 的速度。因此，缓冲池可以很大程度上消除 CPU 和磁盘之间的鸿沟。
+
+所以，InnoDB 存储引擎在处理客户端的请求时，当需要访问某个页的数据时，就会把`完整的页数据全部加载到内存中`，也就是说，即使只需要访问一个页的一条记录，也需要先把整个页的数据加载到内存中。将整个页加载到内存中后，就可以进行读写访问，在进行完读写访问之后，并不会立即把页对应的内存空间释放掉，而是将其`缓存`起来，这样将来有请求再次访问该页面时，就可以`省去磁盘 I/O 的开销`。
+
+**缓存原则：**
+
+`位置 * 频次`这个原则，可以对磁盘 I/O 访问效率进行优化。
+
+首先，位置决定效率，提供缓冲池就是为了在内存中可以直接访问数据。
+
+其次，频次决定优先级顺序。因为缓冲池的大小是有限的，比如磁盘有 200 GB，但是内存只有 16 GB，缓冲池大小只有 1 GB，就无法将所有数据都加载到缓冲池里，这时就涉及到优先级顺序，会`优先对使用频次高的热数据进行加载`。
+
+**缓冲池的预读特性：**
+
+缓冲池的作用是提升磁盘 I/O 效率，而进行读取数据的时候，存在一个`局部性原理`，也就是使用了一些数据后，`大概率还会使用它周围的一些数据`，因此采用`预读`的机制提前加载，可以减少未来可能的磁盘 I/O 操作。
+
+#### 缓冲池如何读取数据
+
+缓冲池管理器会尽量将经常使用的数据保存起来，在数据库进行页面读操作的时候，首先会判断该页面是否在缓冲池中，如果存在就直接读取，如果不存在，就会通过内存或磁盘将页面存放到缓冲池中再进行读取。
+
+缓存在数据库中的结构和作用如下图所示：
+
+<img src="mysql/image-20230527234236438.png" alt="image-20230527234236438" style="zoom:75%;" />
+
+如果执行 SQL 语句的时候更新了缓存池中的数据，那么这些数据会马上同步到磁盘上吗？
+
+实际上，当对数据库中的记录进行修改的时候，首先会修改缓冲池中页里面的记录信息，然后数据库会`以一定的频率刷新到磁盘上`。注意：并不是每一次发生更新操作，都会立刻进行磁盘回写，缓冲池会采用一种叫做`checkpoint`的机制，将数据回写到磁盘上，这样做的好处就是提升了数据库的整体性能。
+
+比如，当缓冲池不够用时，需要释放掉一些不常用的页，此时就可以强行采用 checkpoint 的方式，将不常用的脏页回写到磁盘上，然后再从缓冲池中将这些页释放掉。这些`脏页 (dirty page)`指的是缓冲池中被修改过的页，与磁盘上的数据页不一致。 
+
+#### 查看和设置缓冲池的大小
+
+如果你使用的是 InnoDB 存储引擎，可以通过查看`innodb_buffer_pool_size`变量来查看缓冲池的大小。命令如下：
+
+```mysql
+mysql> SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
++-------------------------+-----------+
+| Variable_name           | Value     |
++-------------------------+-----------+
+| innodb_buffer_pool_size | 134217728 |
++-------------------------+-----------+
+1 row in set (0.00 sec)
+```
+
+InnoDB 的缓冲池大小，默认只有 $134217728 / 1024 / 1024 = 128$ MB。缓冲池大小可以修改，比如改为 256 MB：
+
+```mysql
+mysql> SET GLOBAL innodb_buffer_pool_size = 268435456;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
++-------------------------+-----------+
+| Variable_name           | Value     |
++-------------------------+-----------+
+| innodb_buffer_pool_size | 268435456 |
++-------------------------+-----------+
+1 row in set (0.00 sec)
+```
+
+> 也可以通过配置文件修改：
+>
+> ```ini
+> [server]
+> innodb_buffer_pool_size = 268435456
+> ```
+
+#### 多个缓冲池实例
+
+Buffer Pool 本质是 InnoDB 向操作系统申请的一块`连续的内存空间`，在多线程环境下，访问 Buffer Pool 中的数据都需要`加锁`处理。在 Buffer Pool 特别大而且多线程并发访问特别高的情况下，单一的 Buffer Pool 可能会影响请求的处理速度。所以在 Buffer Pool 特别大的时候，可以把它们`拆分成若干个小的 Buffer Pool`，每个 Buffer Pool 都称为一个`实例`，它们彼此是独立的，独立的申请内存空间，独立的管理各种链表。因此，在多线程并发访问时并不会相互影响，从而提高并发处理能力。
+
+可以在服务器启动的时候，通过设置`innodb_buffer_pool_instances`的值，来修改 Buffer Pool 实例的个数：
+
+```ini
+[server]
+innodb_buffer_pool_instances = 1
+```
+
+命令查看缓冲池实例的个数：
+
+```mysql
+mysql> SHOW VARIABLES LIKE 'innodb_buffer_pool_instances';
++------------------------------+-------+
+| Variable_name                | Value |
++------------------------------+-------+
+| innodb_buffer_pool_instances | 1     |
++------------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+每个 Buffer Pool 实例实际占用的内存空间：`innodb_buffer_pool_size/innodb_buffer_pool_instances`。也就是总共的缓冲池大小除以实例的个数，结果就是每个 Buffer Pool 实例占用的内存空间小。
+
+不过也不是 Buffer Pool 的实例创建的越多越好，分别`管理各个 Buffer Pool 也需要性能开销`，InnoDB 规定：**当 innodb_buffer_pool_size 的值小于 1 GB 的时候，设置多个实例是无效的，此时，InnoDB 会默认把 innodb_buffer_pool_instances 的值修改为 1。当 innodb_buffer_pool_size 的值大于或等于 1 GB 的时候，建议设置多个实例。**
+
+#### 引申问题
+
+Buffer Pool 是 MySQL 内存结构中十分核心的一个组成，可以先把它想象成一个黑盒子。
+
+黑盒下的更新数据流程：
+
+<img src="mysql/image-20230528142238872.png" alt="image-20230528142238872" style="zoom:80%;" />
+
+当查询数据的时候，会先去 Buffer Pool 中查询，如果 Buffer Pool 中不存在，存储引擎会先将数据从磁盘加载到 Buffer Pool 中，然后将数据返回给客户端。同理，当更新某个数据的时候，如果这个数据不存在于 Buffer Pool 中，存储引擎也会先将数据从磁盘加载到 Buffer Pool 中，然后修改 Buffer Pool 中的数据，被修改过的数据（脏数据），会在之后统一刷入磁盘中。
+
+这个过程存在一个问题，假如修改 Buffer Pool 中的数据成功，但还未将数据刷入磁盘时，MySQL 服务发生异常宕机。此时，更新后的数据只存在于 Buffer Pool 中，因为 MySQL 宕机，会导致这部分修改的数据丢失。再者，更新操作到一半时，MySQL 服务发生异常宕机，此时，需要回滚到更新之前的状态，又该如何处理呢？
+
+答案是：`Redo Log 和 Undo Log`。
+
+## 存储引擎
+
+为了便于管理，人们把`连接管理`、`查询缓存`、`语法解析`、`查询优化`这些并不涉及真实数据存储的功能划分为`MySQL Server`的功能，把真实存取数据的功能划分为`存储引擎`的功能。在 MySQL Server 完成了查询优化后，只需要按照生成的`执行计划`调用底层存储引擎提供的 API，获取到数据后返回给客户端就可以了。
+
+简而言之，`存储引擎就是指表的类型`。存储引擎最开始叫表处理器，后来改名未存储引擎，它的功能就是接收上层传下来的指令，然后对表中的数据进行提取或写入操作。
+
+### 查看存储引擎
+
+查看 MySQL 提供的存储引擎：
+
+![image-20230529213631595](mysql/image-20230529213631595.png)
+
+```mysql
+mysql> SHOW ENGINES;
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+9 rows in set (0.00 sec)
+```
+
+### 设置系统默认的存储引擎
+
+查看默认的存储引擎：
+
+```mysql
+# 方式一
+mysql> SHOW VARIABLES LIKE '%storage_engine%';
++---------------------------------+-----------+
+| Variable_name                   | Value     |
++---------------------------------+-----------+
+| default_storage_engine          | InnoDB    |
+| default_tmp_storage_engine      | InnoDB    |
+| disabled_storage_engines        |           |
+| internal_tmp_mem_storage_engine | TempTable |
++---------------------------------+-----------+
+4 rows in set (0.00 sec)
+
+# 方式二
+mysql> SELECT @@default_storage_engine;
++--------------------------+
+| @@default_storage_engine |
++--------------------------+
+| InnoDB                   |
++--------------------------+
+1 row in set (0.00 sec)
+```
+
+如果在创建表的语句中没有显式指定表的存储引擎的话，那就会`默认使用 InnoDB 作为表的存储引擎`。如果想改变表的默认存储引擎的话，可以这样写启动服务器的命令行：
+
+```mysql
+SET DEFAULT_STORAGE_ENGINE = MyISAM;
+```
+
+或者修改 my.cnf 文件，然后重启服务：
+
+```ini
+default-storage-engine=MyISAM
+```
+
+### 设置表的存储引擎
+
+存储引擎是负责对表中的数据进行提取和写入工作的，`可以为不同的表设置不同的存储引擎`，也就是说不同的表可以有不同的物理存储结构，不同的提取和写入方式。
+
+#### 创建表时指定存储引擎
+
+显式的指定表的存储引擎：
+
+```mysql
+CREATE TABLE 表名(
+	建表语句;
+) ENGINE = 存储引擎名称
+```
+
+#### 修改表的存储引擎
+
+如果表已经建好了，也可以修改表的存储引擎：
+
+```mysql
+ALTER TABLE 表名 ENGINE = 存储引擎名称
+```
+
+### 引擎介绍
+
+#### InnoDB 引擎
+
+InnoDB 是`具备外键支持功能的事务存储引擎`。
+
+- MySQL 从 3.23.34a 开始就包含 InnoDB 存储引擎，大于等于 5.5 之后，默认采用 InnoDB 引擎 。
+- InnoDB 是 MySQL 的`默认事务型引擎`，它被设计用来处理大量的短期（short-lived）事务，可以确保事务的完整提交（Commit）和回滚（Rollback）。
+- 除了增加和查询外，还需要更新、删除操作，那么，应优先选择 InnoDB 存储引擎。
+- 除非有非常特别的原因需要使用其他的存储引擎，否则应该优先考虑 InnoDB 引擎。
+- 数据文件结构：
+  - 表名.frm 存储表结构（MySQL 8.0 时，合并在表名.ibd 中）。
+  - 表名.ibd 存储数据和索引。
+- InnoDB是`为处理巨大数据量的最大性能设计`。
+  - 在以前的版本中，字典数据以元数据文件、非事务表等来存储，现在这些元数据文件被删除了。比如：.frm，.par，.trn，.isl，.db.opt 等都在 MySQL 8.0 中不存在了。
+- 对比 MyISAM 存储引擎， InnoDB 写的处理效率差一些 ，并且会占用更多的磁盘空间以保存数据和索引。
+- MyISAM 只缓存索引，不缓存真实数据；InnoDB 不仅缓存索引还要缓存真实数据， 对内存要求较高 ，而且内存大小对性能有决定性的影响。
+
+#### MyISAM 引擎
+
+MyISAM 引擎是`主要的非事务处理存储引擎`。
+
+- MyISAM 提供了大量的特性，包括全文索引、压缩、空间函数（GIS）等，但 MyISAM 不支持事务、行级锁、外键，有一个毫无疑问的缺陷就是崩溃后无法安全恢复。
+- MySQL 5.5 之前默认的存储引擎。
+- 优势是访问的速度快，对事务完整性没有要求或者以 SELECT、INSERT 为主的应用。
+- 针对数据统计有额外的常数存储，故而 COUNT(*) 的查询效率很高。
+- 数据文件结构：
+  - 表名.frm 存储表结构。
+  - 表名.MYD 存储数据 (MYData)。
+  - 表名.MYI 存储索引 (MYIndex)。
+- 应用场景：只读应用或者以读为主的业务。
+
+#### Archive 引擎
+
+Archive 引擎用于数据存档。功能：
+
+<img src="mysql/image-20230531003536964.png" alt="image-20230531003536964" style="zoom:60%;" />
+
+#### Blackhole 引擎
+
+Blackhole 引擎：丢弃写操作，读操作会返回空内容。
+
+#### CSV 引擎
+
+CSV 引擎：存储数据时，以逗号分隔各个数据项。
+
+示例：
+
+```mysql
+mysql> CREATE TABLE test (i INT NOT NULL, c CHAR(10) NOT NULL) ENGINE = CSV;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO test VALUES (1, 'record one'), (2, 'record two');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM test;
++---+------------+
+| i | c          |
++---+------------+
+| 1 | record one |
+| 2 | record two |
++---+------------+
+2 rows in set (0.00 sec)
+```
+
+创建 CSV 表还会创建相应的`元文件`，用于`存储表的状态`和`表中存在的行数`。此文件的名称与表的名称相同，后缀为 CSM。如图所示：
+
+#### Memory 引擎
+
+Memory 引擎：采用的逻辑介质是`内存`， 响应速度很快 ，但是当 mysqld 守护进程崩溃的时候`数据会丢失 `。另外，要求存储的数据是数据长度不变的格式，比如，Blob 和 Text 类型的数据不可用，因为长度是不固定的。
+
+主要特征：
+
+- Memory 同时支持哈希（HASH）索引和 B+ 树索引。
+- Memory表至少比 MyISAM 表要快一个数量级。
+- MEMORY 表的大小是受到限制的。表的大小主要取决于两个参数，分别是 max_rows 和 max_heap_table_size。其中，max_rows 可以在创建表时指定；max_heap_table_size 的大小默认为 16 MB，可以按需要进行扩大。
+- 数据文件与索引文件分开存储。
+- 缺点：数据易丢失，生命周期短。基于这个缺陷，选择 MEMORY 存储引擎时需要特别小心。
+
+使用 Memory 存储引擎的场景：
+
+- 目标数据比较小 ，而且非常频繁的进行访问，在内存中存放数据，如果太大的数据会造成内存溢出。可以通过参数 max_heap_table_size 控制 Memory 表的大小，限制 Memory 表的最大的大小。
+- 如果数据是临时的，而且必须立即可用得到，那么就可以放在内存中。
+- 存储在 Memory 表中的数据如果突然间丢失的话也没有太大的关系。
+
+#### Federated 引擎
+
+Federated 引擎：访问远程表。Federated 引擎是访问其他 MySQL 服务器的一个代理，尽管该引擎看起来提供了一种很好的跨服务器的灵活性，但也经常带来问题，因此默认是禁用的。
+
+#### Merge 引擎
+
+Merge 引擎：管理多个 MyISAM 表构成的表集合。
+
+#### NDB 引擎
+
+NDB 引擎：MySQL 集群专用存储引擎，也叫做 NDB Cluster 存储引擎，主要用于 MySQL Cluster 分布式集群环境，类似于 Oracle 的 RAC 集
+群。
+
+#### 引擎对比
+
+MySQL 中同一个数据库，不同的表可以选择不同的存储引擎。如下表对常用存储引擎做出了对比：
+
+### MyISAM VS InnoDB
+
+| 对比项         | MyISAM                                                     | InnoDB                                                       |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------ |
+| 外键           | 不支持                                                     | 支持                                                         |
+| 事务           | 不支持                                                     | 支持                                                         |
+| 行表锁         | 表锁，即使操作一条记录，也会锁住整个表，不适合高并发的操作 | 行锁，操作时只锁某一行，对其他行没有影响，适合高并发的操作   |
+| 缓存           | 只缓存索引，不缓存真实数据                                 | 不仅缓存索引，也缓存真实数据，对内存要求较高，而且内存大小对性能有决定性的影响 |
+| 自带系统表使用 | Y                                                          | N                                                            |
+| 关注点         | 性能：节省资源、消耗少、简单业务                           | 事务：并发写、事务、更大资源                                 |
+| 默认安装       | Y                                                          | Y                                                            |
+| 默认使用       | N                                                          | Y                                                            |
+
+### InnoDB 补充
+
+#### InnoDB 表的优势
+
+InnoDB 存储引擎在实际应用中拥有诸多优势，比如操作便利、提高了数据库的性能、维护成本低等。如果由于硬件或软件的原因导致服务器崩溃，那么在重启服务器之后不需要进行额外的操作。InnoDB 崩溃恢复功能自动将之前提交的内容定型，然后撤销没有提交的进程，重启之后继续从崩溃点开始执行。
+
+InnoDB 存储引擎在主内存中维护缓冲池，高频率使用的数据将在内存中直接被处理。这种缓存方式应用于多种信息，加速了处理进程。
+
+在专用服务器上，物理内存中高达 80% 的部分被应用于缓冲池。如果需要将数据插入不同的表中，可以设置外键加强数据的完整性。更新或者删除数据，关联数据将会被自动更新或删除。如果试图将数据插入从表，但在主表中没有对应的数据，插入的数据将被自动移除。如果磁盘或内存中的数据出现崩溃，在使用脏数据之前，校验和机制会发出警告。当每个表的主键都设置合理时，与这些列有关的操作会被自动优化。插入、更新和删除操作通过做改变缓冲自动机制进行优化。 **InnoDB 不仅支持当前读写，也会缓冲改变的数据到数据流磁盘。**
+
+InnoDB 的性能优势不只存在于长时运行查询的大型表。在同一列多次被查询时，自适应哈希索引会提高查询的速度。使用 InnoDB 可以压缩表和相关的索引，**可以在不影响性能和可用性的情况下创建或删除索引。**对于大型文本和 BLOB 数据，使用动态行形式，这种存储布局更高效。通过查询 INFORMATION_SCHEMA 库中的表可以监控存储引擎的内部工作。在同一个语句中，InnoDB 表可以与其他存储引擎表混用。即使有些操作系统限制文件大小为 2 GB，InnoDB 仍然可以处理。 **当处理大数据量时，InnoDB 兼顾 CPU，以达到最大性能。**
+
+#### InnoDB 和 ACID 模型
+
+ACID 模型是一系列数据库设计规则，这些规则着重强调可靠性，而可靠性对于商业数据和任务关键型应用非常重要。MySQL 包含类似 InnoDB 存储引擎的组件，与 ACID 模型紧密相连，这样出现意外时，数据不会崩溃，结果不会失真。如果依赖 ACID 模型，可以不使用一致性检查和崩溃恢复机制。如果拥有额外的软件保护，极可靠的硬件或者应用可以容忍一小部分的数据丢失和不一致，可以将 MySQL 设置调整为只依赖部分 ACID 特性，以达到更高的性能。下面是 InnoDB 存储引擎与 ACID 模型相同作用的四个方面：
+- `原子方面`：ACID 的原子方面主要涉及 InnoDB 事务。与 MySQL 相关的特性主要包括：
+  - 自动提交设置。
+  - COMMIT 语句。
+  - ROLLBACK 语句。
+  - 操作 INFORMATION_SCHEMA 库中的表数据。
+- `一致性方面`：ACID 模型的一致性主要涉及保护数据不崩溃的内部 InnoDB 处理过程。与 MySQL 相关的特性主要包括：
+  - InnoDB 双写缓存。
+  - InnoDB 崩溃恢复。
+- `隔离方面`：隔离是应用于事务的级别。与 MySQL 相关的特性主要包括：
+  - 自动提交设置。
+  - SET ISOLATION LEVEL 语句。
+  - InnoDB 锁的低级别信息。
+- `耐久性方面`：ACID 模型的耐久性主要涉及与硬件配置相互影响的 MySQL 软件特性。由于硬件复杂多样化，耐久性方面没有具体的规则可循。与 MySQL 相关的特性有：
+  - InnoDB 双写缓存，通过 innodb_doublewrite 配置项配置。
+  - 配置项 innodb_flush_log_at_trx_commit。
+  - 配置项 sync_binlog。
+  - 配置项 innodb_file_per_table。
+  - 存储设备的写入缓存。
+  - 存储设备的备用电池缓存。
+  - 运行 MySQL 的操作系统。
+  - 持续的电力供应。
+  - 备份策略。
+  - 对分布式或托管的应用，最主要的在于硬件设备的地点以及网络情况。
+
+#### InnoDB 架构
+
+- `缓冲池`：缓冲池是主内存中的一部分空间，用来缓存已使用的表和索引数据。缓冲池使得经常被使用的数据能够直接在内存中获得，从而提高速度。
+- `更改缓存`：更改缓存是一个特殊的数据结构，当受影响的索引页不在缓存中时，更改缓存会缓存辅助索引页的更改。索引页被其他读取操作时会加载到缓存池，缓存的更改内容就会被合并。不同于集群索引，辅助索引并非独一无二的。当系统大部分闲置时，清除操作会定期运行，将更新的索引页刷入磁盘。更新缓存合并期间，可能会大大降低查询的性能。在内存中，更新缓存占用一部分 InnoDB 缓冲池。在磁盘中，更新缓存是系统表空间的一部分。更新缓存的数据类型由 innodb_change_buffering 配置项管理。
+- `自适应哈希索引`：自适应哈希索引将负载和足够的内存结合起来，使得 InnoDB 像内存数据库一样运行，不需要降低事务上的性能或可靠性。这个特性通过 innodb_adaptive_hash_index 选项配置，或者通过 --skip-innodb_adaptive_hash_index 命令行在服务启动时关闭。
+- `重做日志缓存`：重做日志缓存存放要放入重做日志的数据。重做日志缓存大小通过 innodb_log_buffer_size 配置项配置。重做日志缓存会定期地将日志文件刷入磁盘。大型的重做日志缓存使得大型事务能够正常运行而不需要写入磁盘。
+- `系统表空间`：系统表空间包括 InnoDB 数据字典、双写缓存、更新缓存和撤销日志，同时也包括表和索引数据。多表共享，系统表空间被视为共享表空间。
+- `双写缓存`：双写缓存位于系统表空间中，用于写入从缓存池刷新的数据页。只有在刷新并写入双写缓存后，InnoDB 才会将数据页写入合适的位置。
+- `撤销日志`：撤销日志是一系列与事务相关的撤销记录的集合，包含如何撤销事务最近的更改。如果其他事务要查询原始数据，可以从撤销日志记录中追溯未更改的数据。撤销日志存在于撤销日志片段中，这些片段包含于回滚片段中。
+- `每个表一个文件的表空间`：每个表一个文件的表空间是指每个单独的表空间创建在自身的数据文件中，而不是系统表空间中。这个功能通过 innodb_file_per_table 配置项开启。每个表空间由一个单独的 .ibd 数据文件代表，该文件默认被创建在数据库目录中。
+- `通用表空间`：使用 CREATE TABLESPACE 语法创建共享的 InnoDB 表空间。通用表空间可以创建在 MySQL 数据目录之外能够管理多个表并支持所有行格式的表。
+- `撤销表空间`：撤销表空间由一个或多个包含撤销日志的文件组成。撤销表空间的数量由 innodb_undo_tablespaces 配置项配置。
+- `临时表空间`：用户创建的临时表空间和基于磁盘的内部临时表都创建于临时表空间。innodb_temp_data_file_path 配置项定义了相关的路径、名称、大小和属性。如果该值为空，默认会在 innodb_data_home_dir 变量指定的目录下创建一个自动扩展的数据文件。
+- `重做日志`：重做日志是基于磁盘的数据结构，在崩溃恢复期间使用，用来纠正数据。正常操作期间，重做日志会将请求数据进行编码，这些请求会改变 InnoDB 表数据。遇到意外崩溃后，未完成的更改会自动在初始化期间重新进行。
+
+## 索引的数据结构
+
+### 为什么使用索引
+
+`索引是存储引擎用于快速找到数据记录的一种数据结构。` 常将索引比作教科书的目录部分（实际上不是完全一样），通过目录找到对应文章的页码，便可快速定位到需要的文章。MySQL 中也是一样的道理，**进行数据查找时，首先查看查询条件是否命中某条索引，符合则通过索引查找相关数据，如果不符合则需要全表扫描，即一条一条的查找记录，直到找到与条件符合的记录。** 
+
+<img src="mysql/image-20230604194836752.png" alt="image-20230604194836752" style="zoom:80%;" />
+
+如上图所示，数据库没有索引的情况下，数据`分布在硬盘不同的位置上面`，读取数据时，摆臂需要前后摆动查找数据，这样操作非常耗时。如果`数据顺序摆放`，也需要从 1 到 6 行按顺序读取，这样就相当于进行了 6 次 I/O 操作，依旧非常耗时。如果不借助任何索引结构来帮助快速定位数据，假设查找 Col2 = 89 这条记录，就需要逐行查找、比较。从 Col2 = 34 开始，进行比较，发现不是，继续下一行。当前的表只有不到 10 行数据，但是如果表很大，有上千万条数据，就意味着要做很多次磁盘 I/O 才能找到。因为要查找 Col2 = 89 这条记录，CPU 必须先去磁盘查找这条记录，找到之后加载到内存，再对数据进行处理。这个过程最耗时间的就是磁盘 I/0（涉及到磁盘的旋转时间（速度较快）和磁盘的寻道时间（速度慢，耗时））。   
+
+假如给数据使用`二叉树`这样的数据结构进行存储，如下图所示：
+
+<img src="mysql/image-20230604201705988.png" alt="image-20230604201705988" style="zoom: 67%;" />
+
+对字段 Col2 添加索引，就相当于在磁盘上为 Col2 维护了一个索引的数据结构，即这个`二叉搜索树`。二叉搜索树的每个节点存储的是`(K, V) 结构`，key 是 Col2，value 是该 key 所在行的文件指针（地址）。比如：该二叉搜索树的根节点就是 (34, 0x07)。对 Col2 添加了索引之后，这时再去查找 Col2 = 89 这条记录，会先去查找该二叉搜索树（二叉树的遍历查找）。读 34 到内存，因为 89 > 34，继续右侧数据，读 89 到内存，因为 89 = 89，找到数据并返回。然后，根据找到的节点的 value 快速定位到要查找的记录对应的地址。通过上述过程，可以发现，只需要查找两次（两次磁盘 I/O），就可以定位到记录的地址，查询速度也就提高了。
+
+这就是为什么要使用索引的原因，其目的就是为了`减少磁盘 I/O 的次数`，加快查询的速度。
+
+### 索引及其优缺点
+
+#### 索引概述
+
+MySQL 官方对索引的定义为：`索引 (Index) 是帮助 MySQL 高效获取数据的数据结构`。
+
+`索引的本质：索引是数据结构。`可以简单理解为`"排好序的快速查找数据结构"`，满足特定查找算法。这些数据结构以某种方式指向数据， 这样就可以在这些数据结构的基础上实现`高级查找算法`。 
+
+`索引是在存储引擎中实现的`，因此，每种存储引擎的索引，不一定完全相同，并且每种存储引擎不一定支持所有索引类型。同时，存储引擎可以定义每个表的`最大索引数`和`最大索引长度`。所有存储引擎支持每个表至少 16 个索引，总索引长度至少为 256 字节。有些存储引擎支持更多的索引数和更大的索引长度。
+
+#### 优点
+
+- 类似大学图书馆建书目索引，提高数据检索的效率，降低`数据库的 I/O 成本`，这也是创建索引最主要的原因。
+- 通过创建唯一索引，可以保证数据库表中每一行`数据的唯一性`。
+- 在实现数据的参考完整性方面，可以`加速表和表之间的连接`。换句话说，对于有依赖关系的子表和父表联合查询时，可以提高查询速度。
+- 在使用分组和排序子句进行数据查询时，可以显著`减少查询中分组和排序的时间`，降低 CPU 的消耗。
+
+#### 缺点
+
+增加索引也有许多不利的方面，主要表现在如下几个方面：
+
+- `创建索引和维护索引要耗费时间`，并且随着数据量的增加，所耗费的时间也会增加。
+- 索引需要`占磁盘空间`，除了数据表占数据空间之外，每一个索引还要占一定的物理空间， 存储在磁盘上 ，如果有大量的索引，索引文件就可能比数据文件更快达到最大文件尺寸。
+- 虽然索引大大提高了查询速度，同时却会`降低更新表的速度`。当对表中的数据进行增加、删除和修改的时候，索引也要动态地维护，这样就降低了数据的维护速度。
+
+因此，选择使用索引时，需要综合考虑索引的优点和缺点。
+
+> Tips：索引可以提高查询的速度，但是会影响插入记录的速度。这种情况下，最好的办法是先删除表中的索引，然后插入数据，插入完成后再创建索引。
+
+### InnoDB 中索引的推演
+
+#### 索引之前的查找
+
+先来看一个精确匹配的例子：
+
+```mysql
+SELECT [列名列表] FROM 表名 WHERE 列名 = xxx
+```
+
+##### 在一个页中的查找
+
+加和目前表中的记录比较少，所有的记录都可以被存放到一个页中，在查找记录的时候，可以根据搜索条件的不同分为两种情况：
+
+- 以`主键`作为搜索条件：
+  - 可以在页目录中使用`二分法`快速定位到对应的槽，然后再遍历该槽对应分组中的记录，即可快速找到指定的记录。
+- 以`其他列`作为搜索条件：
+  - 因为再数据页中没有对非主键列建立所谓的页目录，所以无法通过二分法快速定位相应的槽。这种情况下，只能从`最小记录`开始，`依次遍历`单链表中的每条记录，然后对比每条记录，是不是符合搜索条件。很显然，这种查找的效率是非常低的。
+
+##### 在很多页中的查找
+
+大部分情况下，表中存放的记录都是非常多的，需要很多的数据页来存储这些记录。在很多页中查找记录，可以分为两个步骤：
+
+- 第一步：定位到记录所在的页。
+- 第二步：从记录所在的页中查找相应的记录。
+
+在没有索引的情况下，不论是根据主键列或者其他列的值进行查找，由于并不能快速的定位到记录所在的页，所以只能`从第一个页沿着双向链表一直往下找`，然后在每一个页中根据上面的查找方式去查找指定的记录。因为要遍历所有的数据页，所以这种方式显然是`超级耗时`的。如果一个表有一亿条记录呢？此时`索引`应运而生。相比一本书的目录，索引更像是图书馆中的书架结构，每一个书架相当于一个数据页，书架上的每一本书相当于表中的一条记录。
+
+<img src="mysql/image-20230604222626409.png" alt="image-20230604222626409" style="zoom:67%;" />
+
+#### 设计索引
+
+
+
+
+
+
 
 
 
