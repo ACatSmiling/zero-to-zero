@@ -335,6 +335,11 @@ PS C:\Users\XiSun>conda activate base
   (base) PS C:\Users\XiSun> conda activate py38
   (py38) PS C:\Users\XiSun>
   ```
+  
+  > PowerShell 可能无法出现激活环境的问题，执行以下步骤：
+  >
+  > 1. 安装库：`conda install -n root -c pscondaenvs pscondaenvs`；
+  > 2. 管理员打开 PowerShell，执行命令：`Set-ExecutionPolicy RemoteSigned`。
 
 在新创建的 py38 环境中安装模块：
 
