@@ -3732,6 +3732,102 @@ mysql> SELECT STR_TO_DATE('2023-01-01 00:00:00', '%Y-%m-%d');
 1 row in set, 1 warning (0.00 sec)
 ```
 
+#### 常用的时间示例
+
+```mysql
+-- 本日起止时间
+mysql> SELECT NOW(), DATE_FORMAT(NOW(), '%Y-%m-%d %00:%00:%00') today_start, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') today_current, DATE_FORMAT(NOW(), '%Y-%m-%d %23:%59:%59') today_end;
++---------------------+---------------------+---------------------+---------------------+
+| NOW()               | today_start         | today_current       | today_end           |
++---------------------+---------------------+---------------------+---------------------+
+| 2023-05-29 16:33:00 | 2023-05-29 00:00:00 | 2023-05-29 16:33:00 | 2023-05-29 23:59:59 |
++---------------------+---------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+-- 本周起止时间
+mysql> SELECT NOW(), DATE_FORMAT(SUBDATE(NOW(), DATE_FORMAT(NOW(), '%w') - 1), '%Y-%m-%d %00:%00:%00') week_start, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') week_current, DATE_FORMAT(SUBDATE(NOW(), DATE_FORMAT(NOW(), '%w') - 7), '%Y-%m-%d %23:%59:%59') week_end;
++---------------------+---------------------+---------------------+---------------------+
+| NOW()               | week_start          | week_current        | week_end            |
++---------------------+---------------------+---------------------+---------------------+
+| 2023-05-29 16:39:49 | 2023-05-29 00:00:00 | 2023-05-29 16:39:49 | 2023-06-04 23:59:59 |
++---------------------+---------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+-- 本月起止时间
+mysql> SELECT NOW(), DATE_FORMAT(NOW(), '%Y-%m-01 %00:%00:%00') month_start, DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') month_current, DATE_FORMAT(LAST_DAY(NOW()), '%Y-%m-%d %23:%59:%59') month_end;
++---------------------+---------------------+---------------------+---------------------+
+| NOW()               | month_start         | month_current       | month_end           |
++---------------------+---------------------+---------------------+---------------------+
+| 2023-05-29 16:44:15 | 2023-05-01 00:00:00 | 2023-05-29 16:44:15 | 2023-05-31 23:59:59 |
++---------------------+---------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+-- 当前时间, 当前时间前推7天, 当前时间前推7天的0点, 当前时间前推7天的24点
+mysql> SELECT NOW(), DATE_SUB(NOW(), INTERVAL 6 DAY) server_day_ago, DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 DAY), '%Y-%m-%d %00:%00:%00') server_day_ago_start, DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 DAY), '%Y-%m-%d %23:%59:%59') server_day_ago_end;
++---------------------+---------------------+----------------------+---------------------+
+| NOW()               | server_day_ago      | server_day_ago_start | server_day_ago_end  |
++---------------------+---------------------+----------------------+---------------------+
+| 2023-06-08 09:55:04 | 2023-06-02 09:55:04 | 2023-06-02 00:00:00  | 2023-06-02 23:59:59 |
++---------------------+---------------------+----------------------+---------------------+
+1 row in set (0.00 sec)
+
+-- 当前时间, 当前时间前推12个月, 当前时间前推12个月的月初的0点, 当前时间前推12个月的月末的24点
+mysql> SELECT NOW(), DATE_SUB(NOW(), INTERVAL 11 MONTH) twelve_month_ago, DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 11 MONTH), '%Y-%m-01 %00:%00:%00') twelve_month_ago_start, DATE_FORMAT(LAST_DAY(DATE_SUB(NOW(), INTERVAL 11 MONTH)), '%Y-%m-%d %23:%59:%59') twelve_month_ago_end;
++---------------------+---------------------+------------------------+----------------------+
+| NOW()               | twelve_month_ago    | twelve_month_ago_start | twelve_month_ago_end |
++---------------------+---------------------+------------------------+----------------------+
+| 2023-06-08 09:53:03 | 2022-07-08 09:53:03 | 2022-07-01 00:00:00    | 2022-07-31 23:59:59  |
++---------------------+---------------------+------------------------+----------------------+
+1 row in set (0.00 sec)
+```
+
+对应的 Java 时间：
+
+```java
+import cn.hutool.core.date.DateUtil;
+import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDateTime;
+
+@Slf4j
+public class DateTimeUtil {
+    public static void main(String[] args) {
+        LocalDateTime now = LocalDateTime.now();
+        log.info("当前时间: {}", now);
+
+        LocalDateTime todayStartTime = DateUtil.toLocalDateTime(DateUtil.beginOfDay(new Date()));
+        LocalDateTime todayEndTime = DateUtil.toLocalDateTime(DateUtil.endOfDay(new Date()));
+        log.info("本日开始时间: {}, 本日结束时间: {}", todayStartTime, todayEndTime);
+
+        LocalDateTime weekStartTime = DateUtil.toLocalDateTime(DateUtil.beginOfWeek(new Date()));
+        LocalDateTime weekEndTime = DateUtil.toLocalDateTime(DateUtil.endOfWeek(new Date()));
+        log.info("本周开始时间: {}, 本周结束时间: {}", weekStartTime, weekEndTime);
+
+        LocalDateTime monthStartTime = DateUtil.toLocalDateTime(DateUtil.beginOfMonth(new Date()));
+        LocalDateTime monthEndTime = DateUtil.toLocalDateTime(DateUtil.endOfMonth(new Date()));
+        log.info("本月开始时间: {}, 本月结束时间: {}", monthStartTime, monthEndTime);
+
+        LocalDateTime serverDayAgoStartTime = DateUtil.toLocalDateTime(DateUtil.beginOfDay(DateUtil.offsetDay(new Date(), -6)));
+        LocalDateTime serverDayAgoEndTime = DateUtil.toLocalDateTime(DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -6)));
+        log.info("当前时间前推7天的0点: {}, 当前时间前推7天的24点: {}", serverDayAgoStartTime, serverDayAgoEndTime);
+
+        LocalDateTime twelveStartTime = DateUtil.toLocalDateTime(DateUtil.beginOfMonth(DateUtil.offsetMonth(new Date(), -11)));
+        LocalDateTime twelveEndTime = DateUtil.toLocalDateTime(DateUtil.endOfMonth(DateUtil.offsetMonth(new Date(), -11)));
+        log.info("当前时间前推12个月的月初的0点: {}, 当前时间前推12个月的月初的24点: {}", twelveStartTime, twelveEndTime);
+	}
+}
+
+结果:
+  当前时间: 2023-06-08T09:58:41.425010100
+  本日开始时间: 2023-06-08T00:00, 本日结束时间: 2023-06-08T23:59:59.999
+  本周开始时间: 2023-06-05T00:00, 本周结束时间: 2023-06-11T23:59:59.999
+  本月开始时间: 2023-06-01T00:00, 本月结束时间: 2023-06-30T23:59:59.999
+  当前时间前推7天的0点: 2023-06-02T00:00, 当前时间前推7天的24点: 2023-06-02T23:59:59.999
+  当前时间前推12个月的月初的0点: 2022-07-01T00:00, 当前时间前推12个月的月初的24点: 2022-07-31T23:59:59.999
+```
+
+> Java 中 LocalDateTime 对应 MySQL 中的 datetime。
+
 ### 流程控制函数
 
 流程处理函数可以根据不同的条件，执行不同的处理流程，可以在 SQL 语句中实现不同的条件选择。MySQL 中的流程处理函数主要包括 IF()、IFNULL() 和 CASE() 函数。
@@ -5646,6 +5742,27 @@ SET column1 = value1, column2 = value2, …, column = valuen
 - 使用 WHERE 子句指定需要更新的数据。
 - 如果省略 WHERE 子句，则表中的所有数据都将被更新。
 
+连表更新：
+
+```mysql
+UPDATE hse_alratk.`work_ticket` ticket
+ 	INNER JOIN hse_alratk.`work_ticket_operation` operation ON ticket.id = operation.work_ticket
+     	and operation.is_audit_complete = 1
+     	and operation.operation_code = 'sign'
+     	and operation.is_deleted = 0
+     	and ticket.is_deleted = 0
+SET ticket.actual_start_time = operation.updated_dt;
+ 
+UPDATE hse_alratk.`work_task` task
+    INNER JOIN (
+     	SELECT work_task, MIN(actual_start_time) AS min_start_time
+     	FROM hse_alratk.`work_ticket`
+     	WHERE actual_start_time IS NOT NULL AND is_deleted = 0
+     	GROUP BY work_task
+    ) a ON a.work_task = task.id AND task.is_deleted = 0
+SET task.actual_start_time = a.min_start_time;
+```
+
 ### 删除数据
 
 使用`DELETE`语句从表中删除数据。
@@ -7103,6 +7220,131 @@ mysql> SELECT * FROM emp_depart;
 | Gietz(Accounting)       |
 +-------------------------+
 106 rows in set (0.00 sec)
+```
+
+#### 示例
+
+不同库的数据连表视图：
+
+```mysql
+-- 作业票视图
+
+-- 对应字段:
+    -- 企业标识, 作业票id, 作业任务id, 作业票编号, 作业名称, 作业内容, 作业具体地点, 作业位置名称, 作业单位名称, 属地单位, 作业类型, 作业等级, 作业状态, 实际开始时间, 实际结束时间, 作业票票样地址, 是否关联JSA, 数据来源(0统建, 1自建)
+
+DROP VIEW IF EXISTS enterprise_self.view_enterprise_self_work_ticket;
+CREATE VIEW enterprise_self.view_enterprise_self_work_ticket
+(company_identity, work_ticket_id, work_task_id, work_ticket_num, work_name, work_content, work_site, work_position_name, work_unit_name, territorial_unit_name, work_type, work_level, work_status, actual_start_time, actual_end_time, ticket_url, if_jsa, source_type)
+AS
+(
+    /*
+	 * 统建系统
+	 */
+    SELECT ticket.tenant, ticket.id, ticket.work_task, ticket.num, ticket.work_name, ticket.work_content, ticket.work_site, ticket.work_position_name, ticket.work_unit_name, ticket.territorial_unit_name, ticket.work_type_code, ticket.work_level, ticket.work_status, ticket.actual_start_time, ticket.actual_end_time, ticket.ticket_url, (CASE WHEN (task.safety_analysis != 0) THEN '关联' ELSE '未关联' END) AS if_jsa, 0 FROM hse_alratk.work_ticket ticket LEFT JOIN hse_alratk.work_task task ON ticket.work_task = task.id WHERE ticket.is_deleted = 0 AND ticket.work_status IN (1, 2, 3, 4)
+	/*
+	 * 自建系统
+	 */
+    UNION ALL
+    SELECT ticket.credit_code, ticket.work_ticket_id, ticket.work_task_id, ticket.work_ticket_code, ticket.work_name, ticket.work_content, '', ticket.work_position_name, ticket.work_unit_name, ticket.department_name, (CASE ticket.work_type_code WHEN 'blinding_pipeline_operation' THEN 'blinding-pipeline_operation' ELSE work_type_code END) AS work_type_code, (CASE ticket.work_level_code WHEN 'super' THEN '特级' WHEN 'first' THEN '一级' WHEN 'second' THEN '二级' WHEN 'third' THEN '三级' WHEN 'forth' THEN '四级' ELSE '-') AS work_level_code, 3, ticket.plan_start_time, ticket.plan_end_time, ticket.work_ticket_file_url, (CASE WHEN (task.jsa_id != '' AND task.jsa_id IS NOT NULL) THEN '关联' ELSE '未关联' END) AS if_jsa, 1 FROM data_sync.work_ticket ticket LEFT JOIN data_sync.work_task task ON ticket.work_task_id = task.work_task_id WHERE ticket.deleted = 0
+);
+```
+
+对应 ddl：
+
+```mysql
+-- 作业票视图
+
+-- 对应字段:
+    -- 企业标识, 作业票id, 作业任务id, 作业票编号, 作业名称, 作业内容, 作业具体地点, 作业位置名称, 作业单位名称, 属地单位, 作业类型, 作业等级, 作业状态, 计划开始时间, 计划结束时间, 实际开始时间, 实际结束时间, 作业票票样地址, 是否关联安全分析, 位置点所属划分区域id, 坐标, 位置名称, 数据上报时间(自建系统), 数据来源(0统建, 1自建)
+
+-- enterprise_data_lake2.view_enterprise_self_work_ticket source
+DROP VIEW IF EXISTS enterprise_data_lake2.view_enterprise_self_work_ticket;
+CREATE OR REPLACE
+ALGORITHM = UNDEFINED VIEW `enterprise_data_lake2`.`view_enterprise_self_work_ticket`
+AS
+-- 统建系统
+SELECT
+    `ticket`.`tenant` AS `company_identity`,
+    `ticket`.`id` AS `work_ticket_id`,
+    `ticket`.`work_task` AS `work_task_id`,
+    `ticket`.`num` AS `work_ticket_num`,
+    `ticket`.`work_name` AS `work_name`,
+    `ticket`.`work_content` AS `work_content`,
+    `ticket`.`work_site` AS `work_site`,
+    `ticket`.`work_position_name` AS `work_position_name`,
+    `ticket`.`work_unit_name` AS `work_unit_name`,
+    `ticket`.`territorial_unit_name` AS `territorial_unit_name`,
+    `ticket`.`work_type_code` AS `work_type`,
+    `ticket`.`work_level` AS `work_level`,
+    `ticket`.`work_status` AS `work_status`,
+    `ticket`.`plan_start_time` AS `plan_start_time`,
+    `ticket`.`plan_end_time` AS `plan_end_time`,
+    `ticket`.`actual_start_time` AS `actual_start_time`,
+    `ticket`.`actual_end_time` AS `actual_end_time`,
+    `ticket`.`ticket_url` AS `ticket_url`,
+    (CASE
+        WHEN (`task`.`safety_analysis` <> 0) THEN '关联'
+        ELSE '未关联'
+    END) AS `if_safety_analysis`,
+    `position`.`region_id` AS `region_id`,
+    `position`.`coordinate` AS `coordinate`,
+    `position`.`position_name` AS `position_name`,
+    NULL AS `report_create_date`,
+    0 AS `source_type`
+FROM
+(`enterprise_data_lake2`.`work_ticket` `ticket`
+    LEFT JOIN `enterprise_data_lake2`.`work_task` `task` ON ((`ticket`.`work_task` = `task`.`id`) AND (`ticket`.`tenant` = `task`.`tenant`))
+    INNER JOIN `enterprise_data_lake2`.`mm_position` `position` ON ((`ticket`.`work_position` = `position`.`id`) AND (`ticket`.`tenant` = `position`.`tenant`))
+)
+WHERE
+((`ticket`.`is_deleted` = 0) AND (`ticket`.`work_status` IN (1, 2, 3, 4)))
+UNION ALL
+-- 自建系统
+SELECT
+    `ticket`.`credit_code` AS `company_identity`,
+    `ticket`.`work_ticket_id` AS `work_ticket_id`,
+    `ticket`.`work_task_id` AS `work_task_id`,
+    `ticket`.`work_ticket_code` AS `work_ticket_num`,
+    `ticket`.`work_name` AS `work_name`,
+    `ticket`.`work_content` AS `work_content`,
+    '' AS `work_site`,
+    `ticket`.`work_position_name` AS `work_position_name`,
+    `ticket`.`work_unit_name` AS `work_unit_name`,
+    `ticket`.`department_name` AS `territorial_unit_name`,
+    (CASE
+        `ticket`.`work_type_code` WHEN 'blinding_pipeline_operation' THEN 'blinding-pipeline_operation'
+        ELSE `ticket`.`work_type_code`
+    END) AS `work_type`,
+    (CASE
+        `ticket`.`work_level_code` WHEN 'super' THEN '特级'
+        WHEN 'first' THEN '一级'
+        WHEN 'second' THEN '二级'
+        WHEN 'third' THEN '三级'
+        WHEN 'forth' THEN '四级'
+        ELSE '-'
+    END) AS `work_level`,
+    3 AS `work_status`,
+    `ticket`.`plan_start_time` AS `plan_start_time`,
+    `ticket`.`plan_end_time` AS `plan_end_time`,
+    `ticket`.`plan_start_time` AS `actual_start_time`,
+    `ticket`.`plan_end_time` AS `actual_end_time`,
+    `ticket`.`work_ticket_file_url` AS `ticket_url`,
+    (CASE
+        WHEN ((`task`.`jsa_id` <> '')
+            AND (`task`.`jsa_id` IS NOT NULL)) THEN '关联'
+        ELSE '未关联'
+    END) AS `if_safety_analysis`,
+    NULL AS `region_id`,
+    NULL AS `coordinate`,
+    NULL AS `position_name`,
+    `ticket`.`report_create_date` AS `report_create_date`,
+    1 AS `source_type`
+FROM
+    (`data_sync`.`work_ticket` `ticket`
+LEFT JOIN `data_sync`.`work_task` `task` ON
+    ((`ticket`.`work_task_id` = `task`.`work_task_id`)))
+WHERE
+    (`ticket`.`deleted` = 0);
 ```
 
 ### 查看视图
@@ -9979,6 +10221,298 @@ SELECT [列名列表] FROM 表名 WHERE 列名 = xxx
 
 #### 设计索引
 
+新建表：
+
+```mysql
+mysql> CREATE TABLE index_demo(
+    -> c1 INT,
+    -> c2 INT,
+    -> c3 CHAR(1),
+    -> PRIMARY KEY(c1)
+    -> ) ROW_FORMAT = Compact;
+Query OK, 0 rows affected (0.03 sec)
+```
+
+这个新建的 index_demo 表中有 2 个 INT 类型的列，1 个 CHAR(1) 类型的列，而且规定了 c1 列为主键，这个表使用 Compact 行格式来实际存储记录。这里简化了 index_demo 表的行格式示意图：
+
+<img src="mysql/image-20230606222031940.png" alt="image-20230606222031940" style="zoom: 50%;" />
+
+只在示意图里展示记录的这几个部分：
+
+- `record_type`：记录头信息的一项属性，表示记录的类型，`0 表示普通记录`、`2 表示最小记录`、`3 表示最大记录`、`1 暂时还没用过`，后面讲。
+- `next_record`：记录头信息的一项属性，表示下一条地址相对于本条记录的地址偏移量，后面演示用箭头来表明下一条记录是谁。
+- 各个列的值 ：这里只记录在 index_demo 表中的三个列，分别是 c1 、 c2 和 c3。
+- 其他信息 ：除了上述 3 种信息以外的所有信息，包括其他隐藏列的值以及记录的额外信息。
+
+将记录格式示意图的其他信息项暂时去掉并把它竖起来的效果就是这样：
+
+<img src="mysql/image-20230606222415698.png" alt="image-20230606222415698" style="zoom:50%;" />
+
+把一些记录放到页里的示意图就是：
+
+<img src="mysql/image-20230606222456421.png" alt="image-20230606222456421" style="zoom:67%;" />
+
+##### 一个简单的索引设计方案
+
+在根据某个搜索条件查找一些记录时为什么要遍历所有的数据页呢？因为各个页中的记录并没有规律，所以并不知道搜索条件会匹配哪些页中的记录，因此不得不依次遍历所有的数据页。所以如果想`快速的定位到需要查找的记录在哪些数据页中`该咋办？此时，可以为快速定位记录所在的数据页`建立一个目录`，而建这个目录必须完成下边这些事：
+
+**`1. 下一个数据页中用户记录的主键值，必须大于上一个页中用户记录的主键值。`**
+
+假设：每个数据页最多能存放 3 条记录（实际上一个数据页非常大，可以存放很多记录），有了这个假设之后，向 index_demo 表插入 3 条记录：
+
+```mysql
+mysql> INSERT INTO index_demo VALUES(1, 4, 'u'), (3, 9, 'd'), (5, 3, 'y');
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+```
+
+那么这些记录已经按照主键值的大小，串联成一个`单向链表`了，如图所示：
+
+<img src="mysql/image-20230606223417885.png" alt="image-20230606223417885" style="zoom: 67%;" />
+
+从图中可以看出，index_demo 表中的 3 条记录，都被插入到编号为 10 的数据页中了。此时，再插入一条记录：
+
+```mysql
+mysql> INSERT INTO index_demo VALUES(4, 4, 'a');
+Query OK, 1 row affected (0.01 sec)
+```
+
+因为页 10 最多只能放 3 条记录，所以不得不再分配一个新页：
+
+<img src="mysql/image-20230606223803991.png" alt="image-20230606223803991" style="zoom:80%;" />
+
+**注意，新分配的数据页编号可能并不是连续的。**它们只是通过维护着上一个页和下一个页的编号而建立了`链表`关系。另外，页 10 中用户记录最大的主键值是 5，而页 28 中有一条记录的主键值是 4，因为 5 > 4，所以这就不符合下一个数据页中用户记录的主键值必须大于上一个页中用户记录的主键值的要求，所以在插入主键值为 4 的记录的时候，需要伴随着一次`记录移动`，也就是把主键值为 5 的记录移动到页 28 中，然后再把主键值为 4 的记录插入到页 10 中，这个过程的示意图如下：
+
+<img src="mysql/image-20230606224336967.png" alt="image-20230606224336967" style="zoom:80%;" />
+
+这个过程表明了在对页中的记录进行增删改操作的过程中，必须通过一些诸如记录移动的操作，来始终保证这个状态一直成立：下一个数据页中用户记录的主键值，必须大于上一个页中用户记录的主键值。而这个过程，称为`页分裂`。
+
+**`2. 给所有的页建立一个目录项。`**
+
+由于数据页的编号可能是不连续的，所以在向 index_demo 表中插入许多条记录后，可能是这样的效果：
+
+![image-20230606224717097](mysql/image-20230606224717097.png)
+
+因为这些`16 KB`的页在物理存储上是`不连续`的，所以如果想从这么多页中根据主键值快速定位某些记录所在的页，需要给它们做个`目录`，每个页对应一个目录项，每个目录项包括下边两个部分：
+
+- 页的用户记录中最下的主键值，用`key`表示。
+- 页号，用`page_no`表示。
+
+所以，为上边几个页做好的目录，就像这个样子：
+
+![image-20230606225951386](mysql/image-20230606225951386.png)
+
+以页 28 为例，它对应目录项 2，这个目录项中包含着该页的页号 28，以及该页中用户记录的最小主键值 5。只需要把几个目录项在物理存储器上连续存储（比如：数组），就可以实现根据主键值快速查找某条记录的功能了。比如，查找主键为 20 的记录，具体查找过程分为两步：
+
+- 第一步，先从目录项中根据`二分法`快速确定出主键值为 20 的记录在目录项 3 中（因为 12 < 20 < 209），它对应的页是页 9。
+- 第二步，再根据前边说的在页中查找记录的方式，去页 9 中定位具体的记录。
+
+至此，针对数据页做的简易目录就搞定了。这个目录有一个别名，称为`索引`。
+
+##### InnoDB 中的索引方案
+
+**`1. 迭代一次：目录项纪录的页。`**
+
+前面称为一个简单的索引设计方案，是因为为了在根据主键值进行查找时，使用二分法快速定位具体的目录，而`假设`所有目录项都可以在物理存储器上`连续存储`，但是这样做有几个问题：
+
+- InnoDB 是使用页来作为管理存储空间的基本单位，最多能保证`16 KB`的连续存储空间，而随着表中记录数量的增多，需要`非常大的连续的存储空间`，才能把所有的目录项都放下，这对记录数量非常多的表是不现实的。
+- 同时，也会时常对记录进行增删操作，假设把页 28 中的记录都删除了，那意味着目录项 2 也就没有存在的必要了，这就需要把目录项 2 后面的目录项都向前移动一下，这样牵一发而动全身的操作效率很差。
+
+所以，需要一种可以`灵活管理所有目录项`的方式。而目录项实际上跟`普通的用户记录`差不多，只不过目录项中的两个列是主键和页号而已，为了和用户记录做一下区分，把这些用来表示目录项的记录称为`目录项记录`。那 InnoDB 是怎么区分一条记录是普通的用户记录还是目录项记录呢？答案是使用记录头信息里的`record_type`属性，它的各个取值含义如下：
+
+- `0`：普通的用户记录。
+- `1`：目录项记录。
+- `2`：最小记录。
+- `3`：最大记录。
+
+然后，把前边使用到的目录项放到数据页中的样子就是这样：
+
+<img src="mysql/image-20230607125107306.png" alt="image-20230607125107306" style="zoom: 67%;" />
+
+从图中可以看出来，新分配了一个编号为 30 的页来专门存储目录项记录。
+
+`目录项记录`和`普通的用户记录`的对比：
+
+- 不同点：
+  - **record_type 值不同：**目录项记录的 record_type 值是`1`，而普通用户记录的 record_type 值是`0`。
+  - **列数不同：**目录项记录只有`主键值和页的编号`两个列，而普通的用户记录的列是用户自己定义的，可能包含`很多列`，另外还有 InnoDB 自己添加的隐藏列。
+  - 了解：记录头信息里还有一个叫`min_rec_mask`的属性，只有在存储目录项记录的页中的主键值最小的目录项记录的 min_rec_mask 值为 1，其他别的记录的 min_rec_mask 值都是 0。
+- 相同点：
+  - 两者用的是一样的数据页，都会为主键值生成`Page Directory`（页目录），从而在按照主键值进行查找时可以使用`二分法`来加快查询速度。
+
+现在以查找主键为 20 的记录为例，根据某个主键值去查找记录的步骤，可以大致拆分成下边两步：
+- 第一步：先到存储目录项记录的页，也就是页 30 中通过二分法快速定位到对应目录项，因为 12 < 20 < 209 ，所以定位到对应的记录所在的页就是页 9。
+- 第二步：再到存储用户记录的页 9 中根据二分法快速定位到主键值为 20 的用户记录。
+
+**`2. 迭代两次：多个目录项纪录的页。`**
+
+虽然说目录项记录中只存储主键值和对应的页号，比用户记录需要的存储空间小多了，但是毕竟一个页只有 16 KB 大小，能存放的目录项记录也是有限的，如果表中的数据太多，以至于一个数据页不足以存放所有的目录项记录，该如何处理呢？
+
+这里假设一个存储目录项记录的页最多只能存放 4 条目录项记录，所以如果此时再向上图中插入一条主键值为 320 的用户记录，那就需要分配一个新的存储目录项记录的页：
+
+<img src="mysql/image-20230607222538285.png" alt="image-20230607222538285" style="zoom: 80%;" />
+
+从图中可以看出，插入了一条主键值为 320 的用户记录之后，需要两个新的数据页：
+
+- 为存储该用户记录而新生成了页 31。
+- 因为原先存储目录项记录的页 30 的容量已满（前边假设只能存储 4 条目录项记录），所以不得不需要一个新的页 32 来存放页 31 对应的目录项。
+
+现在因为存储目录项记录的页不止一个，所以如果想根据主键值查找一条用户记录大致需要 3 个步骤，以查找主键值为 20 的记录为例：
+
+- 第一步：确定目录项记录页。现在的存储目录项记录的页有两个，即页 30 和页 32，又因为页 30 表示的目录项的主键值的范围是 [1, 320)，页 32 表示的目录项的主键值不小于 320 ，所以主键值为 20 的记录对应的目录项记录在页 30 中。
+- 第二步：通过目录项记录页确定用户记录真实所在的页。在一个存储目录项记录的页中通过主键值定位一条目录项记录的方式说过了。
+- 第三步：在真实存储用户记录的页中定位到具体的记录。
+
+**`3. 迭代三次：目录项记录页的目录页。`**
+
+现在问题来了，在上面这个查询步骤的第一步中，需要定位存储目录项记录的页，但是这些页是不连续的，如果表中的数据非常多则会产生很多存储目录项记录的页，那怎么根据主键值快速定位一个存储目录项记录的页呢？答案是为这些目录项记录的页再生成一个`更高级的目录`，就像是一个多级目录一样，大目录里嵌套小目录，小目录里才是实际的数据，所以现在各个页的示意图就是这样子：
+
+<img src="mysql/image-20230607224258033.png" alt="image-20230607224258033" style="zoom: 80%;" />
+
+如图，生成了一个存储更高级目录项的页 33，这个页中的两条记录分别代表页 30 和页 32，如果用户记录的主键值在 [1, 320) 之间，则到页 30 中查找更详细的目录项记录，如果主键值不小于 320 的话，就到页 32 中查找更详细的目录项记录。
+
+随着表中记录的增加，这个目录的层级会继续增加，如果简化一下，可以用下边这个图来描述它：
+
+<img src="mysql/image-20230607225042258.png" alt="image-20230607225042258" style="zoom:80%;" />
+
+这个数据结构，它的名称是**`B+ 树`**。
+
+**`4. B+ Tree`**
+
+不论是存放普通的用户记录的数据页，还是存放目录项记录的数据页，现在都把它们存放到 B+ 树这个数据结构中了，所以也称这些数据页为`节点`。从图中可以看出，实际的普通的用户记录其实都存放在 B+ 树的最底层的节点上，这些节点也称为`叶子节点`，其余用来存放目录项记录的节点称为`非叶子节点`或者`内节点`，其中 B+ 树最上边的那个节点也成为`根节点`。
+
+一个 B+ 树的节点其实可以分成好多层，规定最下边的那层，也就是存放普通的用户记录的那层为`第 0 层`，之后依次往上加。之前做了一个非常极端的假设：存放普通的用户记录的页最多存放 3 条记录，存放目录项记录的页最多存放 4 条记录。其实**真实环境中一个页存放的记录数量是非常大的**，假设所有存放用户记录的叶子节点代表的数据页可以存放 100 条普通的用户记录，所有存放目录项记录的内节点代表的数据页可以存放 1000 条目录项记录，那么：
+
+- 如果 B+ 树只有 1 层，也就是只有 1 个用于存放普通的用户记录的节点，则最多能存放 100 条普通的用户记录。
+- 如果 B+ 树有 2 层，则最多能存放 1000 × 100 = 10,0000 条普通的用户记录。
+- 如果 B+ 树有 3 层，则最多能存放 1000 × 1000 × 100 = 1,0000,0000 条普通的用户记录。
+- 如果 B+ 树有 4 层，则最多能存放 1000 × 1000 × 1000 × 100 = 1000,0000,0000 条普通的用户记录。这是相当多的记录！！！
+
+你的表里能存放 1000,0000,0000 条记录吗？所以一般情况下，我们`用到的 B+ 树都不会超过 4 层`，那通过主键值去查找某条记录最多只需要在 4 个页面内查找（查找 3 个目录项页和 1 个用户记录页），又因为在每个页面内有所谓的`Page Directory`（页目录），所以在页面内也可以通过`二分法`实现快速定位记录。   
+
+#### 常见的索引概念
+
+索引按照物理实现方式，索引可以分为 2 种：`聚簇 (聚集) 索引`和`非聚簇 (非聚集) 索引`。我们也把非聚集索引称为`二级索引`或者`辅助索引`。
+
+##### 聚簇索引
+
+`聚簇索引`并不是一种单独的索引类型，而是`一种数据存储方式`（所有的普通的用户记录都存储在叶子节点），也就是所谓的`索引即数据，数据即索引`。
+
+> 术语 "聚簇" 表示数据行和相邻的键值聚簇的存储在一起。
+
+**特点：**
+
+- 使用记录主键值的大小进行记录和页的排序，这包括三个方面的含义：
+  - `页内的记录`是按照主键的大小顺序排成一个`单向链表`。
+  - 各个存放`普通的用户记录的页`，也是根据页中用户记录的主键大小顺序排成一个`双向链表`。
+  - 存放`目录项记录的页`分为不同的层次，在同一层次中的页也是根据页中目录项记录的主键大小顺序排成一个`双向链表`。
+
+- B+ 树的`叶子节点`存储的是完整的用户记录。
+  - 所谓完整的用户记录，就是指这个记录中存储了所有列的值（包括隐藏列）。
+
+我们把具有这两种特性的 B+ 树称为`聚簇索引`，所有完整的普通的用户记录都存放在这个聚簇索引的叶子节点上。这种聚簇索引并不需要在 MySQL 语句中显式的使用 INDEX 语句去创建，InnoDB 存储引擎会`自动`的创建聚簇索引。
+
+**优点：**
+
+- `数据访问更快`，因为聚簇索引将索引和数据保存在同一个 B+ 树中，因此从聚簇索引中获取数据比非聚簇索引更快。
+- 聚簇索引对于主键的`排序查找`和`范围查找`速度非常快。
+- 按照聚簇索引排列顺序，查询显示一定范围数据的时候，由于数据都是紧密相连，数据库不用从多个数据块中提取数据，所以`节省了大量的 I/O 操作`。
+
+**缺点：**
+
+- `插入速度严重依赖于插入顺序`，按照主键的顺序插入是最快的方式，否则将会出现页分裂，严重影响性能。因此，对于 InnoDB 表，一般都会定义一个**自增的 ID 列为主键**。
+- `更新主键的代价很高`，因为将会导致被更新的行移动。因此，对于 InnoDB 表，一般定义**主键为不可更新**。
+- `二级索引访问需要两次索引查找`，第一次找到主键值，第二次根据主键值找到行数据。
+
+**限制：**
+
+- 对于 MySQL 数据库目前只有 InnoDB 存储引擎支持聚簇索引，MyISAM 存储引擎不支持聚簇索引。
+- 由于数据物理存储排序方式只能有一种，所以`每个 MySQL 的表只能有一个聚簇索引`。**一般情况下，就是该表的主键。**
+- 如果没有定义主键，InnoDB 会选择`非空的唯一索引`代替。如果没有这样的索引，InnoDB 会`隐式的定义一个主键`来作为聚簇索引。
+- InnoDB 只聚集在同一个页面中的记录。包含相邻键值的页面可能相距甚远。**如果已经设置了主键为聚簇索引，必须先删除主键，然后才能添加想要的聚簇索引，最后恢复设置主键即可**。
+- 为了充分利用聚簇索引的聚簇特性，所以 InnoDB 表的主键尽量`选用有序的顺序 ID`，而不建议使用无序的 ID，比如 UUID，MD5，HASH，字符串列等这种无法保证数据的顺序增长的字段作为主键。
+
+##### 非聚簇索引（二级索引、辅助索引）
+
+上边介绍的聚簇索引，只能在搜索条件是`主键值`时才能发挥作用，因为 B+ 树中的数据都是按照主键进行排序的。那如果需要以其他的列作为搜索条件该怎么办呢？肯定不能是从头到尾沿着链表依次遍历用户记录一遍。
+
+答案：可以多建几颗 B+ 树，不同的 B+ 树中的数据采用不同的排序规则。比方说用 c2 列的大小作为数据页、页中记录的排序规则，再建一颗 B+ 树，效果如下图所示：
+
+<img src="mysql/image-20230608084834004.png" alt="image-20230608084834004" style="zoom:67%;" />
+
+这个 B+ 树与上边介绍的聚簇索引有几处不同：
+
+- 使用记录 c2 列的大小进行记录和页的排序，这包括三个方面的含义：
+  - 页内的记录是按照 c2 列的大小顺序排成一个`单向链表`。
+  - 各个存放用户记录的页，也是根据页中记录的 c2 列的大小顺序排成一个`双向链表`。
+  -  存放目录项记录的页分为不同的层次，在同一层次中的页也是根据页中目录项记录的 c2 列的大小顺序排成一个`双向链表`。
+- B+ 树的叶子节点存储的并不是完整的用户记录，而只是`c2 列 + 主键`这两个列的值。
+- 目录项记录中不再是`主键 + 页号`的搭配，而是`c2 列 + 页号`的搭配。
+
+所以，如果现在想通过 c2 列的值查找某些记录的话，就可以使用刚刚建好的这个 B+ 树了。以查找 c2 列的值为 4 的用用户记录为例，查找过程如下：
+
+- 确定目录项记录。
+  - 根据根页面，也就是页 44，可以快速定位到目录项记录所在的页为页 42（因为 2 < 4 < 9）。
+- 通过目录项记录页确定用户记录真实所在的页。
+  - 在页 42 中，可以快速定位到实际存储用户记录的页，但是由于 c2 列并没有唯一性约束，所以 c2 列的值为 4 的记录可能分布在多个数据页中，又因为 2 < 4 ≤ 4，所以确定实际存储用户记录的页在页 34 和页 35 中。
+- 在真实存储用户记录的页中定位到具体的记录。
+  - 到页 34 和页 35 中定位到具体的记录。
+- 因为这个 B+ 树的叶子节点中的记录只存储了 c2 和 c1（即主键）这两个列，所以必须再根据主键值去聚簇索引中再查找一边完整的用户记录。
+
+**`概念：回表。`**
+
+根据这个以 c2 列大小排序的 B+ 树只能确定要查找记录的主键值，所以如果想根据 c2 列的值查找到完整的用户记录的话，仍然需要到聚簇索引中再查一遍，这个过程称为`回表`。也就是根据 c2 列的值查询一条完整的用户记录需要使用到 2 棵 B+ 树！
+
+问题：为什么还需要一次回表操作呢？直接把完整的用户记录放到叶子节点不行吗？
+
+回答：如果把完整的用户记录放到叶子节点确实可以不用回表，但是这样会占据大量存储空间，相当于每建立一颗 B+ 树都需要把所有的用户记录再拷贝一份，有点太浪费存储空间。
+
+因为这种按照`非主键列`建立的 B+ 树需要一次回表操作才可以定位到完整的用户记录，所以这种 B+ 树也被称为`二级索引`（Secondary Index），或者`辅助索引`。由于使用的是 c2 列的大小作为 B+ 树的排序规则，所以也称这个 B+ 树是为 c2 列建立的索引。
+
+**非聚簇索引的存在不影响数据在聚簇索引中的组织，所以一张表可以有多个非聚簇索引。**
+
+<img src="mysql/image-20230608170017250.png" alt="image-20230608170017250" style="zoom: 50%;" />
+
+##### 聚簇索引 VS 非聚簇索引
+
+聚簇索引与非聚簇索引的原理不同，在使用上也有一些区别：
+
+- 聚簇索引的叶子节点存储的就是用户的`数据记录`，非聚簇索引的叶子节点存储的是`数据位置`。非聚簇索引不会影响数据表的物理存储顺序。
+- 一个表`只能有一个聚簇索引`，因为只能有一种排序存储的方式，但`可以有多个非聚簇索引`，也就是多个索引目录提供数据检索。
+- 使用聚簇索引的时候，数据的查询效率高。**聚簇索引列进行更新、插入或删除操作，那么整个簇将被更新。**这意味着聚簇索引对于需要频繁修改其数据的表可能不太适合。
+
+##### 联合索引
+
+我们也可以同时以多个列的大小作为排序规则，也就是同时为多个列建立索引，比如想让 B+ 树按照 c2 和 c3 列的大小进行排序，这个包含两层含义：
+
+- 先把各个记录和页按照 c2 列进行排序。
+- 在记录的 c2 列相同的情况下，采用 c3 列进行排序。
+
+为 c2 和 c3 列建立的索引的示意图如下：
+
+<img src="mysql/image-20230608174847310.png" alt="image-20230608174847310" style="zoom: 50%;" />
+
+如图所示，需要注意以下几点：
+
+- 每条目录项记录都是由 c2、c3 和页号这三个部分组成，各条记录先按照 c2 列的值进行排序，如果记录的 c2 列相同，则按照 c3 列的值进行排序。
+- B+ 树叶子节点处的用户记录由 c2、c3 和主键 c1 列组成。
+
+注意一点，以 c2 和 c3 列的大小为排序规则建立的 B+ 树称为`联合索引`，本质上也是一个二级索引。它的意思与为 c2 和 c3 列分别建立索引的表述是不同的，不同点如下：
+
+- 建立联合索引只会建立如上图一样的 1 棵 B+ 树。
+- 为 c2 和 c3 列分别建立索引，会分别以 c2 和 c3 列的大小为排序规则建立 2 棵 B+ 树。
+
+#### InnoDB 的 B+ 树索引的注意事项
+
+##### 根页面位置万年不动
+
+
+
+##### 内节点中目录项记录的唯一性
+
+
+
+##### 一个页面最少存储 2 条记录
 
 
 
@@ -9988,6 +10522,11 @@ SELECT [列名列表] FROM 表名 WHERE 列名 = xxx
 
 
 
+
+
+
+
+ 
 
 
 
