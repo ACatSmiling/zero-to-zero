@@ -11510,13 +11510,168 @@ Records: 4  Duplicates: 0  Warnings: 0
 
 ##### 记录的真实数据
 
+记录的真实数据除了我们自己定义的列的数据以外，还会有三个隐藏列：
 
+| 列名           | 是否必须 | 占用空间 | 描述                    |
+| -------------- | -------- | -------- | ----------------------- |
+| row_id         | 否       | 6 字节   | 行 ID，唯一标识一条记录 |
+| transaction_id | 是       | 6 字节   | 事务 ID                 |
+| roll_pointer   | 是       | 7 字节   | 回滚指针                |
+
+实际上这几个列的真正名称其实是：DB_ROW_ID、DB_TRX_ID、DB_ROLL_PTR。
+
+- 如果一个表没有手动定义主键，则会选取一个 Unique 键作为主键，如果连 Unique 键都没有定义的话，则会为表默认添加一个名为 row_id 的隐藏列作为主键，所以 row_id 是在没有自定义主键以及 Unique 键的情况下才会存在的。
+
+- 事务 ID 和回滚指针在后面的 MySQL 事务日志章节中讲解。
+
+创建表 mytest：
+
+```mysql
+mysql> CREATE TABLE mytest(
+    -> col1 VARCHAR(10),
+    -> col2 VARCHAR(10),
+    -> col3 CHAR(10),
+    -> col4 VARCHAR(10)
+    -> )ENGINE=INNODB CHARSET=LATIN1 ROW_FORMAT=COMPACT;
+```
+
+插入数据：
+
+```mysql
+mysql> INSERT INTO mytest
+    -> VALUES
+    -> ('a','bb','bb','ccc'),
+    -> ('d','ee','ee','fff'),
+    -> ('d',NULL,NULL,'fff');
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+```
+
+在 Windows 操作系统下，可以选择通过程序 UltraEdit 打开表空间文件 mytest.ibd 这个二进制文件。内容如下：
+
+```mysql
+------------------------------------------------------------------------------------------
+0000c070 73 75 70 72 65 6d 75 6d 03 02 01 00 00 00 10 00|supremum........|
+0000c080 2c 00 00 00 2b 68 00 00 00 00 00 06 05 80 00 00|,...+h..........|
+0000c090 00 32 01 10 61 62 62 62 62 20 20 20 20 20 20 20|.2..abbbb|
+0000c0a0 20 63 63 63 03 02 01 00 00 00 18 00 2b 00 00 00|ccc........+...|
+0000c0b0 2b 68 01 00 00 00 00 06 06 80 00 00 00 32 01 10|+h...........2..|
+0000c0c0 64 65 65 65 65 20 20 20 20 20 20 20 20 66 66 66|deeeefff|
+0000c0d0 03 01 06 00 00 20 ff 98 00 00 00 2b 68 02 00 00|..........+h...|
+0000c0e0 00 00 06 07 80 00 00 00 32 01 10 64 66 66 66 00|........2..dfff.|
+------------------------------------------------------------------------------------------
+```
+
+![image-20230612230941246](mysql/image-20230612230941246.png)
+
+该行记录从0000c078开始，参考下面：
+
+```mysql
+---------------------------------------------------------------------
+03 02 01                     /*变长字段长度列表，逆序*/
+00                              /*NULL标志位，第一行没有NULL值*/
+00 00 10 00 2c            /*Record Header，固定5字节长度*/
+00 00 00 2b 68 00       /*RowID InnoDB自动创建，6字节*/
+00 00 00 00 06 05       /*TransactionID*/
+80 00 00 00 32 01 10   /*Roll Pointer*/
+61                               /*列1数据'a'*/
+62 62                          /*列2数据'bb'*/
+62 62 20 20 20 20 20 20 20 20/*列3数据'bb'*/
+63 63 63                     /*列4数据'ccc'*/
+---------------------------------------------------------------------
+```
+
+- 注意 1：InnoDB 每行有隐藏列 TransactionID 和 Roll Pointer。
+
+- 注意 2：固定长度 CHAR 字段在未能完全占用其长度空间时，会用 0x20 来进行填充。
+
+接着再来分析下 Record Header 的最后两个字节，这两个字节代表 next_recorder，0x2c 代表下一个记录的偏移量，即当前记录的位置加上偏移量 0x2c 就是下条记录的起始位置。
+
+第二行将不做整理，除了 RowID 不同外，它和第一行大同小异，现在来分析有 NULL 值的第三行：
+
+```mysql
+---------------------------------------------------------------------
+03 01                               /*变长字段长度列表，逆序*/
+06                                   /*NULL标志位，第三行有NULL值*/
+00 00 20 ff 98                  /*Record Header*/
+00 00 00 2b 68 02           /*RowID*/
+00 00 00 00 06 07           /*TransactionID*/
+80 00 00 00 32 01 10       /*Roll Pointer*/
+64                                   /*列1数据'd'*/
+66 66 66                         /*列4数据'fff'*/
+---------------------------------------------------------------------
+```
+
+第三行有 NULL 值，因此 NULL 标志位不再是 00 而是 06，转换成二进制为 00000110，为 1 的值代表第 2 列和第 3 列的数据为 NULL。在其后存储列数据的部分，用户会发现没有存储 NULL 列，而只存储了第 1 列和第 4 列非 NULL 的值。
+
+因此这个例子很好地说明了：不管是 CHAR 类型还是 VARCHAR 类型，在 Compact 格式下 NULL 值都不占用任何存储空间。
 
 #### Dynamic 和 Compressed 行格式
 
+##### 行溢出
 
+**InnoDB 存储引擎可以将一条记录中的某些数据存储在真正的数据页面之外。**
 
-#### Redundant 行格式
+很多 DBA 喜欢 MySQL 数据库提供的 VARCHAR(M) 类型，认为可以存放 65535 字节。这是真的吗？如果我们使用 ASCⅡ 字符集的话，一个字符就代表一个字节，我们看看 VARCHAR(65535) 是否可用：
+
+```mysql
+mysql> CREATE TABLE varchar_size_demo(
+    -> c VARCHAR(65535)
+    -> ) CHARSET=ascii ROW_FORMAT=Compact;
+ERROR 1118 (42000): Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. This includes storage overhead, check the manual. You have to change some columns to TEXT or BLOBs
+```
+
+报错信息表达的意思是：**MySQL 对一条记录占用的最大存储空间是有限制的，除 BLOB 或者 TEXT 类型的列之外， 其他所有的列（不包括隐藏列和记录头信息）占用的字节长度加起来`不能超过 65535 个字节`。**
+
+这个 65535 个字节除了列本身的数据之外，还包括一些其他的数据，以 Compact 行格式为例，比如说我们为了存储一个 VARCHAR(M) 类型的列，除了真实数据占有空间以外，还需要记录的额外信息。
+
+如果该 VARCHAR 类型的列没有 NOT NULL 属性，那最多只能存储 65532 个字节的数据，因为变长字段的长度占用 2 个字节，NULL 值标识需要占用 1 个字节：
+
+```mysql
+mysql> CREATE TABLE varchar_size_demo(
+    -> c VARCHAR(65532)
+    -> ) CHARSET=ascii ROW_FORMAT=Compact;
+Query OK, 0 rows affected (0.04 sec)
+```
+
+如果有 NOT NULL 属性，那么就不需要 NULL 值标识，也就可以多存储一个字节，即 65533 个字节：
+
+```mysql
+mysql> CREATE TABLE varchar_size_demo( 
+    -> c VARCHAR(65533) NOT NULL
+    -> ) CHARSET=ascii ROW_FORMAT=Compact; 
+Query OK, 0 rows affected (0.03 sec)
+```
+
+因为一个页的大小一般是 16 KB，也就是 16384 字节，而一个 VARCHAR(M) 类型的列就最多可以存储 65533 个字节，这样就可能出现一个页存放不了一条记录，这种现象称为`行溢出`。
+
+在 Compact 和 Reduntant 行格式中，对于占用存储空间非常大的列，在记录的真实数据处只会存储该列的一部分数据，把剩余的数据`分散存储`在几个其他的页中进行分页存储，然后记录的真实数据处用 20 个字节存储指向这些页的地址（当然这 20 个字节中还包括这些分散在其他页面中的数据的占用的字节数），从而可以找到剩余数据所在的页。这称为`页的扩展`，举例如下：
+
+<img src="mysql/image-20230612232727302.png" alt="image-20230612232727302" style="zoom:80%;" />
+
+##### Dynamic 和 Compressed 行格式
+
+`在 MySQL 8.0 中，默认行格式就是 Dynamic。`Dynamic、Compressed 行格式和 Compact 行格式挺像，只不过在处理行溢出数据时有分歧：
+
+- Dynamic 和 Compressed 两种记录格式，对于存放在 BLOB 中的数据采用了完全的行溢出的方式。如图，在数据页中只存放 20 个字节的指针（溢出页的地址），实际的数据都存放在 Off Page （溢出页）中。
+
+  <img src="mysql/image-20230613125139626.png" alt="image-20230613125139626" style="zoom:67%;" />
+
+- Compact 和 Redundant 两种格式会在记录的真实数据处存储一部分数据（存放 768 个前缀字节）。
+
+Compressed 行记录格式的另一个功能就是，存储在其中的行数据会以 zlib 的算法进行压缩，因此对于 BLOB、TEXT、VARCHAR 这类大长度类型的数据能够进行非常有效的存储。
+
+##### Redundant 行格式
+
+Redundant 是 MySQL 5.0 版本之前 InnoDB 的行记录存储方式，MySQL 5.0 支持 Redundant 是为了兼容之前版本的页格式。
+
+现在把表 record_test_table 的行格式修改为 Redundant：
+
+```mysql
+mysql> ALTER TABLE record_test_table ROW_FORMAT=Redundant;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
 
 
 
