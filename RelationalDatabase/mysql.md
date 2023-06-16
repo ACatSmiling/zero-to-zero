@@ -3178,7 +3178,62 @@ mysql> SELECT last_name, job_title, department_name FROM employees, departments,
 mysql> SELECT last_name, job_title, department_name FROM employees INNER JOIN departments INNER JOIN jobs ON employees.department_id = departments.department_id AND employees.job_id = jobs.job_id;
 ```
 
->注意：`要控制连接表的数量`。多表连接就相当于嵌套 for 循环一样，非常消耗资源，会让 SQL 查询性能下降得很严重，因此不要连接不必要的表。在许多 DBMS 中，也都会有最大连接表的限制。
+>注意：`要控制连接表的数量`。多表连接就相当于嵌套 for 循环一样，非常消耗资源，会让 SQL 查询性能下降得很严重，因此不要连接不必要的表。在许多 DBMS 中，也都会有最大连接表的限#制。
+
+### 连表查询的条件问题
+
+正确写法：
+
+```mysql
+SELECT 
+  ledger.credit_code AS '统一社会信用代码', info.company_name AS '企业名称', ledger.hazard_ledger_id AS '主键',
+  (CASE ledger.danger_level WHEN 1 THEN '一级' WHEN 2 THEN '二级' WHEN 3 THEN '三级' WHEN 4 THEN '四级' ELSE ledger.danger_level END) AS '隐患等级',
+  (CASE ledger.manager_level WHEN 0 THEN '集团级' WHEN 1 THEN '公司级' WHEN 2 THEN '企业级' WHEN 3 THEN '车间级' WHEN 4 THEN '装置级' ELSE ledger.manager_level END) AS '管理级别',
+  ledger.danger_type AS '隐患类型分类编码',
+  (CASE 
+        WHEN ledger.danger_type LIKE '1-%' THEN '健康' 
+        WHEN ledger.danger_type LIKE '2-%' THEN '安全' 
+        WHEN ledger.danger_type LIKE '3-%' THEN '环保' 
+        WHEN ledger.danger_type LIKE '4-%' THEN '节能' 
+        WHEN ledger.danger_type LIKE '5-%' THEN '低碳' 
+        WHEN ledger.danger_type LIKE '6-%' THEN '安保' 
+        ELSE ledger.danger_type 
+   END) AS '隐患类型一级分类',
+  -- ledger.danger_name AS '隐患名称', ledger.danger_description AS '隐患描述', ledger.danger_src AS '隐患来源', ledger.danger_type AS '隐患类型(专业)', ledger.danger_type1 AS '隐患类型(危害因素)', ledger.danger_type2 AS '隐患类型(体系)',
+  ledger.find_by_name AS '发现人', ledger.find_date AS '发现时间', ledger.registration_by_name AS '登记人', ledger.regist_time AS '登记时间', '自建系统' AS '系统类型', NOW() AS '导出时间'
+FROM dp_phd_ledger ledger
+LEFT JOIN company_info info ON ledger.credit_code = info.credit_code AND info.deleted = 0 # 注意此处
+WHERE ledger.deleted = 0 AND ledger.danger_type IS NOT NULL AND ledger.find_date >= '2023-05-01 00:00:00' 
+ORDER BY ledger.credit_code, DATE_FORMAT(ledger.find_date, '%Y-%m-%d')
+```
+
+错误写法：
+
+```mysql
+SELECT 
+  ledger.credit_code AS '统一社会信用代码', info.company_name AS '企业名称', ledger.hazard_ledger_id AS '主键',
+  (CASE ledger.danger_level WHEN 1 THEN '一级' WHEN 2 THEN '二级' WHEN 3 THEN '三级' WHEN 4 THEN '四级' ELSE ledger.danger_level END) AS '隐患等级',
+  (CASE ledger.manager_level WHEN 0 THEN '集团级' WHEN 1 THEN '公司级' WHEN 2 THEN '企业级' WHEN 3 THEN '车间级' WHEN 4 THEN '装置级' ELSE ledger.manager_level END) AS '管理级别',
+  ledger.danger_type AS '隐患类型分类编码',
+  (CASE 
+        WHEN ledger.danger_type LIKE '1-%' THEN '健康' 
+        WHEN ledger.danger_type LIKE '2-%' THEN '安全' 
+        WHEN ledger.danger_type LIKE '3-%' THEN '环保' 
+        WHEN ledger.danger_type LIKE '4-%' THEN '节能' 
+        WHEN ledger.danger_type LIKE '5-%' THEN '低碳' 
+        WHEN ledger.danger_type LIKE '6-%' THEN '安保' 
+        ELSE ledger.danger_type 
+   END) AS '隐患类型一级分类',
+  -- ledger.danger_name AS '隐患名称', ledger.danger_description AS '隐患描述', ledger.danger_src AS '隐患来源', ledger.danger_type AS '隐患类型(专业)', ledger.danger_type1 AS '隐患类型(危害因素)', ledger.danger_type2 AS '隐患类型(体系)',
+  ledger.find_by_name AS '发现人', ledger.find_date AS '发现时间', ledger.registration_by_name AS '登记人', ledger.regist_time AS '登记时间', '自建系统' AS '系统类型', NOW() AS '导出时间'
+FROM dp_phd_ledger ledger
+LEFT JOIN company_info info ON ledger.credit_code = info.credit_code
+# 注意此处
+WHERE info.deleted = 0 AND ledger.deleted = 0 AND ledger.danger_type IS NOT NULL AND ledger.find_date >= '2023-05-01 00:00:00' 
+ORDER BY ledger.credit_code, DATE_FORMAT(ledger.find_date, '%Y-%m-%d')
+```
+
+对比正确的连表查询条件写法，错误的写法中，将右表的 info.deleted = 0 条件放到了 WHERE 中，正确的写法则是放在了 ON 中，原因：dp_phd_ledger 为左表，company_info 表为右表，LEFT JOIN 时，company_info 表可能没有数据，此时，company_info 表的 deleted 字段为 NULL，不满足 deleted = 0 条件，`数据会丢失`。而将 info.deleted = 0 条件放到 ON 中，会先过滤 company_info 表的数据，此时不会丢失数据。
 
 ## 单行函数
 
@@ -11788,13 +11843,188 @@ B+Tree 的每一层中的页都会形成一个双向链表，如果是以页为�
 
 #### 为什么要有段
 
+对于范围查询，其实是对 B+Tree 叶子节点中的记录进行顺序扫描，而如果不区分叶子节点和非叶子节点，统统把节点代表的页面放到申请到的区中的话，进行范围扫描的效果就大打折扣。所以 InnoDB 对 B+Tree 的叶子节点和非叶子节点进行了区别对待，也就是说叶子节点有自己独有的区，非叶子节点也有自己独有的区。存放叶子节点的区的集合就算是一个`段 (Segment)`，存放非叶子节点的区的集合也算是一个段。也就是说一个索引会生成 2 个段，一个`叶子节点段`，一个`非叶子节点段`。
 
+除了索引的叶子节点段和非叶子节点段意外，InnoDB 中还有为存储一些特殊的数据而定义的段，比如回滚段。所以，**常见的段有数据段、索引段、回滚段。**数据段即为 B+Tree 的叶子节点，索引段即为 B+Tree 的非叶子节点。
+
+在 InnoDB 存储引擎中，对段的管理都是由引擎自身所完成，DBA 不能也没有必要对其进行控制，这从一定程度上简化了 DBA 对段的管理。
+
+> 段其实不对应表空间中某一个连续的物理区域，而是一个逻辑上的概念，由若干个零散的页面以及一些完整的区组成。
 
 #### 为什么要有碎片区
 
+默认情况下，一个使用 InnoDB 存储引擎的表只有一个聚簇索引，一个索引会生成 2 个段，而段是以区为单位申请存储空间的，一个区默认占用 1 MB 的存储空间，所以默认情况下，一个只存了几条记录的小表也需要 2 MB 的存储空间吗？以后每次添加一个索引都需要多申请 2 MB 的存储空间吗？这对于存储记录比较少的表简直是极大的浪费。而这个问题的症结在于，到现在为止介绍的区都是纯粹的，也就是一个区被整个分配给某一个段，或者说区中的所有页面，都是为了存储同一个段的数据而存在的，即使段的数据填不满区中所有的页面，那余下的页面也不能挪作他用。
 
+为了避免以完整的区为单位分配给某个段，造成数据量较小的表太浪费存储空间的这种情况，InnoDB 提出了一个`碎片区 (fragment)`的概念。在一个碎片区中，并不是所有的页都是为了存储同一个段的数据而存在的，而是碎片区中的页可以用于不同的目的，比如有些页用于段 A，有的页用于段 B，有些页甚至哪个段都不属于。`碎片区直属于表空间，不属于任何一个段。`
+
+所以，此后为某个段分配存储空间的策略是这样的：
+
+- **在刚开始向表中插入数据的时候，段是从某个碎片区以单个页面为单位来分配存储空间的。**
+- **当某个段已经占用了 32 个碎片区页面后，就会申请以完整的区为单位来分配存储空间。**
+
+所以，现在`段不能仅定义为是某些区的集合，更精确的说法是某些零散的页面以及一些完整的区的集合。`
 
 #### 区的分类
+
+区大体上可以分为 4 种类型：
+
+- `空闲的区 (FREE)`：现在还没有用到这个区中的任何页面。
+- `有剩余空间的碎片区 (FREE_FRAG)`：表示碎片区中还有可用的页面。
+- `没有剩余空间的碎片区 (FULL_FRAG)`：表示碎片区中的所有页面都被使用，没有空闲页面。
+- `附属于某个段的区 (FSEG)`：每一个索引都可以分为叶子节点段和非叶子节点段。
+
+处于 FREE、FREE_FRAG 和 FULL_FRAG 这三种状态的区都是独立的，直属于表空间，而处于 FSEG 状态的区是附属于某个段的。
+
+> 如果把表空间比作是一个集团军，段就相当于师，区就相当于团。一般的团都是隶属于某个师的，就像是处于 FSEG 的区全都隶属于某个段，而处于 FREE、FREE_FRAG 和 FULL_FRAG 这三种状态的区，是直接隶属于表空间，就像独立团直接听命于军部一样。
+
+### 表空间
+
+表空间可以看作是 InnoDB 存储引擎逻辑结构的最高层，所有的数据都存放在表空间中。
+
+表空间是一个`逻辑容器`，表空间存储的对象是段，在一个表空间中可以有一个或多个段，但是一个段只能属于一个表空间。表空间数据库由一个或多个表空间组成，表空间从管理上可以划分为`系统表空间 (System Tablespace)`、`独立表空间 (File-per-table Tablespace)`、`撤销表空间  (Undo Tablespace)`和`临时表空间 (Temporary Tablespace)`等。
+
+#### 独立表空间
+
+独立表空间，即每张表有一个独立的表空间，也就是数据和索引信息都会保存在自己的表空间中。独立的表空间（即：单表）可以在不同的数据库之间进行`迁移`。
+
+空间可以回收（DROP TABLE 操作可以自动回收表空间，其他情况，表空间不能自己回收），如果对于统计分析或是日志表，删除大量数据后可以通过`ALTER TABLE tablename ENGINE=InnoDB`回收不用的空间。对于使用独立表空间的表，不管怎么删除，表空间的碎片不会太严重的影响性能，而且还有机会处理。
+
+##### 独立表空间结构
+
+独立表空间由段、区、页组成。
+
+##### 真实表空间对应的文件大小
+
+到数据目录里面查看，会发现一个新建的表对应的 .ibd 文件只占用了 96 KB，才 6 个页面大小（MySQL 5.7 中），这是因为一开始表里面没有数据，表空间占用的空间很小。但是 .ibd 文件是自扩展的，随着表中数据的增多，表空间对应的文件也逐渐增大。
+
+##### 查看 InnoDB 的表空间类型
+
+```mysql
+mysql> SHOW VARIABLES LIKE 'innodb_file_per_table';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| innodb_file_per_table | ON    |
++-----------------------+-------+
+1 row in set (0.00 sec)
+```
+
+>innodb_file_per_table=ON，这意味着每张表都会单独保存一个 .ibd 文件。
+
+#### 系统表空间
+
+系统表空间的结构和独立表空间基本类似，只不过由于整个 MySQL 进程只有一个系统表空间，在系统表空间中会额外记录一些有关整个系统信息的页面，这部分是独立表空间中没有的。
+
+##### InnoDB 数据字典
+
+每当我们向一个表中插入一条记录的时候，`MySQL 校验过程`如下：先要校验一下插入语句对应的表存不存在；插入的列和表中的列是否符合；如果语法没有问题的话，还需要知道该表的聚簇索引和所有二级索引对应的根页面是哪个表空间的哪个页面，然后把记录插入对应索引的 B+Tree 中。所以说，MySQL 除了保存着我们插入的用户数据之外，还需要保存许多额外的信息，比如：
+
+- 某个表属于哪个表空间，表里面有多少列。
+- 表对应的每一个列的类型是什么。
+- 该表有多少索引，每个索引对应哪几个字段，该索引对应的根页面在哪个表空间的哪个页面。
+- 该表有哪些外键，外键对应哪个表的哪些列。
+- 某个表空间对应文件系统上文件路径是什么。
+- ...
+
+上面这些数据，并不是使用 INSERT 语句插入的用户数据，实际上是为了更好的管理我们这些用户数据而不得已引入的一些额外数据，这些数据也称为`元数据`。InnoDB 存储引擎特意定义了一些列的`内部系统表 (Internal System Table)`来记录这些元数据：
+
+| 表名             | 描述                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| `SYS_TABLES`     | 整个 InnoDB 存储引擎中所有的表的信息                         |
+| `SYS_COLUMNS`    | 整个 InnoDB 存储引擎中所有的列的信息                         |
+| `SYS_INDEXES`    | 整个 InnoDB 存储引擎中所有的索引的信息                       |
+| `SYS_FIELDS`     | 整个 InnoDB 存储引擎中所有的索引对应的列的信息               |
+| SYS_FOREIGN      | 整个 InnoDB 存储引擎中所有的外键的信息                       |
+| SYS_FOREIGN_COLS | 整个 InnoDB 存储引擎中所有的外键对应列的信息                 |
+| SYS_TABLESPACES  | 整个 InnoDB 存储引擎中所有的表空间信息                       |
+| SYS_DATAFILES    | 整个 InnoDB 存储引擎中所有的表空间对应文件系统的文件路径信息 |
+| SYS_VIRTUAL      | 整个 InnoDB 存储引擎中所有的虚拟生成列的信息                 |
+
+这些系统表也被称为`数据字典`，它们都是以 B+Tree 的形式保存在系统表空间的某些页面中，其中`SYS_TABLES`、`SYS_COLUMNS`、`SYS_INDEXES`和`SYS_FIELDS`这四个表尤为重要，称之为`基本系统表 (Basic System Tables)`。
+
+**SYS_TABLES 表结构：**
+
+| 列名       | 描述                                             |
+| ---------- | ------------------------------------------------ |
+| NAME       | 表的名称，主键                                   |
+| ID         | InnoDB 存储引擎中每个表都有一个唯一的 ID         |
+| N_COLS     | 该表拥有列的个数                                 |
+| TYPE       | 表的类型，记录了一些文件格式、行格式、压缩等信息 |
+| MIX_ID     | 已过时，忽略                                     |
+| MIX_LEN    | 表的一些额外的属性                               |
+| CLUSTER_ID | 未使用，忽略                                     |
+| SPACE      | 该表所属表空间的 ID                              |
+
+**SYS_COLUMNS 表结构：**
+
+| 列名     | 描述                                                         |
+| -------- | ------------------------------------------------------------ |
+| TABLE_ID | 该列所属表对应的 ID。与 POS 一起构成联合主键                 |
+| POS      | 该列在表中是第几列                                           |
+| NAME     | 该列的名称                                                   |
+| MTYPE    | main data type，主数据类型，比如 INT、CHAR、VARCHAR、FLOAT、DOUBLE 等 |
+| PRTYPE   | precise type，精确数据类型，就是修饰数据类型的，比如是否允许 NULL 值，是否允许负数等 |
+| LEN      | 该列最多占用存储空间的字节数                                 |
+| PREC     | 该列的精度，不过这列可能都没有使用，默认值都是 0             |
+
+**SYS_INDEXES 表结构：**
+
+| 列名            | 描述                                                         |
+| --------------- | ------------------------------------------------------------ |
+| TABLE_ID        | 该索引所属表对应的 ID，与 ID 一起构成联合主键                |
+| ID              | InnoDB 存储引擎中每个索引都有一个唯一的 ID                   |
+| NAME            | 该索引的名称                                                 |
+| N_FIELDS        | 该索引包含列的个数                                           |
+| TYPE            | 该索引的类型，比如聚簇索引、唯一索引、更改缓冲区的索引、全文索引、普通的二级索引等 |
+| SPACE           | 该索引根页面所在的表空间 ID                                  |
+| PAGE_NO         | 该索引根页面所在的页面号                                     |
+| MERGE_THRESHOLD | 如果页面中的记录被删除到某个比例，就把该页面和相邻页面合并，这个值就是这个比例 |
+
+**SYS_FIELDS 表结构：**
+
+| 列名     | 描述                                             |
+| -------- | ------------------------------------------------ |
+| INDEX_ID | 该索引列所属的索引的 ID，与 POS 一起构成联合主键 |
+| POS      | 该索引列在某个索引中是第几列                     |
+| COL_NAME | 该索引列的名称                                   |
+
+### 附录：数据页加载的三种方式
+
+InnoDB 从磁盘中读取数据的最小单位是数据页，对于 MySQL 存放的数据，逻辑概念上称之为表，在磁盘等物理层面而言，是按`数据页`形式进行存放的，当其加载到 MySQL 中后，称之为`缓存页`。如果缓冲池中没有该页数据，那么缓冲池有以下三种方式读取数据，每种方式的读取效率也是不同的。
+
+#### 内存读取
+
+如果该数据存在于内存中，基本上执行时间在 1 ms 左右，效率比较高。
+
+<img src="mysql/image-20230616174635649.png" alt="image-20230616174635649" style="zoom:67%;" />
+
+#### 随机读取
+
+如果数据没有在内存中，就需要在磁盘上对该页进行查找，整体时间预估在 10 ms 左右，这 10 ms 中约有 6 ms 是磁盘的实际繁忙实际（包括`寻道和半圈旋转时间`），有 3 ms 是对可能发生的排队时间的估计值，另外还有 1 ms 的传输时间，将页从磁盘服务器缓冲区传输到数据库缓冲区中。这 10 ms 看起来很快，但实际上对于数据库来说消耗的时间已经很长了，因为这还只是一个页的读取时间。
+
+<img src="mysql/image-20230616175037783.png" alt="image-20230616175037783" style="zoom:67%;" />
+
+#### 顺序读取
+
+**顺序读取其实是一种批量读取的方式，因为请求的数据在磁盘上往往都是相邻存储的，顺序读取可以批量读取页面，这样的话，一次性加载到缓冲池中就不需要再对其他页面单独进行磁盘 I/O 操作。**如果一个磁盘的吞吐量是 40 MB/S，那么对于一个 16 KB 大小的页来说，一次可以顺序读取 2560 （40 MB / 16 KB）个页，相当于一个页的读取时间为 0.4 ms。采用批量读取的方式，即使是从磁盘上进行读取，效率也比从内存中只单独读取一个页的效率要高。
+
+## 索引的创建与设计原则
+
+### 索引的声明与使用
+
+#### 索引的分类
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
