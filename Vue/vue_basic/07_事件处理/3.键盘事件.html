@@ -13,7 +13,7 @@
     <!-- 
             1.Vue中常用的按键别名: 
                         回车 => enter
-                        删除 => delete (捕获“删除”和“退格”键)
+                        删除 => delete (捕获“删除”和“退格”键), 删除键: Delete, 退格键: Backspace
                         退出 => esc
                         空格 => space
                         换行 => tab (特殊, 必须配合keydown去使用)
@@ -36,12 +36,14 @@
     <!-- 准备好一个容器 -->
     <div id="root">
         <h2>欢迎来到{{name}}学习</h2>
+        <!-- 键盘事件,keydown: 按下键盘后就触发, keyup: 按下键盘再松开才触发 -->
         <input type="text" placeholder="按下回车提示输入" @keydown.huiche="showInfo">
     </div>
 </body>
 
 <script type="text/javascript">
     Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+    /* enter键的keyCode是13 */
     Vue.config.keyCodes.huiche = 13 // 定义了一个别名按键
 
     new Vue({
@@ -51,7 +53,8 @@
         },
         methods: {
             showInfo(e) {
-                // console.log(e.key,e.keyCode)
+                // 键盘事件的key, 键盘事件的code
+                console.log(e.key,e.keyCode)
                 console.log(e.target.value)
             }
         },

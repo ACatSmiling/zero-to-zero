@@ -514,3 +514,204 @@ Vue 属性：
 ```
 
 > Vue 把 data 转换为 _data 的时候，做了一些其他处理，此处不表。
+
+### 事件处理
+
+#### 事件的基本使用
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件的基本使用</title>
+    <!-- 引入Vue -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+    <!-- 
+            事件的基本使用：
+                        1.使用v-on:xxx或@xxx绑定事件, 其中xxx是事件名;
+                        2.事件的回调需要配置在methods对象中, 最终会在vm上;
+                        3.methods中配置的函数, 不要用箭头函数！否则this就不是vm了;
+                        4.methods中配置的函数, 都是被Vue所管理的函数, this的指向是vm或组件实例对象;
+                        5.@click="demo"和@click="demo($event)"效果一致, 但后者可以传其他参数
+    -->
+
+    <!-- 准备好一个容器 -->
+    <div id="root">
+        <h2>欢迎来到{{name}}学习</h2>
+        <!-- <button v-on:click="showInfo">点我提示信息</button> -->
+        <!-- 回调函数名后的括号可以不加, 如果需要传参, 应使用$event占位表示event参数, 位置可以自定义, 建议放在第一个参数 -->
+        <button @click="showInfo1">点我提示信息1（不传参）</button>
+        <button @click="showInfo2($event,66)">点我提示信息2（传参）</button>
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+
+    const vm = new Vue({
+        el: '#root',
+        data: {
+            name: '尚硅谷',
+        },
+        // 事件的回调方法不能定义在methods外面, 会报错
+        /* showInfo(event) {
+            alert('同学你好！')
+        }, */
+        methods: {
+            showInfo1(event) {
+                // console.log(event.target.innerText)
+                // console.log(this) // 此处的this是vm
+                alert('同学你好！')
+            },
+            showInfo2(event, number) {
+                console.log(event, number)
+                // console.log(event.target.innerText)
+                // console.log(this) // 此处的this是vm, 如果定义的是箭头函数, 这个this是windows, 不是vm
+                alert('同学你好！！参数：' + number)
+            }
+        }
+    })
+</script>
+
+</html>
+```
+
+![image-20230620224937334](vue/image-20230620224937334.png)
+
+#### 事件修饰符
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件修饰符</title>
+    <!-- 引入Vue -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <style>
+        * {
+            margin-top: 20px;
+        }
+
+        .demo1 {
+            height: 50px;
+            background-color: skyblue;
+        }
+
+        .box1 {
+            padding: 5px;
+            background-color: skyblue;
+        }
+
+        .box2 {
+            padding: 5px;
+            background-color: orange;
+        }
+
+        .list {
+            width: 200px;
+            height: 200px;
+            background-color: peru;
+            overflow: auto;
+        }
+
+        li {
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+            Vue中的事件修饰符: 
+                    1.prevent: 阻止默认事件(常用);
+                    2.stop: 阻止事件冒泡(常用);
+                    3.once: 事件只触发一次(常用);
+                    4.capture: 使用事件的捕获模式;
+                    5.self: 只有event.target是当前操作的元素时才触发事件;
+                    6.passive: 事件的默认行为立即执行, 无需等待事件回调执行完毕;
+    -->
+
+    <!-- 准备好一个容器 -->
+    <div id="root">
+        <h2>欢迎来到{{name}}学习</h2>
+        <!-- 阻止默认事件(常用) -->
+        <a href="http://www.atguigu.com" @click.prevent="showInfo">点我提示信息</a>
+
+        <!-- 阻止事件冒泡(常用) -->
+        <div class="demo1" @click="showInfo">
+            <button @click.stop="showInfo">点我提示信息</button>
+            <!-- 修饰符可以连续写 -->
+            <!-- <a href="http://www.atguigu.com" @click.prevent.stop="showInfo">点我提示信息</a> -->
+        </div>
+
+        <!-- 事件只触发一次(常用), 只在第一次有效, 后续无效 -->
+        <button @click.once="showInfo">点我提示信息</button>
+
+        <!-- 使用事件的捕获模式 -->
+        <!-- 先捕获, 再冒泡, 使用@click.capture, div1在捕获时就触发 -->
+        <div class="box1" @click.capture="showMsg(1)">
+            div1
+            <div class="box2" @click="showMsg(2)">
+                div2
+            </div>
+        </div>
+
+        <!-- 只有event.target是当前操作的元素时才触发事件; -->
+        <div class="demo1" @click.self="showInfo">
+            <button @click="showInfo">点我提示信息</button>
+        </div>
+
+        <!-- 事件的默认行为立即执行, 无需等待事件回调执行完毕;(如果不加passive, 会等待事件回调执行完后, 再触发事件的默认行为) -->
+        <ul @wheel.passive="demo" class="list">
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+        </ul>
+
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+
+    new Vue({
+        el: '#root',
+        data: {
+            name: '尚硅谷'
+        },
+        methods: {
+            showInfo(e) {
+                // 常规的阻止默认事件的方法, Vue中使用@click.prevent代替
+                // e.preventDefault()
+                // 常规的阻止事件冒泡的方法, Vue中使用@click.stop代替
+                // e.stopPropagation()
+                alert('同学你好！')
+                // console.log(e.target)
+            },
+            showMsg(msg) {
+                console.log(msg)
+            },
+            demo() {
+                for (let i = 0; i < 100000; i++) {
+                    console.log('#')
+                }
+                console.log('累坏了')
+            }
+        }
+    })
+</script>
+
+</html>
+```
+
+#### 键盘事件

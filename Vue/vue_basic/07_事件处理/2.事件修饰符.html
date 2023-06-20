@@ -64,10 +64,11 @@
             <!-- <a href="http://www.atguigu.com" @click.prevent.stop="showInfo">点我提示信息</a> -->
         </div>
 
-        <!-- 事件只触发一次(常用) -->
+        <!-- 事件只触发一次(常用), 只在第一次有效, 后续无效 -->
         <button @click.once="showInfo">点我提示信息</button>
 
         <!-- 使用事件的捕获模式 -->
+        <!-- 先捕获, 再冒泡, 使用@click.capture, div1在捕获时就触发 -->
         <div class="box1" @click.capture="showMsg(1)">
             div1
             <div class="box2" @click="showMsg(2)">
@@ -80,7 +81,7 @@
             <button @click="showInfo">点我提示信息</button>
         </div>
 
-        <!-- 事件的默认行为立即执行, 无需等待事件回调执行完毕; -->
+        <!-- 事件的默认行为立即执行, 无需等待事件回调执行完毕;(如果不加passive, 会等待事件回调执行完后, 再触发事件的默认行为) -->
         <ul @wheel.passive="demo" class="list">
             <li>1</li>
             <li>2</li>
@@ -101,6 +102,10 @@
         },
         methods: {
             showInfo(e) {
+                // 常规的阻止默认事件的方法, Vue中使用@click.prevent代替
+                // e.preventDefault()
+                // 常规的阻止事件冒泡的方法, Vue中使用@click.stop代替
+                // e.stopPropagation()
                 alert('同学你好！')
                 // console.log(e.target)
             },
