@@ -12083,11 +12083,37 @@ MySQL 支持多种方法在单个或多个列上创建索引：
 隐式的索引创建：
 
 ```mysql
+# 1.隐式的添加索引(在添加有主键约束、唯一性约束或者外键约束的字段会自动的创建索引)
+CREATE TABLE dept(
+    dept_id INT PRIMARY KEY AUTO_INCREMENT,# 创建主键索引
+    dept_name VARCHAR(20)
+);
+
+CREATE TABLE emp(
+    emp_id INT PRIMARY KEY AUTO_INCREMENT,# 主键索引
+    emp_name VARCHAR(20) UNIQUE,# 唯一索引
+    dept_id INT,
+    CONSTRAINT emp_dept_id_fk FOREIGN KEY(dept_id) REFERENCES dept(dept_id)
+); # 外键索引
 ```
 
+显式的索引创建的话，基本语法格式如下，共有七种情况~
 
+```mysql
+CREATE TABLE table_name [col_name data_type]
+[UNIQUE | FULLTEXT | SPATIAL] [INDEX | KEY] [index_name] (col_name [length]) [ASC | DESC]
+```
 
-
+- UNIQUE、 FULLTEXT 和 SPATIAL 为可选参数，分别表示唯一索引、全文索引和空间索引;
+  INDEX与KEY 为同义词，两者的作用相同，用来指定创建索引;
+  index_name 指定索引的名称，为可选参数，如果不指定，那么 MySQL 默认 col_name 为索引名;
+  col_name为需要创建索引的字段列，该列必须从数据表中定义的多个列中选择;
+  length 为可选参数，表示索引的长度，只有字符串类型的字段才能指定索引长度;
+  ASC 或 DESC 指定升序或者降序的索引值存储。
+  特例：主键索引使用主键约束的方式来创建。
+  ————————————————
+  版权声明：本文为CSDN博主「爱编程的大李子」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+  原文链接：https://blog.csdn.net/LXYDSF/article/details/126247744
 
 
 
