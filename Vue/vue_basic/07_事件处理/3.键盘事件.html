@@ -22,13 +22,13 @@
                         左 => left
                         右 => right
 
-            2.Vue未提供别名的按键, 可以使用按键原始的key值去绑定, 但注意要转为kebab-case(短横线命名)
+            2.Vue未提供别名的按键, 可以使用按键原始的key值去绑定, 但注意要转为kebab-case(短横线命名), 例如caps-lock
 
             3.系统修饰键(用法特殊): ctrl、alt、shift、meta
                         (1) 配合keyup使用: 按下修饰键的同时, 再按下其他键, 随后释放其他键, 事件才被触发
                         (2) 配合keydown使用: 正常触发事件
 
-            4.也可以使用keyCode去指定具体的按键(不推荐)
+            4.也可以使用keyCode去指定具体的按键(不推荐, 因为不同的键盘, 其按键的keyCode可能不同)
 
             5.Vue.config.keyCodes.自定义键名 = 键码, 可以去定制按键别名
     -->
@@ -37,6 +37,7 @@
     <div id="root">
         <h2>欢迎来到{{name}}学习</h2>
         <!-- 键盘事件,keydown: 按下键盘后就触发, keyup: 按下键盘再松开才触发 -->
+        <!-- @keydown.huiche: 按下自定义的huiche按键时, 触发showInfo回调 -->
         <input type="text" placeholder="按下回车提示输入" @keydown.huiche="showInfo">
     </div>
 </body>
