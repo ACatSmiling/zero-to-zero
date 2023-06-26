@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .demo {
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="btn">点我创建一个输入框</button>
+
+    <!-- 原生js实现添加一个输入框, 并自动获取焦点 -->
+    <script type="text/javascript">
+        const btn = document.getElementById('btn')
+        btn.onclick = () => {
+            const input = document.createElement('input')
+
+            // 下面的操作, 在input框放到页面之前, 也可以生效
+            input.className = 'demo'
+            input.value = 99
+            input.onclick = () => { alert(1) }
+
+            // input框放到页面上
+            document.body.appendChild(input)
+
+            // 下面的操作, 必须将input框放到页面上后, 才能生效
+            input.focus()
+            // input.parentElement.style.backgroundColor = 'skyblue' // 设置input元素的父元素背景色为天蓝色
+            console.log(input.parentElement) // 父元素为body
+
+        }
+    </script>
+</body>
+
+</html>

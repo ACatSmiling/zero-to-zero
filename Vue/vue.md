@@ -2711,3 +2711,235 @@ Vue 属性：
 </html>
 ```
 
+### 自定义指令
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .demo {
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="btn">点我创建一个输入框</button>
+
+    <!-- 原生js实现添加一个输入框, 并自动获取焦点 -->
+    <script type="text/javascript">
+        const btn = document.getElementById('btn')
+        btn.onclick = () => {
+            const input = document.createElement('input')
+
+            // 下面的操作, 在input框放到页面之前, 也可以生效
+            input.className = 'demo'
+            input.value = 99
+            input.onclick = () => { alert(1) }
+
+            // input框放到页面上
+            document.body.appendChild(input)
+
+            // 下面的操作, 必须将input框放到页面上后, 才能生效
+            input.focus()
+            // input.parentElement.style.backgroundColor = 'skyblue' // 设置input元素的父元素背景色为天蓝色
+            console.log(input.parentElement) // 父元素为body
+
+        }
+    </script>
+</body>
+
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自定义指令</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+    <!-- 
+            需求1: 定义一个v-big指令, 和v-text功能类似, 但会把绑定的数值放大10倍
+            需求2: 定义一个v-fbind指令, 和v-bind功能类似, 但可以让其所绑定的input元素默认获取焦点
+            自定义指令总结: 
+                    一、定义语法: 
+                                (1) 局部指令: 
+                                            new Vue({									new Vue({
+                                                directives:{指令名:配置对象}   或   		directives{指令名:回调函数}
+                                            }) 											})
+                                (2) 全局指令: 
+                                                Vue.directive(指令名,配置对象) 或   Vue.directive(指令名,回调函数)
+
+                    二、配置对象中常用的3个回调: 
+                                (1) bind: 指令与元素成功绑定时调用
+                                (2) inserted: 指令所在元素被插入页面时调用
+                                (3) update: 指令所在模板结构被重新解析时调用
+
+                    三、备注: 
+                                1.指令定义时不加v-, 但使用时要加v-
+                                2.指令名如果是多个单词, 要使用kebab-case命名方式, 不要用camelCase命名
+    -->
+
+    <!-- 准备好一个容器 -->
+    <div id="root">
+        <h2>{{name}}</h2>
+        <h2>当前的n值是：<span v-text="n"></span> </h2>
+        <h2>放大20倍后的n值是：<span v-big-number="n"></span> </h2>
+        <h2>放大10倍后的n值是：<span v-big="n"></span> </h2>
+        <button @click="n++">点我n+1</button>
+        <hr />
+        <input type="text" v-fbind:value="n">
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false
+
+    // 定义全局指令
+    /* Vue.directive('fbind', {
+        // 指令与元素成功绑定时(一上来)
+        bind(element, binding) {
+            element.value = binding.value
+        },
+        // 指令所在元素被插入页面时
+        inserted(element, binding) {
+            element.focus()
+        },
+        // 指令所在的模板被重新解析时
+        update(element, binding) {
+            element.value = binding.value
+        }
+    }) */
+
+    new Vue({
+        el: '#root',
+        data: {
+            name: '尚硅谷',
+            n: 1
+        },
+        directives: {
+            // 官方推荐指令名之间使用-连接, 此时, big-number做为对象的key, 还原为最原始写法, 加上引号, 否则报错(: function可以省略)
+            'big-number': function (element, binding) {
+                // console.log('big')
+                element.innerText = binding.value * 20
+            },
+            // big函数何时会被调用？1.指令与元素成功绑定时(一上来)2.指令所在的模板被重新解析时
+            big(element, binding) {
+                // 指定相关的回调中的this不是vm, 是window
+                console.log('big', this) // 注意此处的this是window
+                // console.log('big')
+                element.innerText = binding.value * 10
+            },
+            // 如果将fbind定义为函数, 永远做不到input框添加时默认获取焦点, 因为函数只在指令与元素成功绑定或者模板被重新解析时调用,
+            // 而默认获取焦点是在input框插入页面时的行为
+            /* fbind(element, binding){
+                element.value = binding.value
+                element.focus()
+            } */
+            // 完整的写法
+            fbind: {
+                // 指令与元素成功绑定时(一上来)
+                bind(element, binding) {
+                    console.log('bind', this) // 注意此处的this是window
+                    element.value = binding.value
+                },
+                // 指令所在元素被插入页面时
+                inserted(element, binding) {
+                    console.log('inserted', this) // 注意此处的this是window
+                    element.focus()
+                },
+                // 指令所在的模板被重新解析时
+                update(element, binding) {
+                    console.log('update', this) // 注意此处的this是window
+                    element.value = binding.value
+                }
+            }
+        }
+    })
+
+</script>
+
+</html>
+```
+
+### 生命周期
+
+#### 引出生命周期
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引出生命周期</title>
+    <!-- 引入Vue -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+    <!-- 
+            生命周期: 
+                    1.又名: 生命周期回调函数、生命周期函数、生命周期钩子
+                    2.是什么: Vue在关键时刻帮我们调用的一些特殊名称的函数
+                    3.生命周期函数的名字不可更改, 但函数的具体内容是程序员根据需求编写的
+                    4.生命周期函数中的this指向是vm或组件实例对象
+    -->
+
+    <!-- 准备好一个容器 -->
+    <div id="root">
+        <h2 v-if="a">你好啊</h2>
+        <h2 :style="{opacity}">欢迎学习Vue</h2>
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+
+    new Vue({
+        el: '#root',
+        data: {
+            a: false,
+            opacity: 1
+        },
+        methods: {
+
+        },
+        // Vue完成模板的解析并把初始的真实DOM元素放入页面后(挂载完毕)调用mounted, mounted函数只调用一次
+        mounted() {
+            console.log('mounted', this)
+            // 箭头函数, this往外找, 找到mounted的this, 指向vm
+            setInterval(() => {
+                this.opacity -= 0.01
+                if (this.opacity <= 0) this.opacity = 1
+            }, 16)
+        },
+    })
+
+    // 通过外部的定时器实现（不推荐）
+    /* setInterval(() => {
+        vm.opacity -= 0.01
+        if (vm.opacity <= 0) vm.opacity = 1
+    }, 16)  */
+</script>
+
+</html>
+```
+
+#### 分析生命周期
+
+
+
+#### 总结生命周期
