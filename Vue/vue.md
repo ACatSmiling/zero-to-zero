@@ -24,7 +24,9 @@
 
 > 后续 Vue 学习，先从 Vue 2 开始。
 
-VS Code 插件：https://www.51cto.com/article/716033.html
+> VS Code 插件：https://www.51cto.com/article/716033.html
+
+> 前端开源项目：https://www.bootcdn.cn/
 
 ## 搭建框架
 
