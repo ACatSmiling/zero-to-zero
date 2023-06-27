@@ -2941,6 +2941,88 @@ Vue 属性：
 #### 分析生命周期
 
 ```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析生命周期</title>
+    <!-- 引入Vue -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="root" :x="n">
+        <h2 v-text="n"></h2>
+        <h2>当前的n值是：{{n}}</h2>
+        <button @click="add">点我n+1</button>
+        <button @click="bye">点我销毁vm</button>
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+
+    new Vue({
+        el: '#root',
+        // template:`
+        // 	<div>
+        // 		<h2>当前的n值是：{{n}}</h2>
+        // 		<button @click="add">点我n+1</button>
+        // 	</div>
+        // `,
+        data: {
+            n: 1
+        },
+        methods: {
+            add() {
+                console.log('add')
+                this.n++
+            },
+            bye() {
+                console.log('bye')
+                this.$destroy()
+            }
+        },
+        watch: {
+            n() {
+                console.log('n变了')
+            }
+        },
+        beforeCreate() {
+            console.log('beforeCreate')
+            // console.log(this) // 此时this中还没有_data, 即还未进行数据代理和数据监视
+            // debugger; // 注意, 分析的时候, 添加debugger, 执行到此处先停止, 等全部渲染了, this就不是此处的this了
+        },
+        created() {
+            console.log('created')
+            // console.log(this) // 此时this中完成了数据代理和数据监视
+            // debugger;
+        },
+        beforeMount() {
+            console.log('beforeMount')
+        },
+        mounted() {
+            console.log('mounted')
+        },
+        beforeUpdate() {
+            console.log('beforeUpdate')
+        },
+        updated() {
+            console.log('updated')
+        },
+        beforeDestroy() {
+            console.log('beforeDestroy')
+        },
+        destroyed() {
+            console.log('destroyed')
+        },
+    })
+</script>
+
+</html>
 ```
 
 - beforeCreate 阶段的 this：
@@ -2956,3 +3038,84 @@ Vue 属性：
 
 
 #### 总结生命周期
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引出生命周期</title>
+    <!-- 引入Vue -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+    <!-- 
+            常用的生命周期钩子: 
+                    1.mounted: 发送ajax请求、启动定时器、绑定自定义事件、订阅消息等[初始化操作]
+                    2.beforeDestroy: 清除定时器、解绑自定义事件、取消订阅消息等[收尾工作]
+
+            关于销毁Vue实例: 
+                    1.销毁后借助Vue开发者工具看不到任何信息
+                    2.销毁后自定义事件会失效, 但原生DOM事件依然有效
+                    3.一般不会在beforeDestroy操作数据, 因为即便操作数据, 也不会再触发更新流程了
+    -->
+
+    <!-- 准备好一个容器 -->
+    <div id="root">
+        <h2 :style="{opacity}">欢迎学习Vue</h2>
+        <button @click="opacity = 1">透明度设置为1</button>
+        <button @click="stop">点我停止变换</button>
+    </div>
+</body>
+
+<script type="text/javascript">
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
+
+    new Vue({
+        el: '#root',
+        data: {
+            opacity: 1
+        },
+        methods: {
+            stop() {
+                this.$destroy()
+            }
+        },
+        // Vue完成模板的解析并把初始的真实DOM元素放入页面后(挂载完毕)调用mounted
+        mounted() {
+            console.log('mounted', this)
+            this.timer = setInterval(() => {
+                console.log('setInterval')
+                this.opacity -= 0.01
+                if (this.opacity <= 0) this.opacity = 1
+            }, 16)
+        },
+        beforeDestroy() {
+            clearInterval(this.timer)
+            console.log('vm即将驾鹤西游了')
+        },
+    })
+
+</script>
+
+</html>
+```
+
+图示：
+
+<img src="vue/lifecycle.png" alt="Vue 实例生命周期" style="zoom: 40%;" />
+
+解析：
+
+![image-20230628001143703](vue/image-20230628001143703.png)
+
+## Vue 组件化编程
+
+### 非单文件组件
+
+非单文件组件：一个文件中包含有 n 个组件。
+
+单文件组件：一个文件中包含有 1 个组件。
