@@ -2940,6 +2940,19 @@ Vue 属性：
 
 #### 分析生命周期
 
+```html
+```
+
+- beforeCreate 阶段的 this：
+
+  <img src="vue/image-20230627090938634.png" alt="image-20230627090938634" style="zoom:80%;" />
+
+- created 阶段的 this：
+
+  <img src="vue/image-20230627091227286.png" alt="image-20230627091227286" style="zoom:80%;" />
+
+- s
+
 
 
 #### 总结生命周期

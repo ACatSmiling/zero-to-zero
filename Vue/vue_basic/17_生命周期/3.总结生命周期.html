@@ -30,7 +30,7 @@
 </body>
 
 <script type="text/javascript">
-    Vue.config.productionTip = false //阻止 vue 在启动时生成生产提示
+    Vue.config.productionTip = false // 阻止Vue在启动时生成生产提示
 
     new Vue({
         el: '#root',
@@ -42,7 +42,7 @@
                 this.$destroy()
             }
         },
-        //Vue完成模板的解析并把初始的真实DOM元素放入页面后（挂载完毕）调用mounted
+        // Vue完成模板的解析并把初始的真实DOM元素放入页面后(挂载完毕)调用mounted
         mounted() {
             console.log('mounted', this)
             this.timer = setInterval(() => {

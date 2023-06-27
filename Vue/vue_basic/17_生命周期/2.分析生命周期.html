@@ -50,9 +50,13 @@
         },
         beforeCreate() {
             console.log('beforeCreate')
+            // console.log(this) // 此时this中还没有_data, 即还未进行数据代理和数据监视
+            // debugger; // 注意, 分析的时候, 添加debugger, 执行到此处先停止, 等全部渲染了, this就不是此处的this了
         },
         created() {
             console.log('created')
+            // console.log(this) // 此时this中完成了数据代理和数据监视
+            // debugger;
         },
         beforeMount() {
             console.log('beforeMount')
