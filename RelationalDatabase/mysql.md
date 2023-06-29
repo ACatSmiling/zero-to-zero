@@ -12117,6 +12117,16 @@ CREATE TABLE table_name [col_name data_type]
 在 book 表中的 year_publication 字段上建立普通索引，SQL 语句如下：
 
 ```mysql
+CREATE TABLE book(
+    book_id INT,
+    book_name VARCHAR(100),
+    AUTHORS VARCHAR(100),
+    info VARCHAR(100) ,
+    COMMENT VARCHAR(100),
+    year_publication YEAR,
+    # 声明索引
+    INDEX idx_bname(book_name)
+);
 ```
 
 
