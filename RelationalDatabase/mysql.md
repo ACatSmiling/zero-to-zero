@@ -12020,27 +12020,27 @@ MySQL 的索引包括普通索引、唯一性索引、全文索引、单列索�
 - 按照`物理实现方式`，索引可以分为 2 种：聚簇索引和非聚簇索引。
 - 按照`作用字段个数`进行划分，分成单列索引和联合索引。
 
-#### 普通索引
+##### 普通索引
 
 在创建普通索引时，不附加任何限制条件，只是用于提高查询效率。这类索引可以创建在`任何数据类型`中，其值是否唯一和非空，要由字段本身的完整性约束性条件决定。建立索引以后，可以通过索引进行查询。例如，在表 student 的字段 name 上建立一个普通索引，查询记录时就可以根据该索引进行查询。
 
-#### 唯一性索引
+##### 唯一性索引
 
 使用`UNIQUE 参数`可以设置索引为唯一性索引，在创建唯一性索引时，限制该索引的值必须是唯一的，但允许有空值。在一张数据表里，`可以有多个唯一索引`。例如，在表 student 的字段 email 中创建唯一性索引，那么字段 email 的值就必须是唯一的。通过唯一性索引，可以快速确定某条记录。
 
-#### 主键索引
+##### 主键索引
 
 主键索引就是一种特殊的唯一性索引，在唯一索引的基础上增加了不为空的约束，也就是 NOT NULL + UNIQUE，一张表里`最多只有一个主键索引`。
 
-#### 单列索引
+##### 单列索引
 
 在表中的单个字段上创建索引，单列索引只根据该字段进行索引。单列索引可以是普通索引，也可以是唯一性索引，还可以是全文索引，只要保证该索引只对应一个字段即可。一张表中，`可以有多个单列索引`。
 
-#### 多列（组合、联合）索引
+##### 多列（组合、联合）索引
 
 在表中的多个字段组合上创建索引。多列索引指向创建时对应的多个字段，可以通过这几个字段进行查询，但是只有查询条件中使用了这些字段中的第一个字段时才会被使用。例如，在表 student 的字段 id、name 和 gender 上建立一个多列索引 idx_id_name_gender，只有在查询条件中使用了字段 id 时，该索引才会被使用。使用多列索引时，遵循`最左前缀集合`。
 
-#### 全文索引
+##### 全文索引
 
 全文索引，也称全文检索，是目前搜索引擎使用的一种关键技术。它能够利用`分词技术`等多种算法智能分析出文本文字中关键词的频率和重要性，然后按照一定的算法规则智能的筛选出想要的搜索结果。全文索引非常适合大型数据集，对于小的数据集，它的用处比较小。
 
@@ -12054,11 +12054,11 @@ MySQL 数据库从 3.23.23 版开始支持全文索引，但在 MySQL 5.6.4 之�
 
 随着大数据时代的到来，关系型数据库应对全文索引的需求已力不从心，逐渐被 Solr、ElasticSearch 等专门的搜索引擎所替代。
 
-#### 补充：空间索引
+##### 补充：空间索引
 
 使用参数`SPATIAL`可以设置索引为空间索引。空间索引只能建立在空间数据类型上，这样可以提高系统获取空间数据的效率。MySQL 中的空间数据类型包括`GEOMETRY`、`POINT`、`LINESTRING`和`POLYGON`等。目前只有 MyISAM 存储引擎支持空间检索，而且索引的字段不能为空值。
 
-#### 小结
+##### 小结
 
 不同的存储引擎支持的索引类型也不一样。
 
@@ -12068,7 +12068,7 @@ MySQL 数据库从 3.23.23 版开始支持全文索引，但在 MySQL 5.6.4 之�
 - NDB：支持 Hash 索引，不支持 B+Tree、Full-Text 等索引； 
 - Archive：不支持 B+Tree、Hash、Full-Text 等索引。
 
-### 创建索引
+#### 创建索引
 
 MySQL 支持多种方法在单个或多个列上创建索引：
 
@@ -12076,7 +12076,7 @@ MySQL 支持多种方法在单个或多个列上创建索引：
 - 使用`ALTER TABLE`语句在存在的表上创建索引。
 - 使用`CREATE INDEX`语句在已存在的表上添加索引。
 
-#### 创建表的时候创建索引
+##### 创建表的时候创建索引
 
 使用 CREATE TABLE 创建表时，除了可以定义列的数据类型外，还可以定义主键约束、外键约束或者唯一性约束，而不论创建哪种约束，在定义约束的同时，相当于在指定列上创建了一个索引。
 
@@ -12087,14 +12087,14 @@ MySQL 支持多种方法在单个或多个列上创建索引：
 CREATE TABLE dept(
     dept_id INT PRIMARY KEY AUTO_INCREMENT,# 创建主键索引
     dept_name VARCHAR(20)
-);
+)
 
 CREATE TABLE emp(
     emp_id INT PRIMARY KEY AUTO_INCREMENT,# 主键索引
     emp_name VARCHAR(20) UNIQUE,# 唯一索引
     dept_id INT,
     CONSTRAINT emp_dept_id_fk FOREIGN KEY(dept_id) REFERENCES dept(dept_id)
-); # 外键索引
+) # 外键索引
 ```
 
 `显式的索引创建`，基本语法格式如下，共有七种情况：
@@ -12112,7 +12112,7 @@ CREATE TABLE table_name [col_name data_type]
 - ASC 或 DESC 指定升序或者降序的索引值存储。
 - 特例：主键索引使用主键约束的方式来创建。
 
-##### 创建普通索引
+**创建普通索引：**
 
 在 book 表中的 year_publication 字段上建立普通索引，SQL 语句如下：
 
@@ -12120,20 +12120,586 @@ CREATE TABLE table_name [col_name data_type]
 CREATE TABLE book(
     book_id INT,
     book_name VARCHAR(100),
-    AUTHORS VARCHAR(100),
+    authors VARCHAR(100),
     info VARCHAR(100) ,
-    COMMENT VARCHAR(100),
+    comment VARCHAR(100),
     year_publication YEAR,
     # 声明索引
-    INDEX idx_bname(book_name)
-);
+    INDEX idx_bname(year_publication)
+)
 ```
 
+**创建唯一索引：**
 
+```mysql
+CREATE TABLE test(
+	id INT NOT NULL,
+	name varchar(30) NOT NULL,
+	UNIQUE INDEX uk_idx_id(id)
+)
+```
 
+**主键索引：**
 
+设定为主键后数据库会自动建立索引，InnoDB 为聚簇索引，语法：
 
+```mysql
+CREATE TABLE student (
+    # 通过定义主键约束的方式定义主键索引
+	id INT(10) UNSIGNED AUTO_INCREMENT ,
+	student_no VARCHAR(200),
+	student_name VARCHAR(200),
+	PRIMARY KEY(id)
+)
+```
 
+删除主键索引：
+
+```mysql
+ALTER TABLE student DROP PRIMARY KEY
+```
+
+> 修改主键索引：必须先删除掉（DROP）原索引，再新建（ADD）索引。
+
+**创建单列索引：**
+
+```mysql
+CREATE TABLE test2(
+	id INT NOT NULL,
+	name CHAR(50) NULL,
+	INDEX single_idx_name(name(20))
+)
+```
+
+**创建组合索引：**
+
+```mysql
+CREATE TABLE test3(
+    id INT(11) NOT NULL,
+    name CHAR(30) NOT NULL,
+    age INT(11) NOT NULL,
+    info VARCHAR(255),
+    INDEX multi_idx(id, name, age)
+)
+```
+
+> 组合索引在查询时会遵守`最左索引原则`，先进行 id 条件的比较，然后再进行 name 比较，最后才是 age，因此注意把最常用的查询字段放在索引的最左边。
+
+**创建全文索引：**
+
+FULLTEXT 全文索引可以用于全文搜索，并且只为`CHAR`、`VARCHAR`和`TEXT`列创建索引。索引总是对整个列进行，不支持局部（前缀）索引。
+
+```mysql
+CREATE TABLE test4(
+    id INT NOT NULL,
+    name CHAR(30) NOT NULL,
+    age INT NOT NULL,
+    info VARCHAR(255),
+    FULLTEXT INDEX futxt_idx_info(info)
+) ENGINE=MyISAM
+```
+
+> 在 MySQL 5.7 及之后版本中可以不指定最后的 ENGINE，因为在此版本中 InnoDB 支持全文索引。
+
+创建一个给 title 和 body 字段添加全文索引的表：
+
+```mysql
+CREATE TABLE articles (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR (200),
+    body TEXT,
+    FULLTEXT index (title, body)
+) ENGINE=INNODB
+```
+
+```mysql
+CREATE TABLE `papers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) DEFAULT NULL,
+  `content` text,
+  PRIMARY KEY (`id`),
+  FULLTEXT KEY `title` (`title`, `content`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
+```
+
+全文索引用 `MATCH + AGAINST` 方式查询：
+
+```mysql
+SELECT * FROM papers WHERE MATCH(title, content) AGAINST (‘查询字符串’);
+```
+
+>注意：
+>
+>1. 使用全文索引前，搞清楚版本支持情况；
+>2. 全文索引比 LIKE + % 快 N 倍，但是可能存在精度问题；
+>3. 如果需要全文索引的是大量数据，建议先添加数据，再创建索引。
+
+**创建空间索引：**
+
+空间索引创建中，要求空间类型的字段必须为`非空` 。
+
+```mysql
+CREATE TABLE test5(
+	geo GEOMETRY NOT NULL,
+	SPATIAL INDEX spa_idx_geo(geo)
+) ENGINE=MyISAM
+```
+
+##### 在已经存在的表上创建索引
+
+在已经存在的表中创建索引可以使用`ALTER TABLE`语句或者`CREATE INDEX`语句。
+
+**使用 ALTER TABLE 语句创建索引：**
+
+```mysql
+ALTER TABLE table_name ADD [UNIQUE | FULLTEXT | SPATIAL] [INDEX | KEY]
+[index_name] (col_name[length],...) [ASC | DESC]
+```
+
+示例：
+
+```mysql
+# 唯一索引
+ALTER TABLE book ADD UNIQUE INDEX uk_idex_bid(book_id)
+
+# 单列索引
+ALTER TABLE book ADD INDEX inx_cmt(comment(50))
+
+# 组合索引
+ALTER TABLE book ADD INDEX idx_author_info(authors(30), info(50))
+```
+
+声明主键索引：
+
+```mysql
+CREATE TABLE customer2(
+	id INT(10) UNSIGNED,
+    customer_no VARCHAR(200),
+    customer_name VARCHAR(200)
+)
+
+ALTER TABLE customer2 ADD PRIMARY KEY customer2(id)
+```
+
+**使用 CREATE INDEX 创建索引：**
+
+`CREATE INDEX`语句可以在已经存在的表上添加索引，在 MySQL 中，CREATE INDEX 被映射到一个 ALTER TABLE 语句上，基本语法结构为：
+
+```mysql
+CREATE [UNIQUE | FULLTEXT | SPATIAL] INDEX index_name
+ON table_name (col_name[length],...) [ASC | DESC]
+```
+
+示例：
+
+```mysql
+# 普通索引
+CREATE INDEX idx_cmt ON book(comment)
+
+# 唯一索引
+CREATE UNIQUE INDEX uk_idx_bid ON book(book_id)
+
+# 组合索引
+CREATE INDEX mul_bid_bname_info ON book(book_id, book_name, info)
+```
+
+#### 删除索引
+
+MySQ L中删除索引使用`ALTER TABLE`或`DROP INDEX`语句，两者可实现相同的功能，DROP INDEX 语句在内部被映射到一个 ALTER TABLE 语句中。
+
+##### 使用 ALTER TABLE 删除索引
+
+语法：
+
+```mysql
+ALTER TABLE table_name DROP INDEX index_name
+```
+
+示例：
+
+```mysql
+# 查看索引是否存在
+SHOW INDEX FROM book\G
+
+# 删除索引
+ALTER TABLE book DROP INDEX idx_bk_id
+```
+
+>添加 AUTO_INCREMENT 约束字段的唯一索引不能被删除。
+
+##### 使用 DROP INDEX 语句删除索引
+
+语法：
+
+```mysql
+DROP INDEX index_name ON table_name
+```
+
+示例：
+
+```mysql
+# 删除索引
+DROP INDEX idx_aut_info ON book
+
+# 查看索引是否删除
+SHOW INDEX FROM book\G
+```
+
+> 删除表中的列时，如果要删除的列为索引的组成部分，则该列也会从索引中删除。如果组成索引的所有列都被删除，则整个索引将被删除。
+
+### MySQL 8.0 索引新特性
+
+#### 支持降序索引
+
+`降序索引以降序存储键值。`虽然在语法上，从 MySQL 4 版本就已经支持降序索引，但实际上该 DESC 定义是被忽略的，直到 MySQL 8 版本才开始真正支持降序索引（仅限于 InnoDB 存储引擎）。
+
+MySQL 在 8.0 版本之前创建的仍然是升序索引，使用时进行反向扫描，这大大降低了数据库的效率。在某些场景下，降序索引意义重大。例如，如果一个查询，需要对多个列进行排序，且顺序要求不一致，那么使用降序索引，将会避免数据库使用额外的文件排序操作，从而提高性能。
+
+示例：
+
+```mysql
+mysql> CREATE TABLE ts1(a int, b int, index idx_a_b(a, b desc)); 
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> SHOW CREATE TABLE ts1;
++-------+---------------------------------------------------------------------------------------------------------------------------------------------+
+| Table | Create Table                                                                                                                                |
++-------+---------------------------------------------------------------------------------------------------------------------------------------------+
+| ts1   | CREATE TABLE `ts1` (
+  `a` int DEFAULT NULL,
+  `b` int DEFAULT NULL,
+  KEY `idx_a_b` (`a`,`b` DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 |
++-------+---------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+从结果可以看出，索引已经是降序了。
+
+向数据表 ts1 中插入 800 条随机数据，执行语句如下：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE ts_insert()
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 1;
+    -> WHILE i < 800
+    -> DO
+    -> insert into ts1 select rand()*80000,rand()*80000;
+    -> SET i = i + 1;
+    -> END WHILE;
+    -> commit;
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+mysql> CALL ts_insert();
+Query OK, 0 rows affected (3.95 sec)
+```
+
+在 MySQL 8.0 版本中查看数据表 ts1 的执行计划：
+
+```mysql
+mysql> EXPLAIN SELECT * FROM ts1 ORDER BY a, b DESC LIMIT 5;
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+| id | select_type | table | partitions | type  | possible_keys | key     | key_len | ref  | rows | filtered | Extra       |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | ts1   | NULL       | index | NULL          | idx_a_b | 10      | NULL |    5 |   100.00 | Using index |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.01 sec)
+```
+
+从结果可以看出，执行计划中扫描数为 5，并且没有使用 Using filesort。
+
+> 可以对比 MySQL 5.0 版本中相同查询的执行计划，执行计划中扫描数远大于 MySQL 8.0，并且使用了 Using filesort 排序。
+>
+> Using filesort 是 MySQL 中一种速度比较慢的外部排序，能避免是最好的。多数情况下，管理员可以通过优化索引来尽量避免出现 Using filesort，从而提高数据库执行速度。
+
+`降序索引只对查询中特定的排序顺序有效，如果使用不当，反而查询效率更低。`例如，将上述查询的排序条件改为`ORDER BY a desc, b desc`，然后在 MySQL 8.0 版本中查看数据表 ts1 的执行计划：
+
+```mysql
+mysql> EXPLAIN SELECT * FROM ts1 ORDER BY a DESC,b DESC LIMIT 5;
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-----------------------------+
+| id | select_type | table | partitions | type  | possible_keys | key     | key_len | ref  | rows | filtered | Extra                       |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-----------------------------+
+|  1 | SIMPLE      | ts1   | NULL       | index | NULL          | idx_a_b | 10      | NULL |  799 |   100.00 | Using index; Using filesort |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-----------------------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+> 此时再对比  MySQL 5.0 版本中相同查询的执行计划，会发现 MySQL 5.0 中执行计划会优于 MySQL 8.0。
+
+#### 隐藏索引
+
+在 MySQL 5.7 版本及之前，只能通过显式的方式删除索引。此时，如果发现删除索引后出现错误，又只能通过显式创建索引的方式将删除的索引创建回来。如果数据表中的数据量非常大，或者数据表本身比较大，这种操作就会消耗系统过多的资源，操作成本非常高。
+
+从 MySQL 8.x 开始支持`隐藏索引 (invisible indexes)`，只需要将待删除的索引设置为隐藏索引，使查询优化器不再使用这个索引（即使使用 force index（强制使用索引），优化器也不会使用该索引），确认将索引设置为隐藏索引后系统不受任何响应，就可以彻底删除索引。这种通过先将索引设置为隐藏索引，再删除索引的方式就是`软删除`。
+
+同时，如果想验证某个索引删除之后的查询性能影响，也可以暂时先隐藏该索引。
+
+索引默认是可见的，在使用 CREATE TABLE，CREATE INDEX 或者 ALTER TABLE 等语句时，可以通过`VISIBLE`或者`INVISIBLE`关键词设置索引的可见性。
+
+> 主键不能被设置为隐藏索引，当表中没有显式主键时，表中第一个唯一非空索引会成为隐式索引，也不能设置为隐藏索引。
+>
+> 当索引被隐藏时，它的内容仍然是和正常索引一样实时更新的。如果一个索引需要长期被隐藏，那么可以将其删除，因为索引的存在会影响插入、更新和删除的性能。
+
+##### 创建表时直接创建
+
+在 MySQL 中创建隐藏索引通过 SQL 语句`INVISIBLE`来实现，语法：
+
+```mysql
+ CREATE TABLE tablename(
+    propname1 type1[CONSTRAINT1],
+    propname2 type2[CONSTRAINT2],
+    ......
+    propnamen typen,
+    INDEX [indexname](propname1 [(length)]) INVISIBLE
+)
+```
+
+上述语句比普通索引多了一个关键字`INVISIBLE`，用来标记索引为不可见索引。
+
+示例：
+
+```mysql
+CREATE TABLE book(
+    book_id INT,
+    book_name VARCHAR(100),
+    authors VARCHAR (100),
+    info VARCHAR (100),
+    comment VARCHAR (100),
+    year_publication YEAR,
+    # 创建不可见的索引
+    INDEX idx_cmt(comment) INVISIBLE
+)
+```
+
+##### 在已经存在的表上创建
+
+语法：
+
+```mysql
+CREATE INDEX indexname
+ON tablename(propname[(length)]) INVISIBLE
+```
+
+示例：
+
+```mysql
+CREATE INDEX idx_year_pub ON book(year_publication) INVISIBLE
+```
+
+##### 通过 ALTER TABLE 语句创建
+
+语法：
+
+```mysql
+ALTER TABLE tablename
+ADD INDEX indexname (propname[(length)]) INVISIBLE
+```
+
+示例：
+
+```mysql
+ALTER TABLE book
+ADD UNIQUE INDEX uk_idx_bname(book_name) INVISIBLE
+```
+
+##### 切换索引可见状态
+
+已存在的索引可通过如下语句切换可见状态：
+
+```mysql
+# 切换成隐藏索引
+ALTER TABLE tablename ALTER INDEX index_name INVISIBLE
+# 切换成非隐藏索引
+ALTER TABLE tablename ALTER INDEX index_name VISIBLE
+```
+
+示例：
+
+```mysql
+# 可见--->不可见
+ALTER TABLE book ALTER INDEX idx_year_pub INVISIBLE
+# 不可见--->可见
+ALTER TABLE book ALTER INDEX idx_cmt VISIBLE
+```
+
+##### 使隐藏索引对查询优化器可见
+
+在 MySQL 8.x 版本中，为索引提供了一种新的测试方式，可以通过查询优化器的一个开关 （`use_invisible_indexes`）来打开某个设置，使隐藏索引对查询优化器可见。如果 use_invisible_indexes 设置为 off（默认），优化器会忽略隐藏索引。如果设置为 on，即使隐藏索引不可见，优化器在生成执行计划时仍会考虑使用隐藏索引。
+
+查看：
+
+```mysql
+mysql> SELECT @@optimizer_switch;
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| @@optimizer_switch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,duplicateweedout=on,subquery_materialization_cost_based=on,use_index_extensions=on,condition_fanout_filter=on,derived_merge=on,use_invisible_indexes=off,skip_scan=on,hash_join=on,subquery_to_derived=off,prefer_ordering_index=on,hypergraph_optimizer=off,derived_condition_pushdown=on |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+修改：
+
+```mysql
+mysql> SELECT @@optimizer_switch;
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| @@optimizer_switch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,duplicateweedout=on,subquery_materialization_cost_based=on,use_index_extensions=on,condition_fanout_filter=on,derived_merge=on,use_invisible_indexes=on,skip_scan=on,hash_join=on,subquery_to_derived=off,prefer_ordering_index=on,hypergraph_optimizer=off,derived_condition_pushdown=on |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+### 索引的设计原则
+
+#### 数据准备
+
+创建数据库和表：
+
+```mysql
+mysql> CREATE DATABASE atguigudb1;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE atguigudb1;
+Database changed
+
+mysql> CREATE TABLE `student_info` (
+    -> `id` INT(11) NOT NULL AUTO_INCREMENT,
+    -> `student_id` INT NOT NULL ,
+    -> `name` VARCHAR(20) DEFAULT NULL,
+    -> `course_id` INT NOT NULL ,
+    -> `class_id` INT(11) DEFAULT NULL,
+    -> `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -> PRIMARY KEY (`id`)
+    -> ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+Query OK, 0 rows affected, 3 warnings (0.04 sec)
+
+mysql> CREATE TABLE `course` (
+    -> `id` INT(11) NOT NULL AUTO_INCREMENT,
+    -> `course_id` INT NOT NULL ,
+    -> `course_name` VARCHAR(40) DEFAULT NULL,
+    -> PRIMARY KEY (`id`)
+    -> ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+Query OK, 0 rows affected, 2 warnings (0.03 sec)
+```
+
+创建模拟数据必需的存储函数：
+
+```mysql
+# 函数1: 创建随机产生字符串函数
+mysql> DELIMITER //
+mysql> CREATE FUNCTION rand_string(n INT)
+    -> RETURNS VARCHAR(255) # 函数会返回一个字符串
+    -> BEGIN
+    -> DECLARE chars_str VARCHAR(100) DEFAULT 'abcdefghijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ';
+    -> DECLARE return_str VARCHAR(255) DEFAULT '';
+    -> DECLARE i INT DEFAULT 0;
+    -> WHILE i < n DO
+    -> SET return_str = CONCAT(return_str, SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 1));
+    -> SET i = i + 1;
+    -> END WHILE;
+    -> RETURN return_str;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+
+# 函数2: 创建随机数函数
+mysql> DELIMITER //
+mysql> CREATE FUNCTION rand_num(from_num INT, to_num INT) RETURNS INT(11)
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> SET i = FLOOR(from_num + RAND() * (to_num - from_num + 1)) ;
+    -> RETURN i;
+    -> END //
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+>主从复制，主机会将写操作记录在 bin-log 日志中。从机读取 bin-log 日志，执行语句来同步数据。如果使用函数来操作数据，会导致从机和主机操作时间不一致。所以，默认情况下，MySQL 不开启创建函数设置。
+>
+>查看 MySQL 是否允许创建函数：
+>
+>```mysql
+>mysql> SHOW VARIABLES LIKE 'log_bin_trust_function_creators';
+>+---------------------------------+-------+
+>| Variable_name                   | Value |
+>+---------------------------------+-------+
+>| log_bin_trust_function_creators | OFF   |
+>+---------------------------------+-------+
+>1 row in set (0.01 sec)
+>```
+>
+>命令开启，允许创建函数设置：
+>
+>```mysql
+>mysql> SET GLOBAL log_bin_trust_function_creators=1;
+>Query OK, 0 rows affected (0.00 sec)
+>```
+>
+>如果不进行如上设置，创建函数时会报错：
+>
+>```mysql
+>ERROR 1418 (HY000): This function has none of DETERMINISTIC, NO SQL, or READS SQL DATA in its declaration and binary logging is enabled (you *might* want to use the less safe log_bin_trust_function_creators variable)
+>```
+
+创建插入模拟数据的存储过程：
+
+```mysql
+# 存储过程1: 创建插入课程表的存储过程
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE insert_course(max_num INT)
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> SET autocommit = 0; # 设置手动提交事务
+    -> REPEAT # 循环
+    -> SET i = i + 1; # 赋值
+    -> INSERT INTO course(course_id, course_name) VALUES (rand_num(10000, 10100), rand_string(6));
+    -> UNTIL i = max_num
+    -> END REPEAT;
+    -> COMMIT; # 提交事务
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+
+# 存储过程2: 创建插入学生信息表的存储过程
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE insert_stu(max_num INT)
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> SET autocommit = 0; # 设置手动提交事务
+    -> REPEAT # 循环
+    -> SET i = i + 1; # 赋值
+    -> INSERT INTO student_info(course_id, class_id, student_id, name) VALUES (rand_num(10000, 10100), rand_num(10000, 10200), rand_num(1, 200000), rand_string(6));
+    -> UNTIL i = max_num
+    -> END REPEAT;
+    -> COMMIT; # 提交事务
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+调用存储过程：
+
+```mysql
+mysql> CALL insert_course(100);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CALL insert_stu(1000000);
+Query OK, 0 rows affected (57.34 sec)
+```
+
+#### 适合创建索引的情景
+
+#### 限制索引的数目
+
+#### 不适合创建索引的情景
 
 
 
