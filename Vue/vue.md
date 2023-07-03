@@ -3643,3 +3643,125 @@ Vue 属性：
 
 ### 单文件组件
 
+App.vue：
+
+```vue
+<template>
+  <div>
+    <School></School>
+    <Student></Student>
+  </div>
+</template>
+
+<script>
+// 引入组件
+import School from "./School.vue";
+import Student from "./Student.vue";
+
+export default {
+  name: "App",
+  components: {
+    School,
+    Student,
+  },
+};
+</script>
+```
+
+School.vue：
+
+```vue
+<!-- 组件的结构 -->
+<template>
+  <div class="demo">
+    <h2>学校名称: {{ name }}</h2>
+    <h2>学校地址: {{ address }}</h2>
+    <button @click="showName">点我提示学校名</button>
+  </div>
+</template>
+
+<!-- 组件交互相关的代码(数据、方法等) -->
+<script>
+export default {
+  name: "School",
+  data() {
+    return {
+      name: "尚硅谷",
+      address: "北京昌平",
+    };
+  },
+  methods: {
+    showName() {
+      alert(this.name);
+    },
+  },
+};
+</script>
+
+<!-- 组件的样式 -->
+<style>
+.demo {
+  background-color: orange;
+}
+</style>
+```
+
+Student.vue：
+
+```vue
+<template>
+  <div>
+    <h2>学生姓名：{{ name }}</h2>
+    <h2>学生年龄：{{ age }}</h2>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "Student",
+  data() {
+    return {
+      name: "张三",
+      age: 18,
+    };
+  },
+};
+</script>
+```
+
+index.html：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>练习一下单文件组件的语法</title>
+</head>
+
+<body>
+    <!-- 准备一个容器 -->
+    <div id="root"></div>
+    <!-- <script type="text/javascript" src="../js/vue.js"></script> -->
+    <!-- <script type="text/javascript" src="./main.js"></script> -->
+</body>
+
+</html>
+```
+
+main.js：
+
+```js
+import App from './App.vue'
+
+new Vue({
+	el: '#root',
+	template: `<App></App>`,
+	components: { App },
+})
+```
+
+> 目前网页打开会报错，浏览器不支持直接 import 导入（main.js:1 Uncaught SyntaxError: Cannot use import statement outside a module (at main.js:1:1)），等学完脚手架即可处理。
+
