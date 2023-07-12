@@ -1832,6 +1832,14 @@ cwnd 随时间变化示意图：
 
 <img src="network-protocol/image-20230709191909974.png" alt="image-20230709191909974" style="zoom:67%;" />
 
+<img src="network-protocol/image-20230710220118852.png" alt="image-20230710220118852" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230710220221293.png" alt="image-20230710220221293" style="zoom:67%;" />
+
+序号与确认号值变化：
+
+<img src="network-protocol/image-20230710220911131.png" alt="image-20230710220911131" style="zoom:67%;" />
+
 ##### 连接控制
 
 44
