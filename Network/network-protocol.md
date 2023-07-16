@@ -1842,4 +1842,62 @@ cwnd 随时间变化示意图：
 
 ##### 连接控制
 
-44
+###### 建立连接：3 次握手
+
+<img src="network-protocol/image-20230716155651995.png" alt="image-20230716155651995" style="zoom: 60%;" />
+
+- `CLOSED`：一开始，Client 处于关闭状态。
+
+- `LISTEN`：一开始，Server 处于监听状态。
+
+- `SYN-SENT`：Client 发送连接请求（SYN 报文，第 1 次握手）后，状态变为 SYN-SENT，表明 Client 已发送 SYN 报文，等待 Server 的第 2 次握手。
+
+- `SYN-RCVD`：Server 接收到了 SYN 报文，状态变为 SYN-RCVD，并发送连接请求确认。
+
+- `ESTABLISHED`：Client 接收到了 Server 发送的连接请求确认，状态变为 ESTABLISHED，表示连接已经建立。然后，Client 发送确认请求（ACK 报文），当 Server 接收到了 ACK 报文后，也会变为 ESTABLISHED 状态。
+
+- 前 2 次握手的特点：
+
+  - SYN 的值都为 1。
+  - 数据部分的长度都为 0。
+  - TCP 头部的长度，一般都是 32 字节。
+    - 固定头部：20 字节。
+    - 选项部分：12 字节。
+  - 双方会交换确认一些信息：
+    - 比如 MSS、是否支持 SACK、Window scale（窗口缩放系数）等。
+    - 这些数据都放在了 TCP 头部的选项部分中。
+
+- 问题一：为什么建立连接的时候，要进行 3 次握手？2 次不行吗？
+
+  - 主要目的：防止 Server 一直等待，浪费资源。
+  - 如果建立连接只需要 2 次握手，可能会出现的情况：
+    - 假设 Client 先发出了第一个连接请求报文段，因为网络延迟，Server 迟迟未收到请求。
+    - 因为第一个连接请求没有收到回复，Client 发出了第二个连接请求报文段，Server 收到，并与 Client 做正常的交互，之后，Server 释放资源，连接断开。
+    - 在连接释放以后的某个时间，Server 收到 Client 发送的第一个连接请求报文。本来这是一个早已失效的连接请求，但 Server 收到此失效的请求后，误认为是 Client 再次发出的一个新的连接请求。于是，Server 就向 Client 发出确认报文段，同意建立连接。
+    - 如果不采用 3 次握手，那么只要 Server 发出确认，新的连接就建立了。
+    - 由于现在 Client 并没有真正想连接服务器的意愿，因此不会理睬 Server 的确认，也不会向 Server 发送数据。但 Server 却认为新的连接已经建立，并一直等待 Client 发来数据，这样，Server 的很多资源就白白浪费掉了。
+  - 采用 3 次握手的方式，可以避免上述现象的发生：第 2 次握手之后，因为 Client 没有向 Server 的确认发出确认，Server 由于收不到确认，就知道 Client 并没有要求建立连接，也就会把资源进行释放。
+
+- 问题二：第 3 次握手失败了，会怎么处理？
+
+  <img src="network-protocol/image-20230716193158661.png" alt="image-20230716193158661" style="zoom: 60%;" />
+
+  - 此时 Server 的状态为 SYN-RCVD，若等不到 Client 的 ACK，Server 会重新发送 SYN + ACK 包。
+  - 如果 Server 多次重发 SYN + ACK 都等不到 Client 的 ACK，就会发送 RST 包，强制关闭连接。
+
+###### 释放连接：4 次挥手
+
+<img src="network-protocol/image-20230716195010715.png" alt="image-20230716195010715" style="zoom:60%;" />
+
+- `FIN-WAIT-1`：表示想主动关闭连接。
+  - 一方向对方发送了 FIN 报文，此时进入到 FIN-WAIT-1 状态。
+- `CLOSE-WAIT`：表示在等待关闭。
+  - 当对方发送 FIN 给自己，自己会回应一个 ACK 报文给对方，此时则进入到 CLOSE-WAIT 状态。
+  - 在此状态下，需要考虑自己是否还有数据要发送给对方，如果没有，则发送 FIN 报文给对方。
+- `FIN-WAIT-2`：只要对方发送 ACK 确认后，主动方就会处于 FIN-WAIT-2 状态，然后等待对方发送 FIN 报文。
+- `CLOSING`：一种比较罕见的例外状态。
+  - 表示一方发送 FIN 报文后，并没有收到对方的 ACK 报文，反而也受到了对方的 FIN 报文。
+  - 如果双方几乎在同时准备关闭连接的话，那么就出现了双方同时发送 FIN 报文的情况，即会出现 CLOSING 状态。
+- DS
+
+![image-20230716203200323](network-protocol/image-20230716203200323.png)
