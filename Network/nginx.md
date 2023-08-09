@@ -154,7 +154,7 @@ Nginx 存放访问日志的目录。
 
 ### 基本运行原理
 
-![image-20221224191313566](nginx/image-20221224191313566.png)
+<img src="nginx/image-20221224191313566.png" alt="image-20221224191313566" style="zoom: 67%;" />
 
 - Master：主进程。
 - Worker：子进程。
@@ -356,11 +356,11 @@ http {
 
   - 未开启 sendfile：
 
-    ![image-20221225195818023](nginx/image-20221225195818023.png)
+    <img src="nginx/image-20221225195818023.png" alt="image-20221225195818023" style="zoom:67%;" />
 
   - 开启 sendfile：
 
-    ![image-20221225195905444](nginx/image-20221225195905444.png)
+    <img src="nginx/image-20221225195905444.png" alt="image-20221225195905444" style="zoom:67%;" />
 
 - `keepalive_timeout 65;`：超时时间。
 
@@ -387,13 +387,13 @@ http {
 
 原本一台服务器只能对应一个站点，通过`虚拟主机技术`可以虚拟化成多个站点，同时对外提供服务：
 
-![image-20221226214708565](nginx/image-20221226214708565.png)
+<img src="nginx/image-20221226214708565.png" alt="image-20221226214708565" style="zoom:67%;" />
 
 #### 本机域名解析
 
 修改 hosts 文件，添加对应的域名解析：
 
-![image-20221226221515820](nginx/image-20221226221515820.png)
+<img src="nginx/image-20221226221515820.png" alt="image-20221226221515820" style="zoom: 50%;" />
 
 ```bash
 Microsoft Windows [版本 10.0.19044.2364]
