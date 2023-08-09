@@ -893,7 +893,7 @@ $ apt remove vim-common
 $ apt install vim
 ```
 
-> Ubuntu 默认安装的是 vim tiny 版本，使用时会出现上下左右方向键变为 ABCD 的情况，因此，将其移除，安装 vim full 版本。
+> Ubuntu-Desktop 默认安装的是 vim tiny 版本，使用时会出现上下左右方向键变为 ABCD 的情况，因此，将其移除，安装 vim full 版本。
 
 安装 openssh-server：
 
