@@ -1892,7 +1892,7 @@ cwnd 随时间变化示意图：
 - `ESTABLISHED`：一开始，Client 和 Server 都处于 ESTABLISHED 状态。
 - `FIN-WAIT-1`：表示想主动关闭连接（主动方）。
   - 一方向对方发送了 FIN 报文，此时进入到 FIN-WAIT-1 状态。
-  - 想主动关闭的一方，既可以是 Client，也可以是 Server。
+  - 想主动关闭的一方，既可以是 Client，也可以是 Server。TCP/IP 协议栈在设计上，允许任何一方先发起断开请求，此处演示的是 Client 主动要求断开。
 - `CLOSE-WAIT`：表示在等待关闭（被动方）。
   - 当主动方发送 FIN 报文给被动方，被动方会回应一个 ACK 报文给主动方，此时被动方进入到 CLOSE-WAIT 状态。
   - 在此状态下，被动方需要考虑自己是否还有数据要发送给主动方，如果没有，则发送 FIN 报文给主动方（之后被动方进入 LAST-ACK 状态）。
@@ -1904,67 +1904,833 @@ cwnd 随时间变化示意图：
 - `LAST-ACK`：被动方在发送 FIN 报文后，就进入 LAST-ACK 状态，等待主动方发送的 ACK 报文。
   - 当被动方收到主动发的 ACK 报文后，被动方就进入到了 CLOSED 状态。
 
-- `TIME-WAIT`：表示主动方收到了被动方的 FIN 报文，并发送了 ACK 报文，此时，主动方进入 TIME-WAIT 状态，在等待 2 MSL 后即可进入 CLOSED 状态。
-  - 如果 FIN-WAIT-1 状态下，收到了对方同时带 FIN 标志和 ACK 标志的报文时，可以直接进入到 TIME-WAIT 状态，而无须经过 FIN-WAIT-2 状态。
+- `TIME-WAIT`：表示主动方收到了被动方的 FIN 报文，并发送了 ACK 报文，此时，主动方进入 TIME-WAIT 状态，一般在`等待 2 MSL 后`即可进入 CLOSED 状态。
+  - 如果 FIN-WAIT-1 状态下，收到了对方同时带 FIN 标志和 ACK 标志的报文时，可以直接进入到 TIME-WAIT 状态，而无须经过 FIN-WAIT-2 状态。（此时是 3 次挥手）
+  - MSL：Maximum Segment Lifetime，最大分段生存期，MSL 是 TCP 报文在 Internet 上的最长生存时间。每个具体的 TCP 实现，都必须选择一个确定的 MSL 值，RFC 1122 建议是 2 分钟。
+  - 等待 2 MSL 后在进入 CLOSE 状态，可以防止本次连接中产生的数据包，误传到下一次连接中，因为本次连接中的数据包，都会在 2 MSL 时间内消失。
+  - 如果 Client 发送 ACK 报文后不等待马上释放资源，然后又因为网络原因，Server 没有收到 Client 的 ACK 报文，Server 就会重发 FIN 报文，此时，可能出现的情况是：
+    - ① Client 没有任何响应，Server 会干等，甚至多次重发 FIN 报文，浪费资源。
+    - ② Client 有个新的应用程序刚好分配了同一个端口，新的应用程序收到 FIN 报文后马上开始执行断开连接的操作，而实际上，这个新应用程序可能是想跟 Server 建立连接的。
 
 - `CLOSED`：关闭状态。
+- 问题：为什么释放连接的时候，要进行 4 次挥手？
+  - TCP 是全双工模式。
+  - 第 1 次挥手：当主机 1 发出 FIN 报文时：
+    - 表示主机 1 告诉主机 2，主机 1 已经没有数据要发送了，但是，此时主机 1 还是可以接收来自主机 2 的数据。
+
+  - 第 2 次挥手：当主机 2 返回 ACK 报文时：
+    - 表示主机 2 已经知道主机 1 没有数据发送了，但是主机 2 还是可以发送数据到主机 1 的。
+
+  - 第 3 次挥手：当主机 2 也发出 FIN 报文时：
+    - 表示主机 2 告诉主机 1，主机 2 已经没有数据要发送了。
+
+  - 第 4 次挥手：当主机 1 返回 ACK 报文时：
+    - 表示主机 1 已经知道主机 2 没有数据发送了，随后正式断开整个 TCP 连接。
+
+
+###### 完整流程
 
 Client 和 Server 建立和释放连接全过程流程示意图：
 
+<img src="network-protocol/image-20230721090633040.png" alt="image-20230721090633040" style="zoom:50%;" />
+
 <img src="network-protocol/image-20230716203200323.png" alt="image-20230716203200323" style="zoom:60%;" />
 
-> 由于有些状态的时间比较短暂，所以很难用 netstat 命令看到，比如 SYN-RCVD、FIN-WAIT-1 等。
+有时候在使用抓包工具的时候，可能只会看到 3 次挥手：
+
+<img src="network-protocol/image-20230722093530106.png" alt="image-20230722093530106" style="zoom:67%;" />
+
+- 这其实就是将第 2 次挥手和第 3 次挥手合并了。
+- 当被动方接收到主动发的 FIN 报文时，如果被动方此时也没有数据要发送给主动方，这时，被动方就可以将第 2 次挥手和第 3 次挥手合并，同时告诉主动方两件事：
+  - 被动方已经知道主动发没有数据要发送。
+  - 被动方本身也没有数据要发送。
+
+> 图中的三向握手，也就是指特殊情况下的 3 次挥手。
+
+`netstat`命令可以查看 TCP 连接的状态，但由于有些状态的时间比较短暂，所以很难用 netstat 命令看到，比如 SYN-RCVD、FIN-WAIT-1 等。
+
+```bash
+C:\Users\XiSun>netstat -n
+
+活动连接
+
+  协议  本地地址          外部地址        状态
+  TCP    127.0.0.1:4292         127.0.0.1:63342        ESTABLISHED
+  TCP    127.0.0.1:4297         127.0.0.1:49152        ESTABLISHED
+  TCP    127.0.0.1:4374         127.0.0.1:8500         ESTABLISHED
+  TCP    127.0.0.1:4374         127.0.0.1:12359        ESTABLISHED
+  TCP    127.0.0.1:4376         127.0.0.1:40166        ESTABLISHED
+  TCP    127.0.0.1:7890         127.0.0.1:7285         ESTABLISHED
+  TCP    127.0.0.1:7890         127.0.0.1:7294         ESTABLISHED
+  TCP    127.0.0.1:8694         127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:8741         127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:8743         127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:8771         127.0.0.1:9229         SYN_SENT
+  TCP    127.0.0.1:9066         127.0.0.1:9067         ESTABLISHED
+  TCP    127.0.0.1:9067         127.0.0.1:9066         ESTABLISHED
+  TCP    127.0.0.1:9792         127.0.0.1:9793         ESTABLISHED
+  TCP    127.0.0.1:9793         127.0.0.1:9792         ESTABLISHED
+  TCP    127.0.0.1:11090        127.0.0.1:7890         ESTABLISHED
+  TCP    127.0.0.1:11149        127.0.0.1:7890         ESTABLISHED
+  TCP    127.0.0.1:11256        127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:11258        127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:11283        127.0.0.1:7890         TIME_WAIT
+  TCP    127.0.0.1:11883        127.0.0.1:7890         ESTABLISHED
+  TCP    127.0.0.1:11895        127.0.0.1:7890         ESTABLISHED
+  TCP    192.168.3.144:7287     122.195.90.181:7826    ESTABLISHED
+  TCP    192.168.3.144:7295     112.65.211.215:443     ESTABLISHED
+  TCP    192.168.3.144:8349     220.196.139.176:80     ESTABLISHED
+  TCP    192.168.3.144:8656     114.112.207.71:443     ESTABLISHED
+  TCP    192.168.3.144:8673     58.254.138.133:443     TIME_WAIT
+  TCP    192.168.3.144:8679     152.195.38.76:80       TIME_WAIT
+  TCP    192.168.3.144:8684     34.170.65.59:443       ESTABLISHED
+  TCP    192.168.3.144:8716     114.112.207.33:443     TIME_WAIT
+  TCP    192.168.3.144:8731     114.112.207.33:443     TIME_WAIT
+  TCP    192.168.3.144:8742     106.11.40.32:443       TIME_WAIT
+  TCP    192.168.3.144:8744     106.11.40.32:443       TIME_WAIT
+  TCP    192.168.3.144:8749     202.89.233.101:443     ESTABLISHED
+  TCP    192.168.3.144:8758     211.94.93.212:443      CLOSE_WAIT
+  TCP    192.168.3.144:8759     211.94.93.212:443      CLOSE_WAIT
+  TCP    192.168.3.144:8769     114.112.207.1:443      TIME_WAIT
+  TCP    192.168.3.144:9065     192.168.3.23:22        ESTABLISHED
+  TCP    192.168.3.144:9485     59.82.58.85:443        ESTABLISHED
+  TCP    192.168.3.144:11091    101.37.44.209:443      ESTABLISHED
+  TCP    192.168.3.144:11858    58.243.179.131:443     CLOSE_WAIT
+  TCP    192.168.3.144:11859    117.18.232.200:443     CLOSE_WAIT
+  TCP    192.168.3.144:11886    122.195.90.174:7826    ESTABLISHED
+  TCP    192.168.3.144:11897    112.83.140.11:443      ESTABLISHED
+  TCP    192.168.3.144:11999    112.65.211.215:443     ESTABLISHED
+  TCP    192.168.3.144:12000    114.250.52.78:443      ESTABLISHED
+```
+
+### 应用层（Application）
+
+#### 常见协议
+
+- 超文本传输：HTTP、HTTPS。
+- 文件传输：FTP。
+- 电子邮件：SMTP、POP3、IMAP。
+- 动态主机配置：DHCP。
+- 域名系统：DNS。
+
+#### 域名（Domain Name）
+
+由于 IP 地址不方便记忆，并且不能表达组织的名称何性质，人们设计出了`域名`，比如 baidu.com。
+
+- 实际上，为了能够访问到具体的主机，最终还是需要知道目标主机的 IP 地址。
+- 域名申请注册：https://wanwang.aliyun.com/
+
+既然域名有很多有点，为什么不全部使用域名，放弃 IP 地址呢？
+
+- 这是因为 IP 地址固定为 4 个字节，而域名很容易就超出 4 个字节，甚至十几个等更多字节，这无疑会增加路由器的负担，浪费流量。
+
+根据级别不同，域名可以分为：
+
+<img src="network-protocol/image-20230722123429133.png" alt="image-20230722123429133" style="zoom:50%;" />
+
+- 顶级域名，Top-level Domain，简称 TLD。
+- 二级域名。
+- 三级域名。
+- 四级域名。
+- ...
+
+> 实际上，顶级域名上面还有一个根域名，通常省略，例如 image.baidu.com，完整的域名是 image.baidu.com.，最后的 . 就是根域名。
 >
-> ```bash
-> C:\Users\XiSun>netstat -n
-> 
-> 活动连接
-> 
->   协议  本地地址          外部地址        状态
->   TCP    127.0.0.1:4292         127.0.0.1:63342        ESTABLISHED
->   TCP    127.0.0.1:4297         127.0.0.1:49152        ESTABLISHED
->   TCP    127.0.0.1:4374         127.0.0.1:8500         ESTABLISHED
->   TCP    127.0.0.1:4374         127.0.0.1:12359        ESTABLISHED
->   TCP    127.0.0.1:4376         127.0.0.1:40166        ESTABLISHED
->   TCP    127.0.0.1:7890         127.0.0.1:7285         ESTABLISHED
->   TCP    127.0.0.1:7890         127.0.0.1:7294         ESTABLISHED
->   TCP    127.0.0.1:8694         127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:8741         127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:8743         127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:8771         127.0.0.1:9229         SYN_SENT
->   TCP    127.0.0.1:9066         127.0.0.1:9067         ESTABLISHED
->   TCP    127.0.0.1:9067         127.0.0.1:9066         ESTABLISHED
->   TCP    127.0.0.1:9792         127.0.0.1:9793         ESTABLISHED
->   TCP    127.0.0.1:9793         127.0.0.1:9792         ESTABLISHED
->   TCP    127.0.0.1:11090        127.0.0.1:7890         ESTABLISHED
->   TCP    127.0.0.1:11149        127.0.0.1:7890         ESTABLISHED
->   TCP    127.0.0.1:11256        127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:11258        127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:11283        127.0.0.1:7890         TIME_WAIT
->   TCP    127.0.0.1:11883        127.0.0.1:7890         ESTABLISHED
->   TCP    127.0.0.1:11895        127.0.0.1:7890         ESTABLISHED
->   TCP    192.168.3.144:7287     122.195.90.181:7826    ESTABLISHED
->   TCP    192.168.3.144:7295     112.65.211.215:443     ESTABLISHED
->   TCP    192.168.3.144:8349     220.196.139.176:80     ESTABLISHED
->   TCP    192.168.3.144:8656     114.112.207.71:443     ESTABLISHED
->   TCP    192.168.3.144:8673     58.254.138.133:443     TIME_WAIT
->   TCP    192.168.3.144:8679     152.195.38.76:80       TIME_WAIT
->   TCP    192.168.3.144:8684     34.170.65.59:443       ESTABLISHED
->   TCP    192.168.3.144:8716     114.112.207.33:443     TIME_WAIT
->   TCP    192.168.3.144:8731     114.112.207.33:443     TIME_WAIT
->   TCP    192.168.3.144:8742     106.11.40.32:443       TIME_WAIT
->   TCP    192.168.3.144:8744     106.11.40.32:443       TIME_WAIT
->   TCP    192.168.3.144:8749     202.89.233.101:443     ESTABLISHED
->   TCP    192.168.3.144:8758     211.94.93.212:443      CLOSE_WAIT
->   TCP    192.168.3.144:8759     211.94.93.212:443      CLOSE_WAIT
->   TCP    192.168.3.144:8769     114.112.207.1:443      TIME_WAIT
->   TCP    192.168.3.144:9065     192.168.3.23:22        ESTABLISHED
->   TCP    192.168.3.144:9485     59.82.58.85:443        ESTABLISHED
->   TCP    192.168.3.144:11091    101.37.44.209:443      ESTABLISHED
->   TCP    192.168.3.144:11858    58.243.179.131:443     CLOSE_WAIT
->   TCP    192.168.3.144:11859    117.18.232.200:443     CLOSE_WAIT
->   TCP    192.168.3.144:11886    122.195.90.174:7826    ESTABLISHED
->   TCP    192.168.3.144:11897    112.83.140.11:443      ESTABLISHED
->   TCP    192.168.3.144:11999    112.65.211.215:443     ESTABLISHED
->   TCP    192.168.3.144:12000    114.250.52.78:443      ESTABLISHED
-> ```
+> 域名的级别是一个相对概念，例如 sina.com 中 com 是顶级域名，而 whu.com.cn 中 com 就是二级域名。
+
+##### 顶级域名
+
+- 通用顶级域名，General Top-level Domain，简称 gTLD。
+  - .com（公司），.net（网络机构），.org（组织机构），.edu（教育），.gov（政府部门），.int（国际组织）等。
+- 国家及地区顶级域名，Country Code Top-level Domain，简称 ccTLD。
+  - .cn（中国），.jp（日本），.uk（英国）等。
+- 新通用顶级域名，New Generic Top-level Domain，简称 New gTLD。
+  - .vip，.xyz，.top，.club，.shop 等。
+
+##### 二级域名
+
+二级域名是指顶级域名之下的域名：
+
+- 在通用顶级域名下，它一般指域名注册人的名称，例如 google，baidu，microsoft 等。
+- 在国家及地区顶级域名下，它一般指注册类别的，例如 com，edu，gov，net 等。
+
+#### 域名系统（DNS）
+
+DNS，全名sDomain Name System，即`域名系统`。
+
+<img src="network-protocol/image-20230722124051915.png" alt="image-20230722124051915" style="zoom:67%;" />
+
+- 利用 DNS 协议，可以将域名解析成对应的 IP 地址，比如 baidu.com 对应 220.181.38.148。
+
+- DNS 可以基于 UDP 协议，也可以基于 TCP 协议，**DNS 服务器占用 53 端口**。
+
+- DNS 域名解析流程：
+
+  - 客户端首先会访问最近的一台 DNS 服务器，也就是客户端自己配置的 DNS 服务器。
+
+    <img src="network-protocol/image-20230725215027713.png" alt="image-20230725215027713" style="zoom:80%;" />
+
+  - 如果本地 DNS 服务器没有，则访问根名称服务器，如果还是没有，返回信息通知本地名称服务器，继续向下访问顶级名称服务器，之后依次向下，直到找到域名对应的 IP 地址，然后返回给客户端。最终得到的 IP 地址，也会在本地进行缓存。
+
+  - 所有的 DNS 服务器都记录了 DNS 根域名服务器的 IP 地址。
+
+  - 上级 DNS 服务器记录了下一级 DNS 服务器的 IP 地址。
+
+  - 全球一共 13 台 IPv4 的 DNS 根域名服务器，25 台 IPv6 的 DNS 根域名服务器。
+
+
+DNS 常用命令：
+
+- `ipconfig /displaydns`：查看 DNS 缓存记录。
+
+- `ipconfig /flushdns`：清空 DNS 缓存记录。
+
+- `ping 域名`。
+
+- `nslookup 域名`。
+
+  ```bash
+  C:\Users\XiSun>nslookup baidu.com
+  服务器:  router.ctc
+  Address:  192.168.2.1
+  
+  非权威应答:
+  名称:    baidu.com
+  Addresses:  110.242.68.66
+            39.156.66.10
+  ```
+
+#### 动态主机配置（DHCP）
+
+##### IP 地址的分配
+
+IP 地址按照分配方式，可以分为静态 IP 地址和动态 IP 地址。
+
+- 静态 IP 地址：
+  - 手动设置。
+  - 适用场景：不怎么挪动的台式机，比如学校机房中的台式机、服务器等。
+- 动态 IP 地址：
+  - 从 DHCP 服务器自动获取 IP 地址。
+  - 适用场景：移动设备、无线设备等。
+
+##### DHCP
+
+DHCP，全名 Dynamic Host Configuration Protocol，即`动态主机配置协议`。
+
+- DHCP 协议基于 UDP 协议，客户端是 68 端口，服务器是 67 端口。
+- DHCP 服务器会从 IP 地址池中，挑选一个 IP 地址 "出租" 给客户端一段时间，时间到期就回收它们。
+- 平时家里上网的路由器，就可以充当 DHCP 服务器。
+
+DHCP 分配 IP 地址的四个阶段：
+
+<img src="network-protocol/image-20230726221156704.png" alt="image-20230726221156704" style="zoom: 50%;" />
+
+- 抓包：
+
+  <img src="network-protocol/image-20230726221633581.png" alt="image-20230726221633581" style="zoom:80%;" />
+
+- `DISCOVER`：发现服务器。
+
+  <img src="network-protocol/image-20230726221304417.png" alt="image-20230726221304417" style="zoom:80%;" />
+
+  - 客户端发广播包（源 IP 是 0.0.0.0，目标 IP 是 255.255.255.255，目标 MAC 是 FF:FF:FF:FF:FF:FF）。
+
+- `OFFER`：提供租约。
+
+  <img src="network-protocol/image-20230726221341675.png" alt="image-20230726221341675" style="zoom:80%;" />
+
+  - DHCP 服务器返回可以租用的 IP 地址，以及租用期限、子网掩码、网关、DNS 等信息。
+  - 注意：这里可能会有多个服务器提供租约。
+
+- `REQUEST`：选择 IP 地址。
+
+  <img src="network-protocol/image-20230726221457125.png" alt="image-20230726221457125" style="zoom:80%;" />
+
+  - 客户端选择一个 OFFER，并发送广播包进行回应。
+
+- `ACKNOWLEDGE`：确认。
+
+  <img src="network-protocol/image-20230726221528726.png" alt="image-20230726221528726" style="zoom:80%;" />
+
+  - 被选中的 DHCP 服务器发送 ACK 数据包给客户端。
+  - 至此，IP 地址分配完毕。
+
+DHCP 服务器可以跨网段分配 IP 地址（DNCP 服务器、客户端不在同一个网段）：
+
+- 可以借助 DHCP 中继代理（DHCP Relay Agent）实现跨网段分配 IP 地址。
+
+DHCP 的自动续约：
+
+- 客户端会在租期不足的时候，自动向 DHCP 服务器发送 REQUEST 信息申请续约。
+
+DHCP 的常用命令：
+
+- `ipconfig /all`：可以看到 DHCP 相关的详细信息，比如租约过期时间、DHCP 服务器地址等。
+
+  ```bash
+  C:\Users\XiSun> ipconfig /all
+  
+  Windows IP 配置
+  
+     主机名  . . . . . . . . . . . . . : DESKTOP-9UO4S47
+     主 DNS 后缀 . . . . . . . . . . . :
+     节点类型  . . . . . . . . . . . . : 混合
+     IP 路由已启用 . . . . . . . . . . : 否
+     WINS 代理已启用 . . . . . . . . . : 否
+  
+  以太网适配器 vEthernet (LAN1):
+  
+     连接特定的 DNS 后缀 . . . . . . . :
+     描述. . . . . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter #2
+     物理地址. . . . . . . . . . . . . : 40-B0-76-9F-93-47
+     DHCP 已启用 . . . . . . . . . . . : 是
+     自动配置已启用. . . . . . . . . . : 是
+     本地链接 IPv6 地址. . . . . . . . : fe80::39b1:86d0:b44b:f94%16(首选)
+     IPv4 地址 . . . . . . . . . . . . : 192.168.2.135(首选)
+     子网掩码  . . . . . . . . . . . . : 255.255.255.0
+     获得租约的时间  . . . . . . . . . : 2023年7月26日 20:36:39
+     租约过期的时间  . . . . . . . . . : 2023年7月27日 20:36:38
+     默认网关. . . . . . . . . . . . . : 192.168.2.1
+     DHCP 服务器 . . . . . . . . . . . : 192.168.2.1
+     DHCPv6 IAID . . . . . . . . . . . : 474001526
+     DHCPv6 客户端 DUID  . . . . . . . : 00-01-00-01-2B-CB-B6-25-40-B0-76-9F-93-47
+     DNS 服务器  . . . . . . . . . . . : 192.168.2.1
+     TCPIP 上的 NetBIOS  . . . . . . . : 已启用
+  
+  以太网适配器 vEthernet (Default Switch):
+  
+     连接特定的 DNS 后缀 . . . . . . . :
+     描述. . . . . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter
+     物理地址. . . . . . . . . . . . . : 00-15-5D-02-87-00
+     DHCP 已启用 . . . . . . . . . . . : 否
+     自动配置已启用. . . . . . . . . . : 是
+     本地链接 IPv6 地址. . . . . . . . : fe80::853d:50d9:aedc:c89c%19(首选)
+     IPv4 地址 . . . . . . . . . . . . : 172.25.48.1(首选)
+     子网掩码  . . . . . . . . . . . . : 255.255.240.0
+     默认网关. . . . . . . . . . . . . :
+     DHCPv6 IAID . . . . . . . . . . . : 318772573
+     DHCPv6 客户端 DUID  . . . . . . . : 00-01-00-01-2B-CB-B6-25-40-B0-76-9F-93-47
+     TCPIP 上的 NetBIOS  . . . . . . . : 已启用
+  ```
+
+- `ipconfig /release`：释放租约，可能会造成断网。
+
+- `ipconfig /renew`：重新申请 IP 地址，手动申请续约（延长租期）。
+
+#### HTTP
+
+HTTP，全名 Hyper Text Transfer Protocol，即`超文本传输协议`。
+
+- HTTP 是互联网中应用最广泛的应用层协议之一。
+- 设计 HTTP 最初的目的是：提供一种发布和接收 HTML 页面的方法，由 URI 来标识具体的资源。
+- 在之后，用 HTTP 来传递的数据格式不再仅仅是 HTML，应用非常广泛。
+
+> HTML，全名 Hyper Text Markup Language，即`超文本标记语言`，其功能是用以编写网页。
+
+##### 版本
+
+- 1991 年，HTTP/0.9。
+  - 只支持 GET 请求方法获取文本数据（比如 HTML 文档），且不支持请求头、响应头等，无法向服务器传递太多消息。
+- 1996 年，HTTP/1.0。
+  - 支持 POST、HEAD 等请求方法，支持请求头、响应头等，支持更多种数据类型（不再局限于文本数据）。
+  - 浏览器的每次请求，都需要与服务器建立一个 TCP 连接，请求处理完成后立即断开 TCP 连接。
+- 1997 年， HTTP/1.1。
+  - `最经典，使用最广泛的版本。`
+  - 支持 PUT、DELETE 等请求方法。
+  - 采用持久连接（Connection: keep-alive），多个请求可以共用同一个 TCP 连接。
+- 2015 年， HTTP/2.0。
+- 2018 年， HTTP/3.0。
+
+##### 标准
+
+HTTP 的标准，由万维网协会（W3C）、互联网工程任务组（IETF）协调制定，最终发布了一系列的 RFC。
+
+RFC，全名 Request For Comments，即`请求意见稿`。
+
+- HTTP/1.1 最早是在 1997 年的 [RFC 2068](https://datatracker.ietf.org/doc/html/rfc2068) 中记录的。
+  - 该规范在 1999 年的 [RFC 2616](https://datatracker.ietf.org/doc/html/rfc2616) 中已作废。
+  - 2014 年，又由  [RFC 7230](https://datatracker.ietf.org/doc/html/rfc7230) 系列的 RFC 取代。
+- HTTP/2.0 标准于 2015 年 5 月以 [RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540) 正式发表，取代 HTTP/1.1 成为 HTTP 的实现标准。
+- 中国的 RFC：
+  - 1996 年 3 月，清华大学提交的适应不同国家和地区中文编码的汉字统一传输标准，被 IETF 通过为 [RFC 1922](https://datatracker.ietf.org/doc/html/rfc1922)，成为中国大陆第一个被认可为 RFC 文件的提交协议。
+
+##### 报文格式
+
+请求报文：
+
+<img src="network-protocol/image-20230731125406375.png" alt="image-20230731125406375" style="zoom: 55%;" />
+
+响应报文：
+
+<img src="network-protocol/image-20230731125427796.png" alt="image-20230731125427796" style="zoom:55%;" />
+
+> 以上报文格式，是一种具象化表示，严谨的报文格式看 ABNF 中的定义。
+
+##### ABNF
+
+ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的修改、增强版。在 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234) 中表名：ABNF 用作 Internet 中通信协议的定义语言。**ANNF 是最严谨的 HTTP 报文格式描述形式，脱离 ABNF 谈论 HTTP 报文格式，往往都是    片面、不严谨的。**
+
+关于 HTTP 报文格式的定义：
+
+- [RFC 2616 4.HTTP Message](https://datatracker.ietf.org/doc/html/rfc2616#section-4)（旧）
+- [RFC 7230 3.Message Format](https://datatracker.ietf.org/doc/html/rfc7230#section-3)（新）
+
+##### ABNF 核心规则
+
+| 规则   | 形式定义                                  | 含义                                           |
+| ------ | ----------------------------------------- | ---------------------------------------------- |
+| ALPHA  | %x41-5A / %x61-7A                         | 大写和小写 ASCⅡ 字母（A-Z，a-z）               |
+| DIGIT  | %x30-39                                   | 数字（0-9）                                    |
+| HEXDIG | DIGIT / "A" / "B" / "C" / "D" / "E" / "F" | 十六进制数字（0-9，A-F，a-f）                  |
+| DQUOTE | %x22                                      | 双引号                                         |
+| SP     | %x20                                      | 空格                                           |
+| HTAB   | %x09                                      | 横向制表符                                     |
+| WSP    | SP /HTAB                                  | 空格或横向制表符                               |
+| LWSP   | *(WSP / CRLF WSP)                         | 直线空白（晚于换行）                           |
+| VCHAR  | %x21-7F                                   | 可见（打印）字符                               |
+| CHAR   | %x01-7F                                   | 任何 7-bit 的 US-ASCⅡ 字符，不包括 NUL（%x00） |
+| OCTET  | %x00-FF                                   | 8 位数据                                       |
+| CTL    | %x00-1F / %x7F                            | 控制字符                                       |
+| CR     | %x0D                                      | 回车                                           |
+| LF     | %x0A                                      | 换行                                           |
+| CRLF   | CR LF                                     | 互联网标准换行（%x0D %x0A）                    |
+| BIT    | "0" / "1"                                 | 二进制数字                                     |
+
+> 详细的 ABNF 语言规则，见 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234)。
+
+##### 报文格式（整体）
+
+在新版报文格式定义 [RFC 7230 3.Message Format](https://datatracker.ietf.org/doc/html/rfc7230#section-3) 中，HTTP 报文最严谨的描述方式为：
+
+<img src="network-protocol/image-20230801063701373.png" alt="image-20230801063701373" style="zoom: 80%;" />
+
+- 这就是 ABNF 语言，所描述的 HTTP 报文的格式。
+
+- CRLF 表示换行，以上格式也可以写作：`HTTP-message = start-line *( header-field CRLF ) CRLF [ message-body ]`。图片上的换行不表示真正的换行，HTTP 报文是否换行，由格式中的 CRLF 决定。
+
+- start-line 是开始行，`start-line = request-line / status-line`。
+
+  <img src="network-protocol/image-20230801125719124.png" alt="image-20230801125719124" style="zoom: 80%;" />
+
+  - request-line：请求行。
+
+    <img src="network-protocol/image-20230801125759501.png" alt="image-20230801125759501" style="zoom:80%;" />
+
+  - status-line：响应行或状态行。
+
+    <img src="network-protocol/image-20230801125816266.png" alt="image-20230801125816266" style="zoom:80%;" />
+
+- 各符号的含义：
+
+  | 符号 | 含义                                             |
+  | ---- | ------------------------------------------------ |
+  | /    | 任选一个                                         |
+  | *    | 0 个或多个。2* 表示至少 2 个，3*6 表示 3 到 6 个 |
+  | ()   | 组成一个整体                                     |
+  | []   | 可选（可有可无）                                 |
+
+抓包示例：16:06
+
+###### request-line
+
+<img src="network-protocol/image-20230801085942266.png" alt="image-20230801085942266" style="zoom: 45%;" />
+
+`request-line = method SP request-target SP HTTP-version CRLF`
+
+- HTTP-version = HTTP-name "/" DIGIT "." DIGIT
+
+  <img src="network-protocol/image-20230801130003218.png" alt="image-20230801130003218" style="zoom:80%;" />
+
+- HTTP-name = %x48.54.54.50 ;HTTP
+
+  <img src="network-protocol/image-20230801130019451.png" alt="image-20230801130019451" style="zoom:80%;" />
+
+- 示例：GET /hello/ HTTP/1.1
+
+> ABNF 语言中，; 及其之后的内容，表示注释。
+
+###### status-line
+
+<img src="network-protocol/image-20230801090007852.png" alt="image-20230801090007852" style="zoom:45%;" />
+
+`status-line = HTTP-version SP status-code SP reason-phrase CRLF`
+
+- status-code = 3DIGIT
+
+  <img src="network-protocol/image-20230801130103848.png" alt="image-20230801130103848" style="zoom:80%;" />
+
+- reason-phrase = *(HTAB/SP/VCHAR/obs-text)
+
+  <img src="network-protocol/image-20230801130145109.png" alt="image-20230801130145109" style="zoom:80%;" />
+
+- 示例：HTTP/1.1 200，或者 HTTP/1.1 200 OK。
+
+###### header-field
+
+<img src="network-protocol/image-20230801214903698.png" alt="image-20230801214903698" style="zoom:65%;" />
+
+<img src="network-protocol/image-20230801215643687.png" alt="image-20230801215643687" style="zoom: 80%;" />
+
+`header-field = field-name ":" OWS field-value OWS`
+
+- field-name = token
+- field-value = *( field-content / obs-fold )
+- OWS = *( SP / HTAB)
+
+###### message-body
+
+<img src="network-protocol/image-20230801214935632.png" alt="image-20230801214935632" style="zoom:67%;" />
+
+- message-body 可能有，比如 POST 请求，也可能没有，比如 GET 请求。
+
+##### URL 的编码
+
+URL 中一旦出现了一些特殊字符，比如中文、空格等，需要进行编码。
+
+- 在浏览器地址中输入 URL 时，是采用 UTF-8 进行编码。
+
+比如：
+
+- 编码前：https://www.baidu.com/s?wd=百度
+- 编码后：https://www.baidu.com/s?wd=%E7%99%BE%E5%BA%A6
+
+URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
+
+##### 请求方法
+
+[RFC 7231 4. Request Methods](https://datatracker.ietf.org/doc/html/rfc7231#section-4) 描述了 8 种请求方法：GET、HEAD、POST、PUT、DELETE、CONNECT、OPTIONS、TRACE。
+
+[RFC 5789 2. The PATCH Method](https://datatracker.ietf.org/doc/html/rfc5789#section-2) 描述了 1 中请求方法：PATCH。
+
+- `GET`：常用于读取的操作，请求参数直接拼接在 URL 的后面。注意：浏览器对 URL 是有长度限制的。
+- `POST`：常用于添加、修改、删除的操作，请求参数可以放到请求体中（没有大小限制）。
+- HEAD：请求得到与 GET 请求相同的响应，但没有响应体。
+  - 使用场景举例：在下载一个大文件前，先获取其大小，再决定是否要下载，以此可以节约带宽资源。
+- OPTIONS：用于获取目的资源所支持的通信选项，比如服务器支持的请求方法。
+  - OPTIONS * HTTP/1.1
+- PUT：用于对已存在的资源进行整体覆盖。
+- PATCH：用于对资源进行部分修改（资源不存在，会创建新的资源）。
+- DELETE：用于删除指定的资源。
+- TRACE：请求服务器回显其收到的请求信息，主要用于 HTTP 请求的测试或诊断。
+- CONNECT：可以开启一个客户端与所请求资源之间的双向沟通的通道，它可以用来创建隧道（tunnel）。
+  - 可以用来访问采用了 SSL（HTTPS）协议的站点。
+
+##### 头部字段（Header Field）
+
+头部字段可以分为 4 种类型：
+
+- 请求头字段（Request Header Fields）
+  - 有关要获取的资源或客户端本身信息的消息头。
+- 响应体字段（Response Header Fields）
+  - 有关响应的补充信息，比如服务器本身（名称和版本等）的消息头。
+- 实体头字段（Entity Header Fields）
+  - 有关实体主体的更多信息，比如主体长度（Content-Length）或其 MIME 类型。
+- 通用头字段（General Header Fields）
+  - 同时适用于请求和响应消息，但与消息主体无关的消息头。
+
+###### 请求头字段
+
+| 头字段名        | 说明                                                         | 示例                                                         |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| User-Agent      | 浏览器的身份标识字符串                                       | ![image-20230802091954292](network-protocol/image-20230802091954292.png) |
+| Host            | 服务器的域名、端口号                                         | ![image-20230802092056821](network-protocol/image-20230802092056821.png) |
+| Date            | 发生该消息的日期和时间                                       | ![image-20230802092202003](network-protocol/image-20230802092202003.png) |
+| Referer         | 表示浏览器所访问的前一个页面，正是那个页面上的某个链接，将浏览器带到了当前所请求的这个页面 | ![image-20230802092222002](network-protocol/image-20230802092222002.png) |
+| Content-Type    | 请求体的类型                                                 | ![image-20230802092324652](network-protocol/image-20230802092324652.png) |
+| Content-Length  | 请求体的长度，以字节为单位                                   | ![image-20230802092415240](network-protocol/image-20230802092415240.png) |
+| Accept          | 能够接受的响应内容类型（Content-Types）                      | ![image-20230804112504252](network-protocol/image-20230804112504252.png) |
+| Accept-Charset  | 能够接受的字符集                                             |                                                              |
+| Accept-Encoding | 能够接受的编码方式列表                                       | ![image-20230804112545138](network-protocol/image-20230804112545138.png) |
+| Accept-Language | 能够接受的响应内容的自然语言列表                             | ![image-20230804112607111](network-protocol/image-20230804112607111.png) |
+| Range           | 仅请求某个实体的一部分，字节偏移以 0 开始                    |                                                              |
+| Origin          | 发起一个针对跨域资源共享的请求                               | ![image-20230804112644502](network-protocol/image-20230804112644502.png) |
+| Cookie          | 之前由服务器通过 Set-Cookie 发送的 Cookie                    | ![image-20230804112917655](network-protocol/image-20230804112917655.png) |
+| Connection      | 该浏览器想要优先使用的连接类型                               |                                                              |
+| Cache-Control   | 用来指定在这次的请求/响应链中的所有缓存机制都必须遵守的指令  |                                                              |
+
+- q 值越大，表示优先级越高。
+- 如果不指定 q 值，默认是 1.0，1.0 是最大值。
+
+###### 响应头字段
+
+| 头字段名                    | 说明                                                         | 示例                                                         |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Content-Type                | 响应体的类型                                                 | ![image-20230804113000574](network-protocol/image-20230804113000574.png) |
+| Content-Encoding            | 响应内容所使用的编码类型                                     | ![image-20230804113413944](network-protocol/image-20230804113413944.png) |
+| Content-Length              | 响应体的长度，以字节为单位                                   | ![image-20230804113436847](network-protocol/image-20230804113436847.png) |
+| Content-Disposition         | 一个可以让客户端下载文件并建议文件名的头部                   | ![image-20230804113459161](network-protocol/image-20230804113459161.png) |
+| Accept-Ranges               | 服务器支持哪些种类的部分内容范围                             | ![image-20230804113530734](network-protocol/image-20230804113530734.png) |
+| Content-Range               | 这条部分消息是属于完整消息的哪部分                           |                                                              |
+| Access-Control-Allow-Origin | 指定哪些网站可参与到跨来源资源共享的过程中                   | ![image-20230804113119466](network-protocol/image-20230804113119466.png) |
+| Location                    | 用来进行重定向，或者在创建了某个新资源时使用                 |                                                              |
+| Set-Cookie                  | 返回一个 Cookie 让客户端去保存                               | ![image-20230804113330989](network-protocol/image-20230804113330989.png) |
+| Connection                  | 针对该连接所预期的选项                                       | ![image-20230804113210843](network-protocol/image-20230804113210843.png) |
+| Cache-Control               | 向从服务器直到客户端在内的所有缓存机制告知，它们是否可以缓存这个对象，单位为秒 | ![image-20230804113255695](network-protocol/image-20230804113255695.png) |
+
+##### 状态码（Status Code）
+
+状态码在 [RFC 2616 10. Status Code Definitions](https://datatracker.ietf.org/doc/html/rfc2616#section-10) 规范中定义，指示 HTTP 请求是否已成功完成。
+
+状态码可以分为 5 类：
+
+- 信息响应：100 ~ 199。
+- 成功响应：200 ~ 299。
+- 重定向：300 ~ 399。
+- 客户端错误：400 ~ 499。
+- 服务器错误：500 ~ 599。
+
+常见的状态码：
+
+- 100 Continue
+  - 请求的初始部分已经被服务器收到，并且没有被服务器拒绝。客户端应该继续发送剩余的请求，如果请求已经完成，就忽略这个响应。
+  - 允许客户端发送带请求体的请求前，判断服务器是否愿意接收请求（服务器通过请求头判断）。
+  - 在某些情况下，如果服务器在不看请求体就拒绝请求时，客户端就发送请求体是不恰当的或低效的。
+- `200 OK`
+  - 请求成功。
+- 302 Found
+  - 请求的资源被暂时的移动到了由 Location 头部指定的 URL 上。
+- 304 Not Modified
+  - 说明无需再次传输请求的内容，也就是说可以使用缓存的内容。
+- `400 Bad Request`
+  - 由于语法无效，服务器无法理解该请求。
+- 401 Unauthorized
+  - 由于缺乏目标资源要求的身份验证凭证。
+- 403 Forbidden
+  - 服务器有能力处理该请求，但是拒绝授权访问。
+- `404 Not Found`
+  - 服务器端无法找到所请求的资源。
+- 405 Method Not Allowed
+  - 服务器禁止了使用当前 HTPP 方法的请求。
+- 406 Not Acceptable
+  - 服务器端无法提供与 Accept-Charset 以及 Accept-Language 指定的值相匹配的响应。
+- 408 Request Timeout
+  - 服务器想要将没有在使用的连接关闭。一些服务器会在空闲连接上发送此信息，即便是在客户端没有发送任何请求的情况下。
+- `500 Internal Server Error`
+  - 所请求的服务器遇到意外的情况，并阻止其执行请求，例如服务报错。
+- 501 Not Implemented
+  - 请求的方法不被服务器支持，因此无法被处理。
+  - 服务器必须支持的方法（即不会返回这个状态码的方法），只有 GET 和 HEAD。
+- 502 Bad Gateway
+  - 作为网关或代理角色的服务器，从上游服务器（如 Tomcat）中接收到的响应是无效的。
+- 503 Service Unavailable
+  - 服务器尚未处于可以接收请求的状态。
+  - 通常造成这种情况的原因，是由于服务器停机维护或者已超载。
+
+##### Form 提交
+
+常用属性：
+
+- action
+
+  - 请求的 URI。
+
+- method
+
+  - 请求的方法，比如 GET、POST 等。
+
+- enctype
+
+  - POST 请求时，请求体的编码方式。
+
+- application/x-www-form-urlencoded
+
+  - 默认值。
+  - 用 & 分隔参数，用 = 分隔键和值，字符用 URL 编码方式进行编码。
+
+- multipart/form-data
+
+  - 文件上传时，必须使用这种编码方式。
+
+  - 参考 [RFC 1521](https://datatracker.ietf.org/doc/html/rfc1521)。
+
+  - 请求头：`Content-Type: multipart/form-data;boundary=xxx`
+
+  - 请求体：
+
+    <img src="network-protocol/image-20230804083737505.png" alt="image-20230804083737505" style="zoom:50%;" />
+
+  - `multipart-body :=preamble 1*encapsulation close-delimiter epilogue`
+
+    <img src="network-protocol/image-20230804083847905.png" alt="image-20230804083847905" style="zoom:80%;" />
+
+  - preamble := discard-text       ;  to  be  ignored upon receipt.
+
+    <img src="network-protocol/image-20230804084231538.png" alt="image-20230804084231538" style="zoom:80%;" />
+
+  - **encapsulation := delimiter body-part CRLF**
+
+    <img src="network-protocol/image-20230804084319720.png" alt="image-20230804084319720" style="zoom:80%;" />
+
+    <img src="network-protocol/image-20230804084442305.png" alt="image-20230804084442305" style="zoom:80%;" />
+
+  - **close-delimiter := "--" boundary "--" CRLF;Again,no space by "--",**
+
+    <img src="network-protocol/image-20230804084541040.png" alt="image-20230804084541040" style="zoom:80%;" />
+
+  - epilogue := discard-text        ;  to  be  ignored upon receipt.
+
+    <img src="network-protocol/image-20230804084640792.png" alt="image-20230804084640792" style="zoom:80%;" />
+
+  - **boundary := 0*69\<bchars> bcharsnospace**
+
+    <img src="network-protocol/image-20230804084853519.png" alt="image-20230804084853519" style="zoom:80%;" />
+
+>encapsulation 是上传的每一段数据，boundary 是一种分隔符。
+
+##### 跨域
+
+###### 同源策略
+
+浏览器有个`同源策略`（Same-Origin Policy），它规定了：默认情况下，AJAX 请求只能发送给同源的 URL。
+
+`同源是指 3 个相同：协议、域名（IP）和端口。`
+
+例如，下表给出了与 URL http://store.company.com/dir/page.html 的源进行对比的结果：
+
+| URL                                             | 结果 | 原因         |
+| ----------------------------------------------- | ---- | ------------ |
+| http://store.company.com/dir2/other.html        | 同源 | 只有路径不同 |
+| http://store.company.com/dir/inner/another.html | 同源 | 只有路径不同 |
+| http://store.company.com:81/dir/etc.html        | 失败 | 端口不同     |
+| https://store.company.com/secure.html           | 失败 | 协议不同     |
+| http://news.company.com/dir/other.html          | 失败 | 主机不同     |
+
+> img，script，link，iframe，video，audio 等标签，不受同源策略的约束。
+
+###### 跨域资源共享（Cross-origin resource sharing）
+
+解决 AJAX 跨域请求的常用方法：CORS，Cross-origin Resource Sharing，即`跨域资源共享`。
+
+CORS 的实现需要客户端和服务器同时支持：
+
+- 客户端：
+  - 所有的浏览器都支持。（IE 至少是 IE 10 版本）
+  - `Cookie`：在客户端（浏览器）存储一些数据，存储到本地磁盘（硬盘），服务器可以返回 Cookie 交给客户端去存储。
+- 服务器：
+  - 需要返回相应的响应头，比如 Access-Control-Allow-Origin。
+  - 告知浏览器这是一个允许跨域访问的请求。
+  - `Session`：在服务器存储一些数据，存储到内存中。
+
+Cookie 和 Session 的简略流程：
+
+<img src="network-protocol/image-20230807063142268.png" alt="image-20230807063142268" style="zoom: 67%;" />
+
+##### 代理服务器（Proxy Server）
+
+<img src="network-protocol/image-20230807085000421.png" alt="image-20230807085000421" style="zoom: 60%;" />
+
+代理服务器的特点：
+
+- 本身不生产内容。
+- 处于中间位置，转发上下游的请求和响应：
+  - 面向下游的客户端：它是服务器。
+  - 面向上游的服务器：它是客户端。
+
+###### 正向代理
+
+`正向代理：代理的对象是客户端。`
+
+<img src="network-protocol/image-20230807085243424.png" alt="image-20230807085243424" style="zoom:50%;" />
+
+作用：
+
+<img src="network-protocol/image-20230807085545988.png" alt="image-20230807085545988" style="zoom:67%;" />
+
+- 隐藏客户端身份。
+- 绕过防火墙，突破访问限制。
+- Internet 访问控制。
+- 数据过滤。
+- ......
+
+###### 反向代理
+
+`反向代理：代理的对象是服务器。`
+
+<img src="network-protocol/image-20230807085307758.png" alt="image-20230807085307758" style="zoom:50%;" />
+
+作用：
+
+<img src="network-protocol/image-20230807085810893.png" alt="image-20230807085810893" style="zoom:67%;" />
+
+- 隐藏服务器身份。
+- 安全防护。
+- `负载均衡`。
+
+###### 抓包工具的原理
+
+Fiddler、Charles 等抓包工具的原理：在客户端启动了正向代理服务。
+
+<img src="network-protocol/image-20230807090240696.png" alt="image-20230807090240696" style="zoom:50%;" />
+
+> 注意：Wireshark 的原理不同，它是通过底层驱动，拦截网卡上流过的数据。
+
+###### 相关的头部字段
+
+- Via：追加经过的每一台代理服务器的主机名或域名。
+- X-Forwarded-For：追加请求方的 IP 地址。
+- X-Real-IP：客户端的真实 IP 地址。
+
+假设有如下代理过程，则各阶段头部字段为：
+
+<img src="network-protocol/image-20230807215926931.png" alt="image-20230807215926931" style="zoom:67%;" />
+
+- ①：
+  - Via：proxy1
+  - X-Forwarded-For：14.14.14.14
+  - X-Real-IP：14.14.14.14
+- ②：
+  - Via：proxy1，proxy2
+  - X-Forwarded-For：14.14.14.14，220.11.11.11
+  - X-Real-IP：14.14.14.14
+- ③：
+  - Via：proxy2
+- ④：
+  - Via：proxy2，proxy1
+
+- ① 和 ② 是请求头，③ 和 ④ 是响应头，响应头一般不会设置服务器的真实 IP 地址。
+
+##### CDN
+
+CDN，Content Delivery Network 或 Content Distribution Network，即`内容分发网络`。CND 可以利用最靠近每位用户的服务器，更快更可靠的将音乐、图片、视频等资源文件（一般是静态资源）传递给用户。
+
+<img src="network-protocol/image-20230807221027769.png" alt="image-20230807221027769" style="zoom:67%;" />
+
+使用 CDN 前后对比：
+
+<img src="network-protocol/image-20230807222818528.png" alt="image-20230807222818528" style="zoom:80%;" />
+
+- CDN 运营商在全国乃至全球的各个大枢纽城市，都建立了机房，并部署了大量拥有高存储高带宽的节点，构建了一个跨运营商、跨地域的专用网络。
+
+- 内容所有者向 CDN 运营商支付费用，CDN 将其内容交付给最终用户。
+
+- 使用 CDN 之前：
+
+  <img src="network-protocol/image-20230807223138108.png" alt="image-20230807223138108" style="zoom: 50%;" />
+
+- 使用 CDN 之后：
+
+  <img src="network-protocol/image-20230807223237622.png" alt="image-20230807223237622" style="zoom: 50%;" />
+
+CDN 请求过程：
+
+<img src="network-protocol/image-20230808085127171.png" alt="image-20230808085127171" style="zoom:50%;" />
+
+<img src="network-protocol/image-20230808085329913.png" alt="image-20230808085329913" style="zoom:67%;" />
+
+CDN 使用示例，引入 jquery：
+
+<img src="network-protocol/image-20230808085554365.png" alt="image-20230808085554365" style="zoom: 50%;" />
+
+## 网络安全
+
+网络通信中面临的 4 种安全威胁：
+
+<img src="network-protocol/image-20230808125756173.png" alt="image-20230808125756173" style="zoom: 50%;" />
+
+- 截获：窃听通信内容。
+- 中断：中断网络通信。
+- 篡改：篡改通信内容。
+- 伪造：伪造通信内容。
+
+### 网络层 - ARP 欺骗
+
