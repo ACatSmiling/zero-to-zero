@@ -1,4 +1,4 @@
-*date: 2022-11-08*
+*date: 2022-11-08 ~ 2023-08-26*
 
 ## 概述
 
@@ -11,6 +11,8 @@
 <img src="network-protocol/image-20221108185540976.png" alt="image-20221108185540976" style="zoom:50%;" />
 
 数据是如何从一个设备传递到另一个设备的：这一切都是由**`网络协议`**（Network Protocol）来规定的，没有网络协议，就没有今天的互联网。
+
+> 网络模拟工具：Packet Tracer。
 
 ### C/C++ 的跨平台原理
 
@@ -1377,6 +1379,18 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
   ![image-20230131191119922](network-protocol/image-20230131191119922.png)
 
+#### ARP
+
+ARP，Address Resolution Protocol，即`逆地址解析协议`，其主要作用就是通过 IP 地址获取 MAC 地址。
+
+#### ICMP
+
+ICMP，Internet Control Message Protocol，即`互联网控制消息协议`。
+
+- IPv4 中的 ICMP 被称作 ICMPv4，IPv6 中的 ICMP 则被称作 ICMPv6。
+- 通常用于返回错误信息，比如 TTL 值过期、目的不可达等。
+- ICMP 的错误消息总是包括了源数据并返回给发送者。
+
 ### 传输层（Transport）
 
 传输层有 2 个协议：
@@ -2007,11 +2021,11 @@ C:\Users\XiSun>netstat -n
 
 #### 常见协议
 
-- 超文本传输：HTTP、HTTPS。
+- **超文本传输：HTTP、HTTPS。**
 - 文件传输：FTP。
 - 电子邮件：SMTP、POP3、IMAP。
-- 动态主机配置：DHCP。
-- 域名系统：DNS。
+- **动态主机配置：DHCP。**
+- **域名系统：DNS。**
 
 #### 域名（Domain Name）
 
@@ -2217,7 +2231,7 @@ DHCP 的常用命令：
 
 - `ipconfig /renew`：重新申请 IP 地址，手动申请续约（延长租期）。
 
-#### HTTP
+## HTTP
 
 HTTP，全名 Hyper Text Transfer Protocol，即`超文本传输协议`。
 
@@ -2227,7 +2241,7 @@ HTTP，全名 Hyper Text Transfer Protocol，即`超文本传输协议`。
 
 > HTML，全名 Hyper Text Markup Language，即`超文本标记语言`，其功能是用以编写网页。
 
-##### 版本
+### 版本
 
 - 1991 年，HTTP/0.9。
   - 只支持 GET 请求方法获取文本数据（比如 HTML 文档），且不支持请求头、响应头等，无法向服务器传递太多消息。
@@ -2241,7 +2255,7 @@ HTTP，全名 Hyper Text Transfer Protocol，即`超文本传输协议`。
 - 2015 年， HTTP/2.0。
 - 2018 年， HTTP/3.0。
 
-##### 标准
+### 标准
 
 HTTP 的标准，由万维网协会（W3C）、互联网工程任务组（IETF）协调制定，最终发布了一系列的 RFC。
 
@@ -2254,7 +2268,7 @@ RFC，全名 Request For Comments，即`请求意见稿`。
 - 中国的 RFC：
   - 1996 年 3 月，清华大学提交的适应不同国家和地区中文编码的汉字统一传输标准，被 IETF 通过为 [RFC 1922](https://datatracker.ietf.org/doc/html/rfc1922)，成为中国大陆第一个被认可为 RFC 文件的提交协议。
 
-##### 报文格式
+### 报文格式
 
 请求报文：
 
@@ -2266,7 +2280,7 @@ RFC，全名 Request For Comments，即`请求意见稿`。
 
 > 以上报文格式，是一种具象化表示，严谨的报文格式看 ABNF 中的定义。
 
-##### ABNF
+### ABNF
 
 ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的修改、增强版。在 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234) 中表名：ABNF 用作 Internet 中通信协议的定义语言。**ANNF 是最严谨的 HTTP 报文格式描述形式，脱离 ABNF 谈论 HTTP 报文格式，往往都是    片面、不严谨的。**
 
@@ -2275,7 +2289,7 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
 - [RFC 2616 4.HTTP Message](https://datatracker.ietf.org/doc/html/rfc2616#section-4)（旧）
 - [RFC 7230 3.Message Format](https://datatracker.ietf.org/doc/html/rfc7230#section-3)（新）
 
-##### ABNF 核心规则
+### ABNF 核心规则
 
 | 规则   | 形式定义                                  | 含义                                           |
 | ------ | ----------------------------------------- | ---------------------------------------------- |
@@ -2298,7 +2312,7 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
 
 > 详细的 ABNF 语言规则，见 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234)。
 
-##### 报文格式（整体）
+### 报文格式（整体）
 
 在新版报文格式定义 [RFC 7230 3.Message Format](https://datatracker.ietf.org/doc/html/rfc7230#section-3) 中，HTTP 报文最严谨的描述方式为：
 
@@ -2329,9 +2343,7 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
   | ()   | 组成一个整体                                     |
   | []   | 可选（可有可无）                                 |
 
-抓包示例：16:06
-
-###### request-line
+#### request-line
 
 <img src="network-protocol/image-20230801085942266.png" alt="image-20230801085942266" style="zoom: 45%;" />
 
@@ -2349,7 +2361,7 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
 
 > ABNF 语言中，; 及其之后的内容，表示注释。
 
-###### status-line
+#### status-line
 
 <img src="network-protocol/image-20230801090007852.png" alt="image-20230801090007852" style="zoom:45%;" />
 
@@ -2365,7 +2377,7 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
 
 - 示例：HTTP/1.1 200，或者 HTTP/1.1 200 OK。
 
-###### header-field
+#### header-field
 
 <img src="network-protocol/image-20230801214903698.png" alt="image-20230801214903698" style="zoom:65%;" />
 
@@ -2377,13 +2389,13 @@ ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的
 - field-value = *( field-content / obs-fold )
 - OWS = *( SP / HTAB)
 
-###### message-body
+#### message-body
 
 <img src="network-protocol/image-20230801214935632.png" alt="image-20230801214935632" style="zoom:67%;" />
 
 - message-body 可能有，比如 POST 请求，也可能没有，比如 GET 请求。
 
-##### URL 的编码
+### URL 的编码
 
 URL 中一旦出现了一些特殊字符，比如中文、空格等，需要进行编码。
 
@@ -2396,7 +2408,7 @@ URL 中一旦出现了一些特殊字符，比如中文、空格等，需要进�
 
 URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 
-##### 请求方法
+### 请求方法
 
 [RFC 7231 4. Request Methods](https://datatracker.ietf.org/doc/html/rfc7231#section-4) 描述了 8 种请求方法：GET、HEAD、POST、PUT、DELETE、CONNECT、OPTIONS、TRACE。
 
@@ -2415,7 +2427,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 - CONNECT：可以开启一个客户端与所请求资源之间的双向沟通的通道，它可以用来创建隧道（tunnel）。
   - 可以用来访问采用了 SSL（HTTPS）协议的站点。
 
-##### 头部字段（Header Field）
+### 头部字段（Header Field）
 
 头部字段可以分为 4 种类型：
 
@@ -2428,7 +2440,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 - 通用头字段（General Header Fields）
   - 同时适用于请求和响应消息，但与消息主体无关的消息头。
 
-###### 请求头字段
+#### 请求头字段
 
 | 头字段名        | 说明                                                         | 示例                                                         |
 | --------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -2451,7 +2463,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 - q 值越大，表示优先级越高。
 - 如果不指定 q 值，默认是 1.0，1.0 是最大值。
 
-###### 响应头字段
+#### 响应头字段
 
 | 头字段名                    | 说明                                                         | 示例                                                         |
 | --------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -2467,7 +2479,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 | Connection                  | 针对该连接所预期的选项                                       | ![image-20230804113210843](network-protocol/image-20230804113210843.png) |
 | Cache-Control               | 向从服务器直到客户端在内的所有缓存机制告知，它们是否可以缓存这个对象，单位为秒 | ![image-20230804113255695](network-protocol/image-20230804113255695.png) |
 
-##### 状态码（Status Code）
+### 状态码（Status Code）
 
 状态码在 [RFC 2616 10. Status Code Definitions](https://datatracker.ietf.org/doc/html/rfc2616#section-10) 规范中定义，指示 HTTP 请求是否已成功完成。
 
@@ -2516,7 +2528,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
   - 服务器尚未处于可以接收请求的状态。
   - 通常造成这种情况的原因，是由于服务器停机维护或者已超载。
 
-##### Form 提交
+### Form 提交
 
 常用属性：
 
@@ -2577,9 +2589,9 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 
 >encapsulation 是上传的每一段数据，boundary 是一种分隔符。
 
-##### 跨域
+### 跨域
 
-###### 同源策略
+#### 同源策略
 
 浏览器有个`同源策略`（Same-Origin Policy），它规定了：默认情况下，AJAX 请求只能发送给同源的 URL。
 
@@ -2597,7 +2609,7 @@ URL 转码，可以使用工具：https://tool.oschina.net/encode?type=4
 
 > img，script，link，iframe，video，audio 等标签，不受同源策略的约束。
 
-###### 跨域资源共享（Cross-origin resource sharing）
+#### 跨域资源共享（Cross-origin resource sharing）
 
 解决 AJAX 跨域请求的常用方法：CORS，Cross-origin Resource Sharing，即`跨域资源共享`。
 
@@ -2615,7 +2627,7 @@ Cookie 和 Session 的简略流程：
 
 <img src="network-protocol/image-20230807063142268.png" alt="image-20230807063142268" style="zoom: 67%;" />
 
-##### 代理服务器（Proxy Server）
+### 代理服务器（Proxy Server）
 
 <img src="network-protocol/image-20230807085000421.png" alt="image-20230807085000421" style="zoom: 60%;" />
 
@@ -2626,7 +2638,7 @@ Cookie 和 Session 的简略流程：
   - 面向下游的客户端：它是服务器。
   - 面向上游的服务器：它是客户端。
 
-###### 正向代理
+#### 正向代理
 
 `正向代理：代理的对象是客户端。`
 
@@ -2642,7 +2654,7 @@ Cookie 和 Session 的简略流程：
 - 数据过滤。
 - ......
 
-###### 反向代理
+#### 反向代理
 
 `反向代理：代理的对象是服务器。`
 
@@ -2656,7 +2668,7 @@ Cookie 和 Session 的简略流程：
 - 安全防护。
 - `负载均衡`。
 
-###### 抓包工具的原理
+#### 抓包工具的原理
 
 Fiddler、Charles 等抓包工具的原理：在客户端启动了正向代理服务。
 
@@ -2664,7 +2676,7 @@ Fiddler、Charles 等抓包工具的原理：在客户端启动了正向代理�
 
 > 注意：Wireshark 的原理不同，它是通过底层驱动，拦截网卡上流过的数据。
 
-###### 相关的头部字段
+#### 相关的头部字段
 
 - Via：追加经过的每一台代理服务器的主机名或域名。
 - X-Forwarded-For：追加请求方的 IP 地址。
@@ -2689,7 +2701,7 @@ Fiddler、Charles 等抓包工具的原理：在客户端启动了正向代理�
 
 - ① 和 ② 是请求头，③ 和 ④ 是响应头，响应头一般不会设置服务器的真实 IP 地址。
 
-##### CDN
+### CDN
 
 CDN，Content Delivery Network 或 Content Distribution Network，即`内容分发网络`。CND 可以利用最靠近每位用户的服务器，更快更可靠的将音乐、图片、视频等资源文件（一般是静态资源）传递给用户。
 
@@ -2721,6 +2733,59 @@ CDN 使用示例，引入 jquery：
 
 <img src="network-protocol/image-20230808085554365.png" alt="image-20230808085554365" style="zoom: 50%;" />
 
+### 缓存（Cache）
+
+Cache 的发音跟 Cash 一样，简单示意图如下：
+
+<img src="network-protocol/image-20230824125541995.png" alt="image-20230824125541995" style="zoom:80%;" />
+
+- 实际上，HTTP 的缓存机制远远比上图的流程要复杂。
+- **通常会缓存的情况是：GET 请求 + 静态资源，比如 HTML、CSS、JS、图片等。**
+- `Crtl + F5`：可以强制刷新缓存。
+
+缓存有两种：
+
+![image-20230824152016183](network-protocol/image-20230824152016183.png)
+
+- memory cache：内存缓存。
+- disk cache：磁盘缓存。
+
+#### 响应头
+
+- Pragma：作用类似于 Cache-Control，HTTP/1.0 的产物。
+- Expires：缓存的过期时间（GMT 格式时间），HTTP/1.0 的产物。
+- `Cache-Control`：设置缓存策略。
+  - no-storage：不缓存数据到本地。
+  - public：允许用户、代理服务器缓存数据到本地。
+  - private：只允许用户缓存数据到本地。
+  - max-age：缓存的有效时间（多长时间不过期），单位秒。
+  - no-cache：每次需要发送请求给服务器询问缓存是否有变化，再来决定如何使用缓存。
+- **优先级：Pragma > Cache-Control > Expires。**
+- Last-Modified：资源的最后一次修改时间。
+- ETag：资源的唯一标识（根据文件内容计算出来的摘要值）。
+- **优先级：ETag > Last-Modified。**
+- Last-Modified 的缺陷：
+  - 只能精确到秒级别，如果资源在 1 秒内被修改了，客户端将无法获取最新的资源数据。
+  - 如果某些资源被修改了（最后一次修改时间发生了变化），但是内容并没有任何变化，会导致相同数据重复传输，没有使用到缓存。
+- ETag 可以避免 Last-Modified 的缺陷：
+  - 只要资源的内容没有变化，就不会重复传输资源数据。
+  - 只要资源的内容发生了变化，就会返回最新的资源数据给客户端。
+
+#### 请求头
+
+- If-None-Match：
+  - 如果上一次的响应头中有 ETag，就会将 ETag 的值作为请求头的值。
+  - 如果服务器发现资源的最新摘要值跟 If-None-Match 不匹配，就会返回新的资源（200 OK）。
+  - 否则，就不会返回资源的具体数据（304 Not Modified）。
+- If-Modified-Since：
+  - 如果上一次的响应头中没有 ETag，有 Last-Modified，就会将 Last-Modified 的值作为请求头的值。
+  - 如果服务器发现资源的最后一次修改时间晚于 If-Modified-Since，就会返回新的资源（200 OK）。
+  - 否则，就不会返回资源的具体数据（304 Not Modified）。
+
+#### 使用流程
+
+<img src="network-protocol/image-20230824235055009.png" alt="image-20230824235055009" style="zoom:80%;" />
+
 ## 网络安全
 
 网络通信中面临的 4 种安全威胁：
@@ -2734,3 +2799,1583 @@ CDN 使用示例，引入 jquery：
 
 ### 网络层 - ARP 欺骗
 
+ARP 欺骗（ARP spoofing），又称 ARP 毒化（ARP poisoning）、ARP 病毒、ARP 攻击。
+
+ARP 欺骗可以造成的效果：
+
+- 可让攻击者获取局域网上的数据包，甚至可以篡改数据包。
+- 可以让网络上特定电脑之间无法正常通信，例如网络执法官这样的软件。
+- 可以让送至特定 IP 地址的流量，被错误送到攻击者所取代的地方。
+- ......
+
+ARP 欺骗的核心步骤：
+
+- 假设主机 C 是攻击者，主机 A 和 B 是被攻击者。
+- C 只要收到过 A、B 发送的 ARP 请求，就会拥有 A、B 的 IP 和 MAC 地址，就可以进行欺骗活动。
+- C 发送一个 ARP 响应给 B，把响应包里的源 IP 设为 A 的 IP 地址，源 MAC 设为 C 的 MAC 地址。
+- B 收到 ARP 响应后，更新它的 ARP 表，把 A 的 MAC 地址 (IP_A, MAC_A) 改为 (IP_A, MAC_C)。
+- 当 B 要发送数据包给 A 时，它根据 ARP 表来封装数据包的头部，把目标 MAC 地址设为 MAC_C，而非 MAC_A。
+- 当交换机收到 B 发送给 A 的数据包时，根据此包的目标 MAC 地址（MAC_C）而把数据包转发给 C。
+- 当 C 收到数据包后，可以把它存起来后再发送给 A，以此达到窃听效果。C 也可以篡改数据后再发送数据包给 A。如果 C 将数据包的 IP 改为一个错误的地址，则 B 发送给 A 的流量，都会被错误的送到其他地方。
+
+ARP 欺骗的防护措施：
+
+- 静态 ARP。
+
+  ```bash
+  # 查看动态的arp
+  C:\Users\XiSun>arp -a
+  
+  接口: 192.168.3.144 --- 0xc
+    Internet 地址         物理地址              类型
+    192.168.3.1           f4-83-cd-70-17-8a     动态
+    192.168.3.21          00-0c-29-11-31-6c     动态
+    192.168.3.51          00-0c-29-56-31-fb     动态
+    192.168.3.193         5c-ea-1d-7e-70-1e     动态
+    192.168.3.255         ff-ff-ff-ff-ff-ff     静态
+    224.0.0.22            01-00-5e-00-00-16     静态
+    224.0.0.251           01-00-5e-00-00-fb     静态
+    224.0.0.252           01-00-5e-00-00-fc     静态
+    239.255.255.250       01-00-5e-7f-ff-fa     静态
+    255.255.255.255       ff-ff-ff-ff-ff-ff     静态
+  
+  接口: 172.23.176.1 --- 0x32
+    Internet 地址         物理地址              类型
+    172.23.191.255        ff-ff-ff-ff-ff-ff     静态
+    224.0.0.22            01-00-5e-00-00-16     静态
+    224.0.0.251           01-00-5e-00-00-fb     静态
+    239.255.255.250       01-00-5e-7f-ff-fa     静态
+    255.255.255.255       ff-ff-ff-ff-ff-ff     静态
+    
+  # 设置静态arp
+  C:\Users\XiSun>arp -x IP MAC
+  ```
+
+  
+
+- DHCP Snooping。
+
+  - 网络设备可借由 DHCP 保留网络上各电脑的 MAC 地址，在伪造的 ARP 数据包发出时即可侦测到。
+
+- 利用一些软件监听 ARP 的不正常变动。
+
+- ......
+
+### DoS 和 DDoS
+
+DoS 攻击，Denial-of-Service attack，即`拒绝服务攻击`。
+
+- 使目标电脑的网络或系统资源耗尽，使服务暂时中断或停止，导致其正常用户无法访问。
+
+DDoS 攻击，Distributed Denial-of-Service attack，即`分布式拒绝服务攻击`。
+
+- 黑客使用网络上两个或以上被攻陷的电脑作为 "僵尸"、"肉鸡" 向特定的目标发动 DoS 攻击。
+- 2018 年 3 月，Github 遭到迄今为止规模最大的 DDoS 攻击。
+
+DoS 攻击可以分为 2 大类：
+
+- 带宽消耗型：UDP 洪水攻击、ICMP 洪水攻击。
+- 资源消耗型：SYN 洪水攻击、LAND 攻击。
+
+#### 传输层 - SYN 洪水攻击
+
+SYN 洪水攻击，SYN flooding attack。
+
+- 攻击者发送一系列的 SYN 请求到目标，然后让目标因收不到 ACK（第 3 次握手）而进行等待、消耗资源。
+
+攻击方法：
+
+- 跳过发送最后的 ACK 信息。
+- 修改源 IP 地址，让目标送 SYN-ACK 到伪造的 IP 地址，因此目标永不可能收到 ACK（第 3 次握手）。
+
+防护：
+
+- 参考：[RFC 4987](https://datatracker.ietf.org/doc/html/rfc4987)
+
+#### 传输层 - LAND 攻击
+
+LAND 攻击，Local Area Network Denial attack，即局域网拒绝服务攻击。
+
+- 通过持续发送**相同源地址和目标地址**的欺骗数据包，使攻击目标试图与目标自己建立连接，消耗目标的系统资源直至崩溃。
+- 有些系统存在设计上的缺陷，允许设备接受并响应来自网络，却宣称来自于设备自身的数据包，导致循环应答。
+
+防护：
+
+- 大多数防火墙都能拦截类似的攻击包，以保护系统。
+- 部分操作系统通过发布安全补丁，修复了这一漏洞。
+- 路由器应同时设置上行和下行筛选器，屏蔽所有源地址与目标地址相同的数据包。
+
+#### DoS 和 DDoS 防御
+
+防御方式通常为：入侵检测、流量过滤和多重验证。
+
+- 堵塞网络带宽的流量将被过滤，而正常的流量可以通过。
+
+- 防火墙：
+
+  - 防火墙可以设置规则，例如允许或拒绝特定通讯协议、端口或 IP 地址。
+
+  - 当攻击从少数不正常的 IP 地址发出时，可以简单的使用拒绝规则阻止一切从攻击源 IP 发出的通信。
+
+  - 复杂攻击难以用简单规则来阻止，例如 80 端口遭受攻击时，不可能拒绝端口所有的通信，因为同时会阻止合法流量。
+
+  - 防火墙可能处于网络架构中过后的位置，路由器可能在恶意流量到达防火墙之前就被攻击影响。
+
+- 交换机：
+  - 大多数交换机有一定的速度限制和访问控制能力。
+
+- 路由器：
+  - 和交换机类似，路由器也有一定的速度限制和访问控制能力。
+
+- 黑洞引导：
+  - 将所有受攻击计算机的通信，全部发送至一个 "黑洞"（空接口或不存在的计算机地址），或者有足够能力处理洪流的网络设备商，以避免网络受到较大影响。
+- 流量清洗：
+  - 当流量被送到 DDoS 防护清洗中心时，通过采用抗 DDoS 软件处理，将正常流量和恶意流量区分开，然后正常的流量则回注回客户网站。
+
+### 应用层 - DNS 劫持
+
+DNS 劫持，又称为域名劫持：
+
+- 攻击者篡改了某个域名的解析结果，使得指向该域名的 IP 变成了另一个 IP。
+- 导致对相应网址的访问，被劫持到另一个不可达的或者假冒的网址，从而实现非法窃取用户信息或者破坏正常网络服务的目的。
+- 为防止 DNS 劫持，可以考虑使用更靠谱的 DNS 服务器，比如 [114.114.114.114](https://www.114dns.com/)。
+  - 谷歌：8.8.8.8，8.8.4.4。
+  - 微软：4.2.2.1，4.2.2.2。
+  - 百度：180.76.76.76。
+  - 阿里：223.5.5.5、223.6.6.6。
+
+> HTTP 劫持：对 HTTP 数据包进行拦截处理，比如插入 JS 代码，访问某些网站时，页面上莫名其妙的弹窗广告。
+
+### HTTP 协议的安全问题
+
+HTTP 协议默认是采用明文传输的，因此会有很大的安全隐患。常见的提高安全性的方法是：对同安更新内容进行加密后，再进行传输。
+
+常见的英文：
+
+- encrypt：加密。
+- decrypt：解密。
+- plaintext：明文。
+- ciphertext：密文。
+
+为了便于学习，设计 4 个虚拟人物：
+
+- Alice、Bob：互相通信。
+
+  <img src="network-protocol/image-20230810130816847.png" alt="image-20230810130816847" style="zoom:50%;" />
+
+- Eve：窃听者。
+
+  <img src="network-protocol/image-20230810130906804.png" alt="image-20230810130906804" style="zoom:50%;" />
+
+- Mallory：主动攻击者。
+
+如何防止被窃听：
+
+<img src="network-protocol/image-20230811083839042.png" alt="image-20230811083839042" style="zoom:50%;" />
+
+常见的加密方式有：
+
+- 不可逆：
+  - **单向散列函数：MD5、SHA 等。**
+- 可逆：
+  - **对称加密：DES、3DES、AES 等。**
+  - **非对称加密：RSA 等。**
+- 其他：
+  - **混合密码系统。**
+  - **数字签名。**
+  - **证书。**
+
+几个加密网站：
+
+- MD5 加密：https://www.cmd5.com/hash.aspx
+- MD5 解密：https://www.cmd5.com
+- 其他加密：
+  - https://www.sojson.com/encrypt_des.html
+  - https://tool.chinaz.com/tools/md5.aspx
+
+#### 单向散列函数
+
+单向散列函数，One-way hash function，可以根据消息内容计算出散列值。散列值的长度和消息的长度无关，无论消息是 1 bit、10 M、100 G，单向散列函数都会计算出**固定长度的散列值**。单向散列函数，也被称为消息摘要函数（message digest function）、哈希函数（hash function），其输出的散列值，也被称为消息摘要（message digest）、指纹（fingerprint）。
+
+<img src="network-protocol/image-20230811085930497.png" alt="image-20230811085930497" style="zoom: 55%;" />
+
+特点：
+
+- 根据任意长度的消息，计算出固定长度的散列值。
+
+- 计算速度快，能快速计算出散列值。
+
+- 消息不同，散列值也不同。
+
+  <img src="network-protocol/image-20230811090417867.png" alt="image-20230811090417867" style="zoom:50%;" />
+
+- 具备单向性（不可逆）。
+
+  <img src="network-protocol/image-20230811090218762.png" alt="image-20230811090218762" style="zoom: 50%;" />
+
+常见的几种单向散列函数：
+
+- MD4、MD5：
+  - 产生 128 bit 的散列值，MD 就是 Message Digest 的缩写，目前已经不安全。
+- SHA-1：
+  - 产生 160 bit 的散列值，目前已经不安全。
+- SHA-2：
+  - SHA-256、SHA-384、SHA-512，散列值长度分别是 256 bit、384 bit、512 bit。
+- SHA-3：
+  - 全新标准。
+
+单向散列函数，可以**防止数据被篡改**：
+
+<img src="network-protocol/image-20230811092656349.png" alt="image-20230811092656349" style="zoom:50%;" />
+
+- 使用单向散列函数之前：
+
+  <img src="network-protocol/image-20230811092909280.png" alt="image-20230811092909280" style="zoom:50%;" />
+
+- 使用单向散列函数之后：
+
+  <img src="network-protocol/image-20230811093040139.png" alt="image-20230811093040139" style="zoom:50%;" />
+
+- 比如：
+
+  <img src="network-protocol/image-20230811125357702.png" alt="image-20230811125357702" style="zoom:50%;" />`
+
+单向散列函数，另一个用法就是**密码加密**：
+
+<img src="network-protocol/image-20230811130016566.png" alt="image-20230811130016566" style="zoom:50%;" />
+
+#### 对称加密和非对称加密
+
+如何加密和解密：
+
+<img src="network-protocol/image-20230815003719356.png" alt="image-20230815003719356" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230815003802835.png" alt="image-20230815003802835" style="zoom:67%;" />
+
+##### 对称加密
+
+**对称加密，Symmetric Cryptography，也叫对称密码：**
+
+<img src="network-protocol/image-20230815003929504.png" alt="image-20230815003929504" style="zoom:67%;" />
+
+- 在对称加密中，加密和解密使用的是同一个**密钥**。
+
+  <img src="network-protocol/image-20230815004526340.png" alt="image-20230815004526340" style="zoom:67%;" />
+
+- 常见的对称**加密算法**有：
+
+  - DES
+  - 3DES
+  - AES
+
+###### DES
+
+DES，Data Encryption Standarda：
+
+<img src="network-protocol/image-20230815004755186.png" alt="image-20230815004755186" style="zoom:67%;" />
+
+- DES 是一种将 64 bit 明文加密成 64 bit 密文的对称加密算法，密钥长度是 56 bit。
+- 规格上来说，密钥长度是 64 bit，但是每隔 7 bit 会设置一个用于错误检查的 bit，因此密钥的长度实质上是 56 bit。
+- 由于 DES 每次只能加密 64 bit 的数据，遇到较大的数据，需要对 DES 加密进行迭代（反复）。
+- 目前已经可以在短时间内被破解，所以不建议使用。
+
+###### 3DES
+
+3DES，Triple Data Encryption Algorithm：
+
+<img src="network-protocol/image-20230815072740702.png" alt="image-20230815072740702" style="zoom:80%;" />
+
+- 3DES 是将 DES 重复 3 次所得到的一种密码算法，也叫 3 重 DES。
+
+- 3 重 DES 并不是进行 3 次 DES 加密（加密 -> 加密 -> 加密），而是加密（Encryption）-> 解密（Decryption）-> 加密（Encryption）的过程。
+
+- **3 重 DES 的 3 个密钥都是不同的，也称为 DES-EDE3。**
+
+- 如果所有的密钥都使用同一个，则结果与普通的 DES 是等价的。
+
+  <img src="network-protocol/image-20230815073320431.png" alt="image-20230815073320431" style="zoom:80%;" />
+
+- 如果密钥 1 和密钥 3 相同，密钥 2 不同，则称为 DES-EDE2。
+
+  <img src="network-protocol/image-20230815073523709.png" alt="image-20230815073523709" style="zoom:80%;" />
+
+- 目前还被一些银行等机构使用，但处理速度不高，安全性逐渐暴露出问题。
+
+###### AES
+
+AES，Advanced Encryption Standard：
+
+- 取代 DES 成为新标准的一种对称加密算法，又称 Rijndael 加密法。
+- AES 的密钥长度有 128、192、256 bit 三种。（一般来说，密钥长度越长，破解难度越大）
+- **目前 AES 已经逐步取代 DES、3DES，成为首选的对称加密算法。**
+- 一般来说，我们也不应该去使用任何自制的密码算法，而是应该使用 AES，它已经经过了全世界密码学家所进行的高品质验证工作。
+
+###### 密钥配送问题
+
+在使用对称加密时，一定会遇到密钥配送问题：
+
+![image-20230815075035536](network-protocol/image-20230815075035536.png)
+
+- 如果 Alice 将使用对称加密过的消息发给 Bob，只有将密钥也发送给 Bob，Bob 才能完成解密。
+- 在发送密钥的过程中，可能会被 Eve 窃听密钥，最后 Eve 也能完成解密。
+
+有以下几种解决密钥配送问题的方法：
+
+- 事先共享密钥，比如私下共享）。
+- 密钥配送中心，Key Distribution Center，简称 KDC。
+- Diffie-Hellman 密钥交换。
+- `非对称加密`。
+  - 对称加密：简单 -> 不安全 -> 加密解密速度快。
+  - 非对称加密：复杂 -> 安全 -> 加密解密速度慢。
+
+##### 非对称加密
+
+**非对称加密，Asymmetric Cryptography，也叫公钥密码：**
+
+<img src="network-protocol/image-20230815004148283.png" alt="image-20230815004148283" style="zoom:67%;" />
+
+- 在非对称加密中，密钥分为`加密密钥`和`解密密钥`两种，它们并不是同一个密钥。
+
+  <img src="network-protocol/image-20230815080239215.png" alt="image-20230815080239215" style="zoom: 80%;" />
+
+- 加密密钥：一般是公开的，也被称为**公钥**（public key）。因此，非对称加密也被称为公钥密码（Public-key Cryptography）。
+
+- 解密密钥：由消息接收者自己保管，不能公开，也被称为**私钥**（private key）。
+
+- 发送方使用接收方的公钥加密密文，接收方再使用接收方的私钥解密密文：
+
+  <img src="network-protocol/image-20230815080635925.png" alt="image-20230815080635925" style="zoom:80%;" />
+
+###### 公钥和私钥
+
+<img src="network-protocol/image-20230816183325629.png" alt="image-20230816183325629" style="zoom:50%;" />
+
+- 公钥和私钥是一一对应的，不能单独生成。
+- 一对公钥和私钥统称为密钥对（key pair）。
+- **由公钥加密的密文，必须使用与该公钥对应的私钥才能解密。**（使用场景：消息的加密，使用消息接收者生成的公钥。）
+- **由私钥加密的密文，必须使用与该私钥对应的公钥才能解密。**（使用场景：数字签名，使用消息发送者生成的私钥。）
+
+###### 解决密钥配送问题
+
+![image-20230816184432552](network-protocol/image-20230816184432552.png)
+
+- 由消息的接收者，生成一堆公钥和私钥，并将公钥发给消息的发送者，然后消息的发送者使用公钥加密消息并发送给消息的接收者。
+- 因为消息的接收者使用自己的私钥对密文进行解密，私钥也不需要发送，也就不会被窃取。
+
+> 非对称加密的加密解密速度，比对称加密要慢。
+
+###### RSA
+
+RSA 的名字，由它的 3 位开发者，即 Ron Rivest、Adi Shamir 和 Leonard Adleman 的姓氏首字母组成，RSA 是目前使用最广泛的非对称加密算法。
+
+#### 混合密码系统
+
+**混合加密系统， Hybrid Cryptography：**
+
+- 对称加密的缺点：不能很好的解决密钥配送问题。
+- 非对称加密的缺点：加密解密速度比较慢。
+- 混合加密系统：是将对称加密和非对称加密的优势相结合的方法，解决了非对称加密速度慢的问题，并通过非对称加密解决了对称加密的密钥配送问题。
+- **网络上的密码通信所有的 SSL/TLS 都运用了混合密码系统。**
+
+##### 加密
+
+![image-20230816191224319](network-protocol/image-20230816191224319.png)
+
+- **会话密钥（session key）：**
+  - 为本次通信随机生成的临时密钥。
+  - 作为对称加密的密钥，用于加密消息，提高速度。
+- 加密步骤（发送消息）：
+  - 首先，消息发送者要拥有消息接收者的公钥。
+  - 生成会话密钥，作为对称加密的密钥，加密消息。
+  - 用消息接收者的公钥，加密会话密钥。
+  - 将前两步生成的加密结果，一并发送给消息接收者。
+- 发送出去的内容包括：
+  - 用会话密钥加密的消息（加密方法：对称加密）。
+  - 用公钥加密的会话密钥（加密方法：非对称加密）。
+
+##### 解密
+
+![image-20230816210313229](network-protocol/image-20230816210313229.png)
+
+- 解密步骤（接收消息）：
+  - 消息接收者用自己的私钥，解密出会话密钥。
+  - 再用会话密钥，解密消息。
+
+##### 加密解密流程
+
+Alice >>>>>> Bob：
+
+- 发送过程（加密过程）：
+  - Bob 生成一对公钥和私钥。
+  - Bob 把公钥共享给 Alice。
+  - Alice 随机生成一个会话密钥（临时密钥）。
+  - Alice 用会话密钥加密需要发送的消息（使用的是对称加密）。
+  - Alice 用 Bob 的公钥加密会话密钥（使用的是非对称加密）。
+  - Alice 把第四、五步的加密结果，一并发送给 Bob。
+- 接收过程（解密过程）：
+  - Bob 利用自己的私钥解密会话密钥（使用的是非对称加密算法进行解密）。
+  - Bob 利用会话密钥解密发送过来的消息（使用的是对称加密算法进行解密）。
+
+> 会话密钥短，非对称加密算法加解密会话密钥速度较快；消息长，对称加密算法加解密速度快。二者结合，即解决了密钥配送的问题，也达到了密文发送消息的目的。
+
+#### 数字签名
+
+想象以下场景：
+
+<img src="network-protocol/image-20230816220429843.png" alt="image-20230816220429843" style="zoom: 50%;" />
+
+- Alice 发的内容：有可能是被篡改的，或者有人伪装成 Alice 发消息，也或者就是 Alice 发送的，但她可以否认。
+- 问题：Bob 如何确定这段消息的真实性？如何识别篡改、伪装、否认？
+- 解决方案：`数字签名`。
+
+在数字签名技术中，有以下 2 种行为：
+
+- **生成签名**：由消息的发送者完成，通过 "签名密钥" 生成。
+- **验证签名**：由消息的接收者完成，通过 "验证密钥" 验证。
+- 如何能保证这个签名是消息发送者自己签的：用消息发送者的私钥进行签名。（消息发送者的私钥，只有消息发送者知道）
+
+数字签名的过程：
+
+<img src="network-protocol/image-20230817075457758.png" alt="image-20230817075457758" style="zoom:80%;" />
+
+- 因为消息内容可能很大，上述过程直接将消息和签名一起用非对称加密，会导致解密的时候很慢。
+
+数字签名的过程改进：
+
+![image-20230817075649181](network-protocol/image-20230817075649181.png)
+
+- 无论消息内容有多大，生成的散列值长度是固定的，而且也是唯一的。
+
+**数字签名的整体流程：**
+
+![image-20230817080425882](network-protocol/image-20230817080425882.png)
+
+数字签名的几个问题：
+
+- 如果有人篡改了消息内容或签名内容，会是什么结果？
+  - 签名验证失败，证明被人被篡改了。
+- 数字签名能不能保证机密性？
+  - **数字签名的作用不是为了保证机密性，仅仅是为了能够识别内容有没有被篡改。**
+- 数字签名的作用：
+  - 确认消息的完整性。
+  - 识别消息是否被篡改。
+  - 防止消息发送人否认。
+
+#### 非对称加密和数字签名对比
+
+**在非对称加密中，任何人都可以使用公钥进行加密：**
+
+<img src="network-protocol/image-20230817124628016.png" alt="image-20230817124628016" style="zoom:80%;" />
+
+**在数字签名中，任何人都可以使用公钥验证签名：**
+
+<img src="network-protocol/image-20230817124704937.png" alt="image-20230817124704937" style="zoom:80%;" />
+
+数字签名，实际上就是非对称加密反过来使用：
+
+|            | 公钥                     | 私钥                     |
+| ---------- | ------------------------ | ------------------------ |
+| 非对称加密 | 消息发送者加密时使用     | 消息接收者解密时使用     |
+| 数字签名   | 消息验证者验证签名时使用 | 消息签名者生成签名时使用 |
+| 谁持有密钥 | 有需要的人均可持有       | 个人持有                 |
+
+- 既然是加密，那肯定是不希望别人知道我的消息，所以只有我才能解密：
+  - **此时，公钥负责加密，私钥负责解密。**
+- 既然是签名，那肯定是不希望有人冒充我发消息，所以只有我才能签名：
+  - **此时，私钥负责签名，公钥负责验证。**
+
+#### 公钥的合法性
+
+![image-20230817125850430](network-protocol/image-20230817125850430.png)
+
+如图所示，如果 Alice 和 Bob 发送消息的过程中，遭遇了中间人 Mallory 的攻击，那么，Alice 接收到的 Bob 的公钥，将可能是 Mallory 伪造的，进而导致消息的泄露和篡改、伪造等。那么，如何验证公钥的合法性呢？答案是使用**证书**。
+
+#### 证书（Certificate）
+
+说到证书，首先联想到的是驾驶证、毕业证、英语四六级证等，这些都是由权威机构认证的。
+
+密码学中的证书，全称叫`公钥证书`（Public-key Certificate，PKC），跟驾驶证类似，里面有姓名、邮箱等个人信息，以及此人的公钥，并由认证机构（Certificate Authority，CA）施加数字签名。
+
+- 公钥证书包含三类信息：个人信息、个人公钥和 CA 的数字签名。
+- CA 就是能够认定 "公钥确实属于此人" 并能够生成数字签名的个人或者组织。
+  - 有国际性组织、政府设立的组织。
+  - 有通过提供认证服务来盈利的企业。
+  - 个人也可以成立认证机构。
+
+**证书的使用过程：**
+
+<img src="network-protocol/image-20230818001542813.png" alt="image-20230818001542813" style="zoom:80%;" />
+
+- **各大 CA 的公钥，默认已经内置在浏览器和操作系统中，可以不用顾虑 CA 的公钥被窃取。**
+
+**证书的注册和下载：**
+
+<img src="network-protocol/image-20230818001639124.png" alt="image-20230818001639124" style="zoom:80%;" />
+
+浏览器查看连接是否安全：
+
+<img src="network-protocol/image-20230818080641735.png" alt="image-20230818080641735" style="zoom:80%;" />
+
+Windows 上查看已经信任的证书：
+
+- Windows 键 + R >>> 输入 mmc。
+
+  <img src="network-protocol/image-20230818002245556.png" alt="image-20230818002245556" style="zoom: 80%;" />
+
+- 文件 >>> 添加/删除管理单元。
+
+  ![image-20230818002354300](network-protocol/image-20230818002354300.png)
+
+- 证书 >>> 添加 >>> 我的用户账户 >>> 完成 >>> 确定。
+
+  ![image-20230818002459329](network-protocol/image-20230818002459329.png)
+
+## HTTPS
+
+HTTPS，HyperText Transfer Protocol Secure，即`超文本传输安全协议`。常称为 HTTP over TLS、HTTP over SSL、HTTP Secure，由网景公司于 1994 年首次提出。
+
+> `HTTPS 的默认端口号是 443，HTTP 的默认端口是 80。`
+
+### SSL/TLS
+
+HTTPS 是在 HTTP 的基础上，使用 SSL/TLS 来加密报文，对窃听和中间人攻击提供合理的防护。
+
+<img src="network-protocol/image-20230818130208980.png" alt="image-20230818130208980" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230818130230064.png" alt="image-20230818130230064" style="zoom: 50%;" />
+
+- SSL/TLS 也可以用在其他协议上，比如：
+  - FTP -> FTPS。
+  - SMTP -> SMTPS。
+
+TLS，Transport Layer Security，即`传输层安全协议`，前身是 SSL（Secure Sockets Layer，安全套接层）。
+
+SSL/TLS 历史版本信息：
+
+- SSL 1.0：因为存在严重的安全漏洞，从未公开过。
+- SSL 2.0：1995 年，已于 2011 年弃用（[RFC 6176](https://datatracker.ietf.org/doc/html/rfc6176)）。
+- SSL 3.0：1996 年，已于 2015 年弃用（[RFC 7568](https://datatracker.ietf.org/doc/html/rfc7568)）。
+- TLS 1.0：1999 年（[RFC 2246](https://datatracker.ietf.org/doc/html/rfc2246)）。
+- TLS 1.1：2006 年（[RFC 4346](https://datatracker.ietf.org/doc/html/rfc4346)）。
+- TLS 1.2：2008 年（[RFC 5246](https://datatracker.ietf.org/doc/html/rfc5246)）。
+- TLS 1.3：2018 年（[RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446)）。
+
+SSL/TLS 工作在哪一层：
+
+<img src="network-protocol/image-20230818225502864.png" alt="image-20230818225502864" style="zoom:67%;" />
+
+### OpenSSL
+
+OpenSSL 是 SSL/TLS 协议的开源实现，始于 1998 年，支持 Windows、Mac、Linux 等平台。
+
+- Mac 和 Linux 一般自带 OpenSSL。
+
+- Windows 下载安装 OpensSSL：[Win32/Win64 OpenSSL Installer for Windows - Shining Light Productions (slproweb.com)](https://slproweb.com/products/Win32OpenSSL.html)
+
+  ![image-20230818230222591](network-protocol/image-20230818230222591.png)
+
+常用命令：
+
+- 生成私钥：`openssl genrsa -out test.key`。
+
+- 生成公钥：`openssl rsa -in test.key -pubout -out test.pem`。
+
+
+> 可以使用 OpenSSL 构建一套属于自己的 CA，自己给自己颁发证书，称为`自签名证书`。
+
+### HTTPS 的成本
+
+HTTPS 虽然安全，但它的使用也会造成一些成本消耗：
+
+- 证书的费用。
+- 加解密计算。
+- 降低了访问速度。
+- 有些企业的做法是：包含敏感数据的请求才使用 HTTPS，其他保持使用 HTTP。
+
+### HTTPS 的通信过程
+
+总的来说，可以分为 3 大阶段：
+
+<img src="network-protocol/image-20230818231415233.png" alt="image-20230818231415233" style="zoom: 50%;" />
+
+- **第 ① 阶段：TCP 的 3 次握手。**
+- **第 ② 阶段：TLS 的连接。**
+- **第 ③ 阶段：HTTP 请求和响应。**
+
+#### TLS 1.2 的连接
+
+<img src="network-protocol/image-20230818233824142.png" alt="image-20230818233824142" style="zoom:80%;" />
+
+- 图片中省略了中间产生的一些 ACK 确认。
+- 整体流程大概有 10 大步骤，这些步骤的主要目的是协商 TLS 版本、加密套件、其他信息等。
+- ① Client Hello
+  - TLS 的版本号。
+  - 支持的加密组件（Cipher Suite）列表。
+    - 加密组件是指所使用的加密算法及密钥长度等。
+  - 一个随机数（Client Random）。
+- ② Server Hello
+  - TLS 的版本号。
+  - 选择的加密组件。
+    - 是从接收到的客户端加密组件列表中挑选出来的。
+  - 一个随机数（Server Random）。
+- ③ Certificate
+  - 服务器的公钥证书（被 CA 签名过的）。
+- ④ Server Key Exchange
+  - 用以实现 ECDHE 算法（一种密钥交换算法）的其中一个参数（Server Params）。
+  - 为了防止伪造，Server Params 经过了服务器私钥签名。
+- ⑤ Server Hello Done
+  - 告知客户端：协商部分结束。
+  - 目前为止，客户端与服务器之间通过明文共享了：Client Random、Server Random、Server Params。
+  - 而且，客户端也已经拿到了服务器的公钥证书，接下来，客户端会验证证书的真实有效性。
+- ⑥ Client Key Exchange
+  - 用以实现 ECDHE 算法的另一个参数（Client Params）。
+  - 目前为止，客户端和服务器都拥有了 ECDHE 算法需要的两个参数：Server Params、Client Params。 
+  - 客户端和服务器都可以：
+    - 使用 ECDHE 算法根据 Server Params、Client Params 计算出一个新的随机密钥串：Pre-master secret。
+    - **然后结合 Client Random、Server Random、Pre-master secret 生成一个主密钥。**
+    - 最后利用主密钥衍生出其他密钥：客户端发送用的会话密钥、服务器发送用的会话密钥等。
+- ⑦ Change Cipher Spec
+  - 告知服务器：之后的通信会采用计算出来的会话密钥进行加密。
+- ⑧ Finished
+  - 包含连接至今全部报文的整体校验值（摘要），加密之后发送给服务器。
+  - **这次握手协商是否成功，要以服务器是否能够正确解密该报文作为判定标准。**
+- ⑨ Change Cipher Spec
+- ⑩ Finished
+  - 到此为止，客户端服务器都验证加密解密没有问题，握手正式结束。
+  - 后面开始传输加密的 HTTP 请求和响应。
+
+### Wireshark 解密 HTTPS
+
+- 设置环境变量 SSLKEYLOGFILE（浏览器会将 key 信息导出到这个文件）：
+
+  <img src="network-protocol/image-20230819102418818.png" alt="image-20230819102418818" style="zoom:67%;" />
+
+- 设置完毕后，最好重启一下操作系统。
+
+- 在 Wireshark 中选择这个文件：编辑 -> 首选项 -> Protocols -> TLS。
+
+  <img src="network-protocol/image-20230819102505145.png" alt="image-20230819102505145" style="zoom:67%;" />
+
+> 上述只是适当的进行解密。
+
+### 配置服务器 HTTPS
+
+环境：Tomcat 9.0.34、JDK 1.8.0_251。
+
+首先，使用 JDK 自带的 keytool 生成证书：
+
+<img src="network-protocol/image-20230819133925541.png" alt="image-20230819133925541" style="zoom:80%;" />
+
+然后，将生成的证书 mj.jks 拷贝到 Tomcat 服务器安装目录的 conf 路径下，并修改 server.xml 的配置：
+
+<img src="network-protocol/image-20230819134314510.png" alt="image-20230819134314510" style="zoom:67%;" />
+
+> 以上使用的是自签证书，虽然通信已经使用了 HTTPS，但可能浏览器还是会认为是不安全的，因为不是 CA 颁发的证书。
+>
+> **本质上，HTTPS 请求的过程就是：服务器设置证书，客户端具备验证该证书的能力。**
+
+## HTTP 的升级改进
+
+### HTTP 协议的不足
+
+HTTP/1.1 版本存在以下不足：
+
+- **同一时间，一个连接只能对应一个请求。**
+  - 针对同一个域名，大多数浏览器允许同时最多 6 个并发连接。
+- **只允许客户端主动发起请求。**
+  - 一个请求只能对应一个响应。
+- **同一个会话的多次请求中，头信息会被重复传输。**
+  - 通常会给每个传输增加 500 ~ 800 字节的开销。
+  - 如果使用 Cookie，增加的开销有时会达到上千字节。
+
+### SPDY
+
+ SPDY，speedy 的缩写，是基于 TCP 的应用层协议，它强制要求使用 SSL/TLS。2009 年 11 月，Google 宣布将 SPDY 作为提高网络速度的内部项目。
+
+SPDY 与 HTTP 的关系：
+
+<img src="network-protocol/image-20230819212923805.png" alt="image-20230819212923805" style="zoom:67%;" />
+
+- SPDY 并不用于取代 HTTP，它只是修改了 HTTP 请求与响应的传输方式。
+- 只需要增加一个 SPDY 层，现有的所有服务端应用均不用做任何修改。
+- SPDY 是 HTTP/2 的前身，2015 年 9 月，Google 宣布移除对 SPDY 的支持，拥抱 HTTP/2。
+
+### HTTP/2
+
+HTTP/2，于 2015 年 5 月，以 [RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540) 正式发表。根据 W3Techs 的数据，截至 2019 年 6 月，全球有 36.5% 的网站支持了 HTTP/2。
+
+HTTP/1.1 和 HTTP/2 的速度对比：
+
+- [HTTP/2 technology demo (http2demo.io)](http://www.http2demo.io/)
+
+  <img src="network-protocol/image-20230819213437084.png" alt="image-20230819213437084" style="zoom: 50%;" />
+
+- [HTTP/2: the Future of the Internet | Akamai](https://http2.akamai.com/demo)
+
+  ![image-20230819213920688](network-protocol/image-20230819213920688.png)
+
+HTTP/2 在底层传输做了很多的改进和优化，但在语意上完全与 HTTP/1.1 兼容：
+
+- 比如请求方法（GET、POST 等）、Status Codes、各种 Headers 等都没有改变。
+- 因此，要想升级到 HTTP/2：
+  - 开发者不需要修改任何代码。
+  - 只需要升级服务器配置、升级浏览器。
+
+#### 一些基本概念
+
+<img src="network-protocol/image-20230819222711682.png" alt="image-20230819222711682" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230819222518866.png" alt="image-20230819222518866" style="zoom:67%;" />
+
+- `数据流`：已建立的连接内的双向字节流，可以承载一条或多条消息（数据流是一个逻辑上的概念）。
+  - 所有通信都是在一个 TCP 连接上完成，此连接可以承载任意数量的双向数据流。
+- `消息`：与逻辑 HTTP 请求或响应消息对应，由一系列帧组成。
+- `帧`：HTTP/2 通信的最小单位，每个帧都包含帧头（会标识出当前帧所属的数据流）。
+  - 来自不同数据流的帧可以交错发送，然后再根据每个帧头的数据流标识符重新组装。
+
+#### 特性：二进制格式
+
+<img src="network-protocol/image-20230819215552290.png" alt="image-20230819215552290" style="zoom:80%;" />
+
+- **HTTP/2 采用二进制格式传输数据，而非 HTTP/1.1 的文本格式（字符串）。**
+- 二进制格式，在协议的解析和优化扩展上带来更多的优势和可能。
+
+#### 特性：多路复用（Multiplexing）
+
+<img src="network-protocol/image-20230819223400836.png" alt="image-20230819223400836" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230819230823928.png" alt="image-20230819230823928" style="zoom:80%;" />
+
+<img src="network-protocol/image-20230819231037559.png" alt="image-20230819231037559" style="zoom:80%;" />
+
+- 客户端和服务器可以将 HTTP 消息分解为互不依赖的帧，然后交错发送，最后再在另一端把它们重新组装起来。
+- 使用一个连接并行发送多个请求和响应。
+  - 并行交错的发送多个请求，请求之间互不影响。
+  - 并行交错的发送多个响应，响应之间互不干扰。
+- 不必再为绕过 HTTP/1.1 限制而做很多工作。
+  - 比如 Image sprites、合并 CSS/JS、内嵌 CSS/JS/Base64 图片、域名分片等。
+
+> image sprites，也叫做 CSS Sprites，将多张小图合并成一张大图，最后通过 CSS 结合小图的位置、尺寸进行精准定位。比如：
+>
+> <img src="network-protocol/image-20230819230457540.png" alt="image-20230819230457540" style="zoom: 67%;" />
+
+#### 特性：优先级
+
+- HTTP/2 标准允许每个数据流都有一个关联的权重和依赖关系。
+  - 可以向每个数据流分配一个介于 1 至 256 之间的整数。
+  - 每个数据流与其他数据流之间，可以存在显示依赖关系。
+- 客户端可以构建和传递 "优先级树"，表明它倾向于如何接收响应。
+- 服务器可以使用此信息通过控制 CPU、内存和其他资源的分配，设定数据流处理的优先级。
+  - 在资源数据可用之后，确保将高优先级响应以最优方式传输至客户端。
+
+以下图为例：
+
+<img src="network-protocol/image-20230820004941226.png" alt="image-20230820004941226" style="zoom:80%;" />
+
+- 应尽可能先给父数据流分配资源。
+- 同级数据流（共享相同父项）应按其权重比例分配资源。
+  - ①：A、B 依赖于隐式 "根数据流"，A 获得的资源比例是 12/16，B 获得的资源比例是 4/16.
+  - ②：D 依赖于根数据流，C 依赖于 D，D 应先于 C 获得完整资源分配。
+  - ③：D 应先于 C 获得完整资源分配，C 应先于 A 和 B 获得完整资源分配，B 获得的资源是 A 所获资源的 1/3。
+  - ④：D 应先于 E 和 C 获得完整资源分配，E 和 C 应先于 A 和 B 获得相同的资源分配，B 获得的资源是 A 所获资源的 1/3。
+
+#### 特性：头部压缩
+
+<img src="network-protocol/image-20230820181320735.png" alt="image-20230820181320735" style="zoom:80%;" />
+
+- **HTTP/2 使用 HPACK 压缩请求头和响应头。**
+  - 可以极大减少头部开销，进而提高性能。
+- 早期版本的 HTTP/2 和 SPDY 使用 zlib 压缩。
+  - 可以将所传输头数据的大小减少 85% ~ 88%。
+  - 但在 2012 年夏天，被攻击导致会话劫持，后被更安全的 HPACK 取代。
+
+<img src="network-protocol/image-20230821125346125.png" alt="image-20230821125346125" style="zoom:80%;" />
+
+- 头部压缩不是已有的请求头不发送，如上图所示，索引表分为静态表和动态表，在客户端和服务器均会保存一份索引表信息。
+- 一个请求发出，如果在索引表中已存在的请求头，最终只发送一个该请求头对应的索引号，比如 2、7、63 和 62 这几个请求头；如果在索引表中不存在的请求头，则会追加到动态表中，当前请求会原样发送到服务器。这样操作，可以极大的减少请求头的大小。
+
+#### 特性：服务器推送（Server Push）
+
+<img src="network-protocol/image-20230820181936500.png" alt="image-20230820181936500" style="zoom: 67%;" />
+
+- 服务器可以对一个客户端请求，发送多个响应。
+  - 除了对最初请求的响应外，服务器还可以向客户端推送额外资源，而无需客户端额外明确的请求。比如客户端向服务器请求 HTML 页面，服务器额外的把 CSS、JS、Image 等都推送给客户端。
+
+#### 问题：队头阻塞（head of line blocking）
+
+<img src="network-protocol/image-20230820210714805.png" alt="image-20230820210714805" style="zoom:80%;" />
+
+- HTTP/2 底层也是基于 TCP，TCP 传输时，对数据包有顺序要求。假设发送数据包的顺序为：红绿蓝绿蓝绿，则接收数据包的顺序也需要为：红绿蓝绿蓝绿。如果红色的包阻塞了，即使绿色的请求包和蓝色的请求包都到达了，也需要等待红色的数据包接收完成才会解析。
+- HTTP/2 队头阻塞的问题，是由于 TCP 传输导致的，并非是 HTTP/2 的问题。
+
+<img src="network-protocol/image-20230820211342507.png" alt="image-20230820211342507" style="zoom:80%;" />
+
+<img src="network-protocol/image-20230820211544353.png" alt="image-20230820211544353" style="zoom:80%;" />
+
+- 不同于 SPDY，`QUIC`协议就不存在队头阻塞的问题，即使红色的数据包阻塞，也不会影响绿色和蓝色请求包的解析。
+- QUIC 协议之所以可以这样，是因为其底层采用的是 UDP 协议。
+
+#### 问题：握手延迟
+
+<img src="network-protocol/image-20230820211756548.png" alt="image-20230820211756548" style="zoom: 67%;" />
+
+<img src="network-protocol/image-20230820212236394.png" alt="image-20230820212236394" style="zoom:80%;" />
+
+- **RTT**：Round Trip Time，往返时延，可以简单理解为通信一来一回的时间。
+- 因为 TCP 需要建立连接，这就需要时间，加上 TLS 后，这个时间会更长。
+- 而 QUIC 协议则不同，因为是 UDP，能节省很多时间。
+
+### HTTP/3
+
+Google 觉得 HTTP/2 仍然不够快，于是就有了 HTTP/3。
+
+<img src="network-protocol/image-20230820213051654.png" alt="image-20230820213051654" style="zoom: 67%;" />
+
+- HTTP/3 由 Google 开发，弃用 TCP 协议，改为使用基于 UDP 协议的 QUIC 协议实现。
+- QUIC，Quick UDP Internet Connections，即`快速 UDP 网络连接`，由 Google 开发，在 2013 年实现，于 2018 年从 HTTP-over-QUIC 改为 HTTP/3。
+
+#### 疑问
+
+HTTP/3 基于 UDP，如何保证其可靠传输？
+
+- 由 QUIC 来保证。
+
+为何Google 不开发一个新的不同于 TCP、UDP 的传输层协议？
+
+- 目前世界上的网络设备，基本只认 TCP、UDP。
+- 如果要修改传输层，意味着操作系统的内核也要修改。
+- 另外，由 IETF 标准化的许多 TCP 新特性，都因缺乏广泛支持而没有得到广泛的部署或使用。
+- 因此，要想开发并应用一个新的传输层协议，是极其困难的一件事情。
+
+#### 特性：连接迁移
+
+- TCP 基于 4 要素：源 IP、源端口、目标 IP、目标端口。
+  - 切换网络时至少会有一个要素发生变化，导致连接发生变化。
+  - 当连接发生变化时，如果还使用原来的 TCP 连接，则会导致连接失败，就得等原来的连接超时后重新建立连接。
+  - 所以我们有时候发现切换到一个新网络时，即使新网络状况良好，但内容还是需要加载很久。
+  - 如果实现的好，当检测到网络变化时，立刻建立新的 TCP 连接，即使这样，建立新的连接还是需要几百毫秒的时间。
+- QUIC 的连接不受 4 要素的影响，当 4 要素发生变化时，原连接依然维持。
+  - QUIC 连接不以 4 要素作为标识，而是使用一组 Connection ID（连接 ID）来标识一个连接。
+  - 即使 IP 或者端口发生变化，只要 Connection ID 没有变化，那么连接依然可以维持。
+  - 比如：
+    - 当设备连接到 Wi-Fi 时，将进行中的下载从蜂窝网络连接转移到更快速的 Wi-Fi 连接。
+    - 当 Wi-Fi 连接不再可用时，将连接转移到蜂窝网络连接。
+
+#### 问题：操作系统内核、CPU 负载
+
+据 Google 和 Facebook 称，与基于 TLS 的 HTTP/2 相比，它们大规模部署的 QUIC 需要近 2 倍的 CPU 使用量。
+
+- Linux 内核的 UDP 部分没有得到像 TCP 那样的优化，因为传统上没有使用 UDP 进行如此高速的信息传输。
+- TCP 和 TLS 有硬件加速，而这对于 UDP 很罕见，对于 QUIC 则基本不存在。
+
+随着时间的推移，相信这个问题会逐步得到改善。
+
+## 其他协议
+
+### RARP
+
+RARP，Reverse Address Resolution Protocol，即`逆地址解析协议`。
+
+- 使用与 ARP 相同的报头结构。
+- 作用与 ARP 相反，用于将 MAC 地址转换为 IP 地址。
+- 后来被 BOOTP、DHCP 所取代。
+
+### WebSocket
+
+<img src="network-protocol/image-20230821230349268.png" alt="image-20230821230349268" style="zoom:80%;" />
+
+- HTTP 请求的特点：通信只能由客户端发起。所以，早期很多网站为了实现推送技术，所用的技术都是轮询。
+  - 轮询是指浏览器每隔一段时间（如每秒）向服务器发出 HTTP 请求，然后服务器返回最新的数据给客户端。
+  - 为了能更好的节省服务器资源和宽带，并且能够更实时的进行通讯，**HTML5 规范中出现了 WebSocket 协议**。
+
+- WebSocket，是基于 TCP 的支持全双工通信的应用层协议。
+  - 在 2011 年由 IETF 标准化为 [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)，后由 [RFC 7936](https://datatracker.ietf.org/doc/html/rfc7936) 补充规范。
+  - 客户端、服务器，任何一方都可以主动发消息给对方。
+- WebSocket 的应用场景很多：
+  - 社交订阅、股票基金报价、体育实况更新、多媒体聊天、多玩家游戏等。
+- WebSocket 和 HTTP 属于平级关系，都是应用层的协议。
+  - 其实 TCP 本身就是支持全双工通信的（客户端、服务器均可主动发消息给对方）。
+  - 只是 HTTP 的 "请求-应答模式" 限制了 TCP 的能力。
+- WebSocket 使用 80（ws://）、443（wss://）端口，可以绕过大多数防火墙的限制。
+  - ws://example.com/wsapi
+  - wss://secure.example.com/wsapi
+- 与 HTTP 不同的是，WebSocket 需要先建立连接。
+  - 这就使得 WebSocket 称为一种有状态的协议，之后通信时可以省略部分状态信息。
+  - 而 HTTP 请求可能需要在每个请求都额外携带状态信息，如身份认证等。
+
+#### 建立连接
+
+WebSocket 需要借助 HTTP 协议来建立连接（也叫握手，[Handshake](https://datatracker.ietf.org/doc/html/rfc6455#section-1.3)），由客户端（浏览器）主动发出握手请求。
+
+<img src="network-protocol/image-20230822074243645.png" alt="image-20230822074243645" style="zoom:67%;" />
+
+- Connection：
+
+  - 必须设置 Upgrade，表示客户端希望连接升级。
+
+- Upgrade：
+
+  - 必须设置 websocket，表示希望升级到 WebSocket 协议。
+
+- Sec-WebSocket-Version：
+
+  - 表示支持的 WebSocket 版本，[RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) 要求使用的版本是 13。
+
+    <img src="network-protocol/image-20230822074805279.png" alt="image-20230822074805279" style="zoom: 80%;" />
+
+- Sec-WebSocket-Key：
+
+  - 客户端生成的随机字符串，比如示例中的 dGhlIHNhbXBsZSBub25jZQ==。
+
+  - 服务器接收到客户端的 Sec-WebSocket-Key 后，会进行以下操作：
+
+    - ① Sec-WebSocket-Key 加上一个固定的 [GUID](https://datatracker.ietf.org/doc/html/rfc6455) 值 258EAFA5-E914-47DA-95CA-C5AB0DC85B11，得到：
+
+      - dGhlIHNhbXBsZSBub25jZQ==258EAFA5-E914-47DA-95CA-C5AB0DC85B11
+
+        <img src="network-protocol/image-20230822075905041.png" alt="image-20230822075905041" style="zoom:80%;" />
+
+    - ② 将 ① 的结果进行 [SHA-1 摘要计算]([在线加密解密 - chahuo.com](http://encode.chahuo.com/))：
+
+      - b37a4f2cc0624f1690f64606cf385945b2bec4ea
+
+        ![image-20230822080021432](network-protocol/image-20230822080021432.png)
+
+    - ③ 将 ② 的结果进行 [Base64 编码]([Hex to Base64 | Base64 Encode | Base64 Converter | Base64](https://base64.guru/converter/encode/hex))：
+
+      - s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+
+        <img src="network-protocol/image-20230822080423711.png" alt="image-20230822080423711" style="zoom:80%;" />
+
+    - ④ 将 ③ 的结果作为 Sec-WebSocket-Accept 响应头的值，返回给客户端。
+
+  - 如此操作，可以尽量避免普通 HTTP 请求被误认为 WebSocket 协议。
+
+#### 使用
+
+WebSocket 体验和演示：http://www.websocket.org/index.html，该服务已停止。
+
+W3C 标准化了一套 WebSocket API，可以直接使用 JS 调用：
+
+```js
+let ws = new WebSocket('wss://example.com')
+```
+
+### WebService
+
+WebService，译为 Web 服务，是一种跨编程语言和跨操作系统平台的远程调用技术标准。
+
+WebService 使用场景举例：
+
+- 天气预报、手机归属地查询、航班信息查询、物流信息查询等。
+
+- 比如天气预报，是气象局把自己的服务以 WebService 形式暴露出来，让第三方程序可以调用这些服务功能。
+
+  - [WebXml | WEB服务 | WEB服务解决方案和技术支持 | 网站设计 | 域名交易](http://www.webxml.com.cn/zh_cn/index.aspx)
+
+    ![image-20230822125951113](network-protocol/image-20230822125951113.png)
+
+    ![image-20230822130023619](network-protocol/image-20230822130023619.png)
+
+- **事实上，WebService 是一个相对久远的技术，其完全可以使用普通的 Web API 取代，（比如 HTTP + JSON），现在很多企业的开放平台也都是直接采用的 Web API。**
+
+#### 核心概念
+
+##### SOAP
+
+SOAP，Simple Object Access Protocol，即`简单对象访问协议`。
+
+<img src="network-protocol/image-20230822224414152.png?lastModify=1692765100" alt="image-20230822224414152" style="zoom:80%;" />
+
+- 很多时候，SOAP = HTTP + XML。（HTTP 协议，传输的内容使用 XML 格式）
+- WebService 使用 SOAP 协议来封装传递数据。
+
+##### WSDL 
+
+WSDL，Web Service Description Language，即`Web 服务描述语言`。
+
+- 一个 XML 文档，用以描述 WebService 接口的细节，比如参数、返回值等。
+
+- 一般在 WebService 的 URL 后面跟上 **?wsdl** 获取 WSDL 信息。比如：[ws.webxml.com.cn/WebServices/WeatherWS.asmx?wsdl](http://ws.webxml.com.cn/WebServices/WeatherWS.asmx?wsdl)
+
+  ![image-20230822231007083](network-protocol/image-20230822231007083.png?lastModify=1692765100)
+
+### RESTful
+
+REST 全称是 REpresentational State Transfer，即`表现层状态转移`。**REST 是一种互联网软件架构设计风格，定义了一组用于创建 Web 服务的约束，符合 REST 架构的 Web 服务，称为 RESTful Web 服务。**
+
+RESTful 的实践建议：
+
+- URL 中使用名词（建议用复数形式），不使用动词。
+
+  - 推荐：/users、/users/6。
+  - 不推荐：/listUsers、/getUser?id=6、/user/list、/user/get?id=6。
+
+- 使用 HTTP 的方法表达动作：
+
+  |          | GET：查询           | POST：创建             | PUT：更新                 | DELETE：删除        |
+  | :------- | :------------------ | :--------------------- | :------------------------ | :------------------ |
+  | /users   | 查询所有的用户      | 创建一个用户           | 更新所有用户的信息        | 删除所有的用户      |
+  | /users/6 | 查询 id 为 6 的用户 | 405 Method Not Allowed | 更新 id 为 6 的用户的信息 | 删除 id 为 6 的用户 |
+
+- 一个资源连接到其他资源，使用子资源的形式。
+
+  - GET /users/6/cars/88。
+  - POST /users/6/cars。
+
+- API 版本化：
+
+  - mj.com/v1/users。
+  - mj.com/v2/users/66。
+
+- 返回 JSON 格式的数据。
+
+- 发生错误时，不要返回 200 状态码。
+
+### HTTPDNS
+
+HTTPDNS 是基于 HTTP 协议向 DNS 服务器发送域名解析请求。
+
+- 替代了基于 DNS 协议向运营商 Local DNS 发起解析请求的传统方式。
+
+- 可以避免 Local DNS 造成的域名劫持和跨网访问问题。
+
+- 常用在移动互联网中，比如在 Android、IOS 开发中。
+
+- 市面上已有现成的解决方案：
+
+  - 腾讯云：[移动解析HttpDNS*移动互联网域名解析*域名防劫持-腾讯云 (tencent.com)](https://cloud.tencent.com/product/httpdns)
+  - 阿里云：[什么是HTTPDNS_移动研发平台EMAS-阿里云帮助中心 (aliyun.com)](https://help.aliyun.com/document_detail/435220.html?spm=a2c4g.750001.0.i1)
+  - 移动端只需要按照官网说明，集成相关的 SDK 即可使用 HTTPDNS 服务
+
+- HTTPDNS 的优点：
+
+  <img src="network-protocol/image-20230822233930687.png?lastModify=1692765100" alt="image-20230822233930687" style="zoom: 67%;" />
+
+### FTP
+
+FTP，File Transport Protocol，即`文件传输协议`。[RFC 959](https://datatracker.ietf.org/doc/html/rfc959) 定义了此规范，是基于 TCP 的应用层协议。在 [RFC 1738](https://datatracker.ietf.org/doc/html/rfc1738) 中有定义， FTP 的 URL 格式为：`ftp://[user[:password]@]host[:port]/usl-path`。
+
+<img src="network-protocol/image-20230822235122021.png?lastModify=1692765100" alt="image-20230822235122021" style="zoom:67%;" />
+
+#### 连接模式
+
+FTP 有两种连接模式：主动（Active）和被动（Passive）。
+
+<img src="network-protocol/image-20230822235503976.png?lastModify=1692765100" alt="image-20230822235503976" style="zoom:80%;" />
+
+- 不管是哪种模式，都需要客户端和服务器建立两个连接。
+  - 控制连接：用于传输状态信息（命令，cmd）。
+  - 数据连接：用于传输文件和目录信息（data）。
+
+##### 主动模式
+
+<img src="network-protocol/image-20230822235924381.png?lastModify=1692765100" alt="image-20230822235924381" style="zoom:67%;" />
+
+- ① 客户端打开一个随机的命令端口：
+  - 端口号大于 1024，假设为 N。
+  - 同时连接至服务器的命令端口 21。
+- ② 客户端开始监听 N + 1 数据端口：
+  - 同时向服务器发送一个 Port 命令给服务器的命令端口 21。
+  - 此 Port 命令告诉服务器：
+    - 客户端正在监听的数据端口 N + 1。
+    - 并且已经准备好从此数据端口 N + 1 接收数据。
+- ③ 服务器打开数据端口 20，并且创建和客户端数据端口 N + 1 的连接。
+
+##### 被动模式
+
+<img src="network-protocol/image-20230823000556026.png?lastModify=1692765100" alt="image-20230823000556026" style="zoom:67%;" />
+
+- 客户端通过两个随机的端口与服务器建立连接：
+  - 命令端口 N。
+  - 数据端口 N + 1。
+- ① 客户端的命令端口 N 用于连接服务器的命令端口 21。
+- ② 客户端通过命令端口 N 发送 PASV 命令给服务器的命令端口 21。
+- ③ 服务器打开一个随机的数据端口 P，并告知客户端该端口号 P。
+- ④ 客户端数据端口 N + 1 发起与服务器数据端口 P 的连接。
+
+### 邮件相关的协议
+
+发邮件使用的协议：
+
+- SMTP，Simple Mail Transfer Protocol，即`简单邮件传输协议`。
+  - 基于 TCP，标准参考 [RFC 5321](https://datatracker.ietf.org/doc/html/rfc5321)。
+  - 服务器默认使用 25 端口，SSL/TLS 使用 465 端口。
+
+收邮件使用的协议：
+
+- POP，Post Office Protocol，即`邮局协议`。
+  - 基于 TCP，最新版是 POP3，标准参考 [RFC 1939](https://datatracker.ietf.org/doc/html/rfc1939)。
+  - 服务器默认使用 110 端口，SSL/TLS 使用 995 端口。
+- IMAP，Internet Message Access Protocol，即`因特网信息访问协议`。
+  - 基于 TCP，最新版是 IMAP4，标准参考 [RFC 3501](https://datatracker.ietf.org/doc/html/rfc3501)。
+  - 服务器默认使用 143 端口，SSL/TLS 使用 993 端口。
+
+#### 收发邮件的过程
+
+<img src="network-protocol/image-20230823001650484.png?lastModify=1692765100" alt="image-20230823001650484" style="zoom:67%;" />
+
+#### POP VS IMAP
+
+<img src="network-protocol/image-20230823002017150.png?lastModify=1692765100" alt="image-20230823002017150" style="zoom: 80%;" />
+
+- 客户端连接服务器时，将会从服务器下载所有邮件。
+  - 可以设置下载完毕后，立即或一段时间后删除服务器邮件。
+- 客户端的操作，比如删除邮件、移动到文件夹等，不会跟服务器同步。
+- 每个客户端都是独立的，都可以获得其自己的电子邮件副本。
+
+<img src="network-protocol/image-20230823002044880.png?lastModify=1692765100" alt="image-20230823002044880" style="zoom: 80%;" />
+
+- 客户端连接服务器时，获取的是服务器上邮件的基本信息，并不会下载邮件。
+  - 等打开邮件时，才开始下载邮件。
+- 客户端的操作，比如删除邮件、移动到文件夹等，会跟服务器同步。
+- 所有客户端始终会看到相同的邮件和相同的文件夹。
+
+### IPv6
+
+IPv6，Internet Protocol version 6，即`网际协议第 6 版`。
+
+- IPv6 用来取代 IPv4 主要是为了解决 IPv4 地址枯竭问题，同时它也在其他方面对于 IPv4 有很多改进。
+- 然后长期以来 IPv4 在互联网流量中仍占据主要地位，IPv6 的使用增长缓慢。
+- 在 2019 年 12 月，通过 IPv6 使用 Google 服务的用户百分率首次超过 30%。
+  - IPv6 的使用，需要设备、操作系统内核升级支持 IPv6。
+- IPv6 采用 128 位的地址，而 IPv4 使用的是 32 位。
+  - IPv6 支持 $$2^{128}$$（约 $$3.4 * 10^{38}$$）个地址。
+  - 以地球人口 70 亿计算，没人平均可分得约 $$4.86 * 10^{28}$$ 个 IPv6 地址。
+
+#### 地址格式
+
+IPv6 地址为 128 bit，每 16 bit 一组，共 8 组。每组以冒号 ":" 隔开，每组以 4 位十六进制方式表示，例如：2001:0db8:86a3:08d3:1319:8a2e:0370:7344。类似于 IPv4 的点分十进制，同样也存在点分十六进制的写法：2.0.0.1.0.d.b.8.8.6.a.3.0.8.d.3.1.3.1.9.8.a.2.e.0.3.7.0.7.3.4.4。
+
+- 每组前面连续的 0 可以省略。下面的 IPv6 地址是等价的：
+  - 20001:0db8:02de:0000:0000:0000:0000:0e13。
+  - 2001:db8:2de:0:0:0:0:e13。
+- 可以用双冒号 "::" 表示一组 0 或多组连续的 0，但只能出现一次。下面的 IPv6 地址是等价的：
+  - 2001:db8:2de:0:0:0:0:e13。
+  - 2001:db8:2de::e13。
+  - 2001::25de::cade 是非法的，因为双冒号出现了两次，会造成歧义：
+    - 2001:0000:0000:0000:0000:25de:0000:cade。
+    - 2001:0000:25de:0000:0000:0000:0000:cacde。
+- **::1 是本地环回地址（0:0:0:0:0:0:0:1）。**
+
+#### 首部格式
+
+<img src="network-protocol/image-20230825075452536.png" alt="image-20230825075452536" style="zoom:80%;" />
+
+- 有 40 字节的固定首部。
+
+IPv4 和 IPv6 的首部格式对比：
+
+<img src="network-protocol/image-20230825075753192.png" alt="image-20230825075753192" style="zoom:80%;" />
+
+- Version：4 bit，版本号，固定为 0110。
+
+- Traffic Class：8 bit，交通类别。
+
+  - 指示数据包的类别或优先级，可以帮助路由器根据数据包的优先级处理流量。
+  - 如果路由器发生拥塞，则优先级最低的数据包将被丢弃。
+
+- Payload Length：16 bit，有效负载长度。
+
+  - 最大值 65535 字节。
+
+  - 包括了扩展头部（IPv6 去除 Version 这个固定长度的其他部分）、上层（传输层）数据的长度。
+
+  - 扩展头部：
+
+    <img src="network-protocol/image-20230825203609234.png" alt="image-20230825203609234" style="zoom:67%;" />
+
+- Hop Limit：8 bit，跳数限制。
+
+- Source Address：128 bit，源 IPv6 地址。
+
+- Destination Address：128 bit，目的 IPv6 地址。
+
+- Flow Label：20 bit，流标签。
+
+  - 指示数据包属于哪个特定序列（流）。
+  - 用数据包的源地址、目的地址、流标签标识一个流。
+
+- Next Header：8 bit，下一个头部。
+
+  - 指示扩展头部（如果存在）的类型、上层数据包的协议类型（例如 TCP、UDP、ICMPv6）。
+
+    <img src="network-protocol/image-20230826102600736.png" alt="image-20230826102600736" style="zoom:67%;" />
+
+## 补充
+
+### VPN  
+
+VPN，Virtual Private Network，即`虚拟私人网络`。它可以在公共网络上建立专用网络，进行加密通讯，VPN 服务器常建立在公司局域网内使用，用于保护公司内的数据安全。
+
+<img src="network-protocol/image-20230823080305188.png?lastModify=1692765100" al t="image-20230823080305188" style="zoom:67%;" />
+
+<img src="network-protocol/image-20230823080647659.png?lastModify=1692765100" alt="image-20230823080647659" style="zoom:67%;" />
+
+VPN 的作用：
+
+<img src="network-protocol/image-20230823080754887.png?lastModify=1692765100" alt="image-20230823080754887" style="zoom:67%;" />
+
+- 提高上网的安全性。
+- 保护公司内部资料。
+- 隐藏上网者的身份。
+- 突破网站的地域限制。
+  - 有些网站针对不同地区的用户，展示不同的内容。
+- 突破网络封锁。
+  - 因为有 GFW（Great Firewall of China，中国长城防火墙）的限制，有些网站在国内上不了。
+
+VPN 与代理的区别：
+
+- 软件：
+  - VPN 一般需要安装 VPN 客户端软件。
+  - 代理不需要安装额外的软件。
+- 安全性：
+  - VPN 默认会对数据进行加密。
+  - 代理默认不会对数据进行加密（数据最终是否加密取决于使用的协议本身）。
+- 费用：
+  - 一般情况下，VPN 比代理贵。
+
+VPN 的实现原理：
+
+- VPN 的实现原理是：使用了`隧道协议`（Tunneling Protocol）。
+- 常见的 VPN 隧道协议有：
+  - PPTP：Point to Point Tunneling Protocol，点对点隧道协议。
+  - L2TP：Layer Two Tunneling Protocol，第二层隧道协议。
+  - IPsec：Internet Protocol Security，互联网安全协议。
+  - SSL VPN：如 OpenVPN。
+  - ......
+- VPN 一般工作在传输层，或数据链路层。
+
+### tcpdump
+
+tcpdump 是 Linux 平台的抓包分析工具，Windows 版本是 WinDump。
+
+- 使用手册：https://www.tcpdump.org/
+- 使用教程：https://danielmiessler.com/
+
+### 网络爬虫
+
+网络爬虫，Web Crawler，也叫做网络蜘蛛（Web Spider）。模拟人类使用浏览器操作页面的行为，对页面进行相关的操作。常用爬虫工具：Python 的 Scrapy 框架。
+
+<img src="network-protocol/image-20230823232803117.png" alt="image-20230823232803117" style="zoom:80%;" />
+
+简单框架：
+
+<img src="network-protocol/image-20230823233010545.png" alt="image-20230823233010545" style="zoom:67%;" />
+
+搜索引擎中的应用：
+
+<img src="network-protocol/image-20230823233417320.png" alt="image-20230823233417320" style="zoom:80%;" />
+
+<img src="network-protocol/image-20230823233232155.png" alt="image-20230823233232155" style="zoom:80%;" />
+
+简易实例：
+
+<img src="network-protocol/image-20230823234041677.png" alt="image-20230823234041677" style="zoom:80%;" />
+
+- 使用的是 Java 的框架 Jsoup 来爬取目标网站的一些简单的数据。
+
+#### robots.txt
+
+- robots.txt 是存放在网站根目录下的文本文件，比如 https://www.baidu.com/robots.txt。
+
+  ```html
+  User-agent: Baiduspider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Googlebot
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: MSNBot
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Baiduspider-image
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: YoudaoBot
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou web spider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou inst spider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou spider2
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou blog
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou News Spider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sogou Orion spider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: ChinasoSpider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: Sosospider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  
+  User-agent: yisouspider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: EasouSpider
+  Disallow: /baidu
+  Disallow: /s?
+  Disallow: /shifen/
+  Disallow: /homepage/
+  Disallow: /cpro
+  Disallow: /ulink?
+  Disallow: /link?
+  Disallow: /home/news/data/
+  Disallow: /bh
+  
+  User-agent: *
+  Disallow: /
+  ```
+
+- robots.txt 是用来告诉爬虫：哪些内容不应该被爬取，那些内容是可以被爬取的。
+
+- 因为一些系统中的 URL 是大小写敏感的，所以 robots.txt 的文件名应该统一为小写。
+
+- robots.txt 文件并不是一个规范，而只是约定俗成的，所以并不能保证网站的隐私。它只能防君子，不能防小人，无法阻止不讲武德的年轻爬虫爬取隐私信息。
+
+robots.txt 文件的格式说明：
+
+- 允许所有爬虫：
+
+  ```html
+  User-agent: *
+  Disallow: 
+  ```
+
+  ```html
+  User-agent: *
+  Allow: /
+  ```
+
+- 仅允许特定的爬虫（name_spider 是爬虫名字）：
+
+  ```html
+  User-agent: name_spider
+  Allow: 
+  ```
+
+- 拦截所有的爬虫：
+
+  ```html
+  User-agent: *
+  Disallow: /
+  ```
+
+- 仅禁止爬虫访问特定目录：
+
+  ```html
+  User-agent: name_spider
+  Disallow: /private/
+  ```
+
+- 禁止所有爬虫访问特定目录：
+
+  ```html
+  User-agent: *
+  Disallow: /cgi-bin/
+  Disallow: /images/
+  Disallow: /tmp/
+  Disallow: /private/
+  ```
+
+- 进展所有爬虫访问特定文件类型：
+
+  ```html
+  User-agent: *
+  Disallow: /*.php$
+  Disallow: /*.js$
+  Disallow: /*.inc$
+  Disallow: /*.css$
+  ```
+
+### 无线网络
+
+<img src="network-protocol/image-20230824002530925.png" alt="image-20230824002530925" style="zoom: 80%;" />
+
+- 基站之间，主要使用光纤传播信号。
+
+<img src="network-protocol/image-20230824002749966.png" alt="image-20230824002749966" style="zoom:80%;" />
+
+- 无线 AP：Access Point，即无线接入点。
+
+### 即时通信
+
+即时通信，Instant Messaging，简称 IM，平时用的 QQ、微信等，都属于典型的 IM 应用。
+
+- 国内的 IM 开发者社区：http://www.52im.net/
+- IM 云服务：网易云信、腾讯云、环信等。
+- 常用的协议：XMPP、MQTT、自定义协议。
+
+#### XMPP
+
+<img src="network-protocol/image-20230826103832459.png" alt="image-20230826103832459" style="zoom:67%;" />
+
+XMPP，Extensible Messaging and Presence Protocol，即`可扩展消息与存在协议`，前身是 Jabber。
+
+- 基于 TCP，默认端口 5222、5269（一个是 XMPP 服务器与服务器之间的通信端口，一个是 XMPP 服务器与客户端之间的通信端口）。
+- 特点：
+  - 使用 XML 格式进行传输，体积较大。
+  - 比较成熟的 IM 协议，开发者接入方便。
+
+#### MQTT
+
+MQTT，Message Queuing Telemetry Transport，即`消息队列遥测传输`。
+
+- 基于 TCP，默认端口 1883、8883（带 SSL/TLS）。
+- 特点：
+  - 开销很小，以降低网络流量，信息冗余远小于 XMPP。
+  - 不是专门为 IM 设计的协议，很多功能需要自己实现。
+  - 很多人认为 MQTT 是最适合物联网（IoT，Internet of Things）的网络协议。
+
+MQTT 流程示意图：
+
+<img src="network-protocol/image-20230826104718739.png" alt="image-20230826104718739" style="zoom:50%;" />
+
+- 发布者：客户端。
+- 代理：服务器。
+- 订阅者：客户端。
+
+### 流媒体
+
+流媒体，Streaming Media，又叫流式媒体。是指将一连串的多媒体数据压缩后，经过互联网分段发送数据，在互联网上即时传输影音以供观赏的一种技术，此技术使得资料数据包得以像流水一样发送，不使用此技术，就必须在使用前下载整个媒体文件。
+
+常见协议：
+
+- RTP：Real-Time Transport Protocol，实时传输协议。
+  - 基于 UDP，参考 [RFC 3550](https://datatracker.ietf.org/doc/html/rfc3550)，[RFC 3551](https://datatracker.ietf.org/doc/html/rfc3551)。
+- RTCP：Real-Time Transport Control Protocol，实时传输控制协议。
+  - 基于 UDP，使用 RTP 的下一个端口，参考 [RFC 3550](https://datatracker.ietf.org/doc/html/rfc3550)。
+- RTSP：Real-Time Steaming Protocol，实时流协议。
+  - 基于 TCP、UDP 的 554 端口，参考 [RFC 7820](https://datatracker.ietf.org/doc/html/rfc7820)。
+- RTMP：Real-Time Messaging Protocol，实时消息传输协议。
+  - 由 Adobe 公司出品，默认基于 TCP 的 1935 端口。
+- HLS：HTTP Live Steaming。
+  - 苹果公司出品，基于 HTTP 的流媒体网络传输协议，参考 [RFC 8216](https://datatracker.ietf.org/doc/html/rfc8216)。
+
+## 本文参考
+
+【2021网络协议入门到精通】https://www.bilibili.com/video/BV1Fy4y1Y7n6?vd_source=abe35c34385e7b56d2e426c30e25e646
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
