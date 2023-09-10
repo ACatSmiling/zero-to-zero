@@ -967,7 +967,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### List
 
-- 将一个或多个值插入到列表头部：`LPUSH <key_name1> <value1> [value2] .. [valueN]`。返回列表的长度。
+- 将一个或多个值插入到列表头部：`LPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
 
   ```bash
   127.0.0.1:6379> LPUSH list1 "foo"
@@ -979,7 +979,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   2) "foo"
   ```
 
-- 将一个或多个值添加到列表尾部：`RPUSH <key_name1> <value1> [value2] .. [valueN]`。返回列表的长度。
+- 将一个或多个值添加到列表尾部：`RPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
 
   ```bash
   127.0.0.1:6379> RPUSH mylist "hello"
@@ -994,7 +994,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   3) "bar"
   ```
 
-- 将一个值插入到已存在的列表头部：`LPUSHX <key_name1> <value1> [value2] .. [valueN]`。返回列表的长度，列表不存在时操作无效。
+- 将一个值插入到已存在的列表头部：`LPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
 
   ```bash
   127.0.0.1:6379> LPUSH list1 "foo"
@@ -1008,7 +1008,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   2) "foo"
   ```
 
-- 将一个值添加到已存在的列表头部：`RPUSHX <key_name1> <value1> [value2] .. [valueN]`。返回列表的长度，列表不存在时操作无效。
+- 将一个值添加到已存在的列表头部：`RPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
 
   ```bash
   127.0.0.1:6379> RPUSH mylist "hello"
@@ -1105,15 +1105,869 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 - 通过索引设置列表元素的值：`LSET <key_name> <index> <value>`。操作成功返回 ok，否则返回错误信息。当索引参数超出范围，或对一个空列表进行 LSET 时，返回一个错误。
 
   ```bash
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 1
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 2
+  127.0.0.1:6379> RPUSH mylist "foo"
+  (integer) 3
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 4
+  127.0.0.1:6379> LSET mylist 0 "bar"
+  OK
+  127.0.0.1:6379> LRANGE mylist 0 -1
+  1: "bar"
+  2) "hello"
+  3) "foo"
+  4) "hello"
   ```
 
-  
+- 在列表的元素前或者后插入元素：`LINSERT <key_name> BEFORE|AFTER <pivot> <value>`。如果命令执行成功，返回插入操作完成之后，列表的长度。如果没有找到指定元素 ，返回 -1。如果 key 不存在或为空列表，返回 0。当指定元素不存在于列表中时，不执行任何操作。当列表不存在时，被视为空列表，不执行任何操作。
 
-- s
+  ```bash
+  127.0.0.1:6379> RPUSH mylist "Hello"
+  (integer) 1
+  127.0.0.1:6379> RPUSH mylist "World"
+  (integer) 2
+  127.0.0.1:6379> LINSERT mylist BEFORE "World" "There"
+  (integer) 3
+  127.0.0.1:6379> LRANGE mylist 0 -1
+  1) "Hello"
+  2) "There"
+  3) "World"
+  ```
+
+- 移除列表元素：`LREM <key_name> <count> <value>`。
+
+  ```bash
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 1
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 2
+  127.0.0.1:6379> RPUSH mylist "foo"
+  (integer) 3
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 4
+  127.0.0.1:6379> LREM mylist -2 "hello"
+  (integer) 2
+  127.0.0.1:6379> LRANGE mylist 0 -1
+  1) "hello"
+  2) "foo"
+  ```
+
+  - count > 0：从表头开始向表尾搜索，移除与 value 相等的元素，数量为 count。
+  - count < 0：从表尾开始向表头搜索，移除与 value 相等的元素，数量为 count 的绝对值。
+  - count = 0：移除表中所有与 value 相等的值。
+
+- 对一个列表进行修剪（trim），即让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除：`LTRIM <key_name> <start> <stop>`。
+
+  ```bash
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 1
+  127.0.0.1:6379> RPUSH mylist "hello"
+  (integer) 2
+  127.0.0.1:6379> RPUSH mylist "foo"
+  (integer) 3
+  127.0.0.1:6379> RPUSH mylist "bar"
+  (integer) 4
+  127.0.0.1:6379> LTRIM mylist 1 -1
+  OK
+  127.0.0.1:6379> LRANGE mylist 0 -1
+  1) "hello"
+  2) "foo"
+  3) "bar"
+  ```
 
 #### Hash
 
+- 将哈希表 key 中的字段 field 的值设为 value：`HSET <key_name> <field> <value>`。如果字段是哈希表中的一个新建字段，并且值设置成功，返回 1。如果哈希表中域字段已经存在，且旧值已被新值覆盖，返回 0。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  OK
+  127.0.0.1:6379> HGET myhash field1
+  "foo"
+  
+  127.0.0.1:6379> HSET website google "www.g.cn"			# 设置一个新域
+  (integer) 1
+  
+  127.0.0.1:6379> HSET website google "www.google.com"	# 覆盖一个旧域
+  (integer) 0
+  ```
+
+- 获取存储在哈希表中指定字段的值：`HGET <key_name> <field>`。返回给定字段的值。如果给定的字段或 key 不存在时，返回 nil。
+
+  ```bash
+  127.0.0.1:6379> HSET site redis redis.com
+  1
+  127.0.0.1:6379> HGET site redis
+  "redis.com"
+  127.0.0.1:6379> HGET site mysql
+  (nil)
+  ```
+
+- 同时将多个 field-value（域-值）对设置到哈希表 key 中：`HMSET <key_name> <field1> <value1> [<field2> <value2>] .. [<fieldN> <valueN>]`。如果命令执行成功，返回 OK。此命令会覆盖哈希表中已存在的字段。如果哈希表不存在，会创建一个空哈希表，并执行 HMSET 操作。
+
+  ```bash
+  redis 127.0.0.1:6379> HMSET myhash field1 "Hello" field2 "World"
+  OK
+  redis 127.0.0.1:6379> HGET myhash field1
+  "Hello"
+  redis 127.0.0.1:6379> HGET myhash field2
+  "World"
+  ```
+
+- 获取所有给定字段的值：`HMGET <key_name> <field1> [<field2>] .. [<fieldN>]`。返回一个包含多个给定字段关联值的表，表值的排列顺序和指定字段的请求顺序一样。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HSET myhash field2 "bar"
+  (integer) 1
+  127.0.0.1:6379> HMGET myhash field1 field2 nofield
+  1) "foo"
+  2) "bar"
+  3) (nil)
+  ```
+
+- 获取在哈希表中指定 key 的所有字段和值：`HGETALL <key_name>`。以列表形式返回哈希表的字段及字段值。 若 key 不存在，返回空列表。在返回值里，紧跟每个字段名之后是字段的值，所以返回值的长度是哈希表大小的两倍。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "Hello"
+  (integer) 1
+  127.0.0.1:6379> HSET myhash field2 "World"
+  (integer) 1
+  127.0.0.1:6379> HGETALL myhash
+  1) "field1"
+  2) "Hello"
+  3) "field2"
+  4) "World"
+  ```
+
+- 查看哈希表 key 中，指定的字段是否存在：`HEXISTS <key_name> <field>`。如果哈希表含有给定字段，返回 1。如果哈希表不含有给定字段，或 key 不存在，返回 0。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HEXISTS myhash field1
+  (integer) 1
+  127.0.0.1:6379> HEXISTS myhash field2
+  (integer) 0
+  ```
+
+- 删除一个或多个哈希表字段，不存在的字段将被忽略：`HDEL <key_name> <field1> [<field2>] .. [<fieldN>]`。返回被成功删除字段的数量，不包括被忽略的字段。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HDEL myhash field1
+  (integer) 1
+  127.0.0.1:6379> HDEL myhash field2
+  (integer) 0
+  ```
+
+- 获取哈希表中字段的数量：`HLEN <key_name>`。返回哈希表中字段的数量，当 key 不存在时，返回 0。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HSET myhash field2 "bar"
+  (integer) 1
+  127.0.0.1:6379> HLEN myhash
+  (integer) 2
+  ```
+
+- 获取哈希表中的所有字段：`HKEYS <key_name>`。返回包含哈希表中所有域（field）列表。当 key 不存在时，返回一个空列表。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HSET myhash field2 "bar"
+  (integer) 1
+  127.0.0.1:6379> HKEYS myhash
+  1) "field1"
+  2) "field2"
+  ```
+
+- 获取哈希表中所有值：`HVALS <key_name>`。返回一个包含哈希表中所有值的列表。当 key 不存在时，返回一个空表。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HSET myhash field2 "bar"
+  (integer) 1
+  127.0.0.1:6379> HVALS myhash
+  1) "foo"
+  2) "bar"
+  
+  # 空哈希表/不存在的key
+  127.0.0.1:6379> EXISTS not_exists
+  (integer) 0
+  
+  127.0.0.1:6379> HVALS not_exists
+  (empty list or set)
+  ```
+
+- 为哈希表 key 中的指定字段的整数值加上增量 increment：`HINCRBY <key_name> <field> <increment>`。返回执行 HINCRBY 命令之后，哈希表中字段的值。
+
+  ```bash
+  127.0.0.1:6379> HSET myhash field 5
+  (integer) 1
+  127.0.0.1:6379> HINCRBY myhash field 1
+  (integer) 6
+  127.0.0.1:6379> HINCRBY myhash field -1
+  (integer) 5
+  127.0.0.1:6379> HINCRBY myhash field -10
+  (integer) -5
+  ```
+
+- 为哈希表 key 中的指定字段的浮点数值加上增量 increment：`HINCRBYFLOAT <key_name> <field> <increment>`。返回执行 HINCRBYFLOAT 命令之后，哈希表中字段的值。
+
+  ```bash
+  127.0.0.1:6379> HSET mykey field 10.50
+  (integer) 1
+  127.0.0.1:6379> HINCRBYFLOAT mykey field 0.1
+  "10.6"
+  127.0.0.1:6379> HINCRBYFLOAT mykey field -5
+  "5.6"
+  127.0.0.1:6379> HSET mykey field 5.0e3
+  (integer) 0
+  127.0.0.1:6379> HINCRBYFLOAT mykey field 2.0e2
+  "5200"
+  ```
+
+- 只有在字段 field 不存在时，设置哈希表字段的值：`HSETNX <key_name> <field> <value>`。设置成功，返回 1。如果给定字段已经存在且没有操作被执行，返回 0。
+
+  ```bash
+  127.0.0.1:6379> HSETNX myhash field1 "foo"
+  (integer) 1
+  127.0.0.1:6379> HSETNX myhash field1 "bar"
+  (integer) 0
+  127.0.0.1:6379> HGET myhash field1
+  "foo"
+  
+  127.0.0.1:6379> HSETNX nosql key-value-store redis
+  (integer) 1
+  
+  127.0.0.1:6379> HSETNX nosql key-value-store redis		# 操作无效, key-value-store已存在
+  (integer) 0
+  ```
+
 #### Set
 
+- 向集合添加一个或多个成员，已经存在于集合的成员元素将被忽略：`SADD <key_name> <member1> [<member2>] .. [<memberN>]`。返回被添加到集合中的新元素的数量，不包括被忽略的元素。
+
+  ```bash
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "foo"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 0
+  127.0.0.1:6379> SMEMBERS myset
+  1) "hello"
+  2) "foo"
+  ```
+
+- 返回集合中的所有成员：`SMEMBERS <key_name>`。返回集合中的所有成员，不存在的集合 key 被视为空集合。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "world"
+  (integer) 1
+  127.0.0.1:6379> SMEMBERS myset1
+  1) "World"
+  2) "Hello"
+  ```
+
+- 判断 member 元素是否是集合 key 的成员：`SISMEMBER <key_name> <member>`。如果成员元素是集合的成员，返回 1。如果成员元素不是集合的成员，或 key 不存在，返回 0。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SISMEMBER myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SISMEMBER myset1 "world"
+  (integer) 0
+  ```
+
+- 移除集合中一个或多个成员，不存在的成员元素会被忽略：`SREM <key_name> <member1> [<member2>] .. [<memberN>]`。返回被成功移除的元素的数量，不包括被忽略的元素。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "world"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "bar"
+  (integer) 1
+  127.0.0.1:6379> SREM myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SREM myset1 "foo"
+  (integer) 0
+  127.0.0.1:6379> SMEMBERS myset1
+  1) "bar"
+  2) "world"
+  ```
+
+- 获取集合的成员数：`SCARD <key_name>`。返回集合的数量。当集合 key 不存在时，返回 0。
+
+  ```bash
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "foo"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 0
+  127.0.0.1:6379> SCARD myset
+  (integer) 2
+  ```
+
+- 返回集合中一个或多个随机数：`SRANDMEMBER <key_name> [<count>]`。只提供集合 key 参数时，返回一个元素；如果集合为空，返回 nil。如果提供了 count 参数，那么返回一个数组；如果集合为空，返回空数组。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "world"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "bar"
+  (integer) 1
+  127.0.0.1:6379> SRANDMEMBER myset1
+  "bar"
+  127.0.0.1:6379> SRANDMEMBER myset1 2
+  1) "Hello"
+  2) "world"
+  ```
+
+  - 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。如果 count 大于等于集合基数，那么返回整个集合。
+  - 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
+
+- 移除并返回集合中的一个随机元素：`SPOP <key_name> [<count>]`。参考 SRANDMEMBER 命令，前者不移除元素，而 SPOP 会移除元素。
+
+  ```bash
+  127.0.0.1:6379> SADD myset "one"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "two"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "three"
+  (integer) 1
+  127.0.0.1:6379> SPOP myset
+  "one"
+  127.0.0.1:6379> SMEMBERS myset
+  1) "three"
+  2) "two"
+  127.0.0.1:6379> SADD myset "four"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "five"
+  (integer) 1
+  127.0.0.1:6379> SPOP myset 3
+  1) "five"
+  2) "four"
+  3) "two"
+  127.0.0.1:6379> SMEMBERS myset
+  1) "three"
+  ```
+
+- 将 member 元素从 source 集合移动到 destination 集合：`SMOVE <source> <destination> <member>`。如果成员元素被成功移除，返回 1。如果成员元素不是 source 集合的成员，并且没有任何操作对 destination 集合执行，那么返回 0。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "world"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "bar"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "foo"
+  (integer) 1
+  127.0.0.1:6379> SMOVE myset1 myset2 "bar"
+  (integer) 1
+  127.0.0.1:6379> SMEMBERS myset1
+  1) "World"
+  2) "Hello"
+  127.0.0.1:6379> SMEMBERS myset2
+  1) "foo"
+  2) "bar"
+  ```
+
+  - SMOVE 是原子性操作。
+  - 如果 source 集合不存在或不包含指定的 member 元素，则 SMOVE 命令不执行任何操作，仅返回 0。否则，member 元素从 source 集合中被移除，并添加到 destination 集合中去。
+  - 当 destination 集合已经包含 member 元素时，SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
+  - 当 source 或 destination 不是集合类型时，返回一个错误。
+
+- 返回第一个集合与其他集合之间的差异：`SDIFF <first_key_name> <other_key_name1> [<other_key_name2>] .. [<other_key_nameN>]`。返回包含差集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> SADD key1 "a"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "b"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "d"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "e"
+  (integer) 1
+  127.0.0.1:6379> SDIFF key1 key2
+  1) "a"
+  2) "b"
+  ```
+
+- 返回给定所有集合的差集并存储在 destination 中，如果指定的集合 key 已存在，则会被覆盖：`SDIFFSTORE <destination> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。
+
+  ```bash
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "foo"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "bar"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "world"
+  (integer) 1
+  127.0.0.1:6379> SDIFFSTORE destset myset myset2
+  (integer) 2
+  127.0.0.1:6379> SMEMBERS destset
+  1) "foo"
+  2) "bar"
+  ```
+
+- 返回给定所有集合的交集：`SINTER <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回交集成员的列表。不存在的集合 key 被视为空集。 当给定集合当中有一个空集时，结果也为空集（根据集合运算定律）。
+
+  ```bash
+  127.0.0.1:6379> SADD myset "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "foo"
+  (integer) 1
+  127.0.0.1:6379> SADD myset "bar"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "world"
+  (integer) 1
+  127.0.0.1:6379> SINTER myset myset2
+  1) "hello"
+  ```
+
+- 返回给定所有集合的交集并存储在 destination 中：`SINTERSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回存储交集的集合的元素数量。如果指定的集合已经存在，则将其覆盖。
+
+  ```bash
+  127.0.0.1:6379> SADD myset1 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "foo"
+  (integer) 1
+  127.0.0.1:6379> SADD myset1 "bar"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "hello"
+  (integer) 1
+  127.0.0.1:6379> SADD myset2 "world"
+  (integer) 1
+  127.0.0.1:6379> SINTERSTORE myset myset1 myset2
+  (integer) 1
+  127.0.0.1:6379> SMEMBERS myset
+  1) "hello"
+  ```
+
+- 返回所有给定集合的并集：`SUNION <key_name> <key_name1> [<key_name2>] .. [<key_nameN>] `。返回并集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> SADD key1 "a"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "b"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "d"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "e"
+  (integer) 1
+  127.0.0.1:6379> SUNION key1 key2
+  1) "a"
+  2) "c"
+  3) "b"
+  4) "e"
+  5) "d"
+  ```
+
+- 所有给定集合的并集存储在 destination 集合中：`SUNIONSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。如果 destination 已经存在，则将其覆盖。
+
+  ```bash
+  127.0.0.1:6379> SADD key1 "a"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "b"
+  (integer) 1
+  127.0.0.1:6379> SADD key1 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "c"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "d"
+  (integer) 1
+  127.0.0.1:6379> SADD key2 "e"
+  (integer) 1
+  127.0.0.1:6379> SUNIONSTORE key key1 key2
+  (integer) 5
+  127.0.0.1:6379> SMEMBERS key
+  1) "c"
+  2) "b"
+  3) "e"
+  4) "d"
+  5) "a"
+  ```
+
 #### ZSet
+
+- 向有序集合添加一个或多个成员，或者更新已存在成员的分数：`ZADD <key_name> <score1> <value1> [<score2> <value2>] .. [<scoreN> <valueN>]`。返回被成功添加的新成员的数量，不包括那些被更新的、已经存在的成员。
+
+  ```bash
+  127.0.0.1:6379> ZADD myzset 1 "one"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 1 "uno"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 2 "two" 3 "three"
+  (integer) 2
+  127.0.0.1:6379> ZRANGE myzset 0 -1 WITHSCORES
+  1) "one"
+  2) "1"
+  3) "uno"
+  4) "1"
+  5) "two"
+  6) "2"
+  7) "three"
+  8) "3"
+  ```
+
+  - 如果某个成员已经是有序集的成员，那么更新这个成员的分数值，并通过重新插入这个成员元素，来保证该成员在正确的位置上。
+  - 分数值可以是整数值或双精度浮点数。
+  - 如果有序集合 key 不存在，则创建一个空的有序集并执行 ZADD 操作。
+  - 当 key 存在但不是有序集类型时，返回一个错误。
+
+- 获取有序集合的成员数：`ZCARD <key_name>`。当 key 存在且是有序集类型时，返回有序集的基数。当 key 不存在时，返回 0。
+
+  ```bash
+  127.0.0.1:6379> ZADD myzset 1 "one"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 2 "two"
+  (integer) 1
+  127.0.0.1:6379> ZCARD myzset
+  (integer) 2
+  ```
+
+- 返回有序集合中指定成员的索引，其中有序集成员按分数值递增（从小到大）顺序排列：`ZRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回 member 的排名。如果成员不是有序集 key 的成员，返回 nil。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES			# 显示所有成员及其score值
+  1) "peter"
+  2) "3500"
+  3) "tom"
+  4) "4000"
+  5) "jack"
+  6) "5000"
+  
+  127.0.0.1:6379> ZRANK salary tom						# 显示tom的薪水排名, 第二
+  (integer) 1
+  ```
+
+- 移除有序集合中的一个或多个成员，不存在的成员将被忽略：`ZREM <key_name> <member> [<member2>] .. [<memberN>]`。返回被成功移除的成员的数量，不包括被忽略的成员。
+
+  ```bash
+  # 测试数据
+  127.0.0.1:6379> ZRANGE page_rank 0 -1 WITHSCORES
+  1) "bing.com"
+  2) "8"
+  3) "baidu.com"
+  4) "9"
+  5) "google.com"
+  6) "10"
+  
+  # 移除单个元素
+  127.0.0.1:6379> ZREM page_rank google.com
+  (integer) 1
+  
+  127.0.0.1:6379> ZRANGE page_rank 0 -1 WITHSCORES
+  1) "bing.com"
+  2) "8"
+  3) "baidu.com"
+  4) "9"
+  
+  # 移除多个元素
+  127.0.0.1:6379> ZREM page_rank baidu.com bing.com
+  (integer) 2
+  
+  127.0.0.1:6379> ZRANGE page_rank 0 -1 WITHSCORES
+  (empty list or set)
+  
+  # 移除不存在元素
+  127.0.0.1:6379> ZREM page_rank non-exists-element
+  (integer) 0
+  ```
+
+- 计算在有序集合中指定区间分数的成员数：`ZCOUNT <key_name> <min> <max>`。返回分数值在 min 和 max 之间的成员的数量。
+
+  ```bash
+  127.0.0.1:6379> ZADD myzset 1 "hello"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 1 "foo"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 2 "world" 3 "bar"
+  (integer) 2
+  127.0.0.1:6379> ZCOUNT myzset 1 3
+  (integer) 4
+  ```
+
+- 在有序集合中计算指定字典区间内成员数量：`ZLEXCOUNT <key_name> <min> <max>`。返回指定区间内的成员数量。
+
+  ```bash
+  127.0.0.1:6379> ZADD myzset 0 a 0 b 0 c 0 d 0 e
+  (integer) 5
+  127.0.0.1:6379> ZADD myzset 0 f 0 g
+  (integer) 2
+  127.0.0.1:6379> ZLEXCOUNT myzset - +
+  (integer) 7
+  127.0.0.1:6379> ZLEXCOUNT myzset [b [f
+  (integer) 5
+  ```
+
+- 通过索引区间返回有序集合指定区间内的成员：`ZRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 显示整个有序集成员
+  1) "jack"
+  2) "3500"
+  3) "tom"
+  4) "5000"
+  5) "boss"
+  6) "10086"
+  
+  127.0.0.1:6379> ZRANGE salary 1 2 WITHSCORES				# 显示有序集下标区间1至2的成员
+  1) "tom"
+  2) "5000"
+  3) "boss"
+  4) "10086"
+  
+  127.0.0.1:6379> ZRANGE salary 0 200000 WITHSCORES			# 测试end下标超出最大下标时的情况
+  1) "jack"
+  2) "3500"
+  3) "tom"
+  4) "5000"
+  5) "boss"
+  6) "10086"
+  
+  127.0.0.1:6379> ZRANGE salary 200000 3000000 WITHSCORES		# 测试当给定区间不存在于有序集时的情况
+  (empty list or set)
+  ```
+
+  - 下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。也可以使用负数下标，以 -1 表示最后一个成员，-2 表示倒数第二个成员，以此类推。
+
+- 返回有序集中指定区间内的成员，通过索引，分数从高到低：`ZREVRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES			# 递增排列
+  1) "peter"
+  2) "3500"
+  3) "tom"
+  4) "4000"
+  5) "jack"
+  6) "5000"
+  
+  127.0.0.1:6379> ZREVRANGE salary 0 -1 WITHSCORES		# 递减排列
+  1) "jack"
+  2) "5000"
+  3) "tom"
+  4) "4000"
+  5) "peter"
+  6) "3500"
+  ```
+
+- 通过分数返回有序集合指定区间内的成员：`ZRANGEBYSCORE <key_name> <min> <max> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> ZADD salary 2500 jack							# 测试数据
+  (integer) 0
+  redis 127.0.0.1:6379> ZADD salary 5000 tom
+  (integer) 0
+  redis 127.0.0.1:6379> ZADD salary 12000 peter
+  (integer) 0
+  
+  127.0.0.1:6379> ZRANGEBYSCORE salary -inf +inf					# 显示整个有序集
+  1) "jack"
+  2) "tom"
+  3) "peter"
+  
+  127.0.0.1:6379> ZRANGEBYSCORE salary -inf +inf WITHSCORES		# 显示整个有序集及成员的score值
+  1) "jack"
+  2) "2500"
+  3) "tom"
+  4) "5000"
+  5) "peter"
+  6) "12000"
+  
+  127.0.0.1:6379> ZRANGEBYSCORE salary -inf 5000 WITHSCORES		# 显示工资<=5000的所有成员
+  1) "jack"
+  2) "2500"
+  3) "tom"
+  4) "5000"
+  
+  127.0.0.1:6379> ZRANGEBYSCORE salary (5000 400000				# 显示工资大于5000小于等于400000的成员
+  1) "peter"
+  ```
+
+  - 默认情况下，区间的取值使用闭区间（小于等于或大于等于），也可以通过给参数前增加`(`符号来使用可选的开区间（小于或大于）。
+
+- 返回有序集中指定分数区间内的成员，分数从高到低排序：`ZREVRANGEBYSCORE <key_name> <max> <min> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+
+  ```bash
+  127.0.0.1:6379> ZADD salary 10086 jack
+  (integer) 1
+  127.0.0.1:6379> ZADD salary 5000 tom
+  (integer) 1
+  127.0.0.1:6379> ZADD salary 7500 peter
+  (integer) 1
+  127.0.0.1:6379> ZADD salary 3500 joe
+  (integer) 1
+  
+  127.0.0.1:6379> ZREVRANGEBYSCORE salary +inf -inf			# 逆序排列所有成员
+  1) "jack"
+  2) "peter"
+  3) "tom"
+  4) "joe"
+  
+  127.0.0.1:6379> ZREVRANGEBYSCORE salary 10000 2000			# 逆序排列薪水介于10000和2000之间的成员
+  1) "peter"
+  2) "tom"
+  3) "joe"
+  ```
+
+- 返回有序集合中指定成员的排名，有序集成员按分数值递减（从大到小）排序：`ZREVRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回成员的排名。如果成员不是有序集 key 的成员，返回 nil。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 测试数据
+  1) "jack"
+  2) "2000"
+  3) "peter"
+  4) "3500"
+  5) "tom"
+  6) "5000"
+  
+  127.0.0.1:6379> ZREVRANK salary peter						# peter的工资排第二
+  (integer) 1
+  
+  127.0.0.1:6379> ZREVRANK salary tom							# tom的工资最高
+  (integer) 0
+  ```
+
+- 返回有序集中，成员的分数值：`ZSCORE <key_name> <member>`。返回成员的分数值，以字符串形式表示。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 测试数据
+  1) "tom"
+  2) "2000"
+  3) "peter"
+  4) "3500"
+  5) "jack"
+  6) "5000"
+  
+  127.0.0.1:6379> ZSCORE salary peter							# 注意返回值是字符串
+  "3500"
+  ```
+
+- 有序集合中对指定成员的分数加上增量 increment：`ZINCRBY <key_name> <increment> <member>`。当 key 不存在，或分数不是 key 的成员时，ZINCRBY key increment member 等同于 ZADD key increment member。
+
+  ```bash
+  127.0.0.1:6379> ZADD myzset 1 "one"
+  (integer) 1
+  127.0.0.1:6379> ZADD myzset 2 "two"
+  (integer) 1
+  127.0.0.1:6379> ZINCRBY myzset 2 "one"
+  "3"
+  127.0.0.1:6379> ZRANGE myzset 0 -1 WITHSCORES
+  1) "two"
+  2) "2"
+  3) "one"
+  4) "3"
+  ```
+
+- 移除有序集合中给定的排名区间的所有成员：`ZREMRANGEBYRANK <key_name> <start> <stop>`。
+
+  ```bash
+  127.0.0.1:6379> ZADD salary 2000 jack
+  (integer) 1
+  127.0.0.1:6379> ZADD salary 5000 tom
+  (integer) 1
+  127.0.0.1:6379> ZADD salary 3500 peter
+  (integer) 1
+  
+  127.0.0.1:6379> ZREMRANGEBYRANK salary 0 1			# 移除下标0至1区间内的成员
+  (integer) 2
+  
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES		# 有序集只剩下一个成员
+  1) "tom"
+  2) "5000"
+  ```
+
+- 移除有序集合中给定的分数区间的所有成员：`ZREMRANGEBYSCORE <key_name> <min> <max>`。返回被移除成员的数量。
+
+  ```bash
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES          # 显示有序集内所有成员及其score值
+  1) "tom"
+  2) "2000"
+  3) "peter"
+  4) "3500"
+  5) "jack"
+  6) "5000"
+  
+  127.0.0.1:6379> ZREMRANGEBYSCORE salary 1500 3500      # 移除所有薪水在1500到3500内的员工
+  (integer) 2
+  
+  127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES          # 剩下的有序集成员
+  1) "jack"
+  2) "5000"
+  ```
+
+## Redis 持久化
+
+<img src="redis/image-20230910205909519.png" alt="image-20230910205909519" style="zoom:80%;" />
+
+Persistence refers to the writing of data to durable storage, such as a solid-state disk (SSD). Redis provides a range of persistence options. These include:
+
+- **RDB** (Redis Database): RDB persistence performs point-in-time snapshots of your dataset at specified intervals.
+- **AOF** (Append Only File): AOF persistence logs every write operation received by the server. These operations can then be replayed again at server startup, reconstructing the original dataset. Commands are logged using the same format as the Redis protocol itself.
+- **No persistence**: You can disable persistence completely. This is sometimes used when caching.
+- **RDB + AOF**: You can also combine both AOF and RDB in the same instance.
+
+### RDB
+
+RDB，即 Redis 数据库，RDB 持久性以指定的时间间隔执行数据集的时间点快照。
+
+- 在指定的时间间隔内，将内存中的数据集快照写入磁盘，也就是 Snapshot 内存快照，Redis 服务恢复时再将磁盘快照文件直接读回到内存里。
+- Redis 的数据都在内存中，保存备份时它执行的是`全量快照`，也就是说，把内存中的所有数据都记录到磁盘中。
+- RDB 保存的是 dump.rdb 文件。
+
+#### 优势
+
+官网：
+
+- RDB is a very compact single-file point-in-time representation of your Redis data. RDB files are perfect for backups. For instance you may want to archive your RDB files every hour for the latest 24 hours, and to save an RDB snapshot every day for 30 days. This allows you to easily restore different versions of the data set in case of disasters.
+- RDB is very good for disaster recovery, being a single compact file that can be transferred to far data centers, or onto Amazon S3 (possibly encrypted).
+- RDB maximizes Redis performances since the only work the Redis parent process needs to do in order to persist is forking a child that will do all the rest. The parent process will never perform disk I/O or alike.
+- RDB allows faster restarts with big datasets compared to AOF.
+- On replicas, RDB supports [partial resynchronizations after restarts and failovers](https://redis.io/topics/replication#partial-resynchronizations-after-restarts-and-failovers).
+
+简译：
+
+
+
+#### 劣势
+
+官网：
+
+- RDB is NOT good if you need to minimize the chance of data loss in case Redis stops working (for example after a power outage). You can configure different *save points* where an RDB is produced (for instance after at least five minutes and 100 writes against the data set, you can have multiple save points). However you'll usually create an RDB snapshot every five minutes or more, so in case of Redis stopping working without a correct shutdown for any reason you should be prepared to lose the latest minutes of data.
+- RDB needs to fork() often in order to persist on disk using a child process. fork() can be time consuming if the dataset is big, and may result in Redis stopping serving clients for some milliseconds or even for one second if the dataset is very big and the CPU performance is not great. AOF also needs to fork() but less frequently and you can tune how often you want to rewrite your logs without any trade-off on durability.
+
+简译：
+
+### AOF
 
