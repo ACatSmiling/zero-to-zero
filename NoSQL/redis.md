@@ -1927,6 +1927,26 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   2) "5000"
   ```
 
+#### GEO
+
+// TODO
+
+#### HyperLogLog
+
+// TODO
+
+#### Bitmap
+
+// TODO
+
+#### Bitfield
+
+// TODO
+
+#### Stream
+
+// TODO
+
 ## Redis 持久化
 
 <img src="redis/image-20230910205909519.png" alt="image-20230910205909519" style="zoom:80%;" />
@@ -1940,11 +1960,153 @@ Persistence refers to the writing of data to durable storage, such as a solid-st
 
 ### RDB
 
-RDB，即 Redis 数据库，RDB 持久性以指定的时间间隔执行数据集的时间点快照。
+<img src="redis/image-20230911181545576.png" alt="image-20230911181545576" style="zoom: 67%;" />
+
+`RDB，即 Redis Database，RDB 持久性以指定的时间间隔执行数据集的时间点快照。`
 
 - 在指定的时间间隔内，将内存中的数据集快照写入磁盘，也就是 Snapshot 内存快照，Redis 服务恢复时再将磁盘快照文件直接读回到内存里。
 - Redis 的数据都在内存中，保存备份时它执行的是`全量快照`，也就是说，把内存中的所有数据都记录到磁盘中。
-- RDB 保存的是 dump.rdb 文件。
+- **RDB 保存的是 dump.rdb 文件。**
+
+#### 原理
+
+Whenever Redis needs to dump the dataset to disk, this is what happens:
+
+- Redis [forks](http://linux.die.net/man/2/fork). We now have a child and a parent process.
+- The child starts to write the dataset to a temporary RDB file.
+- When the child is done writing the new RDB file, it replaces the old one.
+
+This method allows Redis to benefit from copy-on-write semantics.
+
+>在 Linux 程序中，`fork()`会产生一个和父进程完全相同的子进程，但子进程在此后多会执行系统调用，出于效率考虑，尽量避免太多 fork 操作。
+
+#### 备份
+
+By default Redis saves snapshots of the dataset on disk, in a binary file called `dump.rdb`. You can configure Redis to have it save the dataset every N seconds if there are at least M changes in the dataset, or you can manually call the [`SAVE`](https://redis.io/commands/save) or [`BGSAVE`](https://redis.io/commands/bgsave) commands.
+
+For example, this configuration will make Redis automatically dump the dataset to disk every 60 seconds if at least 1000 keys changed:
+
+```bash
+save 60 1000
+```
+
+This strategy is known as *snapshotting*.
+
+##### 自动触发
+
+默认情况下，RDB 触发条件为三种：
+
+<img src="redis/image-20230911153210570.png" alt="image-20230911153210570" style="zoom:80%;" />
+
+- 每隔 3600 秒（1 小时），至少有 1 个更改。
+- 每隔 300 秒（15 分钟），至少有 100 个更改。
+- 每隔 60 秒（1 分钟），至少有 10000 个更改。
+- 通过`save m n`，可以修改 RDB 的触发条件，表示 m 秒内数据集存在 n 次修改时，自动触发。
+
+##### 手动触发
+
+Redis 通过 SAVE 和 BGSAVE 两个命令，手动触发 RDB 文件备份：
+
+- `SAVE`：在主程序中执行 SAVE 命令，会`阻塞`当前 Redis 服务，直到持久化工作完成。在执行 SAVE 命令期间，Redis 不能处理其他命令，线上禁止使用。
+
+  <img src="redis/image-20230911173517589.png" alt="image-20230911173517589" style="zoom:67%;" />
+
+- `BGSAVE`：Redis 会在后台异步执行快照操作，`不阻塞` Redis 服务，快照的同时，还可以响应客户端请求。该触发方式会 fork 一个子进程，由子进程在后台完成持久化过程，也就允许主进程同时可以修改数据。
+
+  <img src="redis/image-20230911173838257.png" alt="image-20230911173838257" style="zoom:67%;" />
+
+- `LASTSAVE`：可以通过 LASTSAVE 命令，获取最后一次成功执行快照的时间。
+
+  ```bash
+  # 在Redis客户端查看最后一次成功执行快照的时间
+  127.0.0.1:6379> LASTSAVE
+  (integer) 1694404800
+  
+  # 在Linux系统查看时间戳对应的时间
+  $ date
+  Mon Sep 11 17:42:01 CST 2023
+  $ date -d @1694404800
+  Mon Sep 11 12:00:00 CST 2023
+  ```
+
+##### dump 文件的路径和名称
+
+dump 文件路径默认设置：
+
+<img src="redis/image-20230911153941579.png" alt="image-20230911153941579" style="zoom:80%;" />
+
+- 使用 CONFIG 命令，获取 dump 文件实际路径：
+
+  ```bash
+  127.0.0.1:6379> CONFIG GET dir
+  1) "dir"
+  2) "/data"
+  ```
+
+dump 文件名称默认设置：
+
+<img src="redis/image-20230911154335724.png" alt="image-20230911154335724" style="zoom:80%;" />
+
+- 使用 CONFIG 命令，获取 dump 文件实际名称：
+
+  ```bash
+  127.0.0.1:6379> CONFIG GET dbfilename
+  1) "dbfilename"
+  2) "dump.rdb"
+  ```
+
+##### dump 文件的检查和修复
+
+/usr/local/bin 路径：
+
+```bash
+root@a5e838348b37:~# cd /usr/local/bin/
+root@a5e838348b37:/usr/local/bin# ls -l
+total 31732
+-rwxrwxr-x 1 root root      661 May 23 11:09 docker-entrypoint.sh
+-rwxr-xr-x 1 root root  2355690 Dec 20  2022 gosu
+-rwxr-xr-x 1 root root  7581896 May 23 11:10 redis-benchmark
+lrwxrwxrwx 1 root root       12 May 23 11:10 redis-check-aof -> redis-server
+lrwxrwxrwx 1 root root       12 May 23 11:10 redis-check-rdb -> redis-server
+-rwxr-xr-x 1 root root  7526536 May 23 11:10 redis-cli
+lrwxrwxrwx 1 root root       12 May 23 11:10 redis-sentinel -> redis-server
+-rwxr-xr-x 1 root root 15014184 May 23 11:10 redis-server
+```
+
+/data 路径：
+
+```bash
+root@a5e838348b37:~# cd /data/
+root@a5e838348b37:/data# ls -l
+total 8
+drwx------ 2 redis redis  103 Jun  1 11:16 appendonlydir
+-rw------- 1 redis redis 7227 Sep 11 04:00 dump.rdb
+```
+
+检查和修复：
+
+```bash
+root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb 
+[offset 0] Checking RDB file /data/dump.rdb
+[offset 27] AUX FIELD redis-ver = '7.0.11'
+[offset 41] AUX FIELD redis-bits = '64'
+[offset 53] AUX FIELD ctime = '1694404800'
+[offset 68] AUX FIELD used-mem = '1383624'
+[offset 80] AUX FIELD aof-base = '0'
+[offset 82] Selecting DB ID 0
+[offset 220] Selecting DB ID 4
+[offset 7227] Checksum OK
+[offset 7227] \o/ RDB looks OK! \o/
+[info] 8 keys read
+[info] 0 expires
+[info] 0 already expired
+```
+
+#### 恢复
+
+将备份文件（dump.rdb）移动到 Redis 的安装目录，并重启服务，即可恢复数据集。
+
+>不可以把备份文件 dump.rdb 和生产 Redis 服务器放在同一台机器，必须分开各自存储，以防生产机物理损坏后备份文件也挂了。
 
 #### 优势
 
@@ -1958,7 +2120,18 @@ RDB，即 Redis 数据库，RDB 持久性以指定的时间间隔执行数据集
 
 简译：
 
+- RDB 是 Redis 数据非常紧凑的单文件时间点表示。RDB 文件非常适合备份。例如，你可能希望每小时归档最近 24 小时的 RDB 文件，每天保存一个 RDB 快照，持续 30 天。这样就可以在发生灾难时轻松恢复数据集的不同版本。
+- RDB 非常适合灾难恢复，因为它是一个紧凑的文件，可以传输到远处的数据中心或亚马逊 S3（可能已加密）。
+- RDB 能最大限度地提高 Redis 的性能，因为 Redis 父进程为持久化所需做的唯一工作就是分叉一个子进程，由子进程完成其余所有工作。父进程永远不会执行磁盘 I/O 或类似操作。
+- 与 AOF 相比，RDB 允许更快地重启大数据集。
+- 在副本上，RDB 支持重启和故障切换后的部分重新同步。
 
+总结：
+
+- **可以按照业务定时备份。**
+- **适合大规模的数据恢复。**
+- **对数据完整性和一致性要求不高。**
+- **RDB 文件再内存中的加载速度要比 AOF 快很多。**
 
 #### 劣势
 
@@ -1969,5 +2142,110 @@ RDB，即 Redis 数据库，RDB 持久性以指定的时间间隔执行数据集
 
 简译：
 
+- 如果需要在 Redis 停止工作（例如停电后）时尽量减少数据丢失的几率，那么 RDB 就不太合适。你可以配置生成 RDB 的不同保存点（例如，数据集至少经过 5 分钟和 100 次写入后，你可以有多个保存点）。不过，你通常会每五分钟或更长时间创建一次 RDB 快照，因此，如果 Redis 因故停止工作而没有正确关机，你应该做好丢失最近几分钟数据的准备。
+- 如果数据集很大，fork() 可能会很耗时，如果数据集很大，CPU 性能又不高，可能会导致 Redis 在几毫秒甚至一秒内停止为客户端提供服务。AOF 也需要 fork()，但频率较低，你可以调整重写日志的频率，而无需牺牲耐用性。
+
+总结：
+
+- **RDB 在一定间隔时间做一次备份，如果在此期间 Redis 服务意外停止，就会丢失从当前至最近一次快照期间的数据。**
+- **内存数据的全量同步，如果数据量太大，会导致 I/O严重，影响服务器性能。**
+- **RDB 依赖于主进程的 fork()，在更大的数据集中，这可能会导致服务请求的瞬间延迟。**
+- **fork() 的时候，内存中的数据被克隆了一份，大致 2 倍的膨胀性，也需要考虑硬件上的需求。**
+
+#### 禁用
+
+禁用 RDB 快照有两种方式：
+
+- 命令：
+
+  ```bash
+  # 动态停止所有RDB保存规则
+  $ redis-cli config set save ""
+  ```
+
+- 配置文件：
+
+  <img src="redis/image-20230911175417609.png" alt="image-20230911175417609" style="zoom:80%;" />
+
+#### 配置项
+
+RDB 的相关配置项，在配置文件的 SNAPSHOTTING 模块：
+
+- `save <seconds> <changes> [<seconds> <changes> ...]`：备份的触发规则，默认提供了三种方式。
+
+- `stop-writes-on-bgsave-error yes`：默认 yes，如果配置成 no，表示不在乎数据不一致，或者有其他的手段发现和控制这种不一致，那么在快照写入失败时，Redis 也能继续接受新的写请求。
+
+  <img src="redis/image-20230911180949064.png" alt="image-20230911180949064" style="zoom: 80%;" />
+
+- `rdbcompression yes`：默认 yes，对于存储到磁盘中的快照，可以设置是否进行压缩存储。如果是的话，Redis 会采用 LZF 算法进行压缩。如果不想消耗 CPU 来进行压缩的话，可以设置为关闭此功能。
+
+  <img src="redis/image-20230911181029892.png" alt="image-20230911181029892" style="zoom:80%;" />
+
+- `rdbchecksum yes`：默认 yes，在存储快照后，还可以让 Redis 使用 CRC64 算法来进行数据校验，但是这样做会增加大约 10% 的性能消耗，如果希望获取到最大的性能提升，可以关闭此功能。
+
+  <img src="redis/image-20230911181221933.png" alt="image-20230911181221933" style="zoom:80%;" />
+
+- `dbfilename dump.rdb`：备份的文件名称，集群环境下，建议修改为不同的名称。
+
+- `rdb-del-sync-files no`：在没有持久性的情况下删除复制中使用的 RDB 文件启用。默认情况下 no，此选项是禁用的。
+
+  <img src="redis/image-20230911181328752.png" alt="image-20230911181328752" style="zoom:80%;" />
+
+- `dir ./`：备份文件的名称。
+
+#### 总结
+
+RDB 快照的触发情况总结：
+
+- 配置文件中默认的触发方式。
+- 执行 SAVE 或者 BGSAVE 命令。
+- 执行 FLUSHALL 或者 FLUSHDB 命令，此命令产生的 dump.rdb 文件是空文件。
+- 执行 SHUTDOWN 命令，且没有设置开启 AOF 持久化。
+- 主从复制时，主节点自动触发。
+
 ### AOF
+
+Snapshotting is not very durable. If your computer running Redis stops, your power line fails, or you accidentally `kill -9` your instance, the latest data written to Redis will be lost. While this may not be a big deal for some applications, there are use cases for full durability, and in these cases Redis snapshotting alone is not a viable option.
+
+The *append-only file* is an alternative, fully-durable strategy for Redis. It became available in version 1.1.
+
+You can turn on the AOF in your configuration file:
+
+```bash
+appendonly yes
+```
+
+From now on, every time Redis receives a command that changes the dataset (e.g. [`SET`](https://redis.io/commands/set)) it will append it to the AOF. When you restart Redis it will re-play the AOF to rebuild the state.
+
+Since Redis 7.0.0, Redis uses a multi part AOF mechanism. That is, the original single AOF file is split into base file (at most one) and incremental files (there may be more than one). The base file represents an initial (RDB or AOF format) snapshot of the data present when the AOF is [rewritten](https://redis.io/docs/management/persistence/#log-rewriting). The incremental files contains incremental changes since the last base AOF file was created. All these files are put in a separate directory and are tracked by a manifest file.
+
+`AOF，即 Append Only File，以日志的形式来记录每一个写操作。`
+
+- AOF 将 Redis 执行过的所有写指令都记录下来（读指令不记录）。
+- AOF 只允许追加文件，不可以改写文件。
+- Redis 服务启动时，会读取 AOF 文件重新构建数据，也就是说，Redis 服务重启的时候，就会根据 AOF 日志文件的内容，将写指令从前到后逐一执行，以完成数据的恢复工作。
+- 默认情况下，Redis 没有开启 AOF，开启 AOF，需要修改配置文件`appendonly yes`。
+- **AOF 保存的是 appendonly.aof 文件。**
+
+#### 工作流程
+
+<img src="redis/image-20230911183826679.png" alt="image-20230911183826679" style="zoom:67%;" />
+
+- ① Client 作为命令的来源，会有多个源头以及源源不断的请求命令。
+- ② 在这些命令到达 Redis Server 以后，并不是直接写入 AOF 文件，会将其这些命令先放入`AOF 缓存区`中进行保存。这里的 AOF 缓存区，实际上是内存中的一片区域，存在的目的是当这些命令达到一定量以后再写入磁盘，避免频繁的磁盘 I/O 操作。
+- ③ AOF 缓存会根据AOF缓存区`同步文件的三种写回策略`，将命令写入磁盘上的 AOF 文件。
+- ④ 随着写入 AOF 文件内容的增加，为避免文件膨胀，会根据规则进行命令的合并，又称`AOF重写`，从而起到 AOF 文件压缩的目的。
+- ⑤ 当 Redis Server 服务器重启的时候，会从 AOF 文件载入数据。
+
+#### 写回策略
+
+<img src="redis/image-20230911184401368.png" alt="image-20230911184401368" style="zoom:80%;" />
+
+
+
+#### 配置项
+
+
+
+#### 总结
 
