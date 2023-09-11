@@ -2,7 +2,7 @@
 
 ## 常用命令
 
-**时区设置：**
+### 时区设置
 
 ```bash
 # 查看时区
@@ -71,25 +71,25 @@ LC_TIME=en_DK.utf-8
 $ sudo reboot
 ```
 
-**修改用户组：**
+### 修改用户组
 
 ```bash
 $ chown -R xisun:xisun apps/
 ```
 
-**设置文件为可执行文件：**
+### 设置文件为可执行文件
 
 ```bash
 $ chmod +x start.sh
 ```
 
-**下载 jdk：**
+### 下载 JDK
 
 ```bash
 $ wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
 ```
 
-**java -jar 执行启动服务脚本：**
+### java -jar 执行启动服务脚本
 
 ```sh
 kill -9 $(netstat -nlp | grep :9527 | awk '{print $7}' | awk -F"/" '{ print $1 }')
@@ -97,13 +97,13 @@ echo "杀死(9527)端口进程成功 ！";
 nohup /home/qirui/apps/jdk/jdk-17.0.8/bin/java -Duser.timezone=Asia/Shanghai -Dfile.encoding=utf8 -Dspring.profiles.active=dev -Xms1G -Xmx1G -jar platform-dev.jar --server.port=9527 >> platform.log &
 ```
 
-**curl 模拟 POST 请求：**
+### curl 模拟 POST 请求
 
 ```bash
 $ curl -H "Content-Type: application/json" -X POST -d '{"tenant": "2000000015", "startTime": "2022-06-01 00:00:00", "endTime": "2023-07-29 23:59:59"}' http://127.0.0.1:39091/jz_report/extract_data/risk_analysis_object
 ```
 
-**压缩和解压：**
+### 压缩和解压
 
 ```bash
 $ unzip test.zip
@@ -115,7 +115,7 @@ $ tar -zxvf test.tag.gz
 $ tar -zcvf test test.tag.gz
 ```
 
-**历史命令：**
+### 历史命令
 
 ```bash
 $ history
@@ -124,7 +124,7 @@ $ history
 $ history -c
 ```
 
-**操作系统：**
+### 操作系统
 
 ```bash
 $ head -n 1 /etc/issue
@@ -132,7 +132,7 @@ $ cat /etc/redhat-release
 $ cat /etc/centos-release
 ```
 
-**CPU 核数：**
+### CPU 核数
 
 ```bash
 # 物理CPU个数
@@ -143,7 +143,7 @@ $ cat /proc/cpuinfo | grep "cores" | uniq
 $ cat /proc/cpuinfo | grep "processor" | wc -l
 ```
 
-**内存和磁盘空间：**
+### 内存和磁盘空间
 
 ```bash
 # 内存
@@ -154,13 +154,34 @@ $ df -h
 $ df -h -t xfs
 ```
 
-**端口监控：**
+### 端口监控
 
 ```bash
+# 所有端口
+$ netstat -ntlp
+
+# 指定端口
 $ netstat -ntlp | grep 9527
 ```
 
-**定时任务：**
+### Centos 防火墙开启端口
+
+```bash
+# 查看防火墙状态
+$ systemctl status firewalld
+$ firewall-cmd --state
+
+# 查询指定端口是否已开
+$ firewall-cmd --query-port=9991/tcp
+
+# 添加指定需要开放的端口
+$ firewall-cmd --zone=public --add-port=9991/tcp --permanent
+
+# 重启防火墙
+$ systemctl restart firewalld.service
+```
+
+### crontab 定时任务
 
 ```bash
 # 查看
@@ -170,15 +191,20 @@ $ crontab -l
 $ crontab -e 
 ```
 
-**循环：**
+### 循环
 
 ```bash
 for file in `ls /mnt/webapps/`; do echo $file; cat /mnt/webapps/$file/WEB-INF/classes/META-INF/meta.properties | grep env=; done
 ```
 
-**MySQL 导出数据：**
+### MySQL 导出数据
 
 ```mysql
+# 导出特定数据库的数据和结构
+mysqldump -uroot -proot --databases db1 db2 > /tmp/user.sql
+
+# 导出特定数据库特定表的数据和结构
+mysqldump -uroot -proot --databases db1 --tables a1 a2  > /tmp/db1.sql
 ```
 
 
