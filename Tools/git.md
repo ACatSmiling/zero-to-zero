@@ -46,9 +46,11 @@ Your public key has been saved in /c/Users/XiSun/.ssh/id_rsa.pub
 ...
 ```
 
-第四步，进入 C:\Users\XiSun\\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上：
+第四步，进入 C:\Users\XiSun\\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，然后登陆 Github，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上：
 
 ![image-20220527142655618](git/image-20220527142655618.png)
+
+> 此步骤可以省略，直接使用 HTTPS 连接下载。
 
 第五步，验证：
 
