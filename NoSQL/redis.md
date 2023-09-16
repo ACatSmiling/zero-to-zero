@@ -121,7 +121,9 @@ Redis 7.0 大体和之前的 Redis 版本保持一致和稳定，主要是自身
 | 命令新增和变动                     | ZSet（有序集合）增加 ZMPOP、BZMPOP、ZINTERCARD 等命令，Set（集合）增加 SINTERCARD 命令，List（列表）增加 LMPOP、BLMPOP，从提供的键名列表中的第一个非空列表键中弹出一个或多个元素。 |
 | 性能资源利用率、安全、等改进       | 自身底层部分优化改动，Redis 核心在许多方面进行了重构和改进。<br />主动碎片整理 V2：增强版主动碎片整理，配合 Jemalloc 版本更新，更快更智能，延时更低。<br />HyperLogLog 改进：在 Redis 5.0 中，HyperLogLog 算法得到改进，优化了计数统计时的内存使用效率，Redis 7.0 更加优秀更好的内存统计报告。 |
 
-## Redis 数据类型
+## Redis 数据类型（Data Types）
+
+官网：https://redis.io/docs/data-types/
 
 <img src="redis/image-20230831165327770.png" alt="image-20230831165327770" style="zoom:50%;" />
 
@@ -194,7 +196,7 @@ Redis Stream 是 Redis 5.0 版本新增加的数据结构。
 
 Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是有一个 Redis 发布订阅来实现消息队列的功能，但它有个缺点就是消息无法持久化，如果出现网络断开、Redis 宕机等，消息就会被丢弃。简单来说发布订阅可以分发消息，但无法记录历史消息。而 Redis Stream 提供了消息的持久化和主备复制功能，可以让任何客户端访问任何时刻的数据，并且能记住每一个客户端的访问位置，还能保证消息不丢失。 
 
-## Redis 命令
+## Redis 命令（Commands）
 
 官网：https://redis.io/commands/
 
@@ -1947,7 +1949,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 // TODO
 
-## Redis 持久化
+## Redis 持久化（Persistence）
+
+官网：https://redis.io/docs/management/persistence/
 
 <img src="redis/image-20230910205909519.png" alt="image-20230910205909519" style="zoom:80%;" />
 
@@ -2104,7 +2108,7 @@ root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb
 
 #### 恢复
 
-将备份文件（dump.rdb）移动到 Redis 的安装目录，并重启服务，即可恢复数据集。
+将备份文件（dump.rdb）移动到 Redis 的 dir 目录，并重启服务，即可恢复数据集。
 
 >不可以把备份文件 dump.rdb 和生产 Redis 服务器放在同一台机器，必须分开各自存储，以防生产机物理损坏后备份文件也挂了。
 
@@ -2239,13 +2243,1013 @@ Since Redis 7.0.0, Redis uses a multi part AOF mechanism. That is, the original 
 
 #### 写回策略
 
+You can configure how many times Redis will [`fsync`](http://linux.die.net/man/2/fsync) data on disk. There are three options:
+
+- `appendfsync always`: `fsync` every time new commands are appended to the AOF. Very very slow, very safe. Note that the commands are appended to the AOF after a batch of commands from multiple clients or a pipeline are executed, so it means a single write and a single fsync (before sending the replies).
+- `appendfsync everysec`: `fsync` every second. Fast enough (since version 2.4 likely to be as fast as snapshotting), and you may lose 1 second of data if there is a disaster.
+- `appendfsync no`: Never `fsync`, just put your data in the hands of the Operating System. The faster and less safe method. Normally Linux will flush data every 30 seconds with this configuration, but it's up to the kernel's exact tuning.
+
+The suggested (and default) policy is to `fsync` every second. It is both fast and relatively safe. The `always` policy is very slow in practice, but it supports group commit, so if there are multiple parallel writes Redis will try to perform a single `fsync` operation.
+
 <img src="redis/image-20230911184401368.png" alt="image-20230911184401368" style="zoom:80%;" />
 
+- `always`：同步写回，每个写命令执行完，立刻同步的将日志写回磁盘。
+- `everysec`：每秒写回，每个写命令执行完，只是先把日志写到 AOF 文件的内存缓存区，每隔 1 秒把缓存区中的内容写入磁盘。
+- `no`：操作系统控制的写回，每个写命令执行完，只是先把日志写到 AOF 文件的内存缓存区，由操作系统决定何时将缓存区内容写回磁盘。
 
+总结：
+
+| 配置项   | 写回时机           | 优点                     | 缺点                             |
+| -------- | ------------------ | ------------------------ | -------------------------------- |
+| always   | 同步写回           | 可靠性高，数据基本不丢失 | 每个写命令都要罗盘，性能影响较大 |
+| everysec | 每秒写回           | 性能适中                 | 宕机时丢失 1 秒内的数据          |
+| no       | 操作系统控制的写回 | 性能好                   | 宕机时丢失数据较多               |
+
+#### 重写机制
+
+The AOF gets bigger and bigger as write operations are performed. For example, if you are incrementing a counter 100 times, you'll end up with a single key in your dataset containing the final value, but 100 entries in your AOF. 99 of those entries are not needed to rebuild the current state.
+
+The rewrite is completely safe. While Redis continues appending to the old file, a completely new one is produced with the minimal set of operations needed to create the current data set, and once this second file is ready Redis switches the two and starts appending to the new one.
+
+So Redis supports an interesting feature: it is able to rebuild the AOF in the background without interrupting service to clients. Whenever you issue a [`BGREWRITEAOF`](https://redis.io/commands/bgrewriteaof), Redis will write the shortest sequence of commands needed to rebuild the current dataset in memory. If you're using the AOF with Redis 2.2 you'll need to run [`BGREWRITEAOF`](https://redis.io/commands/bgrewriteaof) from time to time. Since Redis 2.4 is able to trigger log rewriting automatically (see the example configuration file for more information).
+
+Since Redis 7.0.0, when an AOF rewrite is scheduled, the Redis parent process opens a new incremental AOF file to continue writing. The child process executes the rewrite logic and generates a new base AOF. Redis will use a temporary manifest file to track the newly generated base file and incremental file. When they are ready, Redis will perform an atomic replacement operation to make this temporary manifest file take effect. In order to avoid the problem of creating many incremental files in case of repeated failures and retries of an AOF rewrite, Redis introduces an AOF rewrite limiting mechanism to ensure that failed AOF rewrites are retried at a slower and slower rate.
+
+由于 AOF 持久化是 Redis 不断将写命令记录到 AOF 文件中，随着 Redis 不断的进行，AOF 的文件会越来越大，文件越大，占用服务器内存越大以及 AOF 恢复要求的时间越长。
+
+为了解决这个问题，Redis 新增了`重写机制`，当 AOF 文件的大小超过所设定的峰值时，Redis就会自动启动 AOF 文件的内容压缩，只保留可以恢复数据的最小指令集，或者也可以手动使用命令 bgrewriteaof 来重写。
+
+##### 触发条件
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914072805721.png" alt="image-20230914072805721" style="zoom:80%;" />
+
+###### 自动触发
+
+Redis 服务器在 AOF 功能开启的情况下， 会维持以下三个变量：
+
+- 记录当前 AOF 文件大小的变量`aof_current_size` 。
+- 记录最后一次 AOF 重写之后，AOF 文件大小的变量`aof_rewrite_base_size` 。
+- 增长百分比变量`aof_rewrite_perc` 。
+
+系统自动触发 AOF 重写机制，可以通过配置文件中的`auto-aof-rewrite-percentage`和`auto-aof-rewrite-min-size`参数来控制 。
+
+- auto-aof-rewrite-percentage 参数表示当当前 AOF 文件大小超过上次重写后 AOF 文件大小的百分比时，触发 AOF 重写机制，`默认值为 100`，即一倍。
+- auto-aof-rewrite-min-size 参数表示当当前 AOF 文件大小超过指定值时，才可能触发 AOF 重写机制，`默认值为 64 MB`。
+
+系统自动触发 AOF 重写机制还需要满足以下条件 ：
+
+- 当前没有正在执行 BGSAVE 或 BGREWRITEAOF 的子进程。
+- 当前没有正在执行 SAVE 的主进程。
+- 当前没有正在进行集群切换或故障转移。
+
+###### 手动触发
+
+手动触发 AOF 重写机制可以通过执行`BGREWRITEAOF`命令来实现。
+
+##### 重写原理
+
+Log rewriting uses the same copy-on-write trick already in use for snapshotting. This is how it works:
+
+**Redis >= 7.0**
+
+- Redis [forks](http://linux.die.net/man/2/fork), so now we have a child and a parent process.
+- The child starts writing the new base AOF in a temporary file.
+- The parent opens a new increments AOF file to continue writing updates. If the rewriting fails, the old base and increment files (if there are any) plus this newly opened increment file represent the complete updated dataset, so we are safe.
+- When the child is done rewriting the base file, the parent gets a signal, and uses the newly opened increment file and child generated base file to build a temp manifest, and persist it.
+- Profit! Now Redis does an atomic exchange of the manifest files so that the result of this AOF rewrite takes effect. Redis also cleans up the old base file and any unused increment files.
+
+**Redis < 7.0**
+
+- Redis [forks](http://linux.die.net/man/2/fork), so now we have a child and a parent process.
+- The child starts writing the new AOF in a temporary file.
+- The parent accumulates all the new changes in an in-memory buffer (but at the same time it writes the new changes in the old append-only file, so if the rewriting fails, we are safe).
+- When the child is done rewriting the file, the parent gets a signal, and appends the in-memory buffer at the end of the file generated by the child.
+- Now Redis atomically renames the new file into the old one, and starts appending new data into the new file.
+
+**Redis 引入的 AOF 重写机制，可以压缩和优化 AOF 文件的内容，减少冗余和无效的命令，提高数据的存储效率和恢复速度 。**
+
+AOF 重写机制的原理是：`根据 Redis 进程内的数据，生成一个新的 AOF 文件，只包含当前有效和存在的数据的写入命令，而不是历史上所有的写入命令。`
+
+- AOF 重写机制是通过 fork 出一个**重写子进程**来完成的，子进程会扫描 Redis 的数据库，并将每个键值对转换为相应的写入命令，然后写入到一个临时文件中 。
+- 在子进程进行 AOF 重写的过程中，主进程还会继续接收和处理客户端的请求，如果有新的写指令发生，主进程会将这些写指令一边追加到一个缓冲区中，一边继续写入到原有的 AOF 文件中，这样做是保证原有的 AOF 文件的可用性，避免在重写过程中出现意外。
+- 当重写子进程完成重写工作后，它会给父进程发一个信号，父进程收到信号后就会将内存中缓存的写指令追加到新 AOF 文件中。
+- 当追加结束后，Redis 就会用新 AOF 文件来代替旧 AOF 文件，之后再有新的写指令，就都会追加到新的 AOF 文件中。
+
+重写 AOF 文件的操作，并没有读取旧的 AOF 文件，而是将整个内存中的数据库内容，用命令的方式重写了一个新的 AOF 文件，新的 AOF 文件中，**会用一条命令去代替之前记录的键值对的多条命令，此操作会只保留可以恢复数据的最小指令**。
+
+#### 使用设置
+
+开启 AOF：
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232208221.png" alt="image-20230912232208221" style="zoom:80%;" />
+
+- AOF 默认关闭，如果需要开启，将配置文件中`appendonly no`改为`appendonly yes`。
+
+写回策略：
+
+- 使用默认的`appendfsync everysec`。
+
+AOF 文件的路径：
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232611760.png" alt="image-20230912232611760" style="zoom:80%;" />
+
+- Redis 7.0 之后，在 RDB 文件指定的路径下，会新建 appendonlydir 路径，AOF 文件存放于 appendonlydir 路径下，以此与 RDB 文件区分隔离。
+
+  ```bash
+  $ pwd
+  /data
+  $ ls
+  appendonlydir dump.rdb
+  $ ls appendonlydir/
+  appendonly.aof.1.base.rdb appendonly.aof.1.incr.aof appendonly.aof.manifest
+  ```
+
+AOF 文件的名称：
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232647018.png" alt="image-20230912232647018" style="zoom:80%;" />
+
+- `base 基础文件`：appendonly.aof.1.base.rdb。
+- `incr 增量文件`：appendonly.aof.1.incr.aof，appendonly.aof.2.incr.aof。
+- `manifest 清单文件`：appendonly.aof.manifest。
+
+#### 恢复
+
+##### 正常恢复
+
+将 AOF 的文件，放入 dir 目录的 appendonlydir 路径下，重启 Redis 服务后，即可恢复数据。（可以把 RDB 文件删除，以观察效果）
+
+##### 异常恢复
+
+It is possible the server crashed while writing the AOF file, or the volume where the AOF file is stored was full at the time of writing. When this happens the AOF still contains consistent data representing a given point-in-time version of the dataset (that may be old up to one second with the default AOF fsync policy), but the last command in the AOF could be truncated. The latest major versions of Redis will be able to load the AOF anyway, just discarding the last non well formed command in the file. In this case the server will emit a log like the following:
+
+```bash
+* Reading RDB preamble from AOF file...
+* Reading the remaining AOF tail...
+# !!! Warning: short read while loading the AOF file !!!
+# !!! Truncating the AOF at offset 439 !!!
+# AOF loaded anyway because aof-load-truncated is enabled
+```
+
+You can change the default configuration to force Redis to stop in such cases if you want, but the default configuration is to continue regardless of the fact the last command in the file is not well-formed, in order to guarantee availability after a restart.
+
+Older versions of Redis may not recover, and may require the following steps:
+
+- Make a backup copy of your AOF file.
+
+- Fix the original file using the `redis-check-aof` tool that ships with Redis:
+
+  ```bash
+  $ redis-check-aof --fix <filename>
+  ```
+
+- Optionally use `diff -u` to check what is the difference between two files.
+
+- Restart the server with the fixed file.
+
+If the AOF file is not just truncated, but corrupted with invalid byte sequences in the middle, things are more complex. Redis will complain at startup and will abort:
+
+```bash
+* Reading the remaining AOF tail...
+# Bad file format reading the append only file: make a backup of your AOF file, then use ./redis-check-aof --fix <filename>
+```
+
+The best thing to do is to run the `redis-check-aof` utility, initially without the `--fix` option, then understand the problem, jump to the given offset in the file, and see if it is possible to manually repair the file: The AOF uses the same format of the Redis protocol and is quite simple to fix manually. Otherwise it is possible to let the utility fix the file for us, but in that case all the AOF portion from the invalid part to the end of the file may be discarded, leading to a massive amount of data loss if the corruption happened to be in the initial part of the file.
+
+在生产中，可能会出现一种情况：当正在向 AOF 文件写入时，出现网络中断或其他异常等，导致 Redis 服务崩溃。此时，AOF 文件内容出现异常，再次重启 Redis 服务时，因为加载异常的 AOF 文件，也会导致服务启动异常。
+
+AOF 文件异常修复命令`redis-check-aof --fix <filename>`：
+
+```bash
+root@a5e838348b37:~# /usr/local/bin/redis-check-aof --fix /data/appendonlydir/appendonly.aof.1.incr.aof 
+Start checking Old-Style AOF
+AOF analyzed: filename=/data/appendonlydir/appendonly.aof.1.incr.aof, size=471170, ok_up_to=471170, ok_up_to_line=539, diff=0
+AOF /data/appendonlydir/appendonly.aof.1.incr.aof is valid
+```
+
+- redis-check-aof 命令只修复 incr 增量文件，--fix 参数也必须添加。
+- --fix 参数不加的时候，可以查看 AOF 文件异常的位置，在使用 redis-check-aof 命令修复之前，可以尝试手动修复。以防 AOF 文件损坏的位置在文件开头，redis-check-aof 命令可能会将损坏的位置到文件末尾的内容全部删除，导致大量数据丢失。
+
+修复完成后，重启 Redis 服务。
+
+#### 优势
+
+官网：
+
+- Using AOF Redis is much more durable: you can have different fsync policies: no fsync at all, fsync every second, fsync at every query. With the default policy of fsync every second, write performance is still great. fsync is performed using a background thread and the main thread will try hard to perform writes when no fsync is in progress, so you can only lose one second worth of writes.
+- The AOF log is an append-only log, so there are no seeks, nor corruption problems if there is a power outage. Even if the log ends with a half-written command for some reason (disk full or other reasons) the redis-check-aof tool is able to fix it easily.
+- Redis is able to automatically rewrite the AOF in background when it gets too big. The rewrite is completely safe as while Redis continues appending to the old file, a completely new one is produced with the minimal set of operations needed to create the current data set, and once this second file is ready Redis switches the two and starts appending to the new one.
+- AOF contains a log of all the operations one after the other in an easy to understand and parse format. You can even easily export an AOF file. For instance even if you've accidentally flushed everything using the [`FLUSHALL`](https://redis.io/commands/flushall) command, as long as no rewrite of the log was performed in the meantime, you can still save your data set just by stopping the server, removing the latest command, and restarting Redis again.
+
+简译：
+
+- 使用 AOF Redis 更加耐用：您可以有不同的 fsync 策略：根本不进行 fsync、每秒进行 fsync、每次查询时进行 fsync。 采用每秒 fsync 的默认策略，写入性能仍然很棒。 fsync 是使用后台线程执行的，当没有 fsync 正在进行时，主线程将努力执行写入，因此您只能丢失一秒钟的写入。
+- AOF 日志是仅追加日志，因此不会出现查找问题，并且在断电时也不会出现损坏问题。 即使由于某种原因（磁盘已满或其他原因）日志以半写命令结束，redis-check-aof 工具也能够轻松修复它。
+- 当 AOF 太大时，Redis 能够在后台自动重写 AOF。重写是完全安全的，因为当 Redis 继续追加到旧文件时，会使用创建当前数据集所需的最少操作集生成一个全新的文件，一旦第二个文件准备就绪，Redis 就会切换这两个文件并开始追加到新的那一个。
+- AOF 以一种易于理解和解析的格式依次包含所有操作的日志。 您甚至可以轻松导出 AOF 文件。 例如，即使您不小心使用[`FLUSHALL`](https://redis.io/commands/flushall)命令刷新了所有内容，只要同时没有执行日志重写，您仍然可以保存只需停止服务器、删除最新命令并再次重新启动 Redis 即可恢复数据集。
+
+总结：
+
+- **更好的保护数据不丢失、性能高、可做紧急恢复。**
+
+#### 劣势
+
+官网：
+
+- AOF files are usually bigger than the equivalent RDB files for the same dataset.
+- AOF can be slower than RDB depending on the exact fsync policy. In general with fsync set to *every second* performance is still very high, and with fsync disabled it should be exactly as fast as RDB even under high load. Still RDB is able to provide more guarantees about the maximum latency even in the case of a huge write load.
+- AOF can use a lot of memory if there are writes to the database during a rewrite (these are buffered in memory and written to the new AOF at the end).
+- All write commands that arrive during rewrite are written to disk twice.
+- Redis could freeze writing and fsyncing these write commands to the new AOF file at the end of the rewrite.
+
+> 后三条是 Redis 7.0 以下版本的缺点。
+
+简译：
+
+- 对于相同的数据集，AOF 文件通常比等效的 RDB 文件大。
+- AOF 可能比 RDB 慢，具体取决于确切的 fsync 策略。 一般来说，将 fsync 设置为 "每秒" 性能仍然非常高，并且禁用 fsync 后，即使在高负载下，它也应该与 RDB 一样快。即使在巨大的写入负载的情况下，RDB 仍然能够对最大延迟提供更多的保证。
+- 如果在重写期间对数据库进行写入（这些内容会缓冲在内存中并在最后写入新的 AOF），则 AOF 可能会使用大量内存。
+- 重写期间到达的所有写入命令都会写入磁盘两次。
+- Redis 可以在重写结束时冻结写入并将这些写入命令同步到新的 AOF 文件。
+
+总结：
+
+- **相同数据集的数据，AOF 文件要远大于 RDB 文件，恢复速度也慢于 RDB。**
+- **AOF 运行效率要慢于 RDB，每秒同步策略效率较好，不同步效率和 RDB 相同。**
 
 #### 配置项
 
+AOF 的相关配置项，在配置文件的 APPEND ONLY MODE 模块：
 
+- `appendonly no`：是否开启 AOF，默认不开启。
+
+- `appendfilename "appendonly.aof"`：AOF 文件名称。
+
+- `appenddirname "appendonlydir"`：AOF 文件存储路径。
+
+- `appendfsync everysec`：AOF 写回策略。
+
+- `no-appendfsync-on-rewrite no`：AOF 重写期间是否同步。
+
+  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080155252.png" alt="image-20230914080155252" style="zoom:80%;" />
+
+- `auto-aof-rewrite-percentage 100`：AOF 文件重写机制触发条件。
+
+- `auto-aof-rewrite-min-size 64mb`：AOF 文件重写机制触发条件。
+
+- `aof-load-truncated yes`：AOF 文件末尾异常截断时的处理方式。
+
+  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080329059.png" alt="image-20230914080329059" style="zoom:80%;" />
+
+- `aof-use-rdb-preamble yes`：开启 AOF 与 RDB 混合模式。
+
+  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080349734.png" alt="image-20230914080349734" style="zoom:80%;" />
+
+- `aof-timestamp-enabled no`：AOF 文件中添加时间戳。
+
+  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080411208.png" alt="image-20230914080411208" style="zoom:80%;" />
 
 #### 总结
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914081241859.png" alt="image-20230914081241859" style="zoom: 67%;" />
+
+- AOF 文件是一个只进行追加的日志文件。
+- Redis 可以在 AOF 文件体积变得过大时，自动在后台对 AOF 文件进行重写。
+- AOF 文件有序地保存了对数据库执行的所有写指令，这些写指令以 Redis 协议的格式保存，因此 AOF 文件的内容非常容易被人读懂，对文件进行分析也很轻松。
+- 对于相同的数据集来说，AOF 文件的体积通常要大于 RDB 文件的体积。
+- 根据所使用的 fsync 策略，AOF 的速度可能会慢于 RDB。
+
+### RDB 和 AOF 混合持久化
+
+The general indication you should use both persistence methods is if you want a degree of data safety comparable to what PostgreSQL can provide you.
+
+If you care a lot about your data, but still can live with a few minutes of data loss in case of disasters, you can simply use RDB alone.
+
+There are many users using AOF alone, but we discourage it since to have an RDB snapshot from time to time is a great idea for doing database backups, for faster restarts, and in the event of bugs in the AOF engine.
+
+对于 RDB 和 AOF，官方的建议是二者混合使用，这样可以结合 RDB 和 AOF 的优点，既能快速加载又能避免丢失过多的数据。
+
+- RDB 持久化方式，能够在指定的时间间隔内，对数据进行快照存储。
+- AOF 持久化方式，能够记录每次对服务器的写指令，当服务器重启的时候会重新执行这些命令来恢复数据，这样可以避免丢失过多的数据。
+
+同时使用 RDB 和 AOF 的设置：
+
+- 开启 RDB：`# save ""`。
+
+- 开启 AOF：`appendonly yes`。
+
+- 混合设置：`aof-use-rdb-preamble yes`。此时，RDB 镜像做全量持久化，AOF 做增量持久化。
+
+  - 先使用 RDB 进行快照存储，然后使用 AOF 持久化记录所有的写操作，当重写策略满足或手动触发重写的时候，将最新的数据存储为新的 RDB 记录。这样的话，重启服务的时候会从 RDB 和 AOF 两部分恢复数据，既保证了数据完整性，又提高了恢复数据的性能。简单来说：混合持久化方式产生的文件一部分是 RDB 格式，一部分是 AOF 格式。**即：AOF 包括了 RDB 头部 + AOF 混写。**
+
+    <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914224140948.png" alt="image-20230914224140948" style="zoom: 50%;" />
+
+#### 数据恢复顺序和加载流程
+
+在同时开启 RDB 和 AOF 持久化时，重启时只会加载 AOF 文件，不会加载 RDB 文件：
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914221338028.png" alt="image-20230914221338028" style="zoom: 67%;" />
+
+### 纯缓存模式
+
+同时关闭 RDB 和 AOF：
+
+- 关闭 RDB：`save ""`。
+  - 禁用 RDB 持久化模式下，仍然可以使用 SAVE 和 BGSAVE 命令生成 RDB 文件。
+- 关闭 AOF：`appendonly no`。
+  - 禁用 AOF 持久化模式下，仍然可以使用 BGREWRITEAOF 命令生成 AOF 文件。
+
+## Redis 事务（Transactions）
+
+官网：https://redis.io/docs/interact/transactions/
+
+Redis Transactions allow the execution of a group of commands in a single step, they are centered around the commands [`MULTI`](https://redis.io/commands/multi), [`EXEC`](https://redis.io/commands/exec), [`DISCARD`](https://redis.io/commands/discard) and [`WATCH`](https://redis.io/commands/watch). Redis Transactions make two important guarantees:
+
+- All the commands in a transaction are serialized and executed sequentially. A request sent by another client will never be served **in the middle** of the execution of a Redis Transaction. This guarantees that the commands are executed as a single isolated operation.
+- The [`EXEC`](https://redis.io/commands/exec) command triggers the execution of all the commands in the transaction, so if a client loses the connection to the server in the context of a transaction before calling the [`EXEC`](https://redis.io/commands/exec) command none of the operations are performed, instead if the [`EXEC`](https://redis.io/commands/exec) command is called, all the operations are performed. When using the [append-only file](https://redis.io/topics/persistence#append-only-file) Redis makes sure to use a single write(2) syscall to write the transaction on disk. However if the Redis server crashes or is killed by the system administrator in some hard way it is possible that only a partial number of operations are registered. Redis will detect this condition at restart, and will exit with an error. Using the `redis-check-aof` tool it is possible to fix the append only file that will remove the partial transaction so that the server can start again.
+
+Starting with version 2.2, Redis allows for an extra guarantee to the above two, in the form of optimistic locking in a way very similar to a check-and-set (CAS) operation. 
+
+Redis 事务，可以一次性执行多个命令，`其本质是一组命令的集合`。一个事务中的所有命令都会序列化，按顺序的串行化执行，且不会被其他命令插入，不允许加塞。
+
+> Redis 事务：一个队列中，一次性、顺序性、排他性的执行一系列命令。
+
+### 使用
+
+A Redis Transaction is entered using the [`MULTI`](https://redis.io/commands/multi) command. The command always replies with `OK`. At this point the user can issue multiple commands. Instead of executing these commands, Redis will queue them. All the commands are executed once [`EXEC`](https://redis.io/commands/exec) is called.
+
+Calling [`DISCARD`](https://redis.io/commands/discard) instead will flush the transaction queue and will exit the transaction.
+
+The following example increments keys `foo` and `bar` atomically.
+
+```bash
+> MULTI
+OK
+> INCR foo
+QUEUED
+> INCR bar
+QUEUED
+> EXEC
+1) (integer) 1
+2) (integer) 1
+```
+
+As is clear from the session above, [`EXEC`](https://redis.io/commands/exec) returns an array of replies, where every element is the reply of a single command in the transaction, in the same order the commands were issued.
+
+When a Redis connection is in the context of a [`MULTI`](https://redis.io/commands/multi) request, all commands will reply with the string `QUEUED` (sent as a Status Reply from the point of view of the Redis protocol). A queued command is simply scheduled for execution when [`EXEC`](https://redis.io/commands/exec) is called.
+
+Redis 事务的执行过程：
+
+- `开启`：以`MULTI`命令开始一个事务。
+
+- `入队`：将多个命令入队到事务中，Redis 接到这些命令并不会立即执行，而是放到等待执行的事务队列里面。
+
+- `执行`：由`EXEC`命令触发事务，此时，事务队列中的命令会按顺序逐一执行。
+- `取消`：`DISCARD`命令可以取消事务，放弃事务队列中的所有命令。
+
+#### 正常执行
+
+```bash
+127.0.0.1:6379[6]> select 2
+OK
+127.0.0.1:6379[2]> keys *
+(empty array)
+127.0.0.1:6379[2]> MULTI
+OK
+127.0.0.1:6379[2](TX)> SET k1 v1
+QUEUED
+127.0.0.1:6379[2](TX)> LPUSH list 1 2 3
+QUEUED
+127.0.0.1:6379[2](TX)> SET k2 v2
+QUEUED
+127.0.0.1:6379[2](TX)> INCR count
+QUEUED
+127.0.0.1:6379[2](TX)> EXEC
+1) OK
+2) (integer) 3
+3) OK
+4) (integer) 1
+127.0.0.1:6379[2]> keys *
+1) "k2"
+2) "k1"
+3) "count"
+4) "list"
+```
+
+#### 放弃事务
+
+[`DISCARD`](https://redis.io/commands/discard) can be used in order to abort a transaction. In this case, no commands are executed and the state of the connection is restored to normal.
+
+```bash
+> SET foo 1
+OK
+> MULTI
+OK
+> INCR foo
+QUEUED
+> DISCARD
+OK
+> GET foo
+"1"
+```
+
+示例：
+
+```bash
+127.0.0.1:6379[2]> MULTI
+OK
+127.0.0.1:6379[2](TX)> set k1 v1
+QUEUED
+127.0.0.1:6379[2](TX)> set k2 v2
+QUEUED
+127.0.0.1:6379[2](TX)> set k3 v3
+QUEUED
+127.0.0.1:6379[2](TX)> DISCARD
+OK
+127.0.0.1:6379[2]> keys *
+1) "k2"
+2) "k1"
+3) "count"
+4) "list"
+```
+
+#### 异常情况
+
+During a transaction it is possible to encounter two kind of command errors:
+
+- A command may fail to be queued, so there may be an error before [`EXEC`](https://redis.io/commands/exec) is called. For instance the command may be syntactically wrong (wrong number of arguments, wrong command name, ...), or there may be some critical condition like an out of memory condition (if the server is configured to have a memory limit using the `maxmemory` directive).
+- A command may fail *after* [`EXEC`](https://redis.io/commands/exec) is called, for instance since we performed an operation against a key with the wrong value (like calling a list operation against a string value).
+
+Starting with Redis 2.6.5, the server will detect an error during the accumulation of commands. It will then refuse to execute the transaction returning an error during [`EXEC`](https://redis.io/commands/exec), discarding the transaction.
+
+> **Note for Redis < 2.6.5:** Prior to Redis 2.6.5 clients needed to detect errors occurring prior to [`EXEC`](https://redis.io/commands/exec) by checking the return value of the queued command: if the command replies with QUEUED it was queued correctly, otherwise Redis returns an error. If there is an error while queueing a command, most clients will abort and discard the transaction. Otherwise, if the client elected to proceed with the transaction the [`EXEC`](https://redis.io/commands/exec) command would execute all commands queued successfully regardless of previous errors.
+
+Errors happening *after* [`EXEC`](https://redis.io/commands/exec) instead are not handled in a special way: all the other commands will be executed even if some command fails during the transaction.
+
+This is more clear on the protocol level. In the following example one command will fail when executed even if the syntax is right:
+
+```bash
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+MULTI
++OK
+SET a abc
++QUEUED
+LPOP a
++QUEUED
+EXEC
+*2
++OK
+-WRONGTYPE Operation against a key holding the wrong kind of value
+```
+
+[`EXEC`](https://redis.io/commands/exec) returned two-element [bulk string reply](https://redis.io/topics/protocol#bulk-string-reply) where one is an `OK` code and the other an error reply. It's up to the client library to find a sensible way to provide the error to the user.
+
+It's important to note that **even when a command fails, all the other commands in the queue are processed** – Redis will *not* stop the processing of commands.
+
+Another example, again using the wire protocol with `telnet`, shows how syntax errors are reported ASAP instead:
+
+```bash
+MULTI
++OK
+INCR a b c
+-ERR wrong number of arguments for 'incr' command
+```
+
+This time due to the syntax error the bad [`INCR`](https://redis.io/commands/incr) command is not queued at all.
+
+##### 全体连坐
+
+事务中的所有命令，如果存在一个命令语法错误，会导致编译失败，事务中的所有命令都不会执行。示例：
+
+```bash
+127.0.0.1:6379[2]> MULTI
+OK
+127.0.0.1:6379[2](TX)> SET k1 1111
+QUEUED
+127.0.0.1:6379[2](TX)> SET k2 2222
+QUEUED
+127.0.0.1:6379[2](TX)> INCR count
+QUEUED
+# 故意写错命令, 语法编译不通过
+127.0.0.1:6379[2](TX)> SET k3
+(error) ERR wrong number of arguments for 'set' command
+# 如果任何一个命令语法出错, Redis会直接返回错误, 事务中的所有命令都不会执行
+127.0.0.1:6379[2](TX)> EXEC
+(error) EXECABORT Transaction discarded because of previous errors.
+
+# k1和k2的值也没有发生变化
+127.0.0.1:6379[2]> MGET k1 k2
+1) "v1"
+2) "v2"
+```
+
+##### 冤头债主
+
+事务中的所有命令，如果语法规则上都正确，不会导致编译失败，运行期间，如果某个命令出错，只会影响该命令，事务中的其他命令会正常执行。示例：
+
+```bash
+127.0.0.1:6379[2]> MULTI
+OK
+127.0.0.1:6379[2](TX)> GET k1
+QUEUED
+127.0.0.1:6379[2](TX)> SET k1 abc
+QUEUED
+127.0.0.1:6379[2](TX)> GET k1
+QUEUED
+127.0.0.1:6379[2](TX)> SET email abc@qq.com
+QUEUED
+127.0.0.1:6379[2](TX)> GET email
+QUEUED
+# 事务中的所有命令语法都没有错误, 编译通过, 但是INCR email命令执行会报错, 因为类型不匹配
+127.0.0.1:6379[2](TX)> INCR email
+QUEUED
+127.0.0.1:6379[2](TX)> GET count
+QUEUED
+127.0.0.1:6379[2](TX)> INCR count
+QUEUED
+127.0.0.1:6379[2](TX)> GET count
+QUEUED
+127.0.0.1:6379[2](TX)> EXEC
+1) "v1"
+2) OK
+3) "abc"
+4) OK
+5) "abc@qq.com"
+# 事务实际执行时, 也可以看出, 其他命令都执行成功, 只有INCR email命令执行失败
+6) (error) ERR value is not an integer or out of range
+7) "1"
+8) (integer) 2
+9) "2"
+```
+
+### WATCH 监控
+
+[`WATCH`](https://redis.io/commands/watch) is used to provide a check-and-set (CAS) behavior to Redis transactions.
+
+[`WATCH`](https://redis.io/commands/watch)ed keys are monitored in order to detect changes against them. If at least one watched key is modified before the [`EXEC`](https://redis.io/commands/exec) command, the whole transaction aborts, and [`EXEC`](https://redis.io/commands/exec) returns a [Null reply](https://redis.io/topics/protocol#nil-reply) to notify that the transaction failed.
+
+For example, imagine we have the need to atomically increment the value of a key by 1 (let's suppose Redis doesn't have [`INCR`](https://redis.io/commands/incr)).
+
+The first try may be the following:
+
+```bash
+val = GET mykey
+val = val + 1
+SET mykey $val
+```
+
+This will work reliably only if we have a single client performing the operation in a given time. If multiple clients try to increment the key at about the same time there will be a race condition. For instance, client A and B will read the old value, for instance, 10. The value will be incremented to 11 by both the clients, and finally [`SET`](https://redis.io/commands/set) as the value of the key. So the final value will be 11 instead of 12.
+
+Thanks to [`WATCH`](https://redis.io/commands/watch) we are able to model the problem very well:
+
+```bash
+WATCH mykey
+val = GET mykey
+val = val + 1
+MULTI
+SET mykey $val
+EXEC
+```
+
+Using the above code, if there are race conditions and another client modifies the result of `val` in the time between our call to [`WATCH`](https://redis.io/commands/watch) and our call to [`EXEC`](https://redis.io/commands/exec), the transaction will fail.
+
+We just have to repeat the operation hoping this time we'll not get a new race. This form of locking is called *optimistic locking*. In many use cases, multiple clients will be accessing different keys, so collisions are unlikely – usually there's no need to repeat the operation.
+
+**WATCH explained**
+
+So what is [`WATCH`](https://redis.io/commands/watch) really about? It is a command that will make the [`EXEC`](https://redis.io/commands/exec) conditional: we are asking Redis to perform the transaction only if none of the [`WATCH`](https://redis.io/commands/watch)ed keys were modified. This includes modifications made by the client, like write commands, and by Redis itself, like expiration or eviction. If keys were modified between when they were [`WATCH`](https://redis.io/commands/watch)ed and when the [`EXEC`](https://redis.io/commands/exec) was received, the entire transaction will be aborted instead.
+
+**NOTE**
+
+- In Redis versions before 6.0.9, an expired key would not cause a transaction to be aborted. [More on this](https://github.com/redis/redis/pull/7920)
+- Commands within a transaction won't trigger the [`WATCH`](https://redis.io/commands/watch) condition since they are only queued until the [`EXEC`](https://redis.io/commands/exec) is sent.
+
+[`WATCH`](https://redis.io/commands/watch) can be called multiple times. Simply all the [`WATCH`](https://redis.io/commands/watch) calls will have the effects to watch for changes starting from the call, up to the moment [`EXEC`](https://redis.io/commands/exec) is called. You can also send any number of keys to a single [`WATCH`](https://redis.io/commands/watch) call.
+
+When [`EXEC`](https://redis.io/commands/exec) is called, all keys are [`UNWATCH`](https://redis.io/commands/unwatch)ed, regardless of whether the transaction was aborted or not. Also when a client connection is closed, everything gets [`UNWATCH`](https://redis.io/commands/unwatch)ed.
+
+It is also possible to use the [`UNWATCH`](https://redis.io/commands/unwatch) command (without arguments) in order to flush all the watched keys. Sometimes this is useful as we optimistically lock a few keys, since possibly we need to perform a transaction to alter those keys, but after reading the current content of the keys we don't want to proceed. When this happens we just call [`UNWATCH`](https://redis.io/commands/unwatch) so that the connection can already be used freely for new transactions.
+
+**Using WATCH to implement ZPOP**
+
+A good example to illustrate how [`WATCH`](https://redis.io/commands/watch) can be used to create new atomic operations otherwise not supported by Redis is to implement ZPOP ([`ZPOPMIN`](https://redis.io/commands/zpopmin), [`ZPOPMAX`](https://redis.io/commands/zpopmax) and their blocking variants have only been added in version 5.0), that is a command that pops the element with the lower score from a sorted set in an atomic way. This is the simplest implementation:
+
+```
+WATCH zset
+element = ZRANGE zset 0 0
+MULTI
+ZREM zset element
+EXEC
+```
+
+If [`EXEC`](https://redis.io/commands/exec) fails (i.e. returns a [Null reply](https://redis.io/topics/protocol#nil-reply)) we just repeat the operation.
+
+Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）。
+
+- `WATCH`：
+
+  ```bash
+  # WATCH监控的key, 在EXEC命令之前, 没有其他地方修改, 则事务正常提交
+  127.0.0.1:6379[2]> WATCH balance
+  OK
+  127.0.0.1:6379[2]> MULTI
+  OK
+  127.0.0.1:6379[2](TX)> GET k1
+  QUEUED
+  127.0.0.1:6379[2](TX)> SET k1 abc2
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  127.0.0.1:6379[2](TX)> SET balance 100
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET k1
+  QUEUED
+  127.0.0.1:6379[2](TX)> EXEC
+  1) "abc"
+  2) OK
+  3) (nil)
+  4) OK
+  5) "100"
+  6) "abc2"
+  
+  # WATCH监控的key, 在EXEC命令之前, 存在其他地方修改, 则事务执行失败
+  
+  # 客户端1
+  # 顺序1
+  127.0.0.1:6379[2]> WATCH balance
+  OK
+  # 顺序2
+  127.0.0.1:6379[2]> MULTI
+  OK
+  127.0.0.1:6379[2](TX)> GET k1
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  # 顺序4
+  127.0.0.1:6379[2](TX)> SET balance 120
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  # 顺序5
+  127.0.0.1:6379[2](TX)> EXEC
+  (nil)
+  127.0.0.1:6379[2]> GET balance
+  "150"
+  
+  # 客户端2
+  # 顺序3
+  127.0.0.1:6379[2]> GET balance
+  "100"
+  127.0.0.1:6379[2]> SET balance 150		# 因为客户端2修改balance的值早于客户端1中事务的执行, 客户端1中的事务提交时失败
+  OK
+  127.0.0.1:6379[2]> GET balance
+  "150"
+  ```
+
+- `UNWATCH`：
+
+  ```bash
+  # 客户端1, WATCH balance之后, 使用UNWATCH取消监控
+  # 顺序1
+  127.0.0.1:6379[2]> WATCH balance
+  OK
+  # 顺序2
+  127.0.0.1:6379[2]> GET balance
+  "150"
+  # 顺序4
+  127.0.0.1:6379[2]> UNWATCH
+  OK
+  # 顺序5
+  127.0.0.1:6379[2]> MULTI
+  OK
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  127.0.0.1:6379[2](TX)> SET balance 250
+  QUEUED
+  127.0.0.1:6379[2](TX)> GET balance
+  QUEUED
+  127.0.0.1:6379[2](TX)> EXEC
+  1) "200"
+  2) OK
+  3) "250"
+  
+  # 客户端2
+  # 顺序3
+  127.0.0.1:6379[2]> SET balance 200
+  OK
+  127.0.0.1:6379[2]> GET balance
+  "200"
+  ```
+
+- 一旦执行了`EXEC`命令，之前加的监控锁都会被取消。
+
+- 当客户端连接丢失的时候，比如退出连接，所有东西都会被取消监视。
+
+>`悲观锁`：Pessimistic Lock，顾名思义，就是很悲观，每次去拿数据的时候都认为**别人会修改**，所以每次在拿数据的时候都会上锁，这样别人想拿这个数据就会 block 直到它拿到锁。
+>
+>`乐观锁`：Optimistic Lock，顾名思义，就是很乐观，每次去拿数据的时候都认为**别人不会修改**，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据。
+>
+>`乐观锁策略`：记录的提交版本必须大于记录的当前版本，才能执行更新。
+
+### 与数据库事务对比
+
+Redis 事务与数据库事务有很大的不同：
+
+- `单独的隔离操作。`
+  - Redis 事务仅仅是保证事务里的操作会被连续独占的执行，Redis 命令执行是`单线程架构`，在执行完事务内所有指令前，是不可能再去同时执行其他客户端的请求的。
+- `没有隔离级别的概念。`
+  - 因为事务提交前任何指令都不会被实际执行，也就不存在 "事务内的查询要看到事务里的更新，在事务外查询不能看到" 这种问题了。
+- `不保证原子性。`
+  - Redis does not support rollbacks of transactions since supporting rollbacks would have a significant impact on the simplicity and performance of Redis.
+  - Redis 事务不保证原子性，也就是不保证所有指令同时成功或同时失败，只有决定是否开始执行全部指令的能力，没有执行到一半进行回滚的能力。
+- `排它性。`
+  - Redis 会保证一个事务内的命令依次执行，而不会被其它命令插入。
+
+## Redis 管道（Pipelining）
+
+官网：https://redis.io/docs/manual/pipelining/
+
+### 问题由来
+
+Redis is a TCP server using the client-server model and what is called a *Request/Response* protocol.
+
+This means that usually a request is accomplished with the following steps:
+
+- The client sends a query to the server, and reads from the socket, usually in a blocking way, for the server response.
+- The server processes the command and sends the response back to the client.
+
+So for instance a four commands sequence is something like this:
+
+- *Client:* INCR X
+- *Server:* 1
+- *Client:* INCR X
+- *Server:* 2
+- *Client:* INCR X
+- *Server:* 3
+- *Client:* INCR X
+- *Server:* 4
+
+Clients and Servers are connected via a network link. Such a link can be very fast (a loopback interface) or very slow (a connection established over the Internet with many hops between the two hosts). Whatever the network latency is, it takes time for the packets to travel from the client to the server, and back from the server to the client to carry the reply.
+
+This time is called RTT (Round Trip Time). It's easy to see how this can affect performance when a client needs to perform many requests in a row (for instance adding many elements to the same list, or populating a database with many keys). For instance if the RTT time is 250 milliseconds (in the case of a very slow link over the Internet), even if the server is able to process 100k requests per second, we'll be able to process at max four requests per second.
+
+If the interface used is a loopback interface, the RTT is much shorter, typically sub-millisecond, but even this will add up to a lot if you need to perform many writes in a row.
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915080446376.png" alt="image-20230915080446376" style="zoom:67%;" />
+
+Redis 是一种基于客户端-服务端模型以及请求/响应协议的 TCP 服务。一个请求会遵循以下步骤：
+
+1. 客户端向服务端发送命令分四步：发送命令 ---> 命令排队 ---> 命令执行 ---> 返回结果，并监听 Socket 返回，通常以阻塞模式等待服务端响应。
+2. 服务端处理命令，并将结果返回给客户端。
+
+在上述步骤中，数据包从客户端传送到服务器，再从服务器传送回客户端以进行回复都需要时间，这个时间叫做`Round Trip Time`，简称 RTT，意为数据包往返于两端的时间.
+
+**如果同时需要执行大量的命令，那么就要等待上一条命令应答后再执行，这中间不仅仅多了 RTT，而且还频繁调用系统 I/O，发送网络请求，同时需要 Redis 调用多次 read() 和 write() 系统方法，系统方法会将数据从用户态转移到内核态，这样就会对进程上下文有比较大的影响了，性能不太好。**
+
+### 问题解决
+
+A Request/Response server can be implemented so that it is able to process new requests even if the client hasn't already read the old responses. This way it is possible to send *multiple commands* to the server without waiting for the replies at all, and finally read the replies in a single step.
+
+This is called pipelining, and is a technique widely in use for many decades. For instance many POP3 protocol implementations already support this feature, dramatically speeding up the process of downloading new emails from the server.
+
+Redis has supported pipelining since its early days, so whatever version you are running, you can use pipelining with Redis. This is an example using the raw netcat utility:
+
+```bash
+$ (printf "PING\r\nPING\r\nPING\r\n"; sleep 1) | nc localhost 6379
++PONG
++PONG
++PONG
+```
+
+This time we don't pay the cost of RTT for every call, but just once for the three commands.
+
+To be explicit, with pipelining the order of operations of our very first example will be the following:
+
+- *Client:* INCR X
+- *Client:* INCR X
+- *Client:* INCR X
+- *Client:* INCR X
+- *Server:* 1
+- *Server:* 2
+- *Server:* 3
+- *Server:* 4
+
+> **IMPORTANT NOTE**: While the client sends commands using pipelining, the server will be forced to queue the replies, using memory. So if you need to send a lot of commands with pipelining, it is better to send them as batches each containing a reasonable number, for instance 10k commands, read the replies, and then send another 10k commands again, and so forth. The speed will be nearly the same, but the additional memory used will be at most the amount needed to queue the replies for these 10k commands.
+
+那么，如何优化频繁命令往返造成的性能瓶颈呢？在 Redis 中，可以使用管道（Pipelining）。
+
+### 定义
+
+Redis pipelining is a technique for improving performance by issuing multiple commands at once without waiting for the response to each individual command. Pipelining is supported by most Redis clients. 
+
+Pipelining is not just a way to reduce the latency cost associated with the round trip time, it actually greatly improves the number of operations you can perform per second in a given Redis server. This is because without using pipelining, serving each command is very cheap from the point of view of accessing the data structures and producing the reply, but it is very costly from the point of view of doing the socket I/O. This involves calling the `read()` and `write()` syscall, that means going from user land to kernel land. The context switch is a huge speed penalty.
+
+When pipelining is used, many commands are usually read with a single `read()` system call, and multiple replies are delivered with a single `write()` system call. Consequently, the number of total queries performed per second initially increases almost linearly with longer pipelines, and eventually reaches 10 times the baseline obtained without pipelining, as shown in this figure.
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915082522721.png" alt="image-20230915082522721" style="zoom:80%;" />
+
+`管道`（Pipelining）可以一次性发送多条命令给服务端，服务端依次处理完毕后，通过一条响应一次性将结果返回，这样不仅可以减少客户端与 Redis 的通信次数，降低 RTT，同时还可以减少 Redis 调用 read() 和 write() 系统方法的次数，提升系统性能。
+
+Pipeline 实现的原理是队列，先进先出特性就可以保证数据的顺序性。
+
+<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915083045219.png" alt="image-20230915083045219" style="zoom:67%;" />
+
+### 使用
+
+In the following benchmark we'll use the Redis Ruby client, supporting pipelining, to test the speed improvement due to pipelining:
+
+```ruby
+require 'rubygems'
+require 'redis'
+
+def bench(descr)
+  start = Time.now
+  yield
+  puts "#{descr} #{Time.now - start} seconds"
+end
+
+def without_pipelining
+  r = Redis.new
+  10_000.times do
+    r.ping
+  end
+end
+
+def with_pipelining
+  r = Redis.new
+  r.pipelined do
+    10_000.times do
+      r.ping
+    end
+  end
+end
+
+bench('without pipelining') do
+  without_pipelining
+end
+bench('with pipelining') do
+  with_pipelining
+end
+```
+
+Running the above simple script yields the following figures on my Mac OS X system, running over the loopback interface, where pipelining will provide the smallest improvement as the RTT is already pretty low:
+
+```bash
+without pipelining 1.185238 seconds
+with pipelining 0.250783 seconds
+```
+
+As you can see, using pipelining, we improved the transfer by a factor of five.
+
+示例：
+
+```bash
+root@aa28ffab505b:/tmp# ls
+cmd.txt
+root@aa28ffab505b:/tmp# cat cmd.txt 
+AUTH 123456
+SELECT 3
+KEYS *
+SET k9 v9
+SET k99 v99
+HSET k300 name haha
+HSET k300 age 20
+HSET k300 gender male
+KEYS *
+# 使用管道--pipe, 执行cmd.txt中的所有命令
+root@aa28ffab505b:/tmp# cat cmd.txt | redis-cli --pipe
+All data transferred. Waiting for the last reply...
+Last reply received from server.
+errors: 0, replies: 9
+root@aa28ffab505b:/tmp# redis-cli
+127.0.0.1:6379> AUTH 123456
+OK
+127.0.0.1:6379> SELECT 3
+OK
+127.0.0.1:6379[3]> KEYS *
+1) "k9"
+2) "k99"
+3) "k300"
+127.0.0.1:6379[3]> MGET k9 k99
+1) "v9"
+2) "v99"
+127.0.0.1:6379[3]> HGET k300 name
+"haha"
+127.0.0.1:6379[3]> 
+```
+
+注意事项：
+
+- Pipelining 缓冲的指令，只是会依次执行，不保证原子性，如果执行中指令发生异常，将会继续执行后续的指令。
+- 使用 Pipelining 组装的命令个数不能太多，不然数据量过大客户端阻塞的时间可能过久，同时服务端此时也被迫回复一个队列答复，占用很多内存。
+
+### 与原生批处理命令对比
+
+- Redis 原生批处理命令是原子性，例如 MGET、MSET 等，Pipelining 是非原子性。
+- Redis 原生批处理命令一次只能执行一种命令，Pipelining 支持批量执行不同命令。
+- Redis 原生批处理命令是服务端实现，Pipelining 需要服务端与客户端共同完成。
+
+### 与事务对比
+
+- Redis 事务是原子性，Pipelining 是非原子性。
+- Redis 事务是一条一条发送命令，Pipelining 一次性的将多条命令发送到服务器。
+- Redis 事务在接收到 EXEC 命令后才会执行事务中的命令，Pipelining 不需要。
+- Redis 事务执行时会阻塞其他命令的执行，直到事务中的命令执行完成，Pipelining 中的命令执行时，不阻塞其他命令的执行。
+
+## Redis 发布/订阅（Pub/Sub）
+
+官网：https://redis.io/docs/interact/pubsub/
+
+![image-20230915141210829](C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915141210829.png)
+
+## Redis 主从复制（Replication）
+
+官网：https://redis.io/docs/management/replication/
+
+### 准备工作
+
+利用 Docker 创建 3 个 Redis 容器,。
+
+docker-compose.yaml：
+
+```yaml
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:  
+  redis-6376:
+    image: redis:7.0.11
+    container_name: redis-6376
+    ports:
+      - 6376:6376
+    volumes:
+      - ./redis/redis-6376/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/redis-6376/data:/data
+    # 挂载redis.conf的话，需要指定启动命令中的配置文件路径
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - apps
+    restart: on-failure:3
+
+  redis-6377:
+    image: redis:7.0.11
+    container_name: redis-6377
+    ports:
+      - 6377:6377
+    volumes:
+      - ./redis/redis-6377/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/redis-6377/data:/data
+    # 挂载redis.conf的话，需要指定启动命令中的配置文件路径
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - apps
+    restart: on-failure:3
+
+  redis-6378:
+    image: redis:7.0.11
+    container_name: redis-6378
+    ports:
+      - 6378:6378
+    volumes:
+      - ./redis/redis-6378/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/redis-6378/data:/data
+    # 挂载redis.conf的话，需要指定启动命令中的配置文件路径
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - apps
+    restart: on-failure:3
+```
+
+启动镜像：
+
+```bash
+$ docker compose -f docker-compose.yaml up -d
+```
+
+查看镜像：
+
+```bash
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED       STATUS       PORTS                                                 NAMES
+054e5c56dc50   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6378->6378/tcp, :::6378->6378/tcp, 6379/tcp   redis-6378
+24a77e7237ab   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6377->6377/tcp, :::6377->6377/tcp, 6379/tcp   redis-6377
+205ed3813757   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6376->6376/tcp, :::6376->6376/tcp, 6379/tcp   redis-6376
+```
+
+### 一主二仆
+
+
+
+### 薪火相传
+
+
+
+### 反客为主
 
