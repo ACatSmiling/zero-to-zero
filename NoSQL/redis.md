@@ -75,7 +75,7 @@ redis:
 
 redis.conf：
 
-```ini
+```conf
 port 6379
 requirepass 123456
 protected-mode no
@@ -3171,7 +3171,7 @@ OK
 
 ### 准备工作
 
-利用 Docker 创建 3 个 Redis 容器,。
+利用 Docker 创建 3 个 Redis 容器。
 
 docker-compose.yaml：
 
@@ -3188,7 +3188,7 @@ services:
     image: redis:7.0.11
     container_name: redis-6376
     ports:
-      - 6376:6376
+      - 6376:6379
     volumes:
       - ./redis/redis-6376/conf/redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis/redis-6376/data:/data
@@ -3202,7 +3202,7 @@ services:
     image: redis:7.0.11
     container_name: redis-6377
     ports:
-      - 6377:6377
+      - 6377:6379
     volumes:
       - ./redis/redis-6377/conf/redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis/redis-6377/data:/data
@@ -3216,7 +3216,7 @@ services:
     image: redis:7.0.11
     container_name: redis-6378
     ports:
-      - 6378:6378
+      - 6378:6379
     volumes:
       - ./redis/redis-6378/conf/redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis/redis-6378/data:/data
@@ -3225,6 +3225,17 @@ services:
     networks:
       - apps
     restart: on-failure:3
+```
+
+redis.conf 配置一致：
+
+```conf
+port 6379
+requirepass 123456
+protected-mode no
+daemonize no
+appendonly yes
+aof-use-rdb-preamble yes
 ```
 
 启动镜像：
@@ -3237,19 +3248,442 @@ $ docker compose -f docker-compose.yaml up -d
 
 ```bash
 $ docker ps
-CONTAINER ID   IMAGE          COMMAND                  CREATED       STATUS       PORTS                                                 NAMES
-054e5c56dc50   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6378->6378/tcp, :::6378->6378/tcp, 6379/tcp   redis-6378
-24a77e7237ab   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6377->6377/tcp, :::6377->6377/tcp, 6379/tcp   redis-6377
-205ed3813757   redis:7.0.11   "docker-entrypoint.s…"   6 hours ago   Up 6 hours   0.0.0.0:6376->6376/tcp, :::6376->6376/tcp, 6379/tcp   redis-6376
+CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+568ef64d7acd   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:6378->6379/tcp, :::6378->6379/tcp   redis-6378
+09b81a69f4e2   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:6376->6379/tcp, :::6376->6379/tcp   redis-6376
+c605af17235b   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:6377->6379/tcp, :::6377->6379/tcp   redis-6377
 ```
+
+- 一个 Master：redis-6376。
+- 两个 Slave：redis-6377 和 redis-6378。
 
 ### 一主二仆
 
+#### 配置文件
 
+修改 redis-6376 的 redis.conf 配置：
+
+```conf
+bind 0.0.0.0
+port 6379
+requirepass 123456
+protected-mode yes
+daemonize no
+appendonly yes
+aof-use-rdb-preamble yes
+```
+
+修改 redis-6377 和 redis-6378 的 redis.conf 配置：
+
+```conf
+bind 0.0.0.0
+port 6379
+requirepass 123456
+protected-mode no
+daemonize no
+appendonly yes
+aof-use-rdb-preamble yes
+
+# 从库配置
+replicaof 192.168.3.145 6376
+masterauth 123456
+```
+
+关闭之前启动的 3 个 Redis 镜像：
+
+```bash
+$ docker compose -f docker-compose.yaml down
+```
+
+再重新启动：
+
+```bash
+$ docker compose -f docker-compose.yaml up -d
+```
+
+查看日志：
+
+```bash
+# Master: redis-6376
+$ docker logs -f --tail=100 redis-6376
+1:C 17 Sep 2023 02:46:31.027 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 17 Sep 2023 02:46:31.027 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 17 Sep 2023 02:46:31.027 # Configuration loaded
+1:M 17 Sep 2023 02:46:31.027 * monotonic clock: POSIX clock_gettime
+1:M 17 Sep 2023 02:46:31.028 * Running mode=standalone, port=6379.
+1:M 17 Sep 2023 02:46:31.028 # Server initialized
+1:M 17 Sep 2023 02:46:31.028 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:M 17 Sep 2023 02:46:31.028 * Reading RDB base file on AOF loading...
+1:M 17 Sep 2023 02:46:31.028 * Loading RDB produced by version 7.0.11
+1:M 17 Sep 2023 02:46:31.028 * RDB age 5857 seconds
+1:M 17 Sep 2023 02:46:31.028 * RDB memory usage when created 0.82 Mb
+1:M 17 Sep 2023 02:46:31.028 * RDB is base AOF
+1:M 17 Sep 2023 02:46:31.028 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:M 17 Sep 2023 02:46:31.028 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+1:M 17 Sep 2023 02:46:31.028 * DB loaded from append only file: 0.000 seconds
+1:M 17 Sep 2023 02:46:31.028 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+1:M 17 Sep 2023 02:46:31.028 * Ready to accept connections
+1:M 17 Sep 2023 02:46:31.031 * Replica 192.168.32.1:6379 asks for synchronization
+1:M 17 Sep 2023 02:46:31.031 * Full resync requested by replica 192.168.32.1:6379
+1:M 17 Sep 2023 02:46:31.031 * Replication backlog created, my new replication IDs are '42ccdaf545c7271d6bd3c0666e6ec02a4124f11a' and '0000000000000000000000000000000000000000'
+1:M 17 Sep 2023 02:46:31.031 * Delay next BGSAVE for diskless SYNC
+1:M 17 Sep 2023 02:46:31.051 * Replica 192.168.32.1:6379 asks for synchronization
+1:M 17 Sep 2023 02:46:31.051 * Full resync requested by replica 192.168.32.1:6379
+1:M 17 Sep 2023 02:46:31.051 * Delay next BGSAVE for diskless SYNC
+1:M 17 Sep 2023 02:46:36.046 * Starting BGSAVE for SYNC with target: replicas sockets
+1:M 17 Sep 2023 02:46:36.047 * Background RDB transfer started by pid 21
+21:C 17 Sep 2023 02:46:36.047 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+1:M 17 Sep 2023 02:46:36.047 # Diskless rdb transfer, done reading from pipe, 2 replicas still up.
+1:M 17 Sep 2023 02:46:36.100 * Background RDB transfer terminated with success
+1:M 17 Sep 2023 02:46:36.100 * Streamed RDB transfer with replica 192.168.32.1:6379 succeeded (socket). Waiting for REPLCONF ACK from slave to enable streaming
+1:M 17 Sep 2023 02:46:36.100 * Synchronization with replica 192.168.32.1:6379 succeeded						# slave连接成功
+1:M 17 Sep 2023 02:46:36.100 * Streamed RDB transfer with replica 192.168.32.1:6379 succeeded (socket). Waiting for REPLCONF ACK from slave to enable streaming
+1:M 17 Sep 2023 02:46:36.100 * Synchronization with replica 192.168.32.1:6379 succeeded						# slave连接成功
+
+# Slave: redis-6377
+$ docker logs -f --tail=100 redis-6377
+1:C 17 Sep 2023 02:46:31.027 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 17 Sep 2023 02:46:31.027 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 17 Sep 2023 02:46:31.027 # Configuration loaded
+1:S 17 Sep 2023 02:46:31.027 * monotonic clock: POSIX clock_gettime
+1:S 17 Sep 2023 02:46:31.028 * Running mode=standalone, port=6379.
+1:S 17 Sep 2023 02:46:31.028 # Server initialized
+1:S 17 Sep 2023 02:46:31.028 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:S 17 Sep 2023 02:46:31.028 * Reading RDB base file on AOF loading...
+1:S 17 Sep 2023 02:46:31.028 * Loading RDB produced by version 7.0.11
+1:S 17 Sep 2023 02:46:31.028 * RDB age 4042 seconds
+1:S 17 Sep 2023 02:46:31.028 * RDB memory usage when created 0.84 Mb
+1:S 17 Sep 2023 02:46:31.028 * RDB is base AOF
+1:S 17 Sep 2023 02:46:31.028 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:S 17 Sep 2023 02:46:31.028 * DB loaded from base file appendonly.aof.2.base.rdb: 0.000 seconds
+1:S 17 Sep 2023 02:46:31.028 * DB loaded from append only file: 0.000 seconds
+1:S 17 Sep 2023 02:46:31.028 * Opening AOF incr file appendonly.aof.2.incr.aof on server start
+1:S 17 Sep 2023 02:46:31.028 * Ready to accept connections
+1:S 17 Sep 2023 02:46:31.029 * Connecting to MASTER 192.168.3.145:6376										# 连接到master
+1:S 17 Sep 2023 02:46:31.030 * MASTER <-> REPLICA sync started
+1:S 17 Sep 2023 02:46:31.030 * Non blocking connect for SYNC fired the event.
+1:S 17 Sep 2023 02:46:31.030 * Master replied to PING, replication can continue...
+1:S 17 Sep 2023 02:46:31.030 * Partial resynchronization not possible (no cached master)
+1:S 17 Sep 2023 02:46:36.046 * Full resync from master: 42ccdaf545c7271d6bd3c0666e6ec02a4124f11a:0
+1:S 17 Sep 2023 02:46:36.047 * MASTER <-> REPLICA sync: receiving streamed RDB from master with EOF to disk
+1:S 17 Sep 2023 02:46:36.068 * MASTER <-> REPLICA sync: Flushing old data
+1:S 17 Sep 2023 02:46:36.068 * MASTER <-> REPLICA sync: Loading DB in memory
+1:S 17 Sep 2023 02:46:36.099 * Loading RDB produced by version 7.0.11
+1:S 17 Sep 2023 02:46:36.099 * RDB age 0 seconds
+1:S 17 Sep 2023 02:46:36.099 * RDB memory usage when created 0.90 Mb
+1:S 17 Sep 2023 02:46:36.099 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:S 17 Sep 2023 02:46:36.099 * MASTER <-> REPLICA sync: Finished with success
+1:S 17 Sep 2023 02:46:36.099 * Creating AOF incr file temp-appendonly.aof.incr on background rewrite
+1:S 17 Sep 2023 02:46:36.099 * Background append only file rewriting started by pid 22
+22:C 17 Sep 2023 02:46:36.121 * Successfully created the temporary AOF base file temp-rewriteaof-bg-22.aof
+22:C 17 Sep 2023 02:46:36.122 * Fork CoW for AOF rewrite: current 0 MB, peak 0 MB, average 0 MB
+1:S 17 Sep 2023 02:46:36.147 * Background AOF rewrite terminated with success
+1:S 17 Sep 2023 02:46:36.147 * Successfully renamed the temporary AOF base file temp-rewriteaof-bg-22.aof into appendonly.aof.3.base.rdb
+1:S 17 Sep 2023 02:46:36.147 * Successfully renamed the temporary AOF incr file temp-appendonly.aof.incr into appendonly.aof.3.incr.aof
+1:S 17 Sep 2023 02:46:36.165 * Removing the history file appendonly.aof.2.incr.aof in the background
+1:S 17 Sep 2023 02:46:36.165 * Removing the history file appendonly.aof.2.base.rdb in the background
+1:S 17 Sep 2023 02:46:36.182 * Background AOF rewrite finished successfully
+
+# Slave: redis-6378
+$ docker logs -f --tail=100 redis-6378
+1:C 17 Sep 2023 02:46:31.048 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 17 Sep 2023 02:46:31.048 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 17 Sep 2023 02:46:31.048 # Configuration loaded
+1:S 17 Sep 2023 02:46:31.048 * monotonic clock: POSIX clock_gettime
+1:S 17 Sep 2023 02:46:31.049 * Running mode=standalone, port=6379.
+1:S 17 Sep 2023 02:46:31.049 # Server initialized
+1:S 17 Sep 2023 02:46:31.049 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:S 17 Sep 2023 02:46:31.049 * Reading RDB base file on AOF loading...
+1:S 17 Sep 2023 02:46:31.049 * Loading RDB produced by version 7.0.11
+1:S 17 Sep 2023 02:46:31.049 * RDB age 4042 seconds
+1:S 17 Sep 2023 02:46:31.049 * RDB memory usage when created 0.84 Mb
+1:S 17 Sep 2023 02:46:31.049 * RDB is base AOF
+1:S 17 Sep 2023 02:46:31.049 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:S 17 Sep 2023 02:46:31.049 * DB loaded from base file appendonly.aof.2.base.rdb: 0.000 seconds
+1:S 17 Sep 2023 02:46:31.049 * DB loaded from append only file: 0.000 seconds
+1:S 17 Sep 2023 02:46:31.049 * Opening AOF incr file appendonly.aof.2.incr.aof on server start
+1:S 17 Sep 2023 02:46:31.049 * Ready to accept connections
+1:S 17 Sep 2023 02:46:31.050 * Connecting to MASTER 192.168.3.145:6376										# 连接到master
+1:S 17 Sep 2023 02:46:31.050 * MASTER <-> REPLICA sync started
+1:S 17 Sep 2023 02:46:31.050 * Non blocking connect for SYNC fired the event.
+1:S 17 Sep 2023 02:46:31.051 * Master replied to PING, replication can continue...
+1:S 17 Sep 2023 02:46:31.051 * Partial resynchronization not possible (no cached master)
+1:S 17 Sep 2023 02:46:36.046 * Full resync from master: 42ccdaf545c7271d6bd3c0666e6ec02a4124f11a:0
+1:S 17 Sep 2023 02:46:36.047 * MASTER <-> REPLICA sync: receiving streamed RDB from master with EOF to disk
+1:S 17 Sep 2023 02:46:36.065 * MASTER <-> REPLICA sync: Flushing old data
+1:S 17 Sep 2023 02:46:36.065 * MASTER <-> REPLICA sync: Loading DB in memory
+1:S 17 Sep 2023 02:46:36.099 * Loading RDB produced by version 7.0.11
+1:S 17 Sep 2023 02:46:36.099 * RDB age 0 seconds
+1:S 17 Sep 2023 02:46:36.099 * RDB memory usage when created 0.90 Mb
+1:S 17 Sep 2023 02:46:36.099 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:S 17 Sep 2023 02:46:36.099 * MASTER <-> REPLICA sync: Finished with success
+1:S 17 Sep 2023 02:46:36.099 * Creating AOF incr file temp-appendonly.aof.incr on background rewrite
+1:S 17 Sep 2023 02:46:36.099 * Background append only file rewriting started by pid 21
+21:C 17 Sep 2023 02:46:36.111 * Successfully created the temporary AOF base file temp-rewriteaof-bg-21.aof
+21:C 17 Sep 2023 02:46:36.111 * Fork CoW for AOF rewrite: current 0 MB, peak 0 MB, average 0 MB
+1:S 17 Sep 2023 02:46:36.200 * Background AOF rewrite terminated with success
+1:S 17 Sep 2023 02:46:36.200 * Successfully renamed the temporary AOF base file temp-rewriteaof-bg-21.aof into appendonly.aof.3.base.rdb
+1:S 17 Sep 2023 02:46:36.200 * Successfully renamed the temporary AOF incr file temp-appendonly.aof.incr into appendonly.aof.3.incr.aof
+1:S 17 Sep 2023 02:46:36.219 * Removing the history file appendonly.aof.2.incr.aof in the background
+1:S 17 Sep 2023 02:46:36.219 * Removing the history file appendonly.aof.2.base.rdb in the background
+1:S 17 Sep 2023 02:46:36.238 * Background AOF rewrite finished successfully
+```
+
+在 Master 执行命令`INFO REPLICATION`：
+
+```bash
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:master																		# 当前角色是master
+connected_slaves:2
+slave0:ip=192.168.32.1,port=6379,state=online,offset=8292,lag=1					# slave0
+slave1:ip=192.168.32.1,port=6379,state=online,offset=8292,lag=1					# slave1
+master_failover_state:no-failover
+master_replid:42ccdaf545c7271d6bd3c0666e6ec02a4124f11a
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:8292
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:8292
+```
+
+在 Slave 执行命令`INFO REPLICATION`：
+
+```bash
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:slave																		# 当前角色是slave
+master_host:192.168.3.145														# 主机信息
+master_port:6376
+master_link_status:up
+master_last_io_seconds_ago:3
+master_sync_in_progress:0
+slave_read_repl_offset:8236
+slave_repl_offset:8236
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:42ccdaf545c7271d6bd3c0666e6ec02a4124f11a
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:8236
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:8236
+```
+
+#### 命令指定
+
+新搭建一个 Docker 容器，redis.conf 配置：
+
+```conf
+bind 0.0.0.0
+port 6379
+requirepass 123456
+protected-mode no
+daemonize no
+appendonly yes
+aof-use-rdb-preamble yes
+
+# 从库配置
+masterauth 123456
+```
+
+- 待连接的主库如果设置了密码，从机配置文件需要添加 masterauth 配置，否则连接失败。
+
+Docker 命令启动：
+
+```bash
+$ docker run --name redis-6380 -p 6380:6379 -v /home/xisun/apps/redis/redis-6380/conf/redis.conf:/usr/local/etc/redis/redis.conf -v /home/xisun/apps/redis/redis-6380/data:/data -d redis:7.0.11 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+```
+
+- 注意`-d redis:7.0.11 redis-server /usr/local/etc/redis/redis.conf --appendonly yes`的顺序。
+
+查看镜像：
+
+```bash
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+408a02b63b71   redis:7.0.11   "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   0.0.0.0:6380->6379/tcp, :::6380->6379/tcp   redis-6380
+
+$ docker logs -f redis-6380
+1:C 17 Sep 2023 09:39:01.705 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 17 Sep 2023 09:39:01.705 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 17 Sep 2023 09:39:01.705 # Configuration loaded
+1:M 17 Sep 2023 09:39:01.705 * monotonic clock: POSIX clock_gettime
+1:M 17 Sep 2023 09:39:01.705 * Running mode=standalone, port=6379.
+1:M 17 Sep 2023 09:39:01.705 # Server initialized
+1:M 17 Sep 2023 09:39:01.705 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:M 17 Sep 2023 09:39:01.723 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+1:M 17 Sep 2023 09:39:01.753 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+1:M 17 Sep 2023 09:39:01.753 * Ready to accept connections
+```
+
+连接 redis-6380，使用命令`REPLICAOF`设置从库：
+
+```bash
+127.0.0.1:6379> KEYS *
+(empty array)
+127.0.0.1:6379> REPLICAOF 192.168.3.145 6376
+OK
+127.0.0.1:6379> KEYS *															# 可以看到, 连接到master后, 当前从库把master的数据也复制过来了
+1) "master_key1"
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:slave																		# 当前角色是slave
+master_host:192.168.3.145														# 主机信息
+master_port:6376
+master_link_status:up
+master_last_io_seconds_ago:1
+master_sync_in_progress:0
+slave_read_repl_offset:57936
+slave_repl_offset:57936
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:42ccdaf545c7271d6bd3c0666e6ec02a4124f11a
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:57936
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:35999
+repl_backlog_histlen:21938
+```
+
+- 在 Redis 5.0 及之后的版本中，`SLAVEOF`命令被标记为废弃，但仍然可以使用。建议在新的项目中使用`REPLICAOF`命令来设置主从同步。
+
+查看 redis-6380 的日志，也可以看到连接 Master 成功：
+
+```bash
+$ docker logs -f redis-6380
+1:C 17 Sep 2023 09:53:57.597 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 17 Sep 2023 09:53:57.597 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 17 Sep 2023 09:53:57.597 # Configuration loaded
+1:M 17 Sep 2023 09:53:57.598 * monotonic clock: POSIX clock_gettime
+1:M 17 Sep 2023 09:53:57.598 * Running mode=standalone, port=6379.
+1:M 17 Sep 2023 09:53:57.598 # Server initialized
+1:M 17 Sep 2023 09:53:57.598 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:M 17 Sep 2023 09:53:57.598 * Reading RDB base file on AOF loading...
+1:M 17 Sep 2023 09:53:57.598 * Loading RDB produced by version 7.0.11
+1:M 17 Sep 2023 09:53:57.598 * RDB age 896 seconds
+1:M 17 Sep 2023 09:53:57.598 * RDB memory usage when created 0.82 Mb
+1:M 17 Sep 2023 09:53:57.598 * RDB is base AOF
+1:M 17 Sep 2023 09:53:57.598 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:M 17 Sep 2023 09:53:57.598 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+1:M 17 Sep 2023 09:53:57.598 * DB loaded from append only file: 0.000 seconds
+1:M 17 Sep 2023 09:53:57.598 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+1:M 17 Sep 2023 09:53:57.598 * Ready to accept connections
+1:S 17 Sep 2023 09:55:45.416 * Before turning into a replica, using my own master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+1:S 17 Sep 2023 09:55:45.416 * Connecting to MASTER 192.168.3.145:6376										# 连接到master
+1:S 17 Sep 2023 09:55:45.416 * MASTER <-> REPLICA sync started
+1:S 17 Sep 2023 09:55:45.416 * REPLICAOF 192.168.3.145:6376 enabled (user request from 'id=4 addr=127.0.0.1:35370 laddr=127.0.0.1:6379 fd=8 name= age=34 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=47 qbuf-free=20427 argv-mem=24 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=0 omem=0 tot-mem=22320 events=r cmd=slaveof user=default redir=-1 resp=2')
+1:S 17 Sep 2023 09:55:45.416 * Non blocking connect for SYNC fired the event.
+1:S 17 Sep 2023 09:55:45.417 * Master replied to PING, replication can continue...
+1:S 17 Sep 2023 09:55:45.417 * Trying a partial resynchronization (request d510e1bdb1f97dd0c1f30d2e441644ab5280fd47:1).
+1:S 17 Sep 2023 09:55:50.645 * Full resync from master: 42ccdaf545c7271d6bd3c0666e6ec02a4124f11a:35998
+1:S 17 Sep 2023 09:55:50.647 * MASTER <-> REPLICA sync: receiving streamed RDB from master with EOF to disk
+1:S 17 Sep 2023 09:55:50.666 * Discarding previously cached master state.
+1:S 17 Sep 2023 09:55:50.667 * MASTER <-> REPLICA sync: Flushing old data
+1:S 17 Sep 2023 09:55:50.667 * MASTER <-> REPLICA sync: Loading DB in memory
+1:S 17 Sep 2023 09:55:50.698 * Loading RDB produced by version 7.0.11
+1:S 17 Sep 2023 09:55:50.698 * RDB age 0 seconds
+1:S 17 Sep 2023 09:55:50.698 * RDB memory usage when created 1.05 Mb
+1:S 17 Sep 2023 09:55:50.698 * Done loading RDB, keys loaded: 1, keys expired: 0.
+1:S 17 Sep 2023 09:55:50.698 * MASTER <-> REPLICA sync: Finished with success
+1:S 17 Sep 2023 09:55:50.698 * Creating AOF incr file temp-appendonly.aof.incr on background rewrite
+1:S 17 Sep 2023 09:55:50.699 * Background append only file rewriting started by pid 28
+28:C 17 Sep 2023 09:55:50.709 * Successfully created the temporary AOF base file temp-rewriteaof-bg-28.aof
+28:C 17 Sep 2023 09:55:50.709 * Fork CoW for AOF rewrite: current 0 MB, peak 0 MB, average 0 MB
+1:S 17 Sep 2023 09:55:50.746 * Background AOF rewrite terminated with success
+1:S 17 Sep 2023 09:55:50.746 * Successfully renamed the temporary AOF base file temp-rewriteaof-bg-28.aof into appendonly.aof.2.base.rdb
+1:S 17 Sep 2023 09:55:50.746 * Successfully renamed the temporary AOF incr file temp-appendonly.aof.incr into appendonly.aof.2.incr.aof
+1:S 17 Sep 2023 09:55:50.766 * Removing the history file appendonly.aof.1.incr.aof in the background
+1:S 17 Sep 2023 09:55:50.766 * Removing the history file appendonly.aof.1.base.rdb in the background
+1:S 17 Sep 2023 09:55:50.786 * Background AOF rewrite finished successfully
+```
+
+注意：`使用 SLAVEOF 命令设置的从机，在从机服务重启后，主从关系就会断开。`
+
+```bash
+# 重启redis-6380
+$ docker restart redis-6380
+redis-6380
+
+
+# 查看redis-6380的主从关系
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:master																		# 当前角色是master
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:da66a6d37f7cc9160c4ed5c681f34472ddbd6c5b
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:0
+second_repl_offset:-1
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0
+127.0.0.1:6379> KEYS *
+1) "master_key1"
+127.0.0.1:6379> SET k1 v1														# 也可以执行写命令
+OK
+```
 
 ### 薪火相传
 
 
 
 ### 反客为主
+
+使用命令`REPLICAOF NO ONE`，会关闭当前 Slave 与 Master 的连接，转变为主服务器，原来同步的数据集不会被丢弃，当前服务器可以写入新数据。
+
+```bash
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:slave
+master_host:192.168.3.145
+master_port:6376
+master_link_status:up
+master_last_io_seconds_ago:4
+master_sync_in_progress:0
+slave_read_repl_offset:280
+slave_repl_offset:280
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:3e7b1c0541408e6ba34905171695302a1e4c579a
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:280
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:280
+127.0.0.1:6379> REPLICAOF NO ONE
+OK
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:master
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:fc3c1b20f31247e6e14c10e91bc4d9fba8263925
+master_replid2:3e7b1c0541408e6ba34905171695302a1e4c579a
+master_repl_offset:322
+second_repl_offset:323
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:322
+```
 
