@@ -3169,6 +3169,8 @@ OK
 
 官网：https://redis.io/docs/management/replication/
 
+
+
 ### 准备工作
 
 利用 Docker 创建 3 个 Redis 容器。
