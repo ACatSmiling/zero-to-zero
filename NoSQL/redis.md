@@ -3169,7 +3169,30 @@ OK
 
 官网：https://redis.io/docs/management/replication/
 
+<img src="redis/image-20230919115343260.png" alt="image-20230919115343260" style="zoom: 50%;" />
 
+At the base of Redis replication (excluding the high availability features provided as an additional layer by Redis Cluster or Redis Sentinel) there is a *leader follower* (master-replica) replication that is simple to use and configure. It allows replica Redis instances to be exact copies of master instances. The replica will automatically reconnect to the master every time the link breaks, and will attempt to be an exact copy of it *regardless* of what happens to the master.
+
+This system works using three main mechanisms:
+
+1. When a master and a replica instances are well-connected, the master keeps the replica updated by sending a stream of commands to the replica to replicate the effects on the dataset happening in the master side due to: client writes, keys expired or evicted, any other action changing the master dataset.
+2. When the link between the master and the replica breaks, for network issues or because a timeout is sensed in the master or the replica, the replica reconnects and attempts to proceed with a partial resynchronization: it means that it will try to just obtain the part of the stream of commands it missed during the disconnection.
+3. When a partial resynchronization is not possible, the replica will ask for a full resynchronization. This will involve a more complex process in which the master needs to create a snapshot of all its data, send it to the replica, and then continue sending the stream of commands as the dataset changes.
+
+Redis uses by default asynchronous replication, which being low latency and high performance, is the natural replication mode for the vast majority of Redis use cases. However, Redis replicas asynchronously acknowledge the amount of data they received periodically with the master. So the master does not wait every time for a command to be processed by the replicas, however it knows, if needed, what replica already processed what command. This allows having optional synchronous replication.
+
+Synchronous replication of certain data can be requested by the clients using the [`WAIT`](https://redis.io/commands/wait) command. However [`WAIT`](https://redis.io/commands/wait) is only able to ensure there are the specified number of acknowledged copies in the other Redis instances, it does not turn a set of Redis instances into a CP system with strong consistency: acknowledged writes can still be lost during a failover, depending on the exact configuration of the Redis persistence. However with [`WAIT`](https://redis.io/commands/wait) the probability of losing a write after a failure event is greatly reduced to certain hard to trigger failure modes.
+
+<img src="redis/1695109857578.jpg" alt="1695109857578" style="zoom:80%;" />
+
+简单地说，Redis Replication 就是`主从复制`，Master 以写为主，Slave 以读为主，当 Master 数据变化的时候，Redis 会自动将新的数据异步同步到每个 Slave 上。
+
+Redis Replication 能够实现的功能：
+
+- **读写分离。**
+- **容灾恢复。**
+- **数据备份。**
+- **水平扩容，支持高并发。**
 
 ### 准备工作
 
@@ -3258,19 +3281,22 @@ c605af17235b   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 
 
 - 一个 Master：redis-6376。
 - 两个 Slave：redis-6377 和 redis-6378。
+- 以下过程只做演示学习，3 个 Redis 服务均在同一虚拟机上，不符合实际生产应用。生产中在不同的服务器部署时，需要主机各服务器之间的防火墙是否开启，以及网络是否联通。
 
 ### 一主二仆
+
+<img src="./redis/1695115403321.jpg" alt="1695115403321" style="zoom:80%;" />
 
 #### 配置文件
 
 修改 redis-6376 的 redis.conf 配置：
 
 ```conf
-bind 0.0.0.0
+bind 0.0.0.0									# 任何主机都可以连接到当前Redis服务, 如果只允许特定主机访问, 将bind设置为该主机的ip
 port 6379
-requirepass 123456
-protected-mode yes
-daemonize no
+requirepass 123456								# 设置客户端连接后进行任何其他指定前需要使用的密码
+protected-mode no								# 是否开启保护模式, 默认开启, 要是配置里没有指定bind和密码, 开启该参数后, Redis只会本地进行访问, 拒绝外部访问
+daemonize no									# daemonize yes配置和docker run中-d参数冲突, 会导致容器一直启动失败
 appendonly yes
 aof-use-rdb-preamble yes
 ```
@@ -3287,9 +3313,39 @@ appendonly yes
 aof-use-rdb-preamble yes
 
 # 从库配置
-replicaof 192.168.3.145 6376
-masterauth 123456
+replicaof 192.168.3.145 6376					# slave连接master的地址和端口
+masterauth 123456								# 当master设置了密码保护时(用requirepass指定的密码), slave连接master时的密码
 ```
+
+>**主从身份验证：**
+>
+>If your master has a password via `requirepass`, it's trivial to configure the replica to use that password in all sync operations.
+>
+>To do it on a running instance, use `redis-cli` and type:
+>
+>```bash
+>config set masterauth <password>
+>```
+>
+>To set it permanently, add this to your config file:
+>
+>```bash
+>masterauth <password>
+>```
+>
+>
+>
+>**主从配置方式：**
+>
+>To configure basic Redis replication is trivial: just add the following line to the replica configuration file:
+>
+>```bash
+>replicaof 192.168.1.1 6379
+>```
+>
+>Of course you need to replace 192.168.1.1 6379 with your master IP address (or hostname) and port. Alternatively, you can call the [`REPLICAOF`](https://redis.io/commands/replicaof) command and the master host will start a sync with the replica.
+>
+>There are also a few parameters for tuning the replication backlog taken in memory by the master to perform the partial resynchronization. See the example `redis.conf` shipped with the Redis distribution for more information.
 
 关闭之前启动的 3 个 Redis 镜像：
 
@@ -3431,10 +3487,10 @@ $ docker logs -f --tail=100 redis-6378
 1:S 17 Sep 2023 02:46:36.238 * Background AOF rewrite finished successfully
 ```
 
-在 Master 执行命令`INFO REPLICATION`：
+在 Master 执行命令`INFO replication`：
 
 ```bash
-127.0.0.1:6379> INFO REPLICATION
+127.0.0.1:6379> INFO replication
 # Replication
 role:master																		# 当前角色是master
 connected_slaves:2
@@ -3451,15 +3507,15 @@ repl_backlog_first_byte_offset:1
 repl_backlog_histlen:8292
 ```
 
-在 Slave 执行命令`INFO REPLICATION`：
+在 Slave 执行命令`INFO replication`：
 
 ```bash
-127.0.0.1:6379> INFO REPLICATION
+127.0.0.1:6379> INFO replication
 # Replication
 role:slave																		# 当前角色是slave
 master_host:192.168.3.145														# 主机信息
 master_port:6376
-master_link_status:up
+master_link_status:up															# slave与master的连接状态up
 master_last_io_seconds_ago:3
 master_sync_in_progress:0
 slave_read_repl_offset:8236
@@ -3478,6 +3534,8 @@ repl_backlog_size:1048576
 repl_backlog_first_byte_offset:1
 repl_backlog_histlen:8236
 ```
+
+>There are two Redis commands that provide a lot of information on the current replication parameters of master and replica instances. One is [`INFO`](https://redis.io/commands/info). If the command is called with the `replication` argument as `INFO replication` only information relevant to the replication are displayed. Another more computer-friendly command is [`ROLE`](https://redis.io/commands/role), that provides the replication status of masters and replicas together with their replication offsets, list of connected replicas and so forth
 
 #### 命令指定
 
@@ -3619,7 +3677,6 @@ $ docker logs -f redis-6380
 $ docker restart redis-6380
 redis-6380
 
-
 # 查看redis-6380的主从关系
 127.0.0.1:6379> INFO REPLICATION
 # Replication
@@ -3642,14 +3699,22 @@ OK
 
 ### 薪火相传
 
+<img src="./redis/1695115438355.jpg" alt="1695115438355" style="zoom:80%;" />
 
+
+
+如图所示，上一个 Slave 可以是下一个 Slave 的 Master，Slave1 同样可以接收 Slave2 的连接和同步请求，这样，Slave1 就成为链条中下一个 Slave2 的 Master，这样，可以`有效减轻主 Master 的写压力`。
+
+**注意：Slave 在变更 Master 之前，会清除之前的数据，并与新 Master 建立连接同步数据。**
 
 ### 反客为主
+
+<img src="./redis/1695115562293.jpg" alt="1695115562293" style="zoom:80%;" />
 
 使用命令`REPLICAOF NO ONE`，会关闭当前 Slave 与 Master 的连接，转变为主服务器，原来同步的数据集不会被丢弃，当前服务器可以写入新数据。
 
 ```bash
-127.0.0.1:6379> INFO REPLICATION
+127.0.0.1:6379> INFO replication
 # Replication
 role:slave
 master_host:192.168.3.145
@@ -3688,4 +3753,266 @@ repl_backlog_size:1048576
 repl_backlog_first_byte_offset:1
 repl_backlog_histlen:322
 ```
+
+### 工作原理
+
+Every Redis master has a replication ID: it is a large pseudo random string that marks a given story of the dataset. Each master also takes an offset that increments for every byte of replication stream that it is produced to be sent to replicas, to update the state of the replicas with the new changes modifying the dataset. The replication offset is incremented even if no replica is actually connected, so basically every given pair of:
+
+```bash
+Replication ID, offset
+```
+
+Identifies an exact version of the dataset of a master.
+
+When replicas connect to masters, they use the [`PSYNC`](https://redis.io/commands/psync) command to send their old master replication ID and the offsets they processed so far. This way the master can send just the incremental part needed. However if there is not enough *backlog* in the master buffers, or if the replica is referring to an history (replication ID) which is no longer known, then a full resynchronization happens: in this case the replica will get a full copy of the dataset, from scratch.
+
+This is how a full synchronization works in more details:
+
+The master starts a background saving process to produce an RDB file. At the same time it starts to buffer all new write commands received from the clients. When the background saving is complete, the master transfers the database file to the replica, which saves it on disk, and then loads it into memory. The master will then send all buffered commands to the replica. This is done as a stream of commands and is in the same format of the Redis protocol itself.
+
+You can try it yourself via telnet. Connect to the Redis port while the server is doing some work and issue the [`SYNC`](https://redis.io/commands/sync) command. You'll see a bulk transfer and then every command received by the master will be re-issued in the telnet session. Actually [`SYNC`](https://redis.io/commands/sync) is an old protocol no longer used by newer Redis instances, but is still there for backward compatibility: it does not allow partial resynchronizations, so now [`PSYNC`](https://redis.io/commands/psync) is used instead.
+
+As already said, replicas are able to automatically reconnect when the master-replica link goes down for some reason. If the master receives multiple concurrent replica synchronization requests, it performs a single background save in to serve all of them.
+
+- Master 会保存一个 Replication ID 和 offset，这两个数据标识了 Master 数据集的精确版本。
+
+- 当 Slave 连接到 Master 时，会使用`PSYNC`命令，发送自身数据对应的 Replication ID 和 offset。
+
+  - 如果 Master 与之对应，则会增量同步新增的数据。
+  - 如果 Master 与之不对应，这包括两种情况，一是 Master 没有足够的内存保存 backlog，二是 Slave 发送的 Replication ID 无法被识别。此时，会全量同步所有的数据。
+  - SYNC 命令可以继续使用，但建议使用 PSYNC 命令替换。
+
+- 全量同步过程：
+
+  - Master 开始在后台保存快照（即 RDB 持久化，主从复制时会触发 RDB），之后新的写指令都会放入缓存。
+  - 当 RDB 持久化完成之后，Master 将 RDB 快照文件和缓存的写指令发送到所有的 Slave。
+  - Slave 接收到 RDB 快照文件和缓存的写指令后，将其存盘并加载到内存中，完成全量同步。
+
+- 通过心跳保持通信：
+
+  - Master 发出 PING 包的周期，默认是 10 秒，可以通过`repl-ping-replica-period`参数配置。
+
+    <img src="./redis/image-20230919221323123.png" alt="image-20230919221323123" style="zoom:80%;" />
+
+- 进入平稳，增量同步。
+
+  - Master 继续将新的写指令自动依次传给所有的 Slave，完成增量同步。
+
+- 从库下线，重连续传。
+
+  - Master 会检查 backlog 中的 offset，Master 和 Slave 均会保存一个 offset 和一个 masterId，offset 保存在 backlog 中。
+  - 当从库恢复正常后，Master 将 offset 后面的数据继续同步给 Slave，类似断点续传。
+
+#### Replication ID
+
+In the previous section we said that if two instances have the same replication ID and replication offset, they have exactly the same data. However it is useful to understand what exactly is the replication ID, and why instances have actually two replication IDs: the main ID and the secondary ID.
+
+A replication ID basically marks a given *history* of the data set. Every time an instance restarts from scratch as a master, or a replica is promoted to master, a new replication ID is generated for this instance. The replicas connected to a master will inherit its replication ID after the handshake. So two instances with the same ID are related by the fact that they hold the same data, but potentially at a different time. It is the offset that works as a logical time to understand, for a given history (replication ID), who holds the most updated data set.
+
+For instance, if two instances A and B have the same replication ID, but one with offset 1000 and one with offset 1023, it means that the first lacks certain commands applied to the data set. It also means that A, by applying just a few commands, may reach exactly the same state of B.
+
+The reason why Redis instances have two replication IDs is because of replicas that are promoted to masters. After a failover, the promoted replica requires to still remember what was its past replication ID, because such replication ID was the one of the former master. In this way, when other replicas will sync with the new master, they will try to perform a partial resynchronization using the old master replication ID. This will work as expected, because when the replica is promoted to master it sets its secondary ID to its main ID, remembering what was the offset when this ID switch happened. Later it will select a new random replication ID, because a new history begins. When handling the new replicas connecting, the master will match their IDs and offsets both with the current ID and the secondary ID (up to a given offset, for safety). In short this means that after a failover, replicas connecting to the newly promoted master don't have to perform a full sync.
+
+In case you wonder why a replica promoted to master needs to change its replication ID after a failover: it is possible that the old master is still working as a master because of some network partition: retaining the same replication ID would violate the fact that the same ID and same offset of any two random instances mean they have the same data set.
+
+### 无盘复制
+
+Normally a full resynchronization requires creating an RDB file on disk, then reloading the same RDB from disk to feed the replicas with the data.
+
+With slow disks this can be a very stressing operation for the master. Redis version 2.8.18 is the first version to have support for diskless replication. In this setup the child process directly sends the RDB over the wire to replicas, without using the disk as intermediate storage.
+
+Diskless replication can be enabled using the `repl-diskless-sync` configuration parameter. The delay to start the transfer to wait for more replicas to arrive after the first one is controlled by the `repl-diskless-sync-delay` parameter. Please refer to the example `redis.conf` file in the Redis distribution for more details.
+
+### 主从问题
+
+#### Slave 只读
+
+Since Redis 2.6, replicas support a read-only mode that is enabled by default. This behavior is controlled by the `replica-read-only` option in the redis.conf file, and can be enabled and disabled at runtime using [`CONFIG SET`](https://redis.io/commands/config-set).
+
+Read-only replicas will reject all write commands, so that it is not possible to write to a replica because of a mistake. This does not mean that the feature is intended to expose a replica instance to the internet or more generally to a network where untrusted clients exist, because administrative commands like [`DEBUG`](https://redis.io/commands/debug) or [`CONFIG`](https://redis.io/commands/config) are still enabled. The [Security](https://redis.io/topics/security) page describes how to secure a Redis instance.
+
+You may wonder why it is possible to revert the read-only setting and have replica instances that can be targeted by write operations. The answer is that writable replicas exist only for historical reasons. Using writable replicas can result in inconsistency between the master and the replica, so it is not recommended to use writable replicas. To understand in which situations this can be a problem, we need to understand how replication works. Changes on the master is replicated by propagating regular Redis commands to the replica. When a key expires on the master, this is propagated as a DEL command. If a key which exists on the master but is deleted, expired or has a different type on the replica compared to the master will react differently to commands like DEL, INCR or RPOP propagated from the master than intended. The propagated command may fail on the replica or result in a different outcome. To minimize the risks (if you insist on using writable replicas) we suggest you follow these recommendations:
+
+- Don't write to keys in a writable replica that are also used on the master. (This can be hard to guarantee if you don't have control over all the clients that write to the master.)
+- Don't configure an instance as a writable replica as an intermediary step when upgrading a set of instances in a running system. In general, don't configure an instance as a writable replica if it can ever be promoted to a master if you want to guarantee data consistency.
+
+Historically, there were some use cases that were considered legitimate for writable replicas. As of version 7.0, these use cases are now all obsolete and the same can be achieved by other means. For example:
+
+- Computing slow Set or Sorted set operations and storing the result in temporary local keys using commands like [`SUNIONSTORE`](https://redis.io/commands/sunionstore) and [`ZINTERSTORE`](https://redis.io/commands/zinterstore). Instead, use commands that return the result without storing it, such as [`SUNION`](https://redis.io/commands/sunion) and [`ZINTER`](https://redis.io/commands/zinter).
+- Using the [`SORT`](https://redis.io/commands/sort) command (which is not considered a read-only command because of the optional STORE option and therefore cannot be used on a read-only replica). Instead, use [`SORT_RO`](https://redis.io/commands/sort_ro), which is a read-only command.
+- Using [`EVAL`](https://redis.io/commands/eval) and [`EVALSHA`](https://redis.io/commands/evalsha) are also not considered read-only commands, because the Lua script may call write commands. Instead, use [`EVAL_RO`](https://redis.io/commands/eval_ro) and [`EVALSHA_RO`](https://redis.io/commands/evalsha_ro) where the Lua script can only call read-only commands.
+
+While writes to a replica will be discarded if the replica and the master resync or if the replica is restarted, there is no guarantee that they will sync automatically.
+
+Before version 4.0, writable replicas were incapable of expiring keys with a time to live set. This means that if you use [`EXPIRE`](https://redis.io/commands/expire) or other commands that set a maximum TTL for a key, the key will leak, and while you may no longer see it while accessing it with read commands, you will see it in the count of keys and it will still use memory. Redis 4.0 RC3 and greater versions are able to evict keys with TTL as masters do, with the exceptions of keys written in DB numbers greater than 63 (but by default Redis instances only have 16 databases). Note though that even in versions greater than 4.0, using [`EXPIRE`](https://redis.io/commands/expire) on a key that could ever exists on the master can cause inconsistency between the replica and the master.
+
+Also note that since Redis 4.0 replica writes are only local, and are not propagated to sub-replicas attached to the instance. Sub-replicas instead will always receive the replication stream identical to the one sent by the top-level master to the intermediate replicas. So for example in the following setup:
+
+```bash
+A ---> B ---> C
+```
+
+Even if `B` is writable, C will not see `B` writes and will instead have identical dataset as the master instance `A`.
+
+Slave 默认设置为`只读模式`，在 Slave 中尝试写命令时，会发生错误：
+
+```bash
+127.0.0.1:6379> SET slave_key1 slave_value1
+(error) READONLY You can't write against a read only replica.
+```
+
+虽然可以通过`CONFIG SET`命令设置 Slave 可写，但官方并不建议这样做，因为 Slave 可写，**可能会导致 Slave 与 Master 数据不一致，容易出现混淆。**
+
+实际上，在 Slave 服务上，也有一些只读命令可以使用，比如：
+
+- `SUNION`和`ZINTER`。
+- `SORT_RO`。
+- `EVAL_RO`和`EVALSHA_RO`。
+
+需要注意的是，使用`EXPIRE`命令，可能会导致 Master 与 Slave 的数据不一致。
+
+另外，如果 Slave 之间是薪火相传的关系，即使中间某一个 Slave 是可写的，它后面的 Slave 收到的数据流，仍然是与 Master 传递给第一个 Slave 的数据流保持一致，中间 Slave 的写指令，不会传递给后续的 Slave。
+
+#### Slave 处理过期 key
+
+Redis expires allow keys to have a limited time to live (TTL). Such a feature depends on the ability of an instance to count the time, however Redis replicas correctly replicate keys with expires, even when such keys are altered using Lua scripts.
+
+To implement such a feature Redis cannot rely on the ability of the master and replica to have synced clocks, since this is a problem that cannot be solved and would result in race conditions and diverging data sets, so Redis uses three main techniques to make the replication of expired keys able to work:
+
+1. Replicas don't expire keys, instead they wait for masters to expire the keys. When a master expires a key (or evict it because of LRU), it synthesizes a [`DEL`](https://redis.io/commands/del) command which is transmitted to all the replicas.
+2. However because of master-driven expire, sometimes replicas may still have in memory keys that are already logically expired, since the master was not able to provide the [`DEL`](https://redis.io/commands/del) command in time. To deal with that the replica uses its logical clock to report that a key does not exist **only for read operations** that don't violate the consistency of the data set (as new commands from the master will arrive). In this way replicas avoid reporting logically expired keys that are still existing. In practical terms, an HTML fragments cache that uses replicas to scale will avoid returning items that are already older than the desired time to live.
+3. During Lua scripts executions no key expiries are performed. As a Lua script runs, conceptually the time in the master is frozen, so that a given key will either exist or not for all the time the script runs. This prevents keys expiring in the middle of a script, and is needed to send the same script to the replica in a way that is guaranteed to have the same effects in the data set.
+
+Once a replica is promoted to a master it will start to expire keys independently, and will not require any help from its old master.
+
+#### Master 未持久化的安全问题
+
+In setups where Redis replication is used, it is strongly advised to have persistence turned on in the master and in the replicas. When this is not possible, for example because of latency concerns due to very slow disks, instances should be configured to **avoid restarting automatically** after a reboot.
+
+To better understand why masters with persistence turned off configured to auto restart are dangerous, check the following failure mode where data is wiped from the master and all its replicas:
+
+1. We have a setup with node A acting as master, with persistence turned down, and nodes B and C replicating from node A.
+2. Node A crashes, however it has some auto-restart system, that restarts the process. However since persistence is turned off, the node restarts with an empty data set.
+3. Nodes B and C will replicate from node A, which is empty, so they'll effectively destroy their copy of the data.
+
+When Redis Sentinel is used for high availability, also turning off persistence on the master, together with auto restart of the process, is dangerous. For example the master can restart fast enough for Sentinel to not detect a failure, so that the failure mode described above happens.
+
+Every time data safety is important, and replication is used with master configured without persistence, auto restart of instances should be disabled.
+
+#### Master 服务宕机
+
+Master 如果宕机，Slave 服务正常不变，数据可以正常读取，并等待 Master 服务恢复正常。Master 服务恢复正常后，Slave 会继续同步 Master 的数据。
+
+```bash
+# 关闭master服务
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED        STATUS        PORTS                                       NAMES
+8fba83ca7845   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours   0.0.0.0:6376->6379/tcp, :::6376->6379/tcp   redis-6376
+ec4c4608da4b   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours   0.0.0.0:6378->6379/tcp, :::6378->6379/tcp   redis-6378
+a86ade1fe24d   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours   0.0.0.0:6377->6379/tcp, :::6377->6379/tcp   redis-6377
+c3aa830df877   redis:7.0.11   "docker-entrypoint.s…"   2 days ago     Up 44 hours   0.0.0.0:6380->6379/tcp, :::6380->6379/tcp   redis-6380
+$ docker stop redis-6376
+redis-6376
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED        STATUS        PORTS                                       NAMES
+ec4c4608da4b   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours   0.0.0.0:6378->6379/tcp, :::6378->6379/tcp   redis-6378
+a86ade1fe24d   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours   0.0.0.0:6377->6379/tcp, :::6377->6379/tcp   redis-6377
+c3aa830df877   redis:7.0.11   "docker-entrypoint.s…"   2 days ago     Up 44 hours   0.0.0.0:6380->6379/tcp, :::6380->6379/tcp   redis-6380
+
+
+# 查看slave的状态
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:slave													# 从机的角色仍然是slave
+master_host:192.168.3.145
+master_port:6376
+master_link_status:down										# 当前slave与master的连接状态down
+master_last_io_seconds_ago:-1
+master_sync_in_progress:0
+slave_read_repl_offset:217406
+slave_repl_offset:217406
+master_link_down_since_seconds:9
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:3e7b1c0541408e6ba34905171695302a1e4c579a
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:217406
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:217406
+
+
+# 重新启动master
+$ docker start redis-6376
+redis-6376
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED        STATUS         PORTS                                       NAMES
+8fba83ca7845   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 2 seconds   0.0.0.0:6376->6379/tcp, :::6376->6379/tcp   redis-6376
+ec4c4608da4b   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours    0.0.0.0:6378->6379/tcp, :::6378->6379/tcp   redis-6378
+a86ade1fe24d   redis:7.0.11   "docker-entrypoint.s…"   43 hours ago   Up 43 hours    0.0.0.0:6377->6379/tcp, :::6377->6379/tcp   redis-6377
+c3aa830df877   redis:7.0.11   "docker-entrypoint.s…"   2 days ago     Up 44 hours    0.0.0.0:6380->6379/tcp, :::6380->6379/tcp   redis-6380
+
+
+# 查看slave的状态
+127.0.0.1:6379> INFO REPLICATION
+# Replication
+role:slave
+master_host:192.168.3.145
+master_port:6376
+master_link_status:up										# 当前slave与master的连接状态up
+master_last_io_seconds_ago:2
+master_sync_in_progress:0
+slave_read_repl_offset:0
+slave_repl_offset:0
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:8c480bf77d6b6ea9ac5b5093e88314ba5ed54dd6
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:0
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:0
+
+
+# 重启后master写入新数据
+127.0.0.1:6379> SET master_restart_key1 master_restart_value1
+OK
+
+
+# slave仍可正常同步
+127.0.0.1:6379> GET master_restart_key1
+"master_restart_value1"
+```
+
+### 缺点
+
+**缺点 1：复制延时，信号延时。**
+
+<img src="./redis/1695173375869.jpg" alt="1695173375869" style="zoom:67%;" />
+
+- 由于所有的写操作都是先在 Master 上操作，然后同步更新到 Slave 上，所以从 Master 同步到 Slave 机器有一定的延迟，当系统很繁忙的时候，延迟问题会更加严重，Slave 机器数量的增加也会使这个问题更加严重。
+
+**缺点 2：Master 服务宕机，系统会无法使用。**
+
+- 默认情况下，如果 Master 服务宕机，不会在 Slave 节点中自动重选一个 Master，这种情况下，会导致数据丢失。因此，无人值守成为必需的条件。
+
+## Redis 哨兵（Sentinel）
+
+官网：https://redis.io/docs/management/sentinel/
+
+
+
+## Redis 集群（Cluster）
+
+官网：https://redis.io/docs/management/scaling/
 
