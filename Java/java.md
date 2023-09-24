@@ -82,7 +82,7 @@
 
 ### 保留字（reserved word）
 
-现有 Java 版本尚未使用，但以后版本可能会作为关键字使用。自己命名标识符时要避免使用这些保留字：goto 、const。
+现有 Java 版本尚未使用，但以后版本可能会作为关键字使用。自己命名标识符时要避免使用这些保留字：`goto` 、`const`。
 
 ## 标识符
 Java 对各种变量、方法和类等要素命名时使用的字符序列称为`标识符`。
@@ -128,13 +128,13 @@ public class VariableTest{
         // 变量的使用
         System.out.println(myAge);
         
-        // 编译错误：使用myNumber之前未定义myNumber
+        // 编译错误: 使用myNumber之前未定义myNumber
         // System.out.println(myNumber);
         
         // 变量的定义
         int myNumber;
         
-        // 编译错误：使用myNumber之前未赋值myNumber
+        // 编译错误: 使用myNumber之前未赋值myNumber
         // System.out.println(myNumber);
         
         // 变量的赋值
@@ -549,7 +549,7 @@ switch (num) {
         break;
     default:
         System.out.println("other");
-        break;// default位于最后，此break可以不添加。
+        break;// default位于最后, 此break可以不添加
 }
 ```
 
@@ -764,42 +764,42 @@ public static void main(String[] args) {
 ```java
 // 方式一
 public static void main(String[] args) {
-    // 质数：素数，只能被1和它本身整除的自然数，2是最小的质数。
+    // 质数: 素数, 只能被1和它本身整除的自然数, 2是最小的质数
     int count = 0;
     boolean ifFlag = true;
     for (int i = 2; i <= 100000; i++) {
-        // 优化一：使用Math.sqrt(i)代替i，减少循环的次数
-        // i除以一个从2开始的小数，会得到一个从i-1开始的大数，因此，除以2开始的小数与除以从i-1开始的大数，
-        // 可以省略一个，以减少次数，这样计算的中点是i开方的值。
+        // 优化一: 使用Math.sqrt(i)代替i, 减少循环的次数
+        // i除以一个从2开始的小数, 会得到一个从i-1开始的大数, 因此, 除以2开始的小数与除以从i-1开始的大数, 
+        // 可以省略一个, 以减少次数, 这样计算的中点是i开方的值
         for (int j = 2; j <= Math.sqrt(i); j++) {
             if (i % j == 0) {
                 ifFlag = false;
-                // 优化二：使用break，跳出不必要的循环
+                // 优化二: 使用break, 跳出不必要的循环
                 break;
             }
         }
         if (ifFlag) {
-            // 优化三：不打印，i越大，打印的耗时越长
+            // 优化三: 不打印, i越大, 打印的耗时越长
             // System.out.println("质数：" + i);
             count++;
         }
         // 重置
         ifFlag = true;
     }
-    System.out.println("质数的个数有：" + count);// 质数的个数有：9592
+    System.out.println("质数的个数有：" + count);// 质数的个数有: 9592
 }
 ```
 
 ```java
 // 方式二
 public static void main(String[] args) {
-    // 质数：素数，只能被1和它本身整除的自然数，2是最小的质数。
+    // 质数: 素数, 只能被1和它本身整除的自然数, 2是最小的质数
     int count = 0;
     label:
     for (int i = 2; i <= 100000; i++) {
-        // 优化一：使用Math.sqrt(i)代替i，减少循环的次数
-        // i除以一个从2开始的小数，会得到一个从i-1开始的大数，因此，除以2开始的小数与除以从i-1开始的大数，
-        // 可以省略一个，以减少次数，这样计算的中点是i开方的值。
+        // 优化一: 使用Math.sqrt(i)代替i, 减少循环的次数
+        // i除以一个从2开始的小数, 会得到一个从i-1开始的大数, 因此, 除以2开始的小数与除以从i-1开始的大数, 
+        // 可以省略一个, 以减少次数, 这样计算的中点是i开方的值
         for (int j = 2; j <= Math.sqrt(i); j++) {
             if (i % j == 0) {
                 continue label;
@@ -807,7 +807,7 @@ public static void main(String[] args) {
         }
         count++;
     }
-    System.out.println("质数的个数有：" + count);// 质数的个数有：9592
+    System.out.println("质数的个数有：" + count);// 质数的个数有: 9592
 }
 ```
 
@@ -816,14 +816,14 @@ public static void main(String[] args) {
 - break 使用在 switch-case 结构或者循环结构中。
 - continue 只能使用在循环结构中。
 
-- break 语句用于终止某个语句块的执行，跳出当前循环，continue 语句用于跳过其所在循环语句块的当次执行，继续下一次循环。
+- **break 语句用于终止某个语句块的执行，跳出当前循环，continue 语句用于跳过其所在循环语句块的当次执行，继续下一次循环。**
 
   ```java
   public static void main(String[] args) {
       for (int i = 1; i <= 10; i++) {
           if (i % 4 == 0) {
-              break;// 输出结果：1	2 3
-              continue;// 输出结果：1 2 3 5 6 7 9 10
+              break;// 输出结果: 1 2 3
+              continue;// 输出结果: 1 2 3 5 6 7 9 10
           }
           System.out.print(i + "\t");
       }
@@ -956,13 +956,13 @@ public double nextDouble(double bound) {
 
 ```java
 public static void main(String[] args) {
-    // 1-1.静态初始化，方式一
+    // 1-1 静态初始化, 方式一
     int[] ids = new int[]{1001, 1002, 1003, 1004, 1005};
     
-    // 1-2.静态初始化，方式二，类型推断
+    // 1-2 静态初始化, 方式二, 类型推断
     int[] ids2 = {1001, 1002, 1003, 1004, 1005};
 
-    // 2.动态初始化
+    // 2 动态初始化
     String[] names = new String[5];
     names[0] = "Student A";
     names[1] = "Student B";
@@ -970,11 +970,11 @@ public static void main(String[] args) {
     names[3] = "Student D";
     names[4] = "Student E";
 
-    // 3.数组的长度
+    // 3 数组的长度
     System.out.println("ids 的长度：" + ids.length);// 5
     System.out.println("names 的长度：" + names.length);// 5
 
-    // 4.遍历数组
+    // 4 遍历数组
     for (int i = 0; i < ids.length; i++) {
         System.out.println(ids[i]);
     }
@@ -983,7 +983,7 @@ public static void main(String[] args) {
         System.out.println(names[i]);
     }
 
-    // 5.简写方式遍历数组
+    // 5 简写方式遍历数组
     for (int id : ids) {
         System.out.println(id);
     }
@@ -992,7 +992,7 @@ public static void main(String[] args) {
         System.out.println(name);
     }
 
-    // 6.数组元素的默认初始化值
+    // 6 数组元素的默认初始化值
     int[] arrs = new int[5];
     for (int arr : arrs) {
         System.out.println(arr);// 0
@@ -1007,13 +1007,13 @@ public static void main(String[] args) {
 
 - `静态初始化`：数组的初始化，和数组元素的赋值操作同时进行，如：`int[] ids = new int[]{1001, 1002, 1003, 1004, 1005};`。
 
-- `动态初始化` ：数组的初始化，和数组元素的赋值操作分开进行，如：`String[] names = new String[5];`。
+- `动态初始化` ：数组的初始化，和数组元素的赋值操作分开进行，如：`String[] names = new String[5]; names[1] = "a";`。
 
 - 定义数组并用运算符 new 为之分配空间后，才可以引用数组中的每个元素。
 
 - 数组元素的引用方式：`数组名[数组元素下标]`。
 
-- 数组元素下标**`从 0 开始`**，长度为 n 的数组的合法下标取值范围：0 --- n-1。如：`int a[] = new int[3];`，则可引用的数组元素为 a[0]、a[1] 和 a[2]。
+- 数组元素下标**`从 0 开始`**，长度为 n 的数组的合法下标取值范围：0 ~ n - 1。如：`int a[] = new int[3];`，则可引用的数组元素为 a[0]、a[1] 和 a[2]。
 
 - 数组元素下标可以是整型常量或整型表达式。如 a[3]，b[i]，c[6*i]。
 
@@ -1042,7 +1042,7 @@ public static void main(String[] args) {
       for (int i = 0; i < index.length; i++) {
           tel += arr[index[i]];
       }
-      System.out.println("联系方式：" + tel);// 联系方式：18013820100
+      System.out.println("联系方式：" + tel);// 联系方式: 18013820100
   }
   ```
   
@@ -1060,27 +1060,27 @@ Java 语言里提供了支持多维数组的语法。如果把一维数组当成
 
 ```java
 public static void main(String[] args) {
-    // 1-1.静态初始化，方式一
+    // 1-1 静态初始化, 方式一
     int[][] arr = new int[][]{{3, 8, 2}, {2, 7}, {9, 0, 1, 6}};
 
-    // 1-2.静态初始化，方式二，类型推断
+    // 1-2 静态初始化, 方式二, 类型推断
     int[][] arr2 = {{3, 8, 2}, {2, 7}, {9, 0, 1, 6}};
     System.out.println(arr2[2][3]);
 
-    // 2-1.动态初始化，方式一
+    // 2-1 动态初始化, 方式一
     /*
-    定义了名称为arr3的二维数组，二维数组中有3个一维数组，内层每一个一维数组中有2个元素
-    内层一维数组的名称分别为arr3[0]，arr3[1]，arr3[2]，返回的是地址值
-    给内层第一个一维数组1脚标位赋值为78写法是：arr3[0][1] = 78;
+    定义了名称为arr3的二维数组, 二维数组中有3个一维数组, 内层每一个一维数组中有2个元素
+    内层一维数组的名称分别为arr3[0], arr3[1], arr3[2], 返回的是地址值
+    给内层第一个一维数组1脚标位赋值为78写法是: arr3[0][1] = 78;
      */
     int[][] arr3 = new int[3][2];
     arr3[0][1] = 78;
     System.out.println(arr3[0]);// [I@78308db1
     System.out.println(arr3[0][1]);// 78
 
-    // 2-2.动态初始化，方式二
+    // 2-2 动态初始化, 方式二
     /*
-    二维数组arr4中有3个一维数组，内层每个一维数组都是默认初始化值null(注意：区别于格式2-1)
+    二维数组arr4中有3个一维数组, 内层每个一维数组都是默认初始化值null(注意: 区别于格式2-1)
     可以对内层三个一维数组分别进行初始化
      */
     int[][] arr4 = new int[3][];
@@ -1091,16 +1091,16 @@ public static void main(String[] args) {
     // 初始化第三个
     arr4[2] = new int[2];
     
-    // 3.特殊写法
-    int[] x, y[];// x是一维数组，y是二维数组
+    // 3 特殊写法
+    int[] x, y[];// x是一维数组, y是二维数组
     x = new int[3];
     y = new int[3][2];
     
-    // 4.获取数组长度
+    // 4 获取数组长度
     System.out.println("arr的长度：" + arr.length);// 3
     System.out.println("arr第一个元素的长度：" + arr[0].length);// 3
 
-    // 5.遍历二维数组
+    // 5 遍历二维数组
     for (int i = 0; i < arr.length; i++) {
         for (int j = 0; j < arr[i].length; j++) {
             System.out.print(arr[i][j] + "\t");// 3	8 2	2 7	9 0	1 6
@@ -1108,7 +1108,7 @@ public static void main(String[] args) {
     }
     System.out.println();
 
-    // 6.简写遍历二维数组
+    // 6 简写遍历二维数组
     for (int[] valueArr : arr) {
         for (int value : valueArr) {
             System.out.print(value + "\t");// 3	8 2	2 7	9 0	1 6
@@ -1116,7 +1116,7 @@ public static void main(String[] args) {
     }
     System.out.println();
     
-    // 7.二维数组元素的默认初始化值
+    // 7 二维数组元素的默认初始化值
     int[][] arr5 = new int[3][2];
     System.out.println(arr5);// [[I@27c170f0
     System.out.println(arr5[1]);// [I@5451c3a8
@@ -1128,7 +1128,7 @@ public static void main(String[] args) {
     System.out.println(arr6[1][1]);// null
 
     String[][] arr7 = new String[3][];
-    System.out.println(arr7[1]);// null，因为内层数组未初始化
+    System.out.println(arr7[1]);// null, 因为内层数组未初始化
     System.out.println(arr7[1][1]);// NullPointerException
 }
 ```
@@ -1157,16 +1157,16 @@ public static void main(String[] args) {
   
     ```java
     public static void main(String[] args) {
-        // 1.声明二维数组并初始化
+        // 1 声明二维数组并初始化
         int[][] arrs = new int[10][];
         for (int i = 0; i < arrs.length; i++) {
             System.out.print("[" + i + "]\t");
-            // 2.初始化内层数组，并给内层数组的首末元素赋值
+            // 2 初始化内层数组, 并给内层数组的首末元素赋值
             arrs[i] = new int[i + 1];
             arrs[i][0] = 1;
             arrs[i][arrs[i].length - 1] = 1;
             for (int j = 0; j < arrs[i].length; j++) {
-                // 3.给从第三行开始内层数组的非首末元素赋值
+                // 3 给从第三行开始内层数组的非首末元素赋值
                 if (i >= 2 && j > 0 && j < arrs[i].length - 1) {
                     arrs[i][j] = arrs[i - 1][j - 1] + arrs[i - 1][j];
                 }
@@ -1234,7 +1234,7 @@ public static void main(String[] args) {
       int s = len * len;
   
       /*
-       * k = 1：向右，k = 2：向下，k = 3：向左，k = 4：向上
+       * k = 1: 向右, k = 2: 向下, k = 3: 向左, k = 4: 向上
        */
       int k = 1;
       int i = 0, j = 0;
@@ -1393,7 +1393,7 @@ public static void main(String[] args) {
       System.out.println();
   
       // 赋值arr2变量等于arr1
-      // 不能称作数组的复制，实际上是把arr1指向的地址(以及其他一些信息)赋给了arr2，堆空间中只有一个数组对象
+      // 不能称作数组的复制, 实际上是把arr1指向的地址(以及其他一些信息)赋给了arr2, 堆空间中只有一个数组对象
       arr2 = arr1;
   
       // 遍历arr2
@@ -1505,7 +1505,7 @@ public static void main(String[] args) {
     }
     System.out.println();
 
-    // 反转，方式一
+    // 反转, 方式一
     for (int i = 0; i < arr.length / 2; i++) {
         String temp = arr[i];
         arr[i] = arr[arr.length - 1 - i];
@@ -1516,7 +1516,7 @@ public static void main(String[] args) {
     }
     System.out.println();
 
-    // 反转，方式二
+    // 反转, 方式二
     for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
         String temp = arr[i];
         arr[i] = arr[j];
@@ -1662,7 +1662,7 @@ public static void main(String[] args) {
 
     // 冒泡排序
     for (int i = 0; i < arr.length - 1; i++) {
-        // 先把最大的数移到数组最后一位，然后再找第二大的数，以此类推
+        // 先把最大的数移到数组最后一位, 然后再找第二大的数, 以此类推
         for (int j = 0; j < arr.length - 1 - i; j++) {
             if (arr[j] > arr[j + 1]) {
                 int temp = arr[j];
@@ -1693,7 +1693,7 @@ public static void main(String[] args) {
 
 排序思想：
 
-1. 从数列中挑出一个元素，称为"基准"（pivot）。
+1. 从数列中挑出一个元素，称为 "基准"（pivot）。
 2. 重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。在这个分区结束之后，该基准就处于数列的中间位置。这个称为分区（partition）操作。
 3. 递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序。
 4. 递归的最底部情形，是数列的大小是零或一，也就是永远都已经被排序好了。虽然一直递归下去，但是这个算法总会结束，因为在每次的迭代（iteration）中，它至少会把一个元素摆到它最后的位置去。
@@ -1710,25 +1710,25 @@ public static void main(String[] args) {
 
 ```java
 public static void main(String[] args) {
-    // 1.boolean equals(int[] a,int[] b)：判断两个数组是否相等
+    // 1 boolean equals(int[] a,int[] b): 判断两个数组是否相等
     int[] arr1 = new int[]{1, 2, 3, 4};
     int[] arr2 = new int[]{1, 3, 2, 4};
     boolean isEquals = Arrays.equals(arr1, arr2);
     System.out.println("arr1和arr2是否相等：" + isEquals);
 
-    // 2.String toString(int[] a)：遍历数组信息
+    // 2 String toString(int[] a): 遍历数组信息
     System.out.println("arr1：" + Arrays.toString(arr1));
 
-    // 3.void fill(int[] a,int val)：将指定值填充到数 组之中
+    // 3 void fill(int[] a,int val): 将指定值填充到数组之中
     Arrays.fill(arr1, 10);
     System.out.println("arr1填充后：" + Arrays.toString(arr1));
 
-    // 4.void sort(int[] a)：对数组进行排序，底层使用的是快速排序
+    // 4 void sort(int[] a): 对数组进行排序, 底层使用的是快速排序
     System.out.println("arr2排序前：" + Arrays.toString(arr2));
     Arrays.sort(arr2);
     System.out.println("arr2排序后：" + Arrays.toString(arr2));
 
-    // 5.int binarySearch(int[] a,int key)：对排序后的数组进行二分法检索指定的值
+    // 5 int binarySearch(int[] a,int key): 对排序后的数组进行二分法检索指定的值
     int[] arr3 = new int[]{-98, -34, 2, 34, 54, 66, 79, 105, 210, 333};
     int dest = 211;
     int index = Arrays.binarySearch(arr3, dest);
@@ -1756,7 +1756,7 @@ public static void main(String[] args) {
     System.out.println(arr[2]);// 数组脚标越界
     System.out.println(arr[-1]);// 访问了数组中不存在的脚标
 
-    // NullPointerException：空指针异常，arr引用没有指向实体，却被操作实体中的元素
+    // NullPointerException: 空指针异常, arr引用没有指向实体, 却被操作实体中的元素
     // 情形一
     int[] arr2 = null;
     System.out.println(arr2[0]);
@@ -1880,7 +1880,7 @@ public static void main(String[] args) {
 
 例如，下面一段代码的内存图如下：
 
-<img src="java/image-20210220112243394.png" alt="image-20210220112243394" style="zoom: 67%;" />
+<img src="java/image-20210220112243394.png" alt="image-20210220112243394" style="zoom: 50%;" />
 
 匿名对象：
 
@@ -1894,25 +1894,25 @@ public static void main(String[] args) {
  */
 public class PersonTest {
     public static void main(String[] args) {
-        // 1.创建Person类的对象
+        // 1 创建Person类的对象
         Person person = new Person();
 
-        // 2.调用对象的结构：属性和方法
-        // 2-1.调用属性："对象.属性"
+        // 2 调用对象的结构: 属性和方法
+        // 2-1 调用属性: "对象.属性"
         person.name = "Tom";
         person.isMale = true;
         System.out.println("年龄：" + person.age);// 1
-        // 2-2.调用方法："对象.方法"
+        // 2-2 调用方法: "对象.方法"
         person.eat();// 人可以吃饭
         person.sleep();// 人可以睡觉
-        person.talk("Chinese");// 人可以说话，语言是：Chinese
+        person.talk("Chinese");// 人可以说话, 语言是: Chinese
 
-        // 3.创建一个新的Person类的对象
+        // 3 创建一个新的Person类的对象
         Person person2 = new Person();
-        System.out.println(person2.name);// null，非Tom
+        System.out.println(person2.name);// null, 非Tom
 
-        // 4.将person变量保存的地址值赋值给person3，此时，二者指向堆空间中的同一个对象实体
-        // 修改person和person3，效果相同
+        // 4 将person变量保存的地址值赋值给person3, 此时, 二者指向堆空间中的同一个对象实体
+        // 修改person和person3, 效果相同
         Person person3 = person;
         System.out.println(person3.name);// Tom
         person3.age = 10;
@@ -1950,7 +1950,7 @@ class Person {
 
 语法格式：
 
-<img src="java/image-20210224101159350.png" alt="image-20210224101159350" style="zoom:80%;" />
+<img src="java/image-20210224101159350.png" alt="image-20210224101159350" style="zoom: 50%;" />
 
 - 常用的权限修饰符有：`private`、`缺省`、`protected`、`public`。其他修饰符：`static`、`final`。
 
@@ -1960,13 +1960,13 @@ class Person {
 
 属性（成员变量）与局部变量的区别：
 
-<img src="java/image-20210220145207862.png" alt="image-20210220145207862" style="zoom: 67%;" />
+<img src="java/image-20210220145207862.png" alt="image-20210220145207862" style="zoom: 50%;" />
 
-![image-20210220145307284](java/image-20210220145307284.png)
+<img src="java/image-20210220145307284.png" alt="image-20210220145307284" style="zoom:55%;" />
 
 - **成员变量的默认初始化值：**当一个对象被创建时，会对其中各种类型的成员变量自动进行初始化赋值。除了基本数据类型之外的变量类型都是引用类型。
 
-  <img src="java/image-20210220145909689.png" alt="image-20210220145909689" style="zoom:67%;" />
+  <img src="java/image-20210220145909689.png" alt="image-20210220145909689" style="zoom:55%;" />
 
 - **局部变量的默认初始化值：**局部变量声明后，没有默认初始化值，必须显式赋值，方可使用。特别的，形参在调用时，赋值即可。
 
@@ -2025,9 +2025,9 @@ class Person {
   }
   ```
 
-- 总结：程序中成员变量赋值的执行顺序
+- 程序中成员变量赋值的执行顺序：
 
-  <img src="java/image-20210301170915863.png" alt="image-20210301170915863" style="zoom: 67%;" />
+  <img src="java/image-20210301170915863.png" alt="image-20210301170915863" style="zoom: 40%;" />
 
 ### 类的成员之二：方法（method）
 
@@ -2039,7 +2039,7 @@ class Person {
 
 声明格式：
 
-<img src="java/image-20210220155316669.png" alt="image-20210220155316669" style="zoom:80%;" />
+<img src="java/image-20210220155316669.png" alt="image-20210220155316669" style="zoom: 50%;" />
 
 - 权限修饰符：public，缺省，private，protected 等。
 
@@ -2056,7 +2056,7 @@ class Person {
 
 方法的分类：按照是否有形参及返回值。
 
-<img src="java/image-20210220161830762.png" alt="image-20210220161830762" style="zoom:67%;" />
+<img src="java/image-20210220161830762.png" alt="image-20210220161830762" style="zoom: 40%;" />
 
 方法的调用：
 
@@ -2099,11 +2099,11 @@ class Person {
 
 JavaSE 5.0 中提供了`Varargs (variable number of arguments) 机制`，允许直接定义能和多个实参相匹配的形参。从而，可以用一种更简单的方式，来传递个数可变的实参。
 
-<img src="java/image-20210222201117424.png" alt="image-20210222201117424" style="zoom:67%;" />
+<img src="java/image-20210222201117424.png" alt="image-20210222201117424" style="zoom: 50%;" />
 
-声明格式：`方法名(参数的类型名 ... 参数名)`
+声明格式：`方法名(参数的类型名... 参数名)`
 
-可变参数：方法参数部分指定类型的参数个数是可变多个 --- 0 个，1 个或多个。
+可变参数：方法参数部分指定类型的参数个数是可变多个 ---> 0 个，1 个或多个。
 
 `可变个数形参的方法与同名的方法之间，彼此构成重载。`
 
@@ -2112,7 +2112,7 @@ JavaSE 5.0 中提供了`Varargs (variable number of arguments) 机制`，允许�
   ```java
   // 方法二
   public static void show(int... m) {
-      // m参数等同于数组，与数组的使用方法相同。
+      // m参数等同于数组, 与数组的使用方法相同
       System.out.println(Arrays.toString(m));
   }
   
@@ -2151,7 +2151,7 @@ Java 的实参值如何传入方法呢？Java 里方法的参数传递方式只�
 - **形参是基本数据类型：将实参基本数据类型变量的`"数据值"`传递给形参。**
 - **形参是引用数据类型：将实参引用数据类型变量的`"地址值"`传递给形参。**
 
-形参是基本数据类型与引用数据类型之间的区别:
+形参是基本数据类型与引用数据类型之间的区别：
   ```java
   public class ValueTransferTest {
       public static void main(String[] args) {
@@ -2225,7 +2225,7 @@ Java 的实参值如何传入方法呢？Java 里方法的参数传递方式只�
 
 -   内存解析图参考：
 
-  <img src="java/image-20210223111755001.png" alt="image-20210223111755001" style="zoom:67%;" />
+  <img src="java/image-20210223111755001.png" alt="image-20210223111755001" style="zoom:50%;" />
 
 对于引用数据类型，两个不同方法的局部变量，会互相影响，因为是将实参引用数据类型变量的 "地址值" 传递给形参，二者指向的是堆内存中的同一个对象：
 
@@ -2274,7 +2274,7 @@ main方法中, 调用swap方法之后: data.m = 10, data.n = 20
 
 - 内存解析图参考：
 
-  <img src="java/image-20210223111838133.png" alt="image-20210223111838133" style="zoom:67%;" />
+  <img src="java/image-20210223111838133.png" alt="image-20210223111838133" style="zoom:50%;" />
 
 实例一：
 
@@ -2307,11 +2307,11 @@ class Value {
 }
 ```
 
-<img src="java/image-20210223113602448.png" alt="image-20210223113602448" style="zoom:67%;" />
+<img src="java/image-20210223113602448.png" alt="image-20210223113602448" style="zoom:50%;" />
 
 实例二：
 
-<img src="java/image-20210223115107087.png" alt="image-20210223115107087" style="zoom:80%;" />
+<img src="java/image-20210223115107087.png" alt="image-20210223115107087" style="zoom: 67%;" />
 
 - 方法一：
 
@@ -2381,7 +2381,7 @@ public class Test {
             arr[i] = arr[i] / arr[0];
         }
         
-        // 错误写法，因为第一次循环之后，首位置上的数已经改变，不再是最开始的值
+        // 错误写法, 因为第一次循环之后, 首位置上的数已经改变, 不再是最开始的值
         /*for (int i = 0; i < arr.length; i++) {
             arr[i] = arr[i] / arr[0];
         }*/
@@ -2400,7 +2400,7 @@ public class Test {
         System.out.println(arr);// 地址值
 
         char[] arr1 = new char[]{'a', 'b', 'c'};
-        System.out.println(arr1);// 传入char数组时，println方法体内是遍历这个数组
+        System.out.println(arr1);// 传入char数组时, println方法体内是遍历这个数组
     }
 }
 输出结果：
@@ -2435,14 +2435,14 @@ public class PassObject {
     }
 
     public static void main(String[] args) {
-        // 方式一：循环
+        // 方式一: 循环
         int sum = 0;
         for (int i = 1; i <= 100; i++) {
             sum += i;
         }
         System.out.println("1-100之间自然数的和: " + sum);
 
-        // 方式二：递归
+        // 方式二: 递归
         System.out.println("1-100之间自然数的和: " + getSum(100));
         System.out.println("1-100之间自然数的积: " + getProduct(5));
     }
@@ -2453,7 +2453,7 @@ public class PassObject {
 
 ```java
 /**
- * 已知有一个数列：f(0) = 1, f(1) = 4, f(n+2) = 2 * f(n+1) + f(n), 其中n是大于0的整数, 求f(10)的值。
+ * 已知有一个数列: f(0) = 1, f(1) = 4, f(n+2) = 2 * f(n+1) + f(n), 其中n是大于0的整数, 求f(10)的值
  */
 public class PassObject {
     public static int f(int n) {
@@ -2479,7 +2479,7 @@ public class PassObject {
 
 ```java
 /**
- * 已知一个数列: f(20) = 1, f(21) = 4, f(n+2) = 2 * f(n+1) + f(n), 其中n是大于0的整数, 求f(10)的值。
+ * 已知一个数列: f(20) = 1, f(21) = 4, f(n+2) = 2 * f(n+1) + f(n), 其中n是大于0的整数, 求f(10)的值
  */
 public class PassObject {
     public static int f(int n) {
@@ -2507,7 +2507,7 @@ public class PassObject {
 /**
  * 斐波那契数列: 1 1 2 3 5 8 13 21 34 55 ...
  * 规律: 一个数等于前两个数之和
- * 要求：计算斐波那契数列(Fibonacci)的第n个值，并将整个数列打印出来
+ * 要求: 计算斐波那契数列(Fibonacci)的第n个值, 并将整个数列打印出来
  */
 public class PassObject {
     public static int f(int n) {
@@ -2579,13 +2579,13 @@ count1: 15, k: 0
 
 - 递归过程：
 
-  <img src="java/image-20210223160555518.png" alt="image-20210223160555518" style="zoom:80%;" />
+  <img src="java/image-20210223160555518.png" alt="image-20210223160555518" style="zoom: 50%;" />
 
   >遍历过程相当于二叉树的前序遍历。
 
 ### OOP 特征一：封装和隐藏
 
-**封装性的设计思想：隐藏对象内部的复杂性，只对外公开简单的接口。**便于外界调用，从而提高系统的可扩展性、可维护性。通俗的说，把该隐藏的隐藏起来，该暴露的暴露出来。
+**`封装性的设计思想：隐藏对象内部的复杂性，只对外公开简单的接口。`**便于外界调用，从而提高系统的可扩展性、可维护性。通俗的说，把该隐藏的隐藏起来，该暴露的暴露出来。
 
 程序设计追求`"高内聚，低耦合"`：
 
@@ -2595,7 +2595,7 @@ count1: 15, k: 0
 
 信息的封装和隐藏：
 
-- Java 中通过将对象的属性声明为私有的（private），再提供公共的（public）方法 --- `getXxx()`和`setXxx()`，来实现对属性的操作，并以此达到下述目的：
+- Java 中通过将对象的属性声明为私有的（private），再提供公共的（public）方法 ---> `getXxx()`和`setXxx()`，来实现对属性的操作，并以此达到下述目的：
 
   - 隐藏一个类中不需要对外提供的实现细节。
 
@@ -2603,7 +2603,7 @@ count1: 15, k: 0
 
   - 便于修改，增强代码的可维护性。
 
-  <img src="java/image-20210223164658179.png" alt="image-20210223164658179" style="zoom:67%;" />
+  <img src="java/image-20210223164658179.png" alt="image-20210223164658179" style="zoom: 50%;" />
 
 
 封装性的体现：`属性私有`、`方法私有`、`构造器私有`（如单例模式）等。
@@ -2616,21 +2616,20 @@ count1: 15, k: 0
 
 权限修饰符置于类的成员定义前，用来限定对象对该类成员的访问权限：
 
-<img src="java/image-20210223173051273.png" alt="image-20210223173051273" style="zoom:80%;" />
+<img src="java/image-20210223173051273.png" alt="image-20210223173051273" style="zoom: 50%;" />
 
 权限修饰符可以用来修饰类及类的内部结构：属性、方法、构造器、内部类。
 
 - **对于 class 的权限修饰只可以用 public 和 default（缺省）。**
-
   - public 类可以在任意地方被访问。
-
+  
   - default 类只可以被同一个包内部的类访问。
-
+  
 - **对于 class 的内部结构，四种权限修饰符都可以使用。**
 
 封装性总结：Java 提供了 4 种权限修饰符来修饰类及类的内部结构，体现类及类的内部结构在被调用时的可见性的大小。 
 
-<img src="java/image-20210223203339682.png" alt="image-20210223203339682" style="zoom: 67%;" />
+<img src="java/image-20210223203339682.png" alt="image-20210223203339682" style="zoom: 50%;" />
 
 本类中任意调用：
 
@@ -2758,13 +2757,13 @@ public class OtherOrderTest {
 
 语法格式：
 
-<img src="java/image-20210224091734897.png" alt="image-20210224091734897" style="zoom:67%;" />
+<img src="java/image-20210224091734897.png" alt="image-20210224091734897" style="zoom: 50%;" />
 
 根据参数不同，构造器可以分为如下两类：
 
 - 隐式无参构造器（系统默认提供）。
 
-- 显定义一个或多个构造器（无参、有参）。
+- 显式定义一个或多个构造器（无参、有参）。
 
 构造器的特征：
 
@@ -2789,7 +2788,7 @@ JavaBean 是一种 Java 语言写成的可重用组件。所谓 JavaBean，是�
 
 ### UML 类图
 
-<img src="java/image-20210224112245811.png" alt="image-20210224112245811" style="zoom:67%;" />
+<img src="java/image-20210224112245811.png" alt="image-20210224112245811" style="zoom: 55%;" />
 
 ### 关键字：this
 
@@ -2977,7 +2976,7 @@ package 语句作为 Java 源文件的第一条语句，指明该文件中定义
 
 语法格式：
 
-<img src="java/image-20210224161550855.png" alt="image-20210224161550855" style="zoom: 80%;" />
+<img src="java/image-20210224161550855.png" alt="image-20210224161550855" style="zoom: 50%;" />
 
 - 包对应于文件系统的目录，package 语句中，用`.`来指明包（目录）的层次。
 
@@ -3001,7 +3000,7 @@ JDK 中主要的包介绍：
 
 语法格式：
 
-<img src="java/image-20210224163212506.png" alt="image-20210224163212506" style="zoom:80%;" />
+<img src="java/image-20210224163212506.png" alt="image-20210224163212506" style="zoom: 50%;" />
 
 - 在源文件中使用 import 语句，可以显式的导入指定包下的类或接口。
 
@@ -3037,7 +3036,7 @@ JDK 中主要的包介绍：
 
 类继承语法规则：
 
-<img src="java/image-20210225094119803.png" alt="image-20210225094119803" style="zoom:80%;" />
+<img src="java/image-20210225094119803.png" alt="image-20210225094119803" style="zoom:60%;" />
 
 继承性的作用：
 
@@ -3055,7 +3054,7 @@ JDK 中主要的包介绍：
 
 - 子类不能直接访问父类中私有的（private）的成员变量和方法。
 
-  ![image-20210225102501129](java/image-20210225102501129.png)
+  <img src="java/image-20210225102501129.png" alt="image-20210225102501129" style="zoom:80%;" />
 
 - Java 只支持`单继承`和`多层继承`，不允许多重继承。
 
@@ -3067,7 +3066,7 @@ JDK 中主要的包介绍：
   
     <img src="java/image-20210225102803030.png" alt="image-20210225102803030" style="zoom:80%;" />
   
-    <img src="java/image-20210225104141839.png" alt="image-20210225104141839" style="zoom:80%;" />
+    <img src="java/image-20210225104141839.png" alt="image-20210225104141839" style="zoom:70%;" />
   
   - 此处强调的是 Java 类的单继承性，Java 中，接口是可以多继承的。
 
@@ -3091,23 +3090,23 @@ JDK 中主要的包介绍：
   - 父类被重写的方法的返回值类型是 A 类型，则子类重写的方法的返回值类型可以是 A 类或 A 类的子类。
   - 父类被重写的方法的返回值类型是基本数据类型（比如：double），则子类重写的方法的返回值类型必须是相同的基本数据类型（即，只能是 double）。
 - 子类重写的方法`抛出的异常类型`不能大于父类被重写的方法抛出的异常类型。
-- **子类与父类中同名同参数的方法必须同时声明为非 static 的（此时属于重写），或者同时声明为 static 的（此时不属于重写）。因为 static 方法是属于类的，子类无法覆盖父类的方法。**
+- **`子类与父类中同名同参数的方法必须同时声明为非 static 的（此时属于重写），或者同时声明为 static 的（此时不属于重写）。因为 static 方法是属于类的，子类无法覆盖父类的方法。`**
   - 此时，子类中的该方法也须遵循重写关于访问权限、返回值和抛出异常类型等方面的规则。
 
 
 实例一：
 
-<img src="java/image-20210225142115203.png" alt="image-20210225142115203" style="zoom:80%;" />
+<img src="java/image-20210225142115203.png" alt="image-20210225142115203" style="zoom: 67%;" />
 
 实例二：
 
-<img src="java/image-20210225142247945.png" alt="image-20210225142247945" style="zoom: 67%;" />
+<img src="java/image-20210225142247945.png" alt="image-20210225142247945" style="zoom: 60%;" />
 
 方法重载与重写的区别：
 
 1.  二者的定义细节：略。
-2. 从编译和运行的角度看：重载，是指允许存在多个同名方法，而这些方法的参数不同。编译器根据方法不同的参数表，对同名方法的名称做修饰。对于编译器而言，这些同名方法就成了不同的方法。**它们的调用地址在编译期就绑定了。**Java 的重载是可以包括父类和子类的，即子类可以重载父类的同名不同参数的方法。所以：对于重载而言，在方法调用之前，编译器就已经确定了所要调用的方法，这称为 **"早绑定"** 或 **"静态绑定"**；而对于多态，只有等到方法调用的那一刻，解释运行器才会确定所要调用的具体方法，这称为 **"晚绑定"** 或 **"动态绑定"**。引用一句 Bruce Eckel 的话："不要犯傻，如果它不是晚绑定，它就不是多态。"
-3. `重载不表现为多态性，重写表现为多态性。`
+2. 从编译和运行的角度看：重载，是指允许存在多个同名方法，而这些方法的参数不同。编译器根据方法不同的参数表，对同名方法的名称做修饰。对于编译器而言，这些同名方法就成了不同的方法。**它们的调用地址在编译期就绑定了。**Java 的重载是可以包括父类和子类的，即子类可以重载父类的同名不同参数的方法。所以：**对于重载而言，在方法调用之前，编译器就已经确定了所要调用的方法，这称为`"早绑定"`或`"静态绑定"`；而对于多态，只有等到方法调用的那一刻，解释运行器才会确定所要调用的具体方法，这称为`"晚绑定"`或`"动态绑定"`。**引用一句 Bruce Eckel 的话："不要犯傻，如果它不是晚绑定，它就不是多态。"
+3. **`重载不表现为多态性，重写表现为多态性。`**
 
 ### 关键字：super
 
@@ -3131,7 +3130,7 @@ super 可以用来调用父类的：属性、方法、构造器。
 
 this 和 super 的区别：
 
-<img src="java/image-20210225163054270.png" alt="image-20210225163054270" style="zoom:67%;" />
+<img src="java/image-20210225163054270.png" alt="image-20210225163054270" style="zoom: 50%;" />
 
 思考：
 
@@ -3170,8 +3169,8 @@ public class Person {
 
 ```java
 public class Student extends Person {
-//    String name;// 父类中已有的属性，可以省略
-//    int age;// 父类中已有的属性，可以省略
+//    String name;// 父类中已有的属性, 可以省略
+//    int age;// 父类中已有的属性, 可以省略
     String major;
     int id = 1001;
 
@@ -3185,7 +3184,7 @@ public class Student extends Person {
         this.major = major;
     }
 
-    // 父类中已有的方法，可以省略，如有需要，可以重写，
+    // 父类中已有的方法, 可以省略, 如有需要, 可以重写
 //    public void eat() {
 //        System.out.println("吃饭");
 //    }
@@ -3201,8 +3200,8 @@ public class Student extends Person {
     }
 
     public void show() {
-        System.out.println("子类中的id: " + this.id);// this可以省略，就近原则
-        System.out.println("父类中的id: " + super.id);// 子类与父类有同名的属性id，此时super不可以省略
+        System.out.println("子类中的id: " + this.id);// this可以省略, 就近原则
+        System.out.println("父类中的id: " + super.id);// 子类与父类有同名的属性id, 此时super不可以省略
     }
 
     public static void main(String[] args) {
@@ -3229,7 +3228,7 @@ public class Student extends Person {
 
 - 明确：虽然创建子类对象时，调用了父类的构造器，但是自始至终只创建了一个对象，即为 new 出来的子类对象。
 
-  <img src="java/image-20210225171520474.png" alt="image-20210225171520474" style="zoom:80%;" />
+  <img src="java/image-20210225171520474.png" alt="image-20210225171520474" style="zoom: 67%;" />
 
 实例：从输出结果可以看出，在创建 Man 的实例时，先进入了父类的空参构造器，然后执行子类的空参构造器。
 
@@ -3297,7 +3296,7 @@ class Man extends Person {
 
 - 一个引用类型变量如果声明为父类的类型，但实际引用的是子类对象，那么该变量就不能再访问子类中添加的属性和方法：
 
-  <img src="java/image-20210226115046078.png" alt="image-20210226115046078" style="zoom:67%;" />
+  <img src="java/image-20210226115046078.png" alt="image-20210226115046078" style="zoom:60%;" />
 
 多态的使用：
 
@@ -3339,25 +3338,25 @@ class Man extends Person {
       }
   
       public static void main(String[] args) {
-          // 对象的多态性：父类的引用指向子类的对象
+          // 对象的多态性: 父类的引用指向子类的对象
           Person person = new Man();
-          // 多态的使用：当调用子父类同名同参数的方法时，实际执行的是子类重写的父类的方法---虚拟方法调用
-          // 编译期，只能调用父类Person类中的方法；运行期，执行的是子类Man类中的方法。
+          // 多态的使用: 当调用子父类同名同参数的方法时, 实际执行的是子类重写的父类的方法--->虚拟方法调用
+          // 编译期, 只能调用父类Person类中的方法; 运行期, 执行的是子类Man类中的方法
           person.eat();
           person.walk();
-          // 不能调用子类特有的属性或方法，因为编译时，person是Person类型，而Person类中没有子类的这个特有属性或方法。
-          // 有了对象的多态性以后，内存中实际上是加载了子类特有的属性或方法的，但是由于变量声明为父类类型，导致编译时，只能调用父类中
-          // 声明的属性和方法，子类中特有的属性和方法不能调用。
+          // 不能调用子类特有的属性或方法, 因为编译时, person是Person类型, 而Person类中没有子类的这个特有属性或方法
+          // 有了对象的多态性以后, 内存中实际上是加载了子类特有的属性或方法的, 但是由于变量声明为父类类型, 导致编译时, 只能调用父类中
+          // 声明的属性和方法, 子类中特有的属性和方法不能调用
           // person.isSmoking = true;
           // person.earnMoney();
           
           System.out.println("*********************************")
-          // 如何才能使用子类特有的属性和方法？
-          // 向下转型：使用强制类型转换符
+          // 如何才能使用子类特有的属性和方法?
+          // 向下转型: 使用强制类型转换符
           Man man = (Man) person;
           man.isSmoking = true;
           man.earnMoney();
-          // 使用强转时，可能出现java.lang.ClassCastException异常
+          // 使用强转时, 可能出现java.lang.ClassCastException异常
           Woman woman = (Woman) person;
           woman.goShopping();
       }
@@ -3400,7 +3399,7 @@ public class FieldMethodTest {
         System.out.println(s.count);// 20
         s.display();// 20
         Base b = s;
-        // 对于引用数据，==比较的是两个引用数据类型变量的地址值
+        // 对于引用数据, ==比较的是两个引用数据类型变量的地址值
         System.out.println(b == s);// true
         System.out.println(b.count);// 10
         b.display();// 20
@@ -3450,8 +3449,8 @@ class Sub extends Base {
         System.out.println("sub_1");
     }
 
-    // 这个方法没有重写，在Base类中不存在这样声明的方法，
-    // 也就没有多态，所以base.add(1, 2, 3)方法输出sub_1
+    // 这个方法没有重写, 在Base类中不存在这样声明的方法, 
+    // 也就没有多态, 所以base.add(1, 2, 3)方法输出sub_1
     public void add(int a, int b, int c) {
         System.out.println("sub_2");
     }
@@ -3460,8 +3459,8 @@ class Sub extends Base {
 
 多态性的使用前提：
 
-- **有类的继承关系。**
-- **有方法的重写。**
+- **`有类的继承关系。`**
+- **`有方法的重写。`**
 - 如果没有以上两个前提，就不存在多态。
 
 多态性的优点：
@@ -3472,7 +3471,7 @@ class Sub extends Base {
 
   ```java
   public class AnimalTest {
-      // 多态的使用：传入的是Animal对象，但实际传入的可以是Animal的子类
+      // 多态的使用: 传入的是Animal对象, 但实际传入的可以是Animal的子类
       public void func(Animal animal) {
           animal.eat();
           animal.shout();
@@ -3522,9 +3521,9 @@ class Sub extends Base {
   
   // 举例二
   class Order {
-      // 此方法可以传入任意对象，而不需要每个特定对象都创建一次method()方法
+      // 此方法可以传入任意对象, 而不需要每个特定对象都创建一次method()方法
       public void method(Object object) {
-          // 方法体
+          // 方法体	
       }
   }
   ```
@@ -3542,14 +3541,14 @@ class Sub extends Base {
   e.getInfo();
   ```
 
-- 虚拟方法调用（多态情况下）：子类中定义了与父类同名同参数的方法，在多态情况下，将此时父类的方法称为`虚拟方法`，父类根据赋给它的不同子类对象，动态调用属于子类的该方法。这样的方法调用在编译期是无法确定的。
+- 虚拟方法调用（多态情况下）：子类中定义了与父类同名同参数的方法，在多态情况下，将此时父类的方法称为**`虚拟方法`**，父类根据赋给它的不同子类对象，动态调用属于子类的该方法。这样的方法调用在编译期是无法确定的。
 
   ```java
   Person e = new Student();
   e.getInfo();// 调用Student类的getInfo()方法
   ```
   
-- 编译时类型和运行时类型：上面代码中，编译时 e 为 Person 类型，而方法的调用是在运行时确定的，所以调用的是 Student 类的 getInfo() 方法 —— **`动态绑定`**。
+- 编译时类型和运行时类型：上面代码中，编译时 e 为 Person 类型，而方法的调用是在运行时确定的，所以调用的是 Student 类的 getInfo() 方法 ---> **`动态绑定`**。
 
 - **`重写是多态，重载不是。`**
 
@@ -3575,7 +3574,7 @@ class Sub extends Base {
       }
   
       public static void main(String[] args) {
-          // 因为key需要在运行时才能得到值，编译期时无法判断getInstance()方法输出什么
+          // 因为key需要在运行时才能得到值, 编译期时无法判断getInstance()方法输出什么
           int key = new Random().nextInt(3);
           System.out.println(key);
           Animal animal = getInstance(key);
@@ -3621,11 +3620,11 @@ class Sub extends Base {
 
 - 如果 a 属于类 A 的子类 B，`a instanceof A` 的返回值也为 true。
 
-  <img src="java/image-20210226172858254.png" alt="image-20210226172858254" style="zoom:80%;" />
+  <img src="java/image-20210226172858254.png" alt="image-20210226172858254" style="zoom:60%;" />
 
 ### 对象类型转换（casting）
 
-<img src="java/image-20210226212518453.png" alt="image-20210226212518453" style="zoom:80%;" />
+<img src="java/image-20210226212518453.png" alt="image-20210226212518453" style="zoom:70%;" />
 
 基本数据类型的 Casting：
 - `自动类型转换`：小的数据类型可以自动转换成大的数据类型。如`long g = 20; double d = 12.0f;`。
@@ -3661,7 +3660,7 @@ public class ConversionTest {
 public class Test {
     public void method(Person e) {
         // 假设Person类中没有getSchool()方法
-        // System.out.pritnln(e.getSchool());// 非法，编译时错误
+        // System.out.pritnln(e.getSchool());// 非法, 编译时错误
         if (e instanceof Student) {
             Student me = (Student) e;// 将e强制转换为Student类型
             System.out.pritnln(me.getSchool());
@@ -3682,7 +3681,7 @@ public class Test {
 
 如果在类的声明中未使用 extends 关键字指明其父类，则默认父类为 java.lang.Object 类。
 
-<img src="java/image-20210227162812948.png" alt="image-20210227162812948" style="zoom:80%;" />
+<img src="java/image-20210227162812948.png" alt="image-20210227162812948" style="zoom:60%;" />
 
 验证方法：
 
@@ -3690,7 +3689,7 @@ public class Test {
 public class ObjectTest {
     public static void main(String[] args) {
         Base base = new Base();
-        System.out.println("父类：" + base.getClass().getSuperclass());// 父类：class java.lang.Object
+        System.out.println("父类：" + base.getClass().getSuperclass());// 父类: class java.lang.Object
     }
 }
 
@@ -3700,13 +3699,13 @@ class Base {
 
 Object 类中的主要结构：
 
-<img src="java/image-20210227163126263.png" alt="image-20210227163126263" style="zoom:80%;" />
+<img src="java/image-20210227163126263.png" alt="image-20210227163126263" style="zoom:50%;" />
 
 ### == 操作符与 equals() 方法
 
 `==`运算符：
 
-- 如果比较的是基本数据类型变量：比较两个变量保存的数据是否相等，不一定类型要相同。
+- 如果**比较的是基本数据类型变量**：比较两个变量保存的数据是否相等，不一定类型要相同。
 
   ```java
   public static void main(String[] args) {
@@ -3727,16 +3726,16 @@ Object 类中的主要结构：
   }
   ```
 
-- 如果比较的是引用数据类型变量：比较两个变量的地址值是否相同，即两个引用是否指向同一个对象实体。
+- 如果**比较的是引用数据类型变量**：比较两个变量的地址值是否相同，即两个引用是否指向同一个对象实体。
 
   ```java
-  // String类比较特殊，要注意。
+  // String类比较特殊, 要注意
   public static void main(String[] args) {
-      String s1 = "javacdfa";// 这样写的javacdfa，位于常量池中
+      String s1 = "javacdfa";// 这样写的javacdfa, 位于常量池中
       String s2 = "javacdfa";
       System.out.println(s1 == s2);// true
   
-      String s3 = new String("iam");// 这样new的，在堆内存中 
+      String s3 = new String("iam");// 这样new的, 在堆内存中 
       String s4 = new String("iam");
       System.out.println(s3 == s4);// false
   }
@@ -3797,7 +3796,7 @@ Object 类中的主要结构：
   - `自反性`：x.equals(x) 必须返回是 true。
   - `传递性`：如果 x.equals(y) 返回 true，而且 y.equals(z) 返回 true，那么 z.equals(x) 也应该返回 true。
   - `一致性`：如果 x.equals(y) 返回是 true，只要 x 和 y 内容一直不变，不管重复 x.equals(y) 多少次，返回都是 true。
-  - 任何情况下，`x.equals(null)` 永远返回 false；`x.equals(和x不同类型的对象)` 永远返回 false。
+  - 任何情况下，`x.equals(null)`永远返回 false；`x.equals(和x不同类型的对象)`永远返回 false。
 
 == 和 equals() 的区别：
 
@@ -3842,7 +3841,7 @@ public String toString() {
 }
 ```
 
-- 基本类型数据转换为 String 类型时，调用了对应包装类的 `toString()` 方法。
+- 基本类型数据转换为 String 类型时，调用了对应包装类的`toString()`方法。
 
 面试题：
 
@@ -3861,7 +3860,7 @@ public static void main(String[] args) {
 
 `包装类`：也叫封装类，是针对八种基本数据类型定义的相应的引用数据类型，以使得基本数据类型的变量具有类的特征。
 
-<img src="java/image-20210228120809840.png" alt="image-20210228120809840" style="zoom:80%;" />
+<img src="java/image-20210228120809840.png" alt="image-20210228120809840" style="zoom: 60%;" />
 
 - JDK 1.5 之后，支持`自动装箱`，`自动拆箱`，但类型必须匹配。
 
@@ -3869,16 +3868,16 @@ public static void main(String[] args) {
 
 <img src="java/image-20210228125636680.png" alt="image-20210228125636680" style="zoom:80%;" />
 
-- 基本数据类型转换成包装类
+- 基本数据类型转换成包装类：
   - 装箱：基本数据类型包装成包装类的实例，通过包装类的构造器实现。例如：`int i = 500; Integer t = new Integer(i);`。
   - 自动装箱，例如：`int i =500; Integer t = i;`。
-- 包装类转换成基本数据类型
+- 包装类转换成基本数据类型：
   - 拆箱：获得包装类对象中包装的基本类型变量，通过调用包装类的`.xxxValue()`方法。例如：`boolean b = bObj.booleanValue();`。
   - 自动拆箱，例如：`Integer t = 500; int i = t;`。
--  基本数据类型/包装类转换成字符串
+-  基本数据类型/包装类转换成字符串：
   - 调用字符串重载的`valueOf()`方法，例如：`String fstr = String.valueOf(2.34f);。`
   - 更直接的方式，连接运算，例如：`String intStr = 5 + "";`。
-- 字符串转换成基本数据类型/包装类
+- 字符串转换成基本数据类型/包装类：
   - 通过包装类的构造器实现，例如：`int i = new Integer("12");`。
   - 通过包装类的`parseXxx(String s)`静态方法，例如：`Float f = Float.parseFloat(“12.1”);`。
 
@@ -3886,9 +3885,9 @@ public static void main(String[] args) {
 
 ```java
 public static void main(String[] args) {
-    // 三目运算符比较基本数据类型，在编译阶段自动拆箱为int和double类型，由于三目运算符要求表达式2和表达式3类型一致，
-    // 所以在编译阶段自动类型提升(即int自动类型转换为double类型)，再自动装箱为Object，输出时使用多态调用重写
-    // 的toString()，即Double包装类的toString()方法
+    // 三目运算符比较基本数据类型, 在编译阶段自动拆箱为int和double类型, 由于三目运算符要求表达式2和表达式3类型一致, 
+    // 所以在编译阶段自动类型提升(即int自动类型转换为double类型), 再自动装箱为Object, 输出时使用多态调用重写
+    // 的toString(), 即Double包装类的toString()方法
     Object o1 = true ? new Integer(1) : new Double(2.0);
     System.out.println(o1);// 1.0
 
@@ -3905,10 +3904,10 @@ public static void main(String[] args) {
 public static void main(String[] args) {
     Integer i = new Integer(1);
     Integer j = new Integer(1);
-    System.out.println(i == j);// new了两个对象，false
+    System.out.println(i == j);// new了两个对象, false
     Integer m = 1;
     Integer n = 1;
-    System.out.println(m == n);// 自动装箱，且在-128~127范围内，true
+    System.out.println(m == n);// 自动装箱, 且在-128~127范围内, true
     Integer x = 128;// 相当于new Integer(128);
     Integer y = 128;// 相当于new Integer(128);
     System.out.println(x == y);// false
@@ -3919,14 +3918,14 @@ public static void main(String[] args) {
 
 ```java
 /**
- * 利用Vector代替数组处理：从键盘读入学生成绩(以负数代表输入结束)，找出最高分，并输出学生成绩等级。
- * 提示：数组一旦创建，长度就固定不变，所以在创建数组前就需要知道它的长度。而向量类java.util.Vector可以根据需要动态伸缩。
- *  创建Vector对象：Vector v = new Vector();
- *  给向量添加元素：v.addElement(Object obj);// obj必须是对象
- *  取出向量中的元素：Object obj = v.elementAt(0);
- *  注意第一个元素的下标是0，返回值是Object类型的。
- *  计算向量的长度：v.size();
- *  若与最高分相差10分内：A等；20分内：B等；30分内：C等；其它：D等。
+ * 利用Vector代替数组处理: 从键盘读入学生成绩(以负数代表输入结束), 找出最高分, 并输出学生成绩等级.
+ * 提示: 数组一旦创建, 长度就固定不变, 所以在创建数组前就需要知道它的长度. 而向量类java.util.Vector可以根据需要动态伸缩.
+ *  创建Vector对象: Vector v = new Vector();
+ *  给向量添加元素: v.addElement(Object obj);// obj必须是对象
+ *  取出向量中的元素: Object obj = v.elementAt(0);
+ *  注意第一个元素的下标是0, 返回值是Object类型的
+ *  计算向量的长度: v.size();
+ *  若与最高分相差10分内: A等; 20分内: B等; 30分内: C等; 其它: D等.
  */
 public class ScoreTest {
     public static void main(String[] args) {
@@ -4010,12 +4009,12 @@ static 关键字的使用：
   - 访问权限允许时，可不创建对象，直接被类调用。
   
 
-使用 static 修饰属性：`静态变量 (类变量/class variable)`
+使用 static 修饰属性：`静态变量 (类变量/class variable)`。
 
 - 属性，按是否使用 static 修饰，分为：静态属性和非静态属性（实例变量）。
 
   - 实例变量：当创建了类的多个对象，每个对象都独立的拥有一套类中的非静态属性。当修改其中一个对象的非静态属性时，不会导致其他对象中同样的属性值被修改。
-  - 静态变量：当创建了类的多个对象，每个对象都共用同一个静态变量。当通过某一个对象修改静态变量时，会导致其他对象调用此静态变量时，是修改之后的值。 **注意：实际操作时，虽然编译能过通过，但不应该通过类的实例对象来访问静态成员。**
+  - 静态变量：当创建了类的多个对象，每个对象都共用同一个静态变量。当通过某一个对象修改静态变量时，会导致其他对象调用此静态变量时，是修改之后的值。 **注意：实际操作时，虽然编译能通过，但不应该通过类的实例对象来访问静态成员。**
 
   - `静态变量随着类的加载而加载`，可以通过`"类.静态变量"`的方式进行调用。
   - 静态变量的加载要早于对象的创建。实例变量在创建对象的过程中，或创建对象之后，才创建。
@@ -4023,7 +4022,7 @@ static 关键字的使用：
   - 类可以访问静态变量，但不能访问实例变量（实例变量在对象产生时才生成），对象可以访问实例变量，也能访问静态变量（不推荐）。
 - 静态变量举例：System.out，Math.PI。
 
-使用 static 修饰方法：`静态方法 (类方法/class method)`
+使用 static 修饰方法：`静态方法 (类方法/class method)`。
 - `静态方法随着类的加载而加载`，可以通过`"类.静态方法"`的方式进行调用。
 - 类可以访问静态方法，但不能访问非静态方法（非静态方法在对象产生时才生成），对象可以访问非静态方法，也能访问静态方法（不推荐）。
 - **`静态方法中，只能调用静态属性或静态方法，它们的生命周期是一致的。非静态方法中，既可以调用非静态属性或非静态方法，也能调用静态属性或静态方法。`** 
@@ -4034,7 +4033,7 @@ static 使用的注意点：
 
   ```java
   public static void show() {
-      // 省略的是Chiese.，而不是this.
+      // 省略的是Chiese., 而不是this.
       walk();// 等同于Chinese.walk();
       System.out.println("nation: " + nation);// 等同于System.out.println(Chinese.nation);
   }
@@ -4057,8 +4056,8 @@ public class Test {
         c2.name = "马龙";
         c2.age = 30;
 
-        // 通过c1对象修改nation的值，c2对象也能获得
-        // 实际操作时，虽然编译能过通过，但不应该通过类的实例对象来访问静态成员
+        // 通过c1对象修改nation的值, c2对象也能获得
+        // 实际操作时, 虽然编译能过通过, 但不应该通过类的实例对象来访问静态成员
         c1.nation = "CHN";
         System.out.println(c2.nation);
 
@@ -4069,7 +4068,7 @@ public class Test {
         Chinese.show();
 
         // 通过c1对象也能调用非静态方法
-        // 实际操作时，虽然编译能过通过，但不应该通过类的实例对象来访问静态成员
+        // 实际操作时, 虽然编译能过通过, 但不应该通过类的实例对象来访问静态成员
         c1.show();
     }
 }
@@ -4104,7 +4103,7 @@ class Chinese {
 
         // 调用静态的结构
         walk();
-        System.out.println("nation: " + nation);// 省略的是Chiese.，而不是this.，等同于System.out.println(Chinese.nation);
+        System.out.println("nation: " + nation);// 省略的是Chiese., 而不是this., 等同于System.out.println(Chinese.nation);
     }
 
     public static void walk() {
@@ -4116,7 +4115,7 @@ class Chinese {
 
 - 类变量和实例变量内存解析：
 
-  <img src="java/image-20210228204850958.png" alt="image-20210228204850958" style="zoom: 67%;" />
+  <img src="java/image-20210228204850958.png" alt="image-20210228204850958" style="zoom: 50%;" />
 
 类属性、类方法的设计思想：
 
@@ -4140,7 +4139,7 @@ main() 方法的使用说明：
 
 命令行参数用法举例：
 
-<img src="java/image-20210301141727952.png" alt="image-20210301141727952" style="zoom:80%;" />
+<img src="java/image-20210301141727952.png" alt="image-20210301141727952" style="zoom:50%;" />
 
 ### 类的成员之四：代码块（或初始化块）
 
@@ -4352,7 +4351,7 @@ main() 方法的使用说明：
   
       }
   
-      // main方法是一个静态方法，执行某个类的main方法之前，要先加载这个类，此处是Father类
+      // main方法是一个静态方法, 执行某个类的main方法之前, 要先加载这个类, 此处是Father类
       public static void main(String[] args) {
           System.out.println("77777777777");
           System.out.println("************************");
@@ -4378,7 +4377,7 @@ main() 方法的使用说明：
           System.out.println("66666666666");
       }
   
-      // main方法是一个静态方法，执行某个类的main方法之前，要先加载这个类，此处是先加载Son类
+      // main方法是一个静态方法, 执行某个类的main方法之前, 要先加载这个类, 此处是先加载Son类
       public static void main(String[] args) { // 由父及子 静态先行
           System.out.println("77777777777");
           System.out.println("************************");
@@ -4406,7 +4405,7 @@ main() 方法的使用说明：
   }
   ```
 
-  - 调用 Father 类的 `main()` 方法，要先加载 Father 类。输出结果：
+  - 调用 Father 类的`main()`方法，要先加载 Father 类。输出结果：
 
     ```java
     F: 11111111111
@@ -4427,7 +4426,7 @@ main() 方法的使用说明：
     F: 33333333333
     ```
 
-  - 调用 Son 类的 `main()` 方法，要先加载 Son 类。输出结果：
+  - 调用 Son 类的`main()`方法，要先加载 Son 类。输出结果：
 
     ```java
     F: 11111111111
@@ -4448,7 +4447,7 @@ main() 方法的使用说明：
     F: 33333333333
     ```
 
-  - 调用 Test 类的 `main()` 方法，要先加载 Test 类。输出结果：
+  - 调用 Test 类的`main()`方法，要先加载 Test 类。输出结果：
 
     ```java
     T/m: 77777777777
@@ -4477,31 +4476,31 @@ final 可以用来修饰的结构：类、方法、变量（属性是成员变�
 
 final 用来修饰类：`此类不能被其他类所继承`。例如：String 类、System 类、StringBuffer 类。
 
-<img src="java/image-20210302095756170.png" alt="image-20210302095756170" style="zoom: 67%;" />
+<img src="java/image-20210302095756170.png" alt="image-20210302095756170" style="zoom: 50%;" />
 
 final 用来修饰方法：`此方法不能被子类重写`。例如：Object 类中的 getClass()。
 
-<img src="java/image-20210302095827686.png" alt="image-20210302095827686" style="zoom:67%;" />
+<img src="java/image-20210302095827686.png" alt="image-20210302095827686" style="zoom: 50%;" />
 
 final 用来修饰变量：`此时的 "变量" 称为常量，名称大写，且只能被赋值一次`。
 
-<img src="java/image-20210302100322123.png" alt="image-20210302100322123" style="zoom:67%;" />
+<img src="java/image-20210302100322123.png" alt="image-20210302100322123" style="zoom: 50%;" />
 
 - **`final 修饰成员变量`：必须在声明时或代码块中或在每个构造器中显式赋值，否则编译不通过。**
 
   ```java
   public class FinalTest {
-      // 1.显式初始化：所有对象的这个常量值都是相同的，可以考虑直接显式初始化
+      // 1 显式初始化: 所有对象的这个常量值都是相同的, 可以考虑直接显式初始化
       final int WIDTH = 0;
   
-      // 2.代码块中初始化：如果涉及到调用方法，或赋值操作较多，可以考虑代码块中初始化
+      // 2 代码块中初始化: 如果涉及到调用方法, 或赋值操作较多, 可以考虑代码块中初始化
       final int HEIGHT;
   
       {
           HEIGHT = show();
       }
   
-      // 3.构造器中初始化：如果涉及到调用方法，或赋值操作较多，可以考虑代码块中初始化
+      // 3 构造器中初始化: 如果涉及到调用方法, 或赋值操作较多, 可以考虑代码块中初始化
       final int LEFT;
   
       public FinalTest() {
@@ -4524,12 +4523,12 @@ final 用来修饰变量：`此时的 "变量" 称为常量，名称大写，且
   public class FinalTest {
   
       public int show() {
-          // 1.修饰方法内局部变量：常量，不能被再次更改。
+          // 1 修饰方法内局部变量: 常量, 不能被再次更改
           final int NUM = 10;
           return NUM;
       }
   
-      // 2.修饰形参：当方法被调用时，传入的实参，不能被再次更改。
+      // 2 修饰形参: 当方法被调用时, 传入的实参, 不能被再次更改
       public void show(final int num) {
           System.out.println(num);
       }
@@ -4635,14 +4634,14 @@ public class Test {
         // 匿名对象
         method(new Student());
 
-        // 1.创建非匿名类的非匿名的对象
+        // 1 创建非匿名类的非匿名的对象
         Worker worker = new Worker();
         method1(worker);
 
-        // 2.创建非匿名类的匿名的对象
+        // 2 创建非匿名类的匿名的对象
         method1(new Worker());
 
-        // 3.创建匿名子类的非匿名的对象：p
+        // 3 创建匿名子类的非匿名的对象: p
         Person p = new Person() {
             @Override
             public void eat() {
@@ -4652,7 +4651,7 @@ public class Test {
         };
         method1(p);
 
-        // 4.创建匿名子类的匿名对象
+        // 4 创建匿名子类的匿名对象
         method1(new Person() {
             @Override
             public void eat() {
@@ -4711,17 +4710,17 @@ class Worker extends Person {
 
       - 可以通过`实现类的对象来调用`，如果实现类重写了接口中的默认方法，调用时，执行的是重写后的方法。
 
-      - 如果子类（或实现类）继承的父类和实现的接口中，声明了同名同参数的默认方法，那么子类在没有重写此方法的情况下， 默认调用的是父类中的同名同参数的方法---`类优先原则`。如果重写了，调用子类重写的方法。
+      - 如果子类（或实现类）继承的父类和实现的接口中，声明了同名同参数的默认方法，那么子类在没有重写此方法的情况下， 默认调用的是父类中的同名同参数的方法 ---> `类优先原则`。如果重写了，调用子类重写的方法。
 
-        ![image-20220505082232062](java/image-20220505082232062.png)
+        <img src="java/image-20220505082232062.png" alt="image-20220505082232062" style="zoom:50%;" />
 
-      - 如果实现类实现了多个接口，而多个接口中定义了同名同参数的默认方法，那么在实现类没有重写此方法的情况下，编译不通过---`接口冲突`。如果要避免接口冲突，则在实现类中，必须重写此方法。
+      - 如果实现类实现了多个接口，而多个接口中定义了同名同参数的默认方法，那么在实现类没有重写此方法的情况下，编译不通过 ---> `接口冲突`。如果要避免接口冲突，则在实现类中，必须重写此方法。
 
-        ![image-20220505082303861](java/image-20220505082303861.png)
+        <img src="java/image-20220505082303861.png" alt="image-20220505082303861" style="zoom:50%;" />
 
       - 在子类（或实现类）的方法中，使用`super.方法名`调用父类的方法，使用`接口名.super.方法名`调用接口中的方法。
 
-        <img src="java/image-20210303132422993.png" alt="image-20210303132422993" style="zoom:67%;" />
+        <img src="java/image-20210303132422993.png" alt="image-20210303132422993" style="zoom: 50%;" />
     
     - 实例：
     
@@ -4762,15 +4761,15 @@ class Worker extends Person {
       ```java
       public class SubClassTest {
           public static void main(String[] args) {
-              // 1.静态方法
+              // 1 静态方法
               InterfaceA.method1();
       
               SubClass subClass = new SubClass();
-              // 2.默认方法
+              // 2 默认方法
               subClass.method2();
-              // 3.重写的默认方法
+              // 3 重写的默认方法
               subClass.method3();
-              // 4.调用的是父类中的method4()
+              // 4 调用的是父类中的method4()
               subClass.method4();
           }
       }
