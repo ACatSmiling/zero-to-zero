@@ -202,7 +202,7 @@ for file in `ls /mnt/webapps/`; do echo $file; cat /mnt/webapps/$file/WEB-INF/cl
 ```mysql
 # 导出特定数据库的数据和结构
 mysqldump -uroot -proot --databases db1 db2 > /tmp/user.sql
-
+1
 # 导出特定数据库特定表的数据和结构
 mysqldump -uroot -proot --databases db1 --tables a1 a2  > /tmp/db1.sql
 ```
