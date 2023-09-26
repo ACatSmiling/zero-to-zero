@@ -4,35 +4,97 @@
 
 Spring 官网：https://spring.io/
 
-Spring 各版本源码下载地址：https://repo.spring.io/release/org/springframework/spring/
+###  Spring 是什么
 
-Spring 官方文档：
+`Spring 是一款主流的 Java EE 轻量级开源框架`，Spring 由 "Spring 之父" Rod Johnson 提出并创立，其目的是用于简化 Java 企业级应用的开发难度和开发周期。Spring 的用途不局限于服务器端的开发。从简单性、可测试性和松耦合的角度而言，任何 Java 应用都可以从 Spring 中受益。Spring 框架除了自己提供功能外，还提供整合其他技术和框架的能力。
 
-- 全部版本：https://docs.spring.io/spring-framework/docs/
-- 5.2.7.RELEASE：https://docs.spring.io/spring-framework/docs/5.2.7.RELEASE/spring-framework-reference/
-- Spring Framework 5 中文文档：https://cntofu.com/book/95/index.html
+Spring 自诞生以来备受青睐，一直被广大开发人员作为 Java 企业级应用程序开发的首选。时至今日，Spring 俨然成为了 Java EE 代名词，成为了构建 Java EE 应用的事实标准。自 2004 年 4 月，Spring 1.0 版本正式发布以来，Spring 已经步入到了第 6 个大版本，也就是 Spring 6。
 
-Spring 是轻量级的开源的 JavaEE 框架。
+<img src="./spring/image-20230925125936838.png" alt="image-20230925125936838" style="zoom: 60%;" />
 
-Spring 可以解决企业应用开发的复杂性。
+###  Spring 的狭义和广义
 
-**Spring 两个核心部分：`IOC`和`AOP`。**
+在不同的语境中，Spring 所代表的含义是不同的。
 
-- **IOC：Inversion of Control，即`控制反转`。是面向对象编程中的一种设计原则，可以用来降低计算机代码之间的耦合度，其中最常见的方式叫做`依赖注入 (Dependency Injection，简称 DI)`。Spring 就是采用依赖注入的方式，来管理容器中的 Bean 实例对象。**
-- **AOP：Aspect Oriented Programming，即`面向切面`。可以在不修改源代码的前提下，通过`预编译方式`和`运行期间动态代理方式`实现对原有代码的增强（添加新功能）。**
+**广义的 Spring：Spring 技术栈。**
 
-Spring 特点：
+- 广义上的 Spring 泛指以 Spring Framework 为核心的 Spring 技术栈。
+- 经过十多年的发展，Spring 已经不再是一个单纯的应用框架，而是逐渐发展成为一个由多个不同子项目（模块）组成的成熟技术，例如 Spring Framework、Spring MVC、SpringBoot、Spring Cloud、Spring Data、Spring Security 等，其中 Spring Framework 是其他子项目的基础。这些子项目涵盖了从企业级应用开发到云计算等各方面的内容，能够帮助开发人员解决软件发展过程中不断产生的各种实际问题，给开发人员带来了更好的开发体验。
 
-- 方便解耦，简化开发。
-- AOP 编程支持。
-- 方便程序测试。
-- 方便和其他框架进行整合。
-- 方便进行事务操作。
-- 降低 API 开发难度。
+**狭义的 Spring：Spring Framework。**
 
-Spring 模块：
+- 狭义的 Spring 特指 Spring Framework，通常我们将它称为 Spring 框架。
+- Spring 框架是一个分层的、面向切面的 Java 应用程序的一站式轻量级解决方案，它是 Spring 技术栈的核心和基础，是为了解决企业级应用开发的复杂性而创建的。
+
+### Spring Framework 的模块
 
 ![Spring5模块](spring/Spring5模块.bmp)
+
+上图中包含了 Spring 框架的所有模块，这些模块可以满足一切企业级应用开发的需求，在开发过程中可以根据需求有选择性地使用所需要的模块。
+
+#### Spring Core
+
+- Spring Core 提供了 IoC，DI，Bean 配置装载创建的核心实现。核心概念：Beans、BeanFactory、BeanDefinitions、ApplicationContext。
+
+- spring-core：IoC 和 DI 的基本实现。
+- spring-beans：BeanFactory 和 Bean 的装配管理（BeanFactory）。
+- spring-context：Spring Context 上下文，即 IoC 容器（AppliactionContext）。
+- spring-expression：Spring 表达式语言。
+
+#### Spring AOP
+
+- spring-aop：面向切面编程的应用模块，整合 ASM，CGLib，JDK Proxy。
+
+- spring-aspects：集成 AspectJ，AOP 应用框架。
+- spring-instrument：动态 Class Loading 模块。
+
+#### Spring Data Access
+
+- spring-jdbc：Spring 对 JDBC 的封装，用于简化 JDBC 操作。
+- spring-orm：Java 对象与数据库数据的映射框架。
+- spring-oxm：对象与 xml 文件的映射框架。
+- spring-jms：Spring 对 Java Message Service（Java 消息服务）的封装，用于服务之间相互通信。
+- spring-tx：Spring JDBC 事务管理。
+
+#### Spring Web
+
+- spring-web：最基础的 Web 支持，建立于 spring-context 之上，通过 Servlet 或 Listener 来初始化 IoC 容器。
+- spring-webmvc：实现 Web MVC。
+- spring-websocket：与前端的全双工通信协议。
+- spring-webflux：Spring 5.0 提供的，用于取代传统 Java Servlet，非阻塞式 Reactive Web 框架，异步，非阻塞，事件驱动的服务。
+
+#### Spring Message
+
+- spring-messaging：Spring 4.0 提供的，为 Spring 集成一些基础的报文传送服务。
+
+#### Spring Test
+
+- spring-test：集成测试支持，主要是对 JUnit 的封装。
+
+#### Spring 两个核心概念
+
+- **IoC：Inversion of Control，即`控制反转`。是面向对象编程中的一种设计原则，可以用来降低计算机代码之间的耦合度，其中最常见的方式叫做`依赖注入 (Dependency Injection，简称 DI)`。Spring 就是采用依赖注入的方式，来管理容器中的 Bean 实例对象。**
+- **AOP：Aspect Oriented Programming，即`面向切面编程`。可以在不修改源代码的前提下，通过`预编译方式`和`运行期间动态代理方式`实现对原有代码的增强（添加新功能）。**
+
+### Spring Framework 的特点
+
+- `非侵入式`：使用 Spring Framework 开发应用程序时，Spring 对应用程序本身的结构影响非常小。对领域模型可以做到零污染；对功能性组件也只需要使用几个简单的注解进行标记，完全不会破坏原有结构，反而能将组件结构进一步简化。这就使得基于 Spring Framework 开发应用程序时结构清晰、简洁优雅。
+
+- `控制反转`：IoC，翻转资源获取方向。把自己创建资源、向环境索取资源变成环境将资源准备好，我们享受资源注入。
+
+- `面向切面编程`：AOP，在不修改源代码的基础上增强代码功能。
+
+- `容器`：Spring IoC 是一个容器，因为它包含并且管理组件对象的生命周期。组件享受到了容器化的管理，替程序员屏蔽了组件创建过程中的大量细节，极大的降低了使用门槛，大幅度提高了开发效率。
+
+- `组件化`：Spring 实现了使用简单的组件配置组合成一个复杂的应用。在 Spring 中可以使用 XML 和 Java 注解组合这些对象。这使得我们可以基于一个个功能明确、边界清晰的组件有条不紊的搭建超大型复杂应用系统。
+
+- `一站式`：在 IoC 和 AOP 的基础上可以整合各种企业应用的开源框架和优秀的第三方类库。而且 Spring 旗下的项目已经覆盖了广泛领域，很多方面的功能性需求可以在 Spring Framework 的基础上全部使用 Spring 来实现。
+
+### Spring 6 对 JDK 要求
+
+<img src="./spring/image-20230926091324812.png" alt="image-20230926091324812" style="zoom: 60%;" />
+
+- Spring 6 要求 JDK 最低版本是 JDK 17。
 
 ## Spring 入门案例
 
@@ -119,7 +181,7 @@ public class Student {
          xsi:schemaLocation="http://www.springframework.org/schema/beans
                              http://www.springframework.org/schema/beans/spring-beans.xsd">
   
-      <!-- 使用bean元素定义一个由IOC容器创建的对象 --> 
+      <!-- 使用bean元素定义一个由IoC容器创建的对象 --> 
       <!-- id属性指定用于引用bean实例的标识 -->
       <!-- class属性指定用于创建bean的全类名 -->
       <bean id="student" class="cn.xisun.spring.bean.Student">
@@ -135,7 +197,7 @@ public class Student {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象
@@ -152,7 +214,7 @@ public class SpringTest {
 
   ![image-20210413155020623](spring/image-20210413155020623.png)
 
-> 测试说明：`Spring 在创建 IOC 容器时，就已经完成了 Bean 的创建和属性的赋值。`
+> 测试说明：`Spring 在创建 IoC 容器时，就已经完成了 Bean 的创建和属性的赋值。`
 
 ## Spring 基本语法
 
@@ -297,7 +359,7 @@ IDEA 中，对于 Spring 的配置类或配置文件，可能会提示`Applicati
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -315,7 +377,7 @@ public class SpringTest {
 
 在配置文件中定义的 Bean 类型可以和返回类型不一样。
 
-第一步：创建类，实现 FactoryBean 接口，让这个类作为工厂 Bean。FactoryBean 接口中有如下三个方法：`getObject()`负责将创建好的 Bean 实例返回给 IOC 容器；`getObjectType()`负责返回工厂生产的 Bean 类型；`isSingleton()`用于指示该 Bean 实例是否为单例，默认是单例 Bean。
+第一步：创建类，实现 FactoryBean 接口，让这个类作为工厂 Bean。FactoryBean 接口中有如下三个方法：`getObject()`负责将创建好的 Bean 实例返回给 IoC 容器；`getObjectType()`负责返回工厂生产的 Bean 类型；`isSingleton()`用于指示该 Bean 实例是否为单例，默认是单例 Bean。
 
 ```java
 public interface FactoryBean<T> {
@@ -390,7 +452,7 @@ public class MyFactoryBean implements FactoryBean<Book> {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -406,11 +468,11 @@ public class SpringTest {
 
 ### Spring 中 Bean 的作用域
 
-默认情况下，Spring 只为每个在 IOC 容器里声明的 Bean 创建唯一一个实例（单例对象），整个 IOC 容器范围内都能共享该实例：所有后续的`getBean()`调用和 Bean 引用都将返回这个唯一的 Bean 实例。**该作用域被称为`singleton`，它是所有 Bean 的默认作用域。**
+默认情况下，Spring 只为每个在 IoC 容器里声明的 Bean 创建唯一一个实例（单例对象），整个 IoC 容器范围内都能共享该实例：所有后续的`getBean()`调用和 Bean 引用都将返回这个唯一的 Bean 实例。**该作用域被称为`singleton`，它是所有 Bean 的默认作用域。**
 
 在 Spring 中，可以在 \<bean> 标签的 scope 属性里设置 Bean 的作用域，以决定这个 Bean 是单实例的还是多实例的。scope 属性值有四个：
 
-- **`singleton`**：在 Spring IOC 容器中仅存在一个 Bean 实例，Bean 以**单实例**的方式存在。默认值。
+- **`singleton`**：在 Spring IoC 容器中仅存在一个 Bean 实例，Bean 以**单实例**的方式存在。默认值。
 
   ```xml
   <bean id="book" class="cn.xisun.spring.bean.Book">
@@ -422,7 +484,7 @@ public class SpringTest {
   ```java
   public class SpringTest {
       public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
+          // 1.加载Spring配置文件，创建IoC容器对象
           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
   
           // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -449,7 +511,7 @@ public class SpringTest {
   ```java
   public class SpringTest {
       public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
+          // 1.加载Spring配置文件，创建IoC容器对象
           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
   
           // 2.根据id值获取配置文件中的Bean实例对象，要求使用返回的Bean的类型
@@ -472,7 +534,7 @@ public class SpringTest {
 
 生命周期：一个对象从创建到销毁的过程，是这个对象的生命周期。
 
-Spring IOC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生命周期内特定的时间点执行指定的任务。Spring IOC 容器对 Bean 的生命周期进行管理的过程：
+Spring IoC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生命周期内特定的时间点执行指定的任务。Spring IoC 容器对 Bean 的生命周期进行管理的过程：
 
 1. **通过构造器或工厂方法创建 Bean 实例。**
 
@@ -528,7 +590,7 @@ Spring IOC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生�
    ```java\
    public class SpringTest {
        public static void main(String[] args) {
-           // 1.加载Spring配置文件，创建IOC容器对象
+           // 1.加载Spring配置文件，创建IoC容器对象
            ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
    
            // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -552,12 +614,12 @@ Spring IOC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生�
    第五步：执行销毁的方法
    ```
 
-   >注意：要手动关闭 IOC 容器才会执行 destroy-method 指定的方法。
+   >注意：要手动关闭 IoC 容器才会执行 destroy-method 指定的方法。
 
 Spring 中可以设置`Bean 后置处理器`：
 
 - Bean 后置处理器允许在调用初始化方法前后对 Bean 进行额外的处理。
-- Bean 后置处理器对 IOC 容器里的所有 Bean 实例逐一处理，而非单一实例。其典型应用是：检查 Bean 属性的正确性或根据特定的标准更改 Bean 的属性。
+- Bean 后置处理器对 IoC 容器里的所有 Bean 实例逐一处理，而非单一实例。其典型应用是：检查 Bean 属性的正确性或根据特定的标准更改 Bean 的属性。
 - 定义 Bean 后置处理器时需要实现接口：`org.springframework.beans.factory.config.BeanPostProcessor`。在 Bean 的初始化方法被调用前后，Spring 将把每个 Bean 实例分别传递给上述接口的以下两个方法：
   - `postProcessBeforeInitialization(Object, String)`
   - `postProcessAfterInitialization(Object, String)`
@@ -643,7 +705,7 @@ Bean 添加后置处理器后的生命周期：
   ```java
   public class SpringTest {
       public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
+          // 1.加载Spring配置文件，创建IoC容器对象
           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
   
           // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -677,7 +739,7 @@ Bean 添加后置处理器后的生命周期：
 
 自动装配的装配模式：
 
-- `根据类型自动装配 (byType)`：将类型匹配的 Bean 作为属性注入到另一个 Bean 中。若 IOC 容器中有多个与目标 Bean 类型一致的 Bean，Spring 将无法判定哪个 Bean 最合适该属性，继而不能执行自动装配。
+- `根据类型自动装配 (byType)`：将类型匹配的 Bean 作为属性注入到另一个 Bean 中。若 IoC 容器中有多个与目标 Bean 类型一致的 Bean，Spring 将无法判定哪个 Bean 最合适该属性，继而不能执行自动装配。
 
   ```xml
   <bean id="department" class="cn.xisun.spring.bean.Department">
@@ -763,7 +825,7 @@ public class Employee {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -857,7 +919,7 @@ public class Book {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -970,7 +1032,7 @@ Book{name='春秋', author='孔子', era='春秋末期'}
   ```java
   public class SpringTest {
       public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IOC容器对象
+          // 1.加载Spring配置文件，创建IoC容器对象
           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
   
           // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -994,18 +1056,36 @@ Book{name='春秋', author='孔子', era='春秋末期'}
   }
   ```
 
-## IOC
+## IoC
 
-### IOC 思想的底层原理
+IoC 是 Inversion of Control 的简写，译为`控制反转`，它不是一门技术，而**是一种设计思想**，是一个重要的面向对象编程法则，能够指导我们如何设计出松耦合、更优良的程序。
 
-IOC 控制反转的思想：
+**`Spring 通过 IoC 容器来管理所有 Java 对象的实例化和初始化，控制对象与对象之间的依赖关系。`**我们将由 IoC 容器管理的 Java 对象称为 Spring Bean，它与使用关键字 new 创建的 Java 对象没有任何区别。
+
+IoC 容器是 Spring 框架中最重要的核心组件之一，它贯穿了 Spring 从诞生到成长的整个过程。
+
+### IoC 思想的底层原理
+
+IoC 控制反转的思想：
 
 - 在应用程序中的组件需要获取资源时，传统的方式是组件主动的从容器中获取所需要的资源，在这样的模式下，开发人员往往需要知道在具体容器中特定资源的获取方式。比如 ClassA 中需要用到 ClassB 的对象，一般情况下，需要在 ClassA 的代码中显式的 new 一个 ClassB 的对象。
 - **控制反转的思想完全颠覆了应用程序组件获取资源的传统方式：反转了资源的获取方向 ---> 改由容器主动的将资源推送给需要的组件，开发人员不需要知道容器是如何创建资源对象的，只需要提供接收资源的方式即可。**采用依赖注入技术之后，ClassA 的代码只需要定义一个私有的 ClassB 对象属性，不需要直接 new 来获得这个对象，而是通过相关的容器控制程序来将 ClassB 对象在外部 new 出来并注入到 ClassA 类里的引用中。而具体获取的方法、对象被获取时的状态由配置文件（如 XML）来指定。
+- 控制反转反转的是：
+  - 将对象的创建权利交出去，交给第三方容器负责。
+  - 将对象和对象之间关系的维护权交出去，交给第三方容器负责。
 
-DI 依赖注入：可以将 DI 看作是 IOC 的一种实现方式 ---> **即组件以一些预先定义好的方式（例如 setter 方法）接受来自于容器的资源注入。**相对于 IOC 而言，这种表述更直接：**IOC 容器在 Spring 中的实现。**
 
-**IOC 底层原理：`xml 解析`+`工厂模式`+`反射`。**
+DI 依赖注入：Dependency Injection，可以将 DI 看作是 IoC 的一种实现方式 ---> **即组件以一些预先定义好的方式（例如 setter 方法）接受来自于容器的资源注入。**相对于 IoC 而言，这种表述更直接：**IoC 容器在 Spring 中的实现。**
+
+依赖注入常见的实现方式包括两种：
+
+- 第一种：set 注入。
+
+- 第二种：构造注入。
+
+>Bean 管理说的是： Bean 对象的创建，以及 Bean 对象中属性的赋值（或者叫做 Bean 对象之间关系的维护）。
+
+**IoC 底层原理：`xml 解析`+`工厂模式`+`反射`。**
 
 - 图解：
 
@@ -1047,7 +1127,7 @@ DI 依赖注入：可以将 DI 看作是 IOC 的一种实现方式 ---> **即组
     }
     ```
 
-  - 最终方式：通过 Spring IOC 管理 Bean。---> Bean 的创建与它们之间的依赖关系完全交给 Spring IOC 容器去管理，代码耦合程度极大降低。
+  - 最终方式：通过 Spring IoC 管理 Bean。---> Bean 的创建与它们之间的依赖关系完全交给 Spring IoC 容器去管理，代码耦合程度极大降低。
 
     ```xml
     <!-- 1.先通过xml配置文件配置bean的属性 -->
@@ -1062,17 +1142,18 @@ DI 依赖注入：可以将 DI 看作是 IOC 的一种实现方式 ---> **即组
     Student student = iocContainer.getBean("student", Student.class);
     ```
 
-- **IOC 思想基于 IOC 容器完成，IOC 容器底层就是对象工厂。**
+- **IoC 思想基于 IoC 容器完成，IoC 容器底层就是对象工厂。**
 
-### IOC 容器的实现方式
+### IoC 容器的实现方式
 
-Spring 在通过 IOC 容器读取 Bean 的实例之前，需要先将 IOC 容器本身实例化。
+Spring 的 IoC 容器就是 IoC 思想的一个落地的产品实现。IoC 容器中管理的组件也叫做 bean。在创建 bean 之前，首先需要创建 IoC 容器。Spring 提供了IoC 容器的两种实现方式，即两个接口：
 
-Spring 为 IOC 容器提供的两种实现方式，即两个接口：`BeanFactory`和`ApplicationContext`。
+- `BeanFactory`。
+- ``ApplicationContext`。
 
 #### BeanFactory 接口
 
-IOC 容器的基本实现，是 Spring 内部的使用接口。`面向 Spring 本身`，不提供给开发人员使用。
+IoC 容器的基本实现，是 Spring 内部的使用接口。`面向 Spring 本身`，不提供给开发人员使用。
 
 BeanFactory 在加载配置文件的时候，不会创建对象，而是`在使用对象的时候才去创建`。
 
@@ -1146,7 +1227,7 @@ ApplicationContext 接口的重要子接口和实现类：
     </dependency>
     ```
 
-### IOC 管理 Bean 的方式
+### IoC 管理 Bean 的方式
 
 Bean 管理指的是两个操作：
 
@@ -1660,10 +1741,10 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
 
 Spring 中用于标识 Bean 的四个注解：
 
-- **`@Component`：**普通组件，用于标识一个受 Spring IOC 容器管理的组件。
-- **`@Respository`：**持久化层组件，用于标识一个受 Spring IOC 容器管理的持久化层组件。
-- **`@Service`：**业务逻辑层组件，用于标识一个受 Spring IOC 容器管理的业务逻辑层组件。
-- **`@Controller`：**表述层控制器组件，用于标识一个受 Spring IOC 容器管理的表述层控制器组件。
+- **`@Component`：**普通组件，用于标识一个受 Spring IoC 容器管理的组件。
+- **`@Respository`：**持久化层组件，用于标识一个受 Spring IoC 容器管理的持久化层组件。
+- **`@Service`：**业务逻辑层组件，用于标识一个受 Spring IoC 容器管理的业务逻辑层组件。
+- **`@Controller`：**表述层控制器组件，用于标识一个受 Spring IoC 容器管理的表述层控制器组件。
 - 事实上 Spring 并没有能力识别一个组件到底是不是它所标记的类型，即使将`@Respository`注解用在一个非持久化层组件上面，也不会产生任何错误，所以`@Respository`、`@Service`、`@Controller`这几个注解仅仅是为了让开发人员自己明确当前的组件扮演的角色。
 
 组件命名规则：
@@ -1726,7 +1807,7 @@ public class UserService {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -1806,7 +1887,7 @@ user service add ......
 
 若某一属性允许不被设置，可以设置`@Autowired`注解的 required 属性为 false。
 
-默认情况下，当 IOC 容器里存在多个类型兼容的 Bean 时，Spring 会尝试匹配 Bean 的 id 值是否与变量名相同，如果相同则进行装配。如果 Bean 的 id 值不相同，通过类型的自动装配将无法工作。此时可以在`@Qualifier`注解里提供 Bean 的名称。Spring 甚至允许在方法的形参上标注`@Qualifiter`注解以指定注入 Bean 的名称。
+默认情况下，当 IoC 容器里存在多个类型兼容的 Bean 时，Spring 会尝试匹配 Bean 的 id 值是否与变量名相同，如果相同则进行装配。如果 Bean 的 id 值不相同，通过类型的自动装配将无法工作。此时可以在`@Qualifier`注解里提供 Bean 的名称。Spring 甚至允许在方法的形参上标注`@Qualifiter`注解以指定注入 Bean 的名称。
 
 `@Autowired`注解也可以应用在数组类型的属性上，此时 Spring 将会把所有匹配的 Bean 进行自动装配。
 
@@ -1849,7 +1930,7 @@ public class UserService {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -1910,7 +1991,7 @@ public class UserService {
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置文件，创建IOC容器对象
+        // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
 
         // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
@@ -1997,7 +2078,7 @@ public class SpringConfig {
 
 - 在 Spring 配置文件中，以 \<bean> 标签注册的对象，均可在此配置类中实现。
 
-- 如果需要注册一些特殊的对象，比如 Student 类的特定实例，需要在此配置类中以 @Bean 注解配置。而诸如以 @Repository 等注解标注的类，已经在 IOC 容器中注册，不需要在此配置。如：
+- 如果需要注册一些特殊的对象，比如 Student 类的特定实例，需要在此配置类中以 @Bean 注解配置。而诸如以 @Repository 等注解标注的类，已经在 IoC 容器中注册，不需要在此配置。如：
 
   ```java
   @Repository
@@ -2005,12 +2086,12 @@ public class SpringConfig {
   }
   ```
 
-第二步：编写测试类，通过 new 一个`AnnotationConfigApplicationContext`对象创建 IOC 容器对象。其他与前面的相同。
+第二步：编写测试类，通过 new 一个`AnnotationConfigApplicationContext`对象创建 IoC 容器对象。其他与前面的相同。
 
 ```java
 public class SpringTest {
     public static void main(String[] args) {
-        // 1.加载Spring配置类，创建IOC容器对象
+        // 1.加载Spring配置类，创建IoC容器对象
         ApplicationContext iocContainer = new AnnotationConfigApplicationContext(SpringConfig.class);
 
         // 2.根据id值获取配置类中的Bean实例对象和容器中注册的组件，要求使用返回的Bean的类型
@@ -3582,7 +3663,7 @@ JdbcTemplate 操作数据库 --- **添加、修改、删除**。
 - **JtaTransactionManager**：在 JavaEE 应用服务器上用 JTA (Java Transaction API) 进行事务管理。
 - **HibernateTransactionManager**：用 Hibernate 框架存取数据库。
 
-事务管理器可以以普通的 bean 的形式声明在 Spring IOC 容器中。
+事务管理器可以以普通的 bean 的形式声明在 Spring IoC 容器中。
 
 ### Spring 事务管理操作的两种方式
 
@@ -4145,7 +4226,7 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
          * Bean注解：该注解只能写在方法上，表明使用此方法创建一个对象，并且放入Spring容器。
          * name属性：给当前@Bean注解方法创建的对象指定一个名称(即bean的id)，默认bean的名称就是其方法名。
          *
-         * @return 向IOC容器注入一个name为dataSource的bean
+         * @return 向IoC容器注入一个name为dataSource的bean
          */
         @Bean(name = "dataSource")
         public DataSource createDataSource() {
@@ -4166,8 +4247,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建JdbcTemplate对象
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为jdbcTemplate的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为jdbcTemplate的bean
          */
         @Bean(name = "jdbcTemplate")
         public JdbcTemplate createJdbcTemplate(DataSource dataSource) {
@@ -4179,8 +4260,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建事务管理器
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为dataSourceTransactionManager的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为dataSourceTransactionManager的bean
          */
         @Bean(name = "dataSourceTransactionManager")
         public DataSourceTransactionManager createDataSourceTransactionManager(DataSource dataSource) {
@@ -4206,7 +4287,7 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
          * Bean注解：该注解只能写在方法上，表明使用此方法创建一个对象，并且放入Spring容器。
          * name属性：给当前@Bean注解方法创建的对象指定一个名称(即bean的id)，默认bean的名称就是其方法名。
          *
-         * @return 向IOC容器注入一个name为dataSource的bean
+         * @return 向IoC容器注入一个name为dataSource的bean
          */
         @Bean(name = "dataSource")
         public DataSource createDataSource() {
@@ -4227,8 +4308,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建JdbcTemplate对象
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为jdbcTemplate的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为jdbcTemplate的bean
          */
         @Bean(name = "jdbcTemplate")
         public JdbcTemplate createJdbcTemplate(DataSource dataSource) {
@@ -4240,8 +4321,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建事务管理器
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为dataSourceTransactionManager的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为dataSourceTransactionManager的bean
          */
         @Bean(name = "dataSourceTransactionManager")
         public DataSourceTransactionManager createDataSourceTransactionManager(DataSource dataSource) {
@@ -4292,7 +4373,7 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
          * Bean注解：该注解只能写在方法上，表明使用此方法创建一个对象，并且放入Spring容器。
          * name属性：给当前@Bean注解方法创建的对象指定一个名称(即bean的id)，默认bean的名称就是其方法名。
          *
-         * @return 向IOC容器注入一个name为dataSource的bean
+         * @return 向IoC容器注入一个name为dataSource的bean
          */
         @Bean(name = "dataSource")
         public DataSource createDataSource() {
@@ -4308,8 +4389,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建JdbcTemplate对象
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为jdbcTemplate的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为jdbcTemplate的bean
          */
         @Bean(name = "jdbcTemplate")
         public JdbcTemplate createJdbcTemplate(DataSource dataSource) {
@@ -4321,8 +4402,8 @@ Spring 在不同的事务管理 API 之上定义了一个抽象层，通过配�
         /**
          * 创建事务管理器
          *
-         * @param dataSource 根据类型匹配从IOC容器中找到DataSource的对象，也就是createDataSource()返回的对象
-         * @return 向IOC容器注入一个name为dataSourceTransactionManager的bean
+         * @param dataSource 根据类型匹配从IoC容器中找到DataSource的对象，也就是createDataSource()返回的对象
+         * @return 向IoC容器注入一个name为dataSourceTransactionManager的bean
          */
         @Bean(name = "dataSourceTransactionManager")
         public DataSourceTransactionManager createDataSourceTransactionManager(DataSource dataSource) {
