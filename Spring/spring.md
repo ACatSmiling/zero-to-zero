@@ -199,8 +199,14 @@ public class SpringTest {
     public static void main(String[] args) {
         // 1.加载Spring配置文件，创建IoC容器对象
         ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+        
+        // 2.1 根据id值获取配置文件中的bean实例对象
+        // Student student = (Student)iocContainer.getBean("student");
+        
+        // 2.2 根据型获取配置文件中的bean实例对象
+        // Student student = iocContainer.getBean(Student.class);
 
-        // 2.根据id值获取配置文件中的bean实例对象
+        // 2.3 根据id值和类型获取配置文件中的bean实例对象
         Student student = iocContainer.getBean("student", Student.class);
 
         // 3.打印bean
@@ -215,6 +221,16 @@ public class SpringTest {
   ![image-20210413155020623](spring/image-20210413155020623.png)
 
 > 测试说明：`Spring 在创建 IoC 容器时，就已经完成了 Bean 的创建和属性的赋值。`
+>
+> 注意：当根据类型获取bean时，要求IOC容器中指定类型的bean有且只能有一个。当IOC容器中一共配置了两个，根据类型获取时会抛出异常：
+>
+> ```java
+> org.springframework.beans.factory.NoUniqueBeanDefinitionException: No qualifying bean of type 'cn.xisun.spring.bean.Student' available: expected single matching bean but found 2: studentOne,studentTwo.
+> ```
+>
+> 根据类型来获取 Bean 时，在满足 Bean 唯一性的前提下，其实只是看 "对象 instanceof 指定的类型" 的返回结果，只要返回的是 true 就可以认定为和类型匹配，能够获取到。
+>
+> Java中，instanceof 运算符用于判断前面的对象是否是后面的类，或其子类、实现类的实例。如果是返回 true，否则返回 false。也就是说，用 instanceof 关键字做判断时，instanceof 操作符的左右操作必须有继承或实现关系。
 
 ## Spring 基本语法
 
@@ -472,7 +488,7 @@ public class SpringTest {
 
 在 Spring 中，可以在 \<bean> 标签的 scope 属性里设置 Bean 的作用域，以决定这个 Bean 是单实例的还是多实例的。scope 属性值有四个：
 
-- **`singleton`**：在 Spring IoC 容器中仅存在一个 Bean 实例，Bean 以**单实例**的方式存在。默认值。
+- **`singleton`**：在 Spring IoC 容器中仅存在一个 Bean 实例，Bean 以**单实例**的方式存在。默认值。**单实例的 Bean 在 IoC 容器初始化时创建。**
 
   ```xml
   <bean id="book" class="cn.xisun.spring.bean.Book">
@@ -499,7 +515,7 @@ public class SpringTest {
 
   >输出结果是 true，说明 book 和 book1 的地址一样，二者指向同一个对象。
 
-- **`prototype`**：每次调用`getBean()`时都会返回一个新的实例，Bean 以**多实例**的方式存在。
+- **`prototype`**：每次调用`getBean()`时都会返回一个新的实例，Bean 以**多实例**的方式存在。**多实例的 Bean 在获取 Bean 时创建。**
 
   ```xml
   <bean id="book" class="cn.xisun.spring.bean.Book" scope="prototype">
@@ -528,13 +544,15 @@ public class SpringTest {
 
 - **设置 scope 值是 singleton 时候，加载 Spring 配置文件时候就会创建单实例对象；设置 scope 值是 prototype 时候，不是在加载 Spring 配置文件的时候创建对象，而是在调用`getBean()`时创建多实例对象。**
 
-- request 和 session 不常用。
+- request（在一个请求范围内有效）和 session（在一个会话范围内有效）不常用。
 
 ### Spring 中 Bean 的生命周期
 
 生命周期：一个对象从创建到销毁的过程，是这个对象的生命周期。
 
-Spring IoC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生命周期内特定的时间点执行指定的任务。Spring IoC 容器对 Bean 的生命周期进行管理的过程：
+Spring IoC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生命周期内特定的时间点执行指定的任务。
+
+**`Spring IoC 容器对 Bean 的生命周期进行管理的过程：`**
 
 1. **通过构造器或工厂方法创建 Bean 实例。**
 
@@ -624,7 +642,7 @@ Spring 中可以设置`Bean 后置处理器`：
   - `postProcessBeforeInitialization(Object, String)`
   - `postProcessAfterInitialization(Object, String)`
 
-Bean 添加后置处理器后的生命周期：
+**`Bean 添加后置处理器后的生命周期：`**
 
 1. **通过构造器或工厂方法创建 Bean 实例。**
 
@@ -739,7 +757,7 @@ Bean 添加后置处理器后的生命周期：
 
 自动装配的装配模式：
 
-- `根据类型自动装配 (byType)`：将类型匹配的 Bean 作为属性注入到另一个 Bean 中。若 IoC 容器中有多个与目标 Bean 类型一致的 Bean，Spring 将无法判定哪个 Bean 最合适该属性，继而不能执行自动装配。
+- `根据类型自动装配 (byType)`：将类型匹配的 Bean 作为属性注入到另一个 Bean 中。若 IoC 容器中有多个与目标 Bean 类型一致的 Bean，Spring 将无法判定哪个 Bean 最合适该属性，继而不能执行自动装配，会抛出异常 NoUniqueBeanDefinitionException。若在 IoC 中，没有任何一个兼容类型的 Bean 能够为属性赋值，则该属性不装配，即值为默认值 null。
 
   ```xml
   <bean id="department" class="cn.xisun.spring.bean.Department">
@@ -1368,7 +1386,7 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
 
 - 基于 xml 方式注入其他类型的属性。
 
-    - 第一种：字面量
+    - 第一种：字面量。
 
       - null 值。
 
@@ -1382,29 +1400,35 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
         </bean>
         ```
 
-        > 效果：Book{bookName='无名', bookAuthor='null'}
-
+        > 效果：Book{bookName='无名', bookAuthor='null'}。
+      >
+        > 注意：以下写法，为 name 所赋的值是字符串 null，不是 null 值。
+      >
+        > ```xml
+        > <property name="name" value="null"></property>
+        > ```
+    
       - 属性值包含特殊符号。
-
+    
         ```xml
         <bean id="book" class="cn.xisun.spring.bean.Book">
             <property name="bookName" value="春秋"/>
             <property name="bookAuthor">
                 <!-- 方式一：将特殊字符进行转义，比如：<>转义为&lt; &gt; -->
                 <!--<value>&lt;相传是孔子&gt;</value>-->
-                
+              
                 <!-- 方式二：把带特殊符号内容写到CDATA中 -->
-                <value><![CDATA[<相传是孔子>]]></value>
+              <value><![CDATA[<相传是孔子>]]></value>
             </property>
-        </bean>
+      </bean>
         ```
 
         > 效果：Book{bookName='春秋', bookAuthor='<相传是孔子>'}
-
+    
     - 第二种：外部 Bean。
-
+    
       - 创建两个类。
-
+    
         ```java
         public class UserDao {
             public void update(){
@@ -1438,17 +1462,17 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             -->
             <property name="userDao" ref="userDao"/>
         </bean>
-        
-        <!-- 外部Bean -->
-        <bean id="userDao" class="cn.xisun.spring.bean.UserDao"/>
-        ```
       
+        <!-- 外部Bean -->
+      <bean id="userDao" class="cn.xisun.spring.bean.UserDao"/>
+        ```
+    
     - 第三种：内部 Bean。
-
+    
       - 当 Bean 实例仅仅给一个特定的属性使用时，可以将其声明为内部 Bean。内部 Bean 声明直接包含在 \<property> 或 \<constructor-arg> 标签里，不需要设置任何 id 或 name 属性，**内部 Bean 不能使用在任何其他地方。**
-
+    
       - 一对多关系：部门和员工，一个部门有多个员工，一个员工属于一个部门，部门是一，员工是多。
-
+    
         ```java
         public class Department {
             private String depName;
@@ -1459,13 +1483,13 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
         
             @Override
             public String toString() {
-                return "Department{" +
+              return "Department{" +
                         "depName='" + depName + '\'' +
                         '}';
             }
         }
         ```
-
+    
         ```java
         public class Employee {
             private String name;
@@ -1490,47 +1514,47 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             public String toString() {
                 return "Employee{" +
                         "name='" + name + '\'' +
-                        ", gender='" + gender + '\'' +
+                      ", gender='" + gender + '\'' +
                         ", dep=" + dep +
-                        '}';
+                      '}';
             }
         }
         ```
-
+    
       - 在 spring 配置文件中进行配置。
-
+    
         ```xml
         <bean id="employee" class="cn.xisun.spring.pojo.Employee">
             <property name="name" value="Tom"/>
             <property name="gender" value="male"/>
             <property name="dep">
                 <!-- 内部Bean -->
-                <bean id="department" class="cn.xisun.spring.pojo.Department">
+              <bean id="department" class="cn.xisun.spring.pojo.Department">
                     <property name="depName" value="IT"/>
-                </bean>
+              </bean>
             </property>
-        </bean>
+      </bean>
         ```
-
+    
     - 第四种：级联赋值。
-
+    
       - 写法一：
-
+    
         ```xml
         <bean id="employee" class="cn.xisun.spring.bean.Employee">
             <property name="name" value="Tom"/>
             <property name="gender" value="male"/>
             <!-- 级联赋值写法一 -->
             <property name="dep" ref="department"/>
-        </bean>
+      </bean>
         
-        <bean id="department" class="cn.xisun.spring.bean.Department">
+      <bean id="department" class="cn.xisun.spring.bean.Department">
             <property name="depName" value="IT"/>
         </bean>
         ```
-
+    
       - 写法二：注意，必须要在 Employee 类中添加 dep 属性的 getter 方法，否则会报错。
-
+    
         ```xml
         <bean id="employee" class="cn.xisun.spring.bean.Employee">
             <property name="name" value="Tom"/>
@@ -1538,21 +1562,21 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             <!-- 级联赋值写法二 -->
             <property name="dep" ref="department"/>
             <property name="dep.depName" value="editorial"/>
-        </bean>
-        
-        <bean id="department" class="cn.xisun.spring.pojo.Department">
-            <property name="depName" value="IT"/>
-        </bean>
-        ```
+      </bean>
+      
+      <bean id="department" class="cn.xisun.spring.pojo.Department">
+          <property name="depName" value="IT"/>
+      </bean>
+      ```
 
   - 基于 xml 方式注入集合属性：数组类型、List 类型、Map 类型、Set 类型。
 
     - 在 Spring 中可以通过一组内置的 xml 标签来配置集合属性，比如：\<array>、\<list>、\<map>、\<set>、\<props>，并且可以用过引入 util 名称空间来提取集合类型的 Bean。
-
+  
     - 第一种：集合中元素是基本数据类型。
-
+  
       - 创建类，定义数组、List、Map、Set 类型属性，并生成对应的 setter 方法。
-
+  
         ```java
         public class CollectionExample {
             private String[] array;
@@ -1586,9 +1610,9 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             }
         }
         ```
-
+  
       - 在 Spring 配置文件进行配置。
-
+  
         ```xml
         <bean id="collectionExample" class="cn.xisun.spring.bean.CollectionExample">
             <!-- 数组类型属性注入 -->
@@ -1632,11 +1656,11 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             </property>
         </bean>
         ```
-
+  
     - 第二种：集合中元素是对象类型值。
-
+  
       - 创建两个类。
-
+  
         ```java
         public class Course {
             private String name;
@@ -1646,7 +1670,7 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             }
         }
         ```
-
+  
         ```java
         public class Student {
             private List<Course> coursesist;
@@ -1656,9 +1680,9 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             }
         }
         ```
-
+  
       - 在 Spring 配置文件进行配置。
-
+  
         ```xml
         <!-- 1.创建多个Course对象 -->
         <bean id="course1" class="cn.xisun.spring.bean.Course">
@@ -1678,9 +1702,9 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             </property>
         </bean>
         ```
-
+  
     - 把集合注入部分提取出来作为公共部分。
-
+  
       - 创建一个类：
       
         ```java
@@ -1699,7 +1723,7 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
             }
         }
         ```
-
+  
       - 在 Spring 配置文件中引入名称空间 util。
       
         ```xml
@@ -1711,7 +1735,7 @@ Bean 对象的三种获取方式（定义在 beanFactory 接口中）：
                                    http://www.springframework.org/schema/util 
                                    http://www.springframework.org/schema/util/spring-util.xsd">
         ```
-
+  
         <img src="spring/image-20210414200224118.png" alt="image-20210414200224118" style="zoom:80%;" />
       
       - 使用 util 标签完成 list 集合注入提取。
