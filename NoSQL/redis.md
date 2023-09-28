@@ -2281,7 +2281,7 @@ Since Redis 7.0.0, when an AOF rewrite is scheduled, the Redis parent process op
 
 ##### 触发条件
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914072805721.png" alt="image-20230914072805721" style="zoom:80%;" />
+<img src=".\redis\image-20230914072805721.png" alt="image-20230914072805721" style="zoom:80%;" />
 
 ###### 自动触发
 
@@ -2341,7 +2341,7 @@ AOF 重写机制的原理是：`根据 Redis 进程内的数据，生成一个�
 
 开启 AOF：
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232208221.png" alt="image-20230912232208221" style="zoom:80%;" />
+<img src=".\redis\image-20230912232208221.png" alt="image-20230912232208221" style="zoom:80%;" />
 
 - AOF 默认关闭，如果需要开启，将配置文件中`appendonly no`改为`appendonly yes`。
 
@@ -2351,7 +2351,7 @@ AOF 重写机制的原理是：`根据 Redis 进程内的数据，生成一个�
 
 AOF 文件的路径：
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232611760.png" alt="image-20230912232611760" style="zoom:80%;" />
+<img src=".\redis\image-20230912232611760.png" alt="image-20230912232611760" style="zoom:80%;" />
 
 - Redis 7.0 之后，在 RDB 文件指定的路径下，会新建 appendonlydir 路径，AOF 文件存放于 appendonlydir 路径下，以此与 RDB 文件区分隔离。
 
@@ -2366,7 +2366,7 @@ AOF 文件的路径：
 
 AOF 文件的名称：
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230912232647018.png" alt="image-20230912232647018" style="zoom:80%;" />
+<img src=".\redis\image-20230912232647018.png" alt="image-20230912232647018" style="zoom:80%;" />
 
 - `base 基础文件`：appendonly.aof.1.base.rdb。
 - `incr 增量文件`：appendonly.aof.1.incr.aof，appendonly.aof.2.incr.aof。
@@ -2490,7 +2490,7 @@ AOF 的相关配置项，在配置文件的 APPEND ONLY MODE 模块：
 
 - `no-appendfsync-on-rewrite no`：AOF 重写期间是否同步。
 
-  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080155252.png" alt="image-20230914080155252" style="zoom:80%;" />
+  <img src=".\redis\image-20230914080155252.png" alt="image-20230914080155252" style="zoom:80%;" />
 
 - `auto-aof-rewrite-percentage 100`：AOF 文件重写机制触发条件。
 
@@ -2498,19 +2498,19 @@ AOF 的相关配置项，在配置文件的 APPEND ONLY MODE 模块：
 
 - `aof-load-truncated yes`：AOF 文件末尾异常截断时的处理方式。
 
-  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080329059.png" alt="image-20230914080329059" style="zoom:80%;" />
+  <img src=".\redis\image-20230914080329059.png" alt="image-20230914080329059" style="zoom:80%;" />
 
 - `aof-use-rdb-preamble yes`：开启 AOF 与 RDB 混合模式。
 
-  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080349734.png" alt="image-20230914080349734" style="zoom:80%;" />
+  <img src=".\redis\image-20230914080349734.png" alt="image-20230914080349734" style="zoom:80%;" />
 
 - `aof-timestamp-enabled no`：AOF 文件中添加时间戳。
 
-  <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914080411208.png" alt="image-20230914080411208" style="zoom:80%;" />
+  <img src=".\redis\image-20230914080411208.png" alt="image-20230914080411208" style="zoom:80%;" />
 
 #### 总结
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914081241859.png" alt="image-20230914081241859" style="zoom: 67%;" />
+<img src=".\redis\image-20230914081241859.png" alt="image-20230914081241859" style="zoom: 67%;" />
 
 - AOF 文件是一个只进行追加的日志文件。
 - Redis 可以在 AOF 文件体积变得过大时，自动在后台对 AOF 文件进行重写。
@@ -2541,13 +2541,13 @@ There are many users using AOF alone, but we discourage it since to have an RDB 
 
   - 先使用 RDB 进行快照存储，然后使用 AOF 持久化记录所有的写操作，当重写策略满足或手动触发重写的时候，将最新的数据存储为新的 RDB 记录。这样的话，重启服务的时候会从 RDB 和 AOF 两部分恢复数据，既保证了数据完整性，又提高了恢复数据的性能。简单来说：混合持久化方式产生的文件一部分是 RDB 格式，一部分是 AOF 格式。**即：AOF 包括了 RDB 头部 + AOF 混写。**
 
-    <img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914224140948.png" alt="image-20230914224140948" style="zoom: 50%;" />
+    <img src=".\redis\image-20230914224140948.png" alt="image-20230914224140948" style="zoom: 50%;" />
 
 #### 数据恢复顺序和加载流程
 
 在同时开启 RDB 和 AOF 持久化时，重启时只会加载 AOF 文件，不会加载 RDB 文件：
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230914221338028.png" alt="image-20230914221338028" style="zoom: 67%;" />
+<img src=".\redis\image-20230914221338028.png" alt="image-20230914221338028" style="zoom: 67%;" />
 
 ### 纯缓存模式
 
@@ -2998,7 +2998,7 @@ This time is called RTT (Round Trip Time). It's easy to see how this can affect 
 
 If the interface used is a loopback interface, the RTT is much shorter, typically sub-millisecond, but even this will add up to a lot if you need to perform many writes in a row.
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915080446376.png" alt="image-20230915080446376" style="zoom:67%;" />
+<img src=".\redis\image-20230915080446376.png" alt="image-20230915080446376" style="zoom:67%;" />
 
 Redis 是一种基于客户端-服务端模型以及请求/响应协议的 TCP 服务。一个请求会遵循以下步骤：
 
@@ -3049,13 +3049,13 @@ Pipelining is not just a way to reduce the latency cost associated with the roun
 
 When pipelining is used, many commands are usually read with a single `read()` system call, and multiple replies are delivered with a single `write()` system call. Consequently, the number of total queries performed per second initially increases almost linearly with longer pipelines, and eventually reaches 10 times the baseline obtained without pipelining, as shown in this figure.
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915082522721.png" alt="image-20230915082522721" style="zoom:80%;" />
+<img src=".\redis\image-20230915082522721.png" alt="image-20230915082522721" style="zoom:80%;" />
 
 `管道`（Pipelining）可以一次性发送多条命令给服务端，服务端依次处理完毕后，通过一条响应一次性将结果返回，这样不仅可以减少客户端与 Redis 的通信次数，降低 RTT，同时还可以减少 Redis 调用 read() 和 write() 系统方法的次数，提升系统性能。
 
 Pipeline 实现的原理是队列，先进先出特性就可以保证数据的顺序性。
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915083045219.png" alt="image-20230915083045219" style="zoom:67%;" />
+<img src=".\redis\image-20230915083045219.png" alt="image-20230915083045219" style="zoom:67%;" />
 
 ### 使用
 
@@ -3163,7 +3163,7 @@ OK
 
 官网：https://redis.io/docs/interact/pubsub/
 
-![image-20230915141210829](C:\Users\admin\AppData\Roaming\Typora\typora-user-images\image-20230915141210829.png)
+![image-20230915141210829](.\redis\image-20230915141210829.png)
 
 ## Redis 主从复制（Replication）
 
