@@ -6,9 +6,17 @@
 
 文档：https://spring.io/projects/spring-boot#learn
 
+Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
+
+We take an opinionated view of the Spring platform and third-party libraries so you can get started with minimum fuss. Most Spring Boot applications need minimal Spring configuration.
+
+If you’re looking for information about a specific version, or instructions about how to upgrade from an earlier release, check out [the project release notes section](https://github.com/spring-projects/spring-boot/wiki#release-notes) on our wiki.
+
+### 2.5.1
+
 <img src="spring-boot/image-20210618171017632.png" alt="image-20210618171017632" style="zoom:80%;" />
 
-![image-20210618172108696](spring-boot/image-20210618172108696.png)
+<img src="spring-boot/image-20210618172108696.png" alt="image-20210618172108696" style="zoom:80%;" />
 
 查看各版本的新特性：https://github.com/spring-projects/spring-boot/wiki#release-notes
 
@@ -16,11 +24,51 @@
 
 <img src="spring-boot/image-20210618173003220.png" alt="image-20210618173003220" style="zoom:80%;" />
 
+### 3.1.4
+
+<img src="./spring-boot/image-20230928184947382.png" alt="image-20230928184947382" style="zoom:75%;" />
+
+**系统要求：**
+
+Spring Boot 3.1.4 requires [Java 17](https://www.java.com/) and is compatible up to and including Java 20. [Spring Framework 6.0.12](https://docs.spring.io/spring-framework/docs/6.0.12/reference/html/) or above is also required.
+
+Explicit build support is provided for the following build tools:
+
+| Build Tool | Version                    |
+| :--------- | :------------------------- |
+| Maven      | 3.6.3 or later             |
+| Gradle     | 7.x (7.5 or later) and 8.x |
+
+**Servlet Containers：**
+
+Spring Boot supports the following embedded servlet containers:
+
+| Name         | Servlet Version |
+| :----------- | :-------------- |
+| Tomcat 10.1  | 6.0             |
+| Jetty 11.0   | 5.0             |
+| Undertow 2.3 | 6.0             |
+
+You can also deploy Spring Boot applications to any servlet 5.0+ compatible container.
+
+**GraalVM Native Images：**
+
+Spring Boot applications can be [converted into a Native Image](https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.introducing-graalvm-native-images) using GraalVM 22.3 or above.
+
+Images can be created using the [native build tools](https://github.com/graalvm/native-build-tools) Gradle/Maven plugins or `native-image` tool provided by GraalVM. You can also create native images using the [native-image Paketo buildpack](https://github.com/paketo-buildpacks/native-image).
+
+The following versions are supported:
+
+| Name               | Version |
+| :----------------- | :------ |
+| GraalVM Community  | 22.3    |
+| Native Build Tools | 0.9.27  |
+
 ## Spring Boot 的作用
 
 > Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
 
-Spring Boot 能快速创建出生产级别的 Spring 应用。
+Spring Boot 能快速创建出生产级别的 Spring 应用（**Spring Boot 的底层是 Spring**）。
 
 ## Spring Boot 的优点
 
@@ -53,7 +101,7 @@ Spring Boot 能快速创建出生产级别的 Spring 应用。
 - 人称版本帝，迭代快，需要时刻关注变化。
 - 封装太深，内部原理复杂，不容易精通。
 
-## Spring Boot 2 入门
+## Spring Boot 2 入门案例
 
 ### 系统要求
 
@@ -134,9 +182,9 @@ Maven setting.xml 的设置：
 
 ### HelloWorld
 
-需求：浏览器发送`/hello`请求，服务器响应`Hello, Spring Boot 2!`。
-
 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/getting-started.html#getting-started.first-application
+
+需求：浏览器发送`/hello`请求，服务器响应`Hello, Spring Boot 2!`。
 
 第一步，创建 Maven 工程，并添加 parent 依赖：
 
@@ -206,7 +254,7 @@ public class HelloController {
 }
 ```
 
-第五步，运行 MainApplication.class 的 main 方法，启动程序，在浏览器输入地址 `http://localhost:8080/hello`，查看结果：
+第五步，运行 MainApplication.class 的 main 方法，启动程序，在浏览器输入地址`http://localhost:8080/hello`，查看结果：
 
 ```java
   .   ____          _            __ _ _
@@ -233,79 +281,179 @@ public class HelloController {
 
 ![image-20210620154854477](spring-boot/image-20210620154854477.png)
 
-简化配置：
+### 简化配置
 
-- 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
+参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
 
-- 在 resources 目录下新建 application.properties 文件，项目中的一些配置可在此文件中进行修改。
+在 resources 目录下新建 application.properties 文件，项目中的一些配置可在此文件中进行修改。如，修改 tomcat 端口：
 
-- 如，修改 tomcat 端口：
+```properties
+server.port=8888
+```
 
-  ```properties
-  server.port=8888
-  ```
+### 简化部署
 
-简化部署：
+Maven 添加**`spring-boot-maven-plugin`**：
 
-- **添加 `spring-boot-maven-plugin`：**
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+```
 
-  ```xml
-  <build>
-      <plugins>
-          <plugin>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-maven-plugin</artifactId>
-          </plugin>
-      </plugins>
-  </build>
-  ```
+打包：
 
-- 打包：
+```bash
+D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot>mvn clean package -DskipTests
+[INFO] Scanning for projects...
+[INFO]
+[INFO] -------------------< cn.xisun:springboot-helloworld >-------------------
+[INFO] Building springboot-helloworld 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ springboot-helloworld ---
+[INFO] Deleting D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target
+[INFO]
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ springboot-helloworld ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO]
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ springboot-helloworld ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 2 source files to D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes
+[INFO]
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ springboot-helloworld ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\src\test\resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ springboot-helloworld ---
+[INFO] Changes detected - recompiling the module!
+[INFO]
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ springboot-helloworld ---
+[INFO] Tests are skipped.
+[INFO]
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ springboot-helloworld ---
+[INFO] Building jar: D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\springboot-helloworld-1.0-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.5.1:repackage (repackage) @ springboot-helloworld ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.890 s
+[INFO] Finished at: 2021-06-20T16:47:43+08:00
+[INFO] ------------------------------------------------------------------------
+```
 
-  ```java
-  D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot>mvn clean package -DskipTests
-  [INFO] Scanning for projects...
-  [INFO]
-  [INFO] -------------------< cn.xisun:springboot-helloworld >-------------------
-  [INFO] Building springboot-helloworld 1.0-SNAPSHOT
-  [INFO] --------------------------------[ jar ]---------------------------------
-  [INFO]
-  [INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ springboot-helloworld ---
-  [INFO] Deleting D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target
-  [INFO]
-  [INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ springboot-helloworld ---
-  [INFO] Using 'UTF-8' encoding to copy filtered resources.
-  [INFO] Using 'UTF-8' encoding to copy filtered properties files.
-  [INFO] Copying 1 resource
-  [INFO] Copying 0 resource
-  [INFO]
-  [INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ springboot-helloworld ---
-  [INFO] Changes detected - recompiling the module!
-  [INFO] Compiling 2 source files to D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\classes
-  [INFO]
-  [INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ springboot-helloworld ---
-  [INFO] Using 'UTF-8' encoding to copy filtered resources.
-  [INFO] Using 'UTF-8' encoding to copy filtered properties files.
-  [INFO] skip non existing resourceDirectory D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\src\test\resources
-  [INFO]
-  [INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ springboot-helloworld ---
-  [INFO] Changes detected - recompiling the module!
-  [INFO]
-  [INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ springboot-helloworld ---
-  [INFO] Tests are skipped.
-  [INFO]
-  [INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ springboot-helloworld ---
-  [INFO] Building jar: D:\JetBrainsWorkSpace\IDEAProjects\xisun-springboot\target\springboot-helloworld-1.0-SNAPSHOT.jar
-  [INFO]
-  [INFO] --- spring-boot-maven-plugin:2.5.1:repackage (repackage) @ springboot-helloworld ---
-  [INFO] Replacing main artifact with repackaged archive
-  [INFO] ------------------------------------------------------------------------
-  [INFO] BUILD SUCCESS
-  [INFO] ------------------------------------------------------------------------
-  [INFO] Total time:  1.890 s
-  [INFO] Finished at: 2021-06-20T16:47:43+08:00
-  [INFO] ------------------------------------------------------------------------
-  ```
+## Spring Boot 3 入门案例
+
+pom.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.xisun.spring-boot</groupId>
+    <artifactId>xisun-spring-boot-3</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- 所有SpringBoot项目都必须继承自 spring-boot-starter-parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.4</version>
+    </parent>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Web开发的场景启动器 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            SpringBoot中snakeyaml:1.33是一个脆弱的传递依赖，手动添加高版本的snakeyaml，去除警告：
+            Provides transitive vulnerable dependency maven:org.yaml:snakeyaml:1.33
+        -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
+    </dependencies>
+
+    <!-- SpringBoot应用打包插件-->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+主程序：
+
+```java
+package cn.xisun.springboot3;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * @author XiSun
+ * @since 2023/9/28 09:12
+ */
+@SpringBootApplication
+public class SpringBoot3Application {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBoot3Application.class, args);
+    }
+}
+```
+
+业务层：
+
+```java
+package cn.xisun.springboot3.controllers;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @author XiSun
+ * @since 2023/9/28 09:15
+ */
+@RestController
+public class HelloController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello, Spring Boot 3!";
+    }
+
+}
+```
 
 ## Spring Boot 的特点
 
@@ -323,7 +471,7 @@ Spring Boot 项目，都会添加一个 parent 依赖`spring-boot-starter-parent
 </parent>
 ```
 
-- 父项目一般都是做依赖管理的，后续在项目中添加的依赖，其版本号和父项目 version 一致，不需要再单独指定。
+- 父项目一般都是做`依赖管理`的，后续在项目中添加的依赖，其版本号和父项目 version 一致，不需要再单独指定。
 
 - `spring-boot-starter-parent`有自己的父项目`spring-boot-dependencies`，在该项目中几乎声明了所有开发中常用的依赖的版本号，这个版本号一般适应当前项目对应的版本，即**自动版本仲裁机制**。
 
@@ -543,13 +691,22 @@ Spring Boot 项目，都会添加一个 parent 依赖`spring-boot-starter-parent
 
 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.build-systems.starters
 
+Starters are a set of convenient dependency descriptors that you can include in your application. You get a one-stop shop for all the Spring and related technologies that you need without having to hunt through sample code and copy-paste loads of dependency descriptors. For example, if you want to get started using Spring and JPA for database access, include the `spring-boot-starter-data-jpa` dependency in your project.
+
+The starters contain a lot of the dependencies that you need to get a project up and running quickly and with a consistent, supported set of managed transitive dependencies.
+
 场景启动器表示的是实现某种功能时，所需要的一组常规的依赖，当引入这个启动器后，会自动添加这一组依赖。比如`spring-boot-start-web`：
 
 ![springboot-helloworld](spring-boot/springboot-helloworld.png)
 
-Spring 官方的启动器命名规则为`spring-boot-start-*`，* 代表的就是某种场景。
+All **official** starters follow a similar naming pattern; `spring-boot-starter-*`, where `*` is a particular type of application. This naming structure is intended to help when you need to find a starter. The Maven integration in many IDEs lets you search dependencies by name. For example, with the appropriate Eclipse or Spring Tools plugin installed, you can press `ctrl-space` in the POM editor and type “spring-boot-starter” for a complete list.
 
-自定义的第三方启动器，命名规则一般为`thirdpartyproject-spring-boot-starter`。
+As explained in the “[Creating Your Own Starter](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.developing-auto-configuration.custom-starter)” section, third party starters should not start with `spring-boot`, as it is reserved for official Spring Boot artifacts. Rather, a third-party starter typically starts with the name of the project. For example, a third-party starter project called `thirdpartyproject` would typically be named `thirdpartyproject-spring-boot-starter`.
+
+- Spring 官方的启动器命名规则为`spring-boot-start-*`，* 代表的就是某种场景。
+
+- 自定义的第三方启动器，命名规则一般为`thirdpartyproject-spring-boot-starter`。
+
 
 所有场景启动器最底层的依赖：
 
@@ -566,7 +723,7 @@ Spring 官方的启动器命名规则为`spring-boot-start-*`，* 代表的就�
 
 比如，引入`spring-boot-start-web`启动器时，会自动引入 Tomcat、SpringMVC 的相关依赖，并配置好。也会自动配好 Web 的常见功能，如：字符编码问题。
 
-默认的包结构：
+**一、默认的包结构：**
 
 - 默认情况下，**主程序所在包及其下面的所有子包**里面的组件都会被扫描进来，无需自行设置包扫描。
 
@@ -596,13 +753,13 @@ Spring 官方的启动器命名规则为`spring-boot-start-*`，* 代表的就�
     }
     ```
 
-各种配置拥有默认值：
+**二、各种配置拥有默认值：**
 
 - 默认配置最终都是映射到某个类上，如：MultipartProperties。
 - 配置文件的值最终会绑定每个类上，这个类会在容器中会创建对象。
 - 在 application.properties 文件内可以修改各种配置的默认值。
 
-按需加载所有自动配置项：
+**三、按需加载所有自动配置项：**
 
 - 引入了一个场景启动器后，这个场景的自动配置才会开启。
 - Spring Boot 所有的自动配置功能，都在 spring-boot-autoconfigure 包里面。
@@ -704,608 +861,1441 @@ public class User {
 }
 ```
 
-- **`@Configuration`**
+#### @Configuration
 
-  ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/23 15:24
-   * @Description 1.@Configuration注解标识当前类是一个配置类，作用等同于Spring的配置文件
-   * 2.@Configuration注解标识的配置类本身也是一个组件
-   * 3.配置类里可以使用@Bean注解，标注在方法上给容器注册组件，组件是单实例的
-   * 4.@Configuration注解有一个proxyBeanMethods属性，表示是否代理配置类中Bean的方法，默认为true，即代理
-   */
-  @Configuration(proxyBeanMethods = false)
-  public class MyConfig {
-      /**
-       * 使用@Bean注解给容器中注册组件
-       *
-       * @return 以方法名作为组件的id，返回类型就是组件的类型，返回的值，就是组件在容器中的实例
-       */
-      @Bean
-      public User user01() {
-          User zhangsan = new User("zhangsan", 18);
-          /*
-           * user01组件依赖了tom组件：
-           *      如果proxyBeanMethods = true，user01组件依赖的tom组件，就是容器中注册的那个
-           *      如果proxyBeanMethods = false，user01组件依赖的tom组件，是新建的，与容器中注册的那个无关
-           */
-          zhangsan.setPet(tomcatPet());
-          return zhangsan;
-      }
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/23 15:24
+ * @Description 
+ * 1.@Configuration注解标识当前类是一个配置类，作用等同于Spring的配置文件
+ * 2.@Configuration注解标识的配置类本身也是一个组件
+ * 3.配置类里可以使用@Bean注解，标注在方法上给容器注册组件，组件是单实例的
+ * 4.@Configuration注解有一个proxyBeanMethods属性，表示是否代理配置类中Bean的方法，默认为true，即代理
+ */
+@Configuration(proxyBeanMethods = false)
+public class MyConfig {
+    /**
+     * 使用@Bean注解给容器中注册组件
+     *
+     * @return 以方法名作为组件的id，返回类型就是组件的类型，返回的值，就是组件在容器中的实例
+     */
+    @Bean
+    public User user01() {
+        User zhangsan = new User("zhangsan", 18);
+        /*
+         * user01组件依赖了tom组件：
+         *      如果proxyBeanMethods = true，user01组件依赖的tom组件，就是容器中注册的那个
+         *      如果proxyBeanMethods = false，user01组件依赖的tom组件，是新建的，与容器中注册的那个无关
+         */
+        zhangsan.setPet(tomcatPet());
+        return zhangsan;
+    }
+
+    /**
+     * @return 可以重新指定组件的id
+     */
+    @Bean("lisi")
+    public User user02() {
+        return new User("lisi", 19);
+    }
+
+    @Bean("tom")
+    public Pet tomcatPet() {
+        return new Pet("tomcat");
+    }
+    
+    /**
+     * 使用@Scope("prototype")注解，指定注册的组件是多实例的，默认情况是单实例
+     *
+     * @return 每次从容器中获得的tom1组件，都不相同
+     */
+    @Bean("tom1")
+    @Scope("prototype")
+    public Pet tomcatPet1() {
+        return new Pet("tomcat2");
+    }
+}
+```
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/20 15:03
+ * @Description 主程序类
+ */
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        // 1.返回IOC容器
+        ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
+
+        // 2.查看容器内的所有组件
+        String[] beanDefinitionNames = run.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) {
+            System.out.println(beanDefinitionName);
+        }
+
+        // 3.从容器中获取配置类本身的组件
+        MyConfig myConfig = run.getBean(MyConfig.class);
+        System.out.println(myConfig);
+
+        // 4.从容器中获取配置类中注册的组件，每次获取的实例都相同
+        User user01 = run.getBean("user01", User.class);
+        User user011 = run.getBean("user01", User.class);
+        System.out.println(user01);
+        System.out.println("单例? " + (user01 == user011));
+        User lisi = run.getBean("lisi", User.class);
+        System.out.println(lisi);
+
+        /*
+         * 5.通过配置类的方法获取实例
+         * @Configuration(proxyBeanMethods = true)：
+         *      此时，配置类是一个MyConfig$$EnhancerBySpringCGLIB$$70400c34@1517f633对象(CGLIB代理对象)
+         *      在执行方法前，SpringBoot总会检查要获取的组件是否在容器中已存在，若存在，直接返回该组件---保持容器中组件单实例
+         *      Full模式：外部无论对配置类中的这个组件的注册方法调用多少次，获取的都是之前已经注册在容器中的单实例对象，即user和user1总是相等
+         *		组件依赖必须使用Full模式
+         * @Configuration(proxyBeanMethods = false)：
+         *      此时，配置类是一个MyConfig@644abb8f对象(普通对象)
+         *      在执行方法前，SpringBoot不会检查要获取的组件是否在容器中已存在
+         *      Lite模式：外部对配置类中的这个组件的注册方法的每一次调用，都会获得一个新的实例，即user和user1总是不等
+         */
+        User user = myConfig.user01();
+        User user1 = myConfig.user01();
+        System.out.println(user == user1);
+        
+        // 根据proxyBeanMethods的属性为true或false，可以看出user01的pet属性，与容器中的tom组件是否相同
+        Pet tom = run.getBean("tom", Pet.class);
+        System.out.println("用户的宠物：" + (user01.getPet() == tom));
+        
+        // tom1组件是多实例的，tom1对象和tom2对象不相同
+        Pet tom1 = run.getBean("tom1", Pet.class);
+        Pet tom2 = run.getBean("tom1", Pet.class);
+        System.out.println(tom1 == tom2);
+    }
+}
+```
+
+- `@Configuration` 标注在类上，表明该类是一个配置类，作用等同于 Spring 的 xml 配置文件中的 \<beans> 标签，如下所示：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+      <bean id="user01" class="cn.xisun.web.bean.User">
+          <property name="name" value="zhangsan"/>
+          <property name="age" value="18"/>
+          <property name="pet" ref="tom"/>
+      </bean>
   
-      /**
-       * @return 可以重新指定组件的id
-       */
-      @Bean("lisi")
-      public User user02() {
-          return new User("lisi", 19);
-      }
+      <bean id="lisi" class="cn.xisun.web.bean.User">
+          <property name="name" value="lisi"/>
+          <property name="age" value="19"/>
+      </bean>
   
-      @Bean("tom")
-      public Pet tomcatPet() {
-          return new Pet("tomcat");
-      }
-      
-      /**
-       * 使用@Scope("prototype")注解，指定注册的组件是多实例的，默认情况是单实例
-       *
-       * @return 每次从容器中获得的tom1组件，都不相同
-       */
-      @Bean("tom1")
-      @Scope("prototype")
-      public Pet tomcatPet1() {
-          return new Pet("tomcat2");
-      }
-  }
+      <bean id="tom" class="cn.xisun.web.bean.Pet">
+          <property name="name" value="tomcat"/>
+      </bean>
+  </beans>
   ```
 
-  ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/20 15:03
-   * @Description 主程序类
-   */
-  @SpringBootApplication
-  public class MainApplication {
-      public static void main(String[] args) {
-          // 1.返回IOC容器
-          ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-  
-          // 2.查看容器内的所有组件
-          String[] beanDefinitionNames = run.getBeanDefinitionNames();
-          for (String beanDefinitionName : beanDefinitionNames) {
-              System.out.println(beanDefinitionName);
-          }
-  
-          // 3.从容器中获取配置类本身的组件
-          MyConfig myConfig = run.getBean(MyConfig.class);
-          System.out.println(myConfig);
-  
-          // 4.从容器中获取配置类中注册的组件，每次获取的实例都相同
-          User user01 = run.getBean("user01", User.class);
-          User user011 = run.getBean("user01", User.class);
-          System.out.println(user01);
-          System.out.println("单例? " + (user01 == user011));
-          User lisi = run.getBean("lisi", User.class);
-          System.out.println(lisi);
-  
-          /*
-           * 5.通过配置类的方法获取实例
-           * @Configuration(proxyBeanMethods = true)：
-           *      此时，配置类是一个MyConfig$$EnhancerBySpringCGLIB$$70400c34@1517f633对象(CGLIB代理对象)
-           *      在执行方法前，SpringBoot总会检查要获取的组件是否在容器中已存在，若存在，直接返回该组件---保持容器中组件单实例
-           *      Full模式：外部无论对配置类中的这个组件的注册方法调用多少次，获取的都是之前已经注册在容器中的单实例对象，即user和user1总是相等
-           *		组件依赖必须使用Full模式
-           * @Configuration(proxyBeanMethods = false)：
-           *      此时，配置类是一个MyConfig@644abb8f对象(普通对象)
-           *      在执行方法前，SpringBoot不会检查要获取的组件是否在容器中已存在
-           *      Lite模式：外部对配置类中的这个组件的注册方法的每一次调用，都会获得一个新的实例，即user和user1总是不等
-           */
-          User user = myConfig.user01();
-          User user1 = myConfig.user01();
-          System.out.println(user == user1);
-          
-          // 根据proxyBeanMethods的属性为true或false，可以看出user01的pet属性，与容器中的tom组件是否相同
-          Pet tom = run.getBean("tom", Pet.class);
-          System.out.println("用户的宠物：" + (user01.getPet() == tom));
-          
-          // tom1组件是多实例的，tom1对象和tom2对象不相同
-          Pet tom1 = run.getBean("tom1", Pet.class);
-          Pet tom2 = run.getBean("tom1", Pet.class);
-          System.out.println(tom1 == tom2);
-      }
-  }
-  ```
+- 根据`@Configuration`注解的 proxyBeanMethods 属性值：
 
-  - `@Configuration` 标注在类上，表明该类是一个配置类，作用等同于 Spring 的 xml 配置文件中的 \<beans> 标签，如下所示：
+  - false：Lite 模式。当配置类组件之间无依赖关系时，用 Lite 模式可以减少判断，加速容器启动过程。
+  - true：Full 模式。当配置类组件之间有依赖关系时，配置类里的 Bean 方法会被调用，为了得到之前容器中注册的单实例组件，需要使用 Full 模式。
+    - 组件依赖必须使用 Full 模式。
 
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-        <bean id="user01" class="cn.xisun.web.bean.User">
-            <property name="name" value="zhangsan"/>
-            <property name="age" value="18"/>
-            <property name="pet" ref="tom"/>
-        </bean>
+#### @ComponentScan
+
+`@ComponentScan`：指定扫描的包，默认扫码主程序所在包及其下面的所有子包。
+
+#### @Import
+
+`@Import`：给容器中自动创建出指定类型的组件，并且，默认组件的名字是全类名。
+
+```java
+@Configuration
+@Import({User.class, ThrowableToStringArray.class})
+public class MyConfig {
+    @Bean
+    public User user01() {
+        return new User("zhangsan", 18);
+    }
+
+    @Bean("lisi")
+    public User user02() {
+        return new User("lisi", 19);
+    }
+}
+```
+
+```java
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        // 1.返回IOC容器
+        ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
+
+        // 2.按User类型获取容器中注册的实例
+        String[] beanNamesForType = run.getBeanNamesForType(User.class);
+        for (String bean : beanNamesForType) {
+            System.out.println(bean);
+        }
+
+        ThrowableToStringArray bean = run.getBean(ThrowableToStringArray.class);
+        System.out.println(bean);
+    }
+}
+
+输出结果：
+    cn.xisun.web.bean.User											// 全类名
+	user01															// 容器中注册的
+	lisi															// 容器中注册的
+	ch.qos.logback.core.helpers.ThrowableToStringArray@312afbc7		// 全类名
+```
+
+#### @Bean、@Component、@Controller、@Service、@Repository
+
+详见 Spring。
+
+#### @Conditional
+
+`@Conditional`：条件装配，当满足`@Conditional` 指定的条件时，则进行组件注入。
+
+- `@Conditional`注解有多个派生注解，每一个派生注解都代表一种条件。
+
+  ![image-20210709153759323](spring-boot/image-20210709153759323.png)
+
+  - `@ConditionalOnBean`：当容器中存在指定的 Bean 时。
+  - `@ConditionalOnMissingBean`：当容器中不存在指定的 Bean 时。
+  - `@ConditionalOnClass`：当容器中存在指定的类时。
+  - `@ConditionalOnMissingClass`：当容器中不存在指定的类时。
+  - `@ConditionalOnJava`：当指定的 Java 版本时。
+  - `@ConditionalOnResource`：当指定资源存在时。
+
+- 注意：配置类中定义的组件，是按照从上到下的顺序依次注册的，在使用类似`@ConditionalOnBean`这样的条件装配注解时，需要注意组件的定义顺序。在这样的情况下，在配置类上使用条件装配注解时，需要额外注意。
+
+  - tom 组件在 user01 组件上面定义：
+
+    ```java
+    @Configuration
+    public class MyConfig {
+        @Bean("tom")
+        public Pet tomcatPet() {
+            return new Pet("tomcat");
+        }
     
-        <bean id="lisi" class="cn.xisun.web.bean.User">
-            <property name="name" value="lisi"/>
-            <property name="age" value="19"/>
-        </bean>
-    
-        <bean id="tom" class="cn.xisun.web.bean.Pet">
-            <property name="name" value="tomcat"/>
-        </bean>
-    </beans>
+        @Bean
+        @ConditionalOnBean(name = "tom")
+        public User user01() {
+            User zhangsan = new User("zhangsan", 18);
+            zhangsan.setPet(tomcatPet());
+            return zhangsan;
+        }
+    }
     ```
-
-  - 根据 `@Configuration` 注解的 proxyBeanMethods 属性值：
-
-    - false：Lite 模式。当配置类组件之间无依赖关系时，用 Lite 模式可以减少判断，加速容器启动过程。
-    - true：Full 模式。当配置类组件之间有依赖关系时，配置类里的 Bean 方法会被调用，为了得到之前容器中注册的单实例组件，需要使用 Full 模式。
-      - 组件依赖必须使用 Full 模式。
-
-- `@ComponentScan`：指定扫描的包，默认扫码主程序所在包及其下面的所有子包。
-
-- `@Import`：给容器中自动创建出指定类型的组件，并且，默认组件的名字是全类名。
-
-  ```java
-  @Configuration
-  @Import({User.class, ThrowableToStringArray.class})
-  public class MyConfig {
-      @Bean
-      public User user01() {
-          return new User("zhangsan", 18);
-      }
-  
-      @Bean("lisi")
-      public User user02() {
-          return new User("lisi", 19);
-      }
-  }
-  ```
-
-  ```java
-  @SpringBootApplication
-  public class MainApplication {
-      public static void main(String[] args) {
-          // 1.返回IOC容器
-          ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-  
-          // 2.按User类型获取容器中注册的实例
-          String[] beanNamesForType = run.getBeanNamesForType(User.class);
-          for (String bean : beanNamesForType) {
-              System.out.println(bean);
-          }
-  
-          ThrowableToStringArray bean = run.getBean(ThrowableToStringArray.class);
-          System.out.println(bean);
-      }
-  }
-  
-  输出结果：
-      cn.xisun.web.bean.User											// 全类名
-  	user01															// 容器中注册的
-  	lisi															// 容器中注册的
-  	ch.qos.logback.core.helpers.ThrowableToStringArray@312afbc7		// 全类名
-  ```
-
-- `@Bean`、`@Component`、`@Controller`、`@Service`、`@Repository`。
-
-- `@Conditional`：条件装配，当满足`@Conditional` 指定的条件时，则进行组件注入。
-
-  - `@Conditional`注解有多个派生注解，每一个派生注解都代表一种条件。
-
-    ![image-20210709153759323](spring-boot/image-20210709153759323.png)
-
-    - `@ConditionalOnBean`：当容器中存在指定的 Bean 时。
-    - `@ConditionalOnMissingBean`：当容器中不存在指定的 Bean 时。
-    - `@ConditionalOnClass`：当容器中存在指定的类时。
-    - `@ConditionalOnMissingClass`：当容器中不存在指定的类时。
-    - `@ConditionalOnJava`：当指定的 Java 版本时。
-    - `@ConditionalOnResource`：当指定资源存在时。
-
-  - 注意：配置类中定义的组件，是按照从上到下的顺序依次注册的，在使用类似 `@ConditionalOnBean` 这样的条件装配注解时，需要注意组件的定义顺序。在这样的情况下，在配置类上使用条件装配注解时，需要额外注意。
-
-    - tom 组件在 user01 组件上面定义：
-
-      ```java
-      @Configuration
-      public class MyConfig {
-          @Bean("tom")
-          public Pet tomcatPet() {
-              return new Pet("tomcat");
-          }
-      
-          @Bean
-          @ConditionalOnBean(name = "tom")
-          public User user01() {
-              User zhangsan = new User("zhangsan", 18);
-              zhangsan.setPet(tomcatPet());
-              return zhangsan;
-          }
-      }
-      ```
-
-      ```java
-      @SpringBootApplication
-      public class MainApplication {
-          public static void main(String[] args) {
-              ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-              boolean tom = run.containsBean("tom");
-              boolean user01 = run.containsBean("user01");
-              System.out.println("容器中存在tom？" + tom);
-              System.out.println("容器中存在user01？" + user01);
-          }
-      }
-      
-      输出结果：
-          容器中存在tom？true
-      	容器中存在user01？true
-      ```
-
-    - tom 组件在 user01 组件下面定义：
-
-      ```java
-      @Configuration
-      public class MyConfig {
-          @Bean
-          @ConditionalOnBean(name = "tom")
-          public User user01() {
-              User zhangsan = new User("zhangsan", 18);
-              zhangsan.setPet(tomcatPet());
-              return zhangsan;
-          }
-      
-          @Bean("tom")
-          public Pet tomcatPet() {
-              return new Pet("tomcat");
-          }
-      }
-      ```
-
-      ```java
-      @SpringBootApplication
-      public class MainApplication {
-          public static void main(String[] args) {
-              ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-              boolean tom = run.containsBean("tom");
-              boolean user01 = run.containsBean("user01");
-              System.out.println("容器中存在tom？" + tom);
-              System.out.println("容器中存在user01？" + user01);
-          }
-      }
-      
-      输出结果：
-          容器中存在tom？true
-      	容器中存在user01？false
-      ```
-
-
-### 原生配置文件引入
-
-- `@ImportResource`：导入 Spring 的配置文件，使用在主类上，或者任一配置类上。当旧项目更新，并存在很多配置文件时，会很有用处。
-
-  - oldBeans.xml：
-
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-        <bean id="wangwu" class="cn.xisun.web.bean.User">
-            <property name="name" value="wangwu"/>
-            <property name="age" value="20"/>
-            <property name="pet" ref="jerry"/>
-        </bean>
-    
-        <bean id="jerry" class="cn.xisun.web.bean.Pet">
-            <property name="name" value="jerry"/>
-        </bean>
-    </beans>
-    ```
-
-  - MainApplication.java：
 
     ```java
     @SpringBootApplication
-    @ImportResource("classpath:oldBeans.xml")
     public class MainApplication {
         public static void main(String[] args) {
             ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-            boolean wangwu = run.containsBean("wangwu");
-            boolean jerry = run.containsBean("jerry");
-            System.out.println("容器中存在jerry？" + jerry);
-            System.out.println("容器中存在wangwu？" + wangwu);
+            boolean tom = run.containsBean("tom");
+            boolean user01 = run.containsBean("user01");
+            System.out.println("容器中存在tom？" + tom);
+            System.out.println("容器中存在user01？" + user01);
         }
     }
     
     输出结果：
-        容器中存在jerry？true
-    	容器中存在wangwu？true
+        容器中存在tom？true
+    	容器中存在user01？true
     ```
 
-### 配置绑定
+  - tom 组件在 user01 组件下面定义：
 
-- application.properties 文件：
+    ```java
+    @Configuration
+    public class MyConfig {
+        @Bean
+        @ConditionalOnBean(name = "tom")
+        public User user01() {
+            User zhangsan = new User("zhangsan", 18);
+            zhangsan.setPet(tomcatPet());
+            return zhangsan;
+        }
+    
+        @Bean("tom")
+        public Pet tomcatPet() {
+            return new Pet("tomcat");
+        }
+    }
+    ```
 
-  ```properties
-  server.port=8080
-  mycar.brand=BMW
-  mycar.price=200000.0
+    ```java
+    @SpringBootApplication
+    public class MainApplication {
+        public static void main(String[] args) {
+            ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
+            boolean tom = run.containsBean("tom");
+            boolean user01 = run.containsBean("user01");
+            System.out.println("容器中存在tom？" + tom);
+            System.out.println("容器中存在user01？" + user01);
+        }
+    }
+    
+    输出结果：
+        容器中存在tom？true
+    	容器中存在user01？false
+    ```
+
+### 原生配置文件引入
+
+#### @ImportResource
+
+`@ImportResource`：导入 Spring 的配置文件，使用在主类上，或者任一配置类上。当旧项目更新，并存在很多配置文件时，会很有用处。
+
+- oldBeans.xml：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+      <bean id="wangwu" class="cn.xisun.web.bean.User">
+          <property name="name" value="wangwu"/>
+          <property name="age" value="20"/>
+          <property name="pet" ref="jerry"/>
+      </bean>
+  
+      <bean id="jerry" class="cn.xisun.web.bean.Pet">
+          <property name="name" value="jerry"/>
+      </bean>
+  </beans>
   ```
 
-- 待封装的 JavaBean：
+- MainApplication.java：
 
   ```java
-  public class Car {
-      private String brand;
+  @SpringBootApplication
+  @ImportResource("classpath:oldBeans.xml")
+  public class MainApplication {
+      public static void main(String[] args) {
+          ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
+          boolean wangwu = run.containsBean("wangwu");
+          boolean jerry = run.containsBean("jerry");
+          System.out.println("容器中存在jerry？" + jerry);
+          System.out.println("容器中存在wangwu？" + wangwu);
+      }
+  }
+  
+  输出结果：
+      容器中存在jerry？true
+  	容器中存在wangwu？true
+  ```
+
+### 配置文件属性绑定
+
+application.properties 文件：
+
+```properties
+server.port=8080
+mycar.brand=BMW
+mycar.price=200000.0
+```
+
+待封装的 JavaBean：
+
+```java
+public class Car {
+    private String brand;
+    
+    private Double price;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "brand='" + brand + '\'' +
+                ", price=" + price +
+                '}';
+    }
+}
+```
+
+自定义的类和配置文件绑定一般没有提示，Car 类上会出现以下提示，需要添加 `spring-boot-configuration-processo` 依赖：
+
+![image-20210715114843221](spring-boot/image-20210715114843221.png)
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-configuration-processor</artifactId>
+    <optional>true</optional>
+</dependency>
+```
+
+该依赖只在开发时提供帮助，因此在打包 jar 包时，应该排除：
+
+```xml
+<!-- 打包插件 -->
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <!-- 打包时排除依赖 -->
+            <configuration>
+                <excludes>
+                    <exclude>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-configuration-processor</artifactId>
+                    </exclude>
+                </excludes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+从 application.properties 文件中读取内容，并且把它封装到 JavaBean 中的普通写法：
+
+```java
+public static void getProperties() throws IOException {
+    Properties properties = new Properties();
+    InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("application.properties");
+    properties.load(is);
+    // 得到配置文件中的值
+    Enumeration<?> enumeration = properties.propertyNames();
+    while (enumeration.hasMoreElements()) {
+        String strKey = (String) enumeration.nextElement();
+        String strValue = properties.getProperty(strKey);
+        System.out.println(strKey + "=" + strValue);
+        // 封装到JavaBean的操作
+    }
+}
+```
+
+#### @ConfigurationProperties + @Component
+
+方式一：在需绑定的 JavaBean 上，添加`@Component`和`@ConfigurationProperties`注解。
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/7/9 21:58
+ * 1.使用@Component注解将JavaBean注册到容器中，只有容器中的组件才能拥有SpringBoot提供的功能，这是前提；
+ * 2.使用@ConfigurationProperties注解，将配置文件和JavaBean绑定，prefix属性指定配置文件中需绑定的值的前缀；
+ * 3.JavaBean的属性名，需和配置文件中对应值前缀后的值相同。
+ */
+@Component
+@ConfigurationProperties(prefix = "mycar")
+public class Car {
+    private String brand;
+
+    private Double price;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "brand='" + brand + '\'' +
+                ", price=" + price +
+                '}';
+    }
+}
+```
+
+#### @ConfigurationProperties + @EnableConfigurationProperties
+
+方式二：在需绑定的 JavaBean 上，添加`@ConfigurationProperties`注解，在配置类上添加`@EnableConfigurationProperties`注解。
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/7/9 21:58
+ * 1.使用@ConfigurationProperties注解，将配置文件和JavaBean绑定，prefix属性指定配置文件中需绑定的值的前缀；
+ * 2.JavaBean的属性名，需和配置文件中对应值前缀后的值相同。
+ */
+@ConfigurationProperties(prefix = "mycar")
+public class Car {
+    private String brand;
+
+    private Double price;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "brand='" + brand + '\'' +
+                ", price=" + price +
+                '}';
+    }
+}
+```
+
+```java
+/**
+ * 1.使用@EnableConfigurationProperties注解，开启待装配的JavaBean的配置绑定功能，同时，将该JavaBean这个组件自动注入到容器中；
+ * 2.JavaBean上不需要使用@Component注解，某些时候，比如JavaBean是第三方依赖包中的类，这个特点会很重要。
+ */
+@Configuration
+@EnableConfigurationProperties({Car.class})
+public class MyConfig {
+    @Bean
+    public User user01() {
+        User zhangsan = new User("zhangsan", 18);
+        zhangsan.setPet(tomcatPet());
+        return zhangsan;
+    }
+
+    @Bean("tom")
+    public Pet tomcatPet() {
+        return new Pet("tomcat");
+    }
+}
+```
+
+>Spring Boot 默认扫描当前项目的主程序包及其子包，如果需要加载第三方组件，而该组件添加了 @ConfigurationProperties 注解，此时，就可以使用 @EnableConfigurationProperties 注解将该组件注入容器中。
+
+#### 获取 Bean
+
+主类测试：
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/20 15:03
+ * @Description 主程序类
+ */
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
+
+        // 获取容器中的Car类型的组件
+        String[] beanNamesForType = run.getBeanNamesForType(Car.class);
+        for (String beanName : beanNamesForType) {
+            System.out.println(beanName);
+        }
+
+        Car car = run.getBean("car", Car.class);
+        System.out.println(car);
+    }
+}
+
+方式一输出结果：
+    car
+	Car{brand='BMW', price=200000.0}
+
+方式二输出结果：
+    mycar-cn.xisun.web.bean.Car
+	Car{brand='BMW', price=200000.0}
+```
+
+>对于方式一，注册到容器中的组件名，就是 JavaBean 类名的首字母小写。
+>
+>对于方式二，注册到容器中的组件名，有所不同，为前缀加 JavaBean 全类名。
+
+Controller 中获取：
+
+```java
+/**
+ * @Author XiSun
+ * @Date 2021/6/20 15:17
+ */
+@Controller
+public class HelloController {
+    @Autowired
+    private Car car;
+
+    @RequestMapping("/car")
+    @ResponseBody
+    public Car car() {
+        return car;
+    }
+
+    @RequestMapping("/hello")
+    @ResponseBody
+    public String hello() {
+        return "Hello, Spring Boot 2!";
+    }
+}
+```
+
+![image-20210710220348915](spring-boot/image-20210710220348915.png)
+
+## Spring Boot 的自动配置原理
+
+### 核心场景启动器
+
+Spring Boot 的每个场景启动器都引入了一个**`spring-boot-starter`**，这是 Spring Boot 的核心场景启动器。
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter</artifactId>
+  <version>2.5.1</version>
+  <scope>compile</scope>
+</dependency>
+```
+
+在 spring-boot-starter 中，又引入了**`spring-boot-autoconfigure`**包，spring-boot-autoconfigure 里面事先定义了所有场景的所有配置，只要这个包下的所有类都能生效，那么相当于 Spring Boot 官方写好的整合功能就生效了。
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-autoconfigure</artifactId>
+  <version>2.5.1</version>
+  <scope>compile</scope>
+</dependency>
+```
+
+但是 Spring Boot 默认只扫描主程序所在的包，因此扫描不到 spring-boot-autoconfigure 下定义好的所有配置类，这部分的工作，是由**`@EnableAutoConfiguration`**注解完成的。
+
+### 引导加载自动配置类
+
+主程序：
+
+```java
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MainApplication.class, args);
+    }
+}
+```
+
+#### @SpringBootApplication
+
+**`@SpringBootApplication`**：
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+      @Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+public @interface SpringBootApplication {}
+```
+
+##### @SpringBootConfiguration
+
+`@SpringBootConfiguration`：是`@Configuration`的派生注解，表明当前主类实际上也是一个配置类。
+
+##### @ComponentScan
+
+`@ComponentScan`：指定扫描的包，默认为当前主类所在包及其子包。
+
+##### @EnableAutoConfiguration
+
+**`@EnableAutoConfiguration`**：
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@AutoConfigurationPackage
+@Import(AutoConfigurationImportSelector.class)
+public @interface EnableAutoConfiguration {}
+```
+
+###### @AutoConfigurationPackage
+
+**`@AutoConfigurationPackage`：**
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@Import(AutoConfigurationPackages.Registrar.class)
+public @interface AutoConfigurationPackage {}
+```
+
+- `@Import(AutoConfigurationPackages.Registrar.class)`：向容器中注册了一个 AutoConfigurationPackages.Registrar.class 组件。
+
+  ```java
+  /**
+   * {@link ImportBeanDefinitionRegistrar} to store the base package from the importing
+   * configuration.
+   */
+  static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImports {
+  
+     @Override
+     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+        register(registry, new PackageImports(metadata).getPackageNames().toArray(new String[0]));
+     }
+  
+     @Override
+     public Set<Object> determineImports(AnnotationMetadata metadata) {
+        return Collections.singleton(new PackageImports(metadata));
+     }
+  
+  }
+  ```
+
+  - `new PackageImports(metadata).getPackageNames()`：拿到元注解所包含的包信息，实际上就是主类所在的包，如`cn.xisun.web`。
+  - `register()`的功能，也就是将主类所在包下的所有组件，批量注册到容器中。这也就是默认包路径为主类所在包的原因。
+  - AutoConfigurationPackages.Registrar.class 组件的全路径是`org.springframework.boot.autoconfigure.AutoConfigurationImportSelector`。
+
+###### @Import(AutoConfigurationImportSelector.class)
+
+**`@Import(AutoConfigurationImportSelector.class)`：**向容器中注册了一个 AutoConfigurationImportSelector.class 组件，执行如下方法。
+
+```java
+@Override
+public String[] selectImports(AnnotationMetadata annotationMetadata) {
+   if (!isEnabled(annotationMetadata)) {
+      return NO_IMPORTS;
+   }
+   AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(annotationMetadata);
+   return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
+}
+```
+
+- `getAutoConfigurationEntry(annotationMetadata)`：向容器中批量注册一些组件。
+
+  ```java
+  protected AutoConfigurationEntry getAutoConfigurationEntry(AnnotationMetadata annotationMetadata) {
+     if (!isEnabled(annotationMetadata)) {
+        return EMPTY_ENTRY;
+     }
+     AnnotationAttributes attributes = getAttributes(annotationMetadata);
+     List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+     configurations = removeDuplicates(configurations);
+     Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+     checkExcludedClasses(configurations, exclusions);
+     configurations.removeAll(exclusions);
+     configurations = getConfigurationClassFilter().filter(configurations);
+     fireAutoConfigurationImportEvents(configurations, exclusions);
+     return new AutoConfigurationEntry(configurations, exclusions);
+  }
+  ```
+
+  - `getCandidateConfigurations(annotationMetadata, attributes)`：获取所有待批量注册的组件（配置类）。
+
+    ```java
+    protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+       List<String> configurations = SpringFactoriesLoader.loadFactoryNames(getSpringFactoriesLoaderFactoryClass(),
+             getBeanClassLoader());
+       Assert.notEmpty(configurations, "No auto configuration classes found in META-INF/spring.factories. If you "
+             + "are using a custom packaging, make sure that file is correct.");
+       return configurations;
+    }
+    ```
+
+    - Spring Boot 3 中此方法进行了修改，事先定义的组件位于`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`。
+
+      ```java
+      /**
+       * Return the auto-configuration class names that should be considered. By default,
+       * this method will load candidates using {@link ImportCandidates}.
+       * @param metadata the source metadata
+       * @param attributes the {@link #getAttributes(AnnotationMetadata) annotation
+       * attributes}
+       * @return a list of candidate configurations
+       */
+      protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+          List<String> configurations = ImportCandidates.load(AutoConfiguration.class, getBeanClassLoader())
+              .getCandidates();
+          Assert.notEmpty(configurations,
+                  "No auto configuration classes found in "
+                          + "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports. If you "
+                          + "are using a custom packaging, make sure that file is correct.");
+          return configurations;
+      }
+      ```
       
-      private Double price;
-  
-      public String getBrand() {
-          return brand;
+      ![image-20231001095553313](./spring-boot/image-20231001095553313.png)
+      
+    - `SpringFactoriesLoader.loadFactoryNames(getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader())`：具体通过 SpringFactoriesLoader 工厂加载所有的组件。
+    
+      ```java
+      /**
+        * The location to look for factories.
+        * <p>Can be present in multiple JAR files.
+        */
+      public static final String FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories";
+      
+      public static List<String> loadFactoryNames(Class<?> factoryType, @Nullable ClassLoader classLoader) {
+         ClassLoader classLoaderToUse = classLoader;
+         if (classLoaderToUse == null) {
+            classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();
+         }
+         String factoryTypeName = factoryType.getName();
+         return loadSpringFactories(classLoaderToUse).getOrDefault(factoryTypeName, Collections.emptyList());
       }
-  
-      public void setBrand(String brand) {
-          this.brand = brand;
+      
+      private static Map<String, List<String>> loadSpringFactories(ClassLoader classLoader) {
+         Map<String, List<String>> result = cache.get(classLoader);
+         if (result != null) {
+            return result;
+         }
+      
+         result = new HashMap<>();
+         try {
+            // 最终是在此处，加载jar包里META-INF/spring.factories路径内声明的资源
+            Enumeration<URL> urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);
+            while (urls.hasMoreElements()) {
+               URL url = urls.nextElement();
+               UrlResource resource = new UrlResource(url);
+               Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+               for (Map.Entry<?, ?> entry : properties.entrySet()) {
+                  String factoryTypeName = ((String) entry.getKey()).trim();
+                  String[] factoryImplementationNames =
+                        StringUtils.commaDelimitedListToStringArray((String) entry.getValue());
+                  for (String factoryImplementationName : factoryImplementationNames) {
+                     result.computeIfAbsent(factoryTypeName, key -> new ArrayList<>())
+                           .add(factoryImplementationName.trim());
+                  }
+               }
+            }
+      
+            // Replace all lists with unmodifiable lists containing unique elements
+            result.replaceAll((factoryType, implementations) -> implementations.stream().distinct()
+                  .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
+            cache.put(classLoader, result);
+         }
+         catch (IOException ex) {
+            throw new IllegalArgumentException("Unable to load factories from location [" +
+                  FACTORIES_RESOURCE_LOCATION + "]", ex);
+         }
+         return result;
       }
-  
-      public Double getPrice() {
-          return price;
-      }
-  
-      public void setPrice(Double price) {
-          this.price = price;
-      }
-  
-      @Override
-      public String toString() {
-          return "Car{" +
-                  "brand='" + brand + '\'' +
-                  ", price=" + price +
-                  '}';
-      }
-  }
-  ```
+      ```
+    
+      - `classLoader.getResources(FACTORIES_RESOURCE_LOCATION)`：此方法扫描项目内**各 jar 包**的`META-INF/spring.factories`路径内声明的资源。主要看`spring-boot-autoconfigure-2.5.1.jar`包下的 spring.factories 文件，该文件内声明了 131 个需要自动注册的组件，当 Spring Boot 启动时，就会向容器中注册这些声明的组件（配置类）：
+    
+        ![image-20210713150035110](spring-boot/image-20210713150035110.png)
+    
+        <img src="spring-boot/image-20210713150238536.png" alt="image-20210713150238536" style="zoom:80%;" />
+    
+        ![image-20210713132839154](spring-boot/image-20210713132839154.png)
+        
+      - `spring-boot-autoconfigure-2.5.1.jar`包下的 spring.factories 文件中，声明的 131 个组件：
+      
+        ```factories
+        # Initializers
+        org.springframework.context.ApplicationContextInitializer=\
+        org.springframework.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer,\
+        org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener
+        
+        # Application Listeners
+        org.springframework.context.ApplicationListener=\
+        org.springframework.boot.autoconfigure.BackgroundPreinitializer
+        
+        # Environment Post Processors
+        org.springframework.boot.env.EnvironmentPostProcessor=\
+        org.springframework.boot.autoconfigure.integration.IntegrationPropertiesEnvironmentPostProcessor
+        
+        # Auto Configuration Import Listeners
+        org.springframework.boot.autoconfigure.AutoConfigurationImportListener=\
+        org.springframework.boot.autoconfigure.condition.ConditionEvaluationReportAutoConfigurationImportListener
+        
+        # Auto Configuration Import Filters
+        org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
+        org.springframework.boot.autoconfigure.condition.OnBeanCondition,\
+        org.springframework.boot.autoconfigure.condition.OnClassCondition,\
+        org.springframework.boot.autoconfigure.condition.OnWebApplicationCondition
+        
+        # Auto Configure
+        org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+        org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\
+        org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\
+        org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\
+        org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\
+        org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration,\
+        org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration,\
+        org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.context.LifecycleAutoConfiguration,\
+        org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration,\
+        org.springframework.boot.autoconfigure.couchbase.CouchbaseAutoConfiguration,\
+        org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.cassandra.CassandraReactiveDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.cassandra.CassandraReactiveRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.cassandra.CassandraRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.couchbase.CouchbaseDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.couchbase.CouchbaseReactiveDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.couchbase.CouchbaseReactiveRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.couchbase.CouchbaseRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRestClientAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.ldap.LdapRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.mongo.MongoReactiveRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.neo4j.Neo4jRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.r2dbc.R2dbcRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration,\
+        org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration,\
+        org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration,\
+        org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,\
+        org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration,\
+        org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration,\
+        org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration,\
+        org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration,\
+        org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration,\
+        org.springframework.boot.autoconfigure.hazelcast.HazelcastJpaDependencyAutoConfiguration,\
+        org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration,\
+        org.springframework.boot.autoconfigure.http.codec.CodecsAutoConfiguration,\
+        org.springframework.boot.autoconfigure.influx.InfluxDbAutoConfiguration,\
+        org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration,\
+        org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.JndiDataSourceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.XADataSourceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jms.JndiConnectionFactoryAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jersey.JerseyAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration,\
+        org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration,\
+        org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,\
+        org.springframework.boot.autoconfigure.availability.ApplicationAvailabilityAutoConfiguration,\
+        org.springframework.boot.autoconfigure.ldap.embedded.EmbeddedLdapAutoConfiguration,\
+        org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration,\
+        org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration,\
+        org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration,\
+        org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration,\
+        org.springframework.boot.autoconfigure.netty.NettyAutoConfiguration,\
+        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,\
+        org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration,\
+        org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration,\
+        org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.rsocket.RSocketMessagingAutoConfiguration,\
+        org.springframework.boot.autoconfigure.rsocket.RSocketRequesterAutoConfiguration,\
+        org.springframework.boot.autoconfigure.rsocket.RSocketServerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.rsocket.RSocketStrategiesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.rsocket.RSocketSecurityAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration,\
+        org.springframework.boot.autoconfigure.sendgrid.SendGridAutoConfiguration,\
+        org.springframework.boot.autoconfigure.session.SessionAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.security.oauth2.resource.reactive.ReactiveOAuth2ResourceServerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration,\
+        org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration,\
+        org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration,\
+        org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration,\
+        org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration,\
+        org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration,\
+        org.springframework.boot.autoconfigure.transaction.jta.JtaAutoConfiguration,\
+        org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.HttpHandlerAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.ReactiveWebServerFactoryAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration,\
+        org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration,\
+        org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration,\
+        org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,\
+        org.springframework.boot.autoconfigure.websocket.servlet.WebSocketMessagingAutoConfiguration,\
+        org.springframework.boot.autoconfigure.webservices.WebServicesAutoConfiguration,\
+        org.springframework.boot.autoconfigure.webservices.client.WebServiceTemplateAutoConfiguration
+        
+        # Failure analyzers
+        org.springframework.boot.diagnostics.FailureAnalyzer=\
+        org.springframework.boot.autoconfigure.data.redis.RedisUrlSyntaxFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.diagnostics.analyzer.NoSuchBeanDefinitionFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.flyway.FlywayMigrationScriptMissingFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.jdbc.DataSourceBeanCreationFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.jdbc.HikariDriverConfigurationFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.r2dbc.ConnectionFactoryBeanCreationFailureAnalyzer,\
+        org.springframework.boot.autoconfigure.session.NonUniqueSessionRepositoryFailureAnalyzer
+        
+        # Template availability providers
+        org.springframework.boot.autoconfigure.template.TemplateAvailabilityProvider=\
+        org.springframework.boot.autoconfigure.freemarker.FreeMarkerTemplateAvailabilityProvider,\
+        org.springframework.boot.autoconfigure.mustache.MustacheTemplateAvailabilityProvider,\
+        org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAvailabilityProvider,\
+        org.springframework.boot.autoconfigure.thymeleaf.ThymeleafTemplateAvailabilityProvider,\
+        org.springframework.boot.autoconfigure.web.servlet.JspTemplateAvailabilityProvider
+        
+        # DataSource initializer detectors
+        org.springframework.boot.sql.init.dependency.DatabaseInitializerDetector=\
+        org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializerDatabaseInitializerDetector
+        ```
 
-  - 自定义的类和配置文件绑定一般没有提示，Car 类上会出现以下提示，需要添加 `spring-boot-configuration-processo` 依赖：
 
-    ![image-20210715114843221](spring-boot/image-20210715114843221.png)
+### 按需开启自动配置项
 
-    ```xml
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-configuration-processor</artifactId>
-        <optional>true</optional>
-    </dependency>
-    ```
+在上面的分析中，Spring Boot 在启动时，默认会加载 131 个自动配置的组件。但在实际启动时，各 xxxxAutoConfiguration 组件，会根据`@Conditional`注解，即按照条件装配规则，实现按需配置。
 
-  - 该依赖只在开发时提供帮助，因此在打包 jar 包时，应该排除：
+#### AopAutoConfiguration
 
-    ```xml
-    <!-- 打包插件 -->
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <!-- 打包时排除依赖 -->
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-configuration-processor</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    ```
+例如，`org.springframework.boot.autoconfigure.aop.AopAutoConfiguration`，是默认加载的 131 个组件之一，其装配规则如下：
 
-- 从 application.properties 文件中读取内容，并且把它封装到 JavaBean 中的普通写法：
+```java
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)
+public class AopAutoConfiguration {
 
-  ```java
-  public static void getProperties() throws IOException {
-      Properties properties = new Properties();
-      InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("application.properties");
-      properties.load(is);
-      // 得到配置文件中的值
-      Enumeration<?> enumeration = properties.propertyNames();
-      while (enumeration.hasMoreElements()) {
-          String strKey = (String) enumeration.nextElement();
-          String strValue = properties.getProperty(strKey);
-          System.out.println(strKey + "=" + strValue);
-          // 封装到JavaBean的操作
-      }
-  }
-  ```
+   // 当org.aspectj.weaver.Advice.class文件存在时，AspectJAutoProxyingConfiguration才生效
+   @Configuration(proxyBeanMethods = false)
+   @ConditionalOnClass(Advice.class)
+   static class AspectJAutoProxyingConfiguration {
 
-- 方式一：在需绑定的 JavaBean 上，添加 `@Component` 和 `@ConfigurationProperties` 注解。
+      @Configuration(proxyBeanMethods = false)
+      @EnableAspectJAutoProxy(proxyTargetClass = false)
+      @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "false")
+      static class JdkDynamicAutoProxyConfiguration {
 
-  ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/7/9 21:58
-   * 1.使用@Component注解将JavaBean注册到容器中，只有容器中的组件才能
-   * 拥有SpringBoot提供的功能，这是前提；
-   * 2.使用@ConfigurationProperties注解，将配置文件和JavaBean绑定，
-   * prefix属性指定配置文件中需绑定的值的前缀；
-   * 3.JavaBean的属性名，需和配置文件中对应值前缀后的值相同。
-   */
-  @Component
-  @ConfigurationProperties(prefix = "mycar")
-  public class Car {
-      private String brand;
-  
-      private Double price;
-  
-      public String getBrand() {
-          return brand;
       }
-  
-      public void setBrand(String brand) {
-          this.brand = brand;
-      }
-  
-      public Double getPrice() {
-          return price;
-      }
-  
-      public void setPrice(Double price) {
-          this.price = price;
-      }
-  
-      @Override
-      public String toString() {
-          return "Car{" +
-                  "brand='" + brand + '\'' +
-                  ", price=" + price +
-                  '}';
-      }
-  }
-  ```
 
-- 方式二：在需绑定的 JavaBean 上，添加 `@ConfigurationProperties` 注解，在配置类上添加 `@EnableConfigurationProperties` 注解。
+      @Configuration(proxyBeanMethods = false)
+      @EnableAspectJAutoProxy(proxyTargetClass = true)
+      @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
+            matchIfMissing = true)
+      static class CglibAutoProxyConfiguration {
 
-  ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/7/9 21:58
-   * 1.使用@ConfigurationProperties注解，将配置文件和JavaBean绑定，
-   * prefix属性指定配置文件中需绑定的值的前缀；
-   * 2.JavaBean的属性名，需和配置文件中对应值前缀后的值相同。
-   */
-  @ConfigurationProperties(prefix = "mycar")
-  public class Car {
-      private String brand;
-  
-      private Double price;
-  
-      public String getBrand() {
-          return brand;
       }
-  
-      public void setBrand(String brand) {
-          this.brand = brand;
-      }
-  
-      public Double getPrice() {
-          return price;
-      }
-  
-      public void setPrice(Double price) {
-          this.price = price;
-      }
-  
-      @Override
-      public String toString() {
-          return "Car{" +
-                  "brand='" + brand + '\'' +
-                  ", price=" + price +
-                  '}';
-      }
-  }
-  ```
+   }
 
-  ```java
-  /**
-   * 1.使用@EnableConfigurationProperties注解，开启待装配的JavaBean的配置绑定功能，
-   * 同时，将该JavaBean这个组件自动注入到容器中；
-   * 2.JavaBean上不需要使用@Component注解，某些时候，比如JavaBean是第三方依赖包中的
-   * 类，这个特点会很重要。
-   */
-  @Configuration
-  @EnableConfigurationProperties({Car.class})
-  public class MyConfig {
+   //  当org.aspectj.weaver.Advice.class文件不存在，且配置文件中spring.aop.proxy-target-class属性值为true(默认为true)时，ClassProxyingConfiguration生效
+   @Configuration(proxyBeanMethods = false)
+   @ConditionalOnMissingClass("org.aspectj.weaver.Advice")
+   @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
+         matchIfMissing = true)
+   static class ClassProxyingConfiguration {
       @Bean
-      public User user01() {
-          User zhangsan = new User("zhangsan", 18);
-          zhangsan.setPet(tomcatPet());
-          return zhangsan;
+      static BeanFactoryPostProcessor forceAutoProxyCreatorToUseClassProxying() {
+         return (beanFactory) -> {
+            if (beanFactory instanceof BeanDefinitionRegistry) {
+               BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+               AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
+               AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
+            }
+         };
       }
-  
-      @Bean("tom")
-      public Pet tomcatPet() {
-          return new Pet("tomcat");
-      }
-  }
-  ```
+   }
+}
+```
 
-- 主类测试：
+- `@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)`：当配置文件中配置了`spring.aop.auto`属性，且值为 true 时，AopAutoConfiguration 生效。默认情况下，即使没有配置此属性，也认为其生效。
+- 可以看出，当导入 aop 依赖时，会注册 AspectJAutoProxyingConfiguration 配置类，否则，注册 ClassProxyingConfiguration 配置类，且后者是 Spring Boot 默认开启的一个简单的 aop 功能。
+
+#### DispatcherServletAutoConfiguration
+
+例如，`org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration`，是默认加载的 131 个组件之一，其装配规则如下：
+
+```java
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)// 当前配置类的配置顺序
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnWebApplication(type = Type.SERVLET)// 当项目是一个原生的Web Servlet应用时
+@ConditionalOnClass(DispatcherServlet.class)// 当容器中存在DispatcherServlet.class时
+@AutoConfigureAfter(ServletWebServerFactoryAutoConfiguration.class)// 在ServletWebServerFactoryAutoConfiguration后配置
+public class DispatcherServletAutoConfiguration {
+
+   /**
+    * The bean name for a DispatcherServlet that will be mapped to the root URL "/".
+    */
+   public static final String DEFAULT_DISPATCHER_SERVLET_BEAN_NAME = "dispatcherServlet";
+
+   /**
+    * The bean name for a ServletRegistrationBean for the DispatcherServlet "/".
+    */
+   public static final String DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME = "dispatcherServletRegistration";
+
+   @Configuration(proxyBeanMethods = false)
+   @Conditional(DefaultDispatcherServletCondition.class)
+   @ConditionalOnClass(ServletRegistration.class)// 当容器中存在ServletRegistration.class时
+   @EnableConfigurationProperties(WebMvcProperties.class)// 开启WebMvcProperties类的配置绑定功能，并注册到容器中
+   protected static class DispatcherServletConfiguration {
+
+      @Bean(name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)// 注册DispatcherServlet组件到容器中，名字为dispatcherServlet
+      public DispatcherServlet dispatcherServlet(WebMvcProperties webMvcProperties) {
+         DispatcherServlet dispatcherServlet = new DispatcherServlet();// 新建了一个DispatcherServlet对象
+         dispatcherServlet.setDispatchOptionsRequest(webMvcProperties.isDispatchOptionsRequest());
+         dispatcherServlet.setDispatchTraceRequest(webMvcProperties.isDispatchTraceRequest());
+         dispatcherServlet.setThrowExceptionIfNoHandlerFound(webMvcProperties.isThrowExceptionIfNoHandlerFound());
+         dispatcherServlet.setPublishEvents(webMvcProperties.isPublishRequestHandledEvents());
+         dispatcherServlet.setEnableLoggingRequestDetails(webMvcProperties.isLogRequestDetails());
+         return dispatcherServlet;
+      }
+
+      @Bean// 注册MultipartResolver组件到容器中，即文件上传解析器
+      @ConditionalOnBean(MultipartResolver.class)// 当容器中存在MultipartResolver.class时
+      // 当容器中没有name为multipartResolver的MultipartResolver对象时
+      @ConditionalOnMissingBean(name = DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME)
+      // 用@Bean标注的方法传入的对象参数，会从容器中找一个该参数所属类型的对象，并赋值
+      public MultipartResolver multipartResolver(MultipartResolver resolver) {
+         // 因为容器中有MultipartResolver的对象，所以resolver参数会自动绑定该对象
+         // 此方法的作用是，防止有些用户配置的文件上传解析器不符合规范：
+         // 将用户自己配置的文件上传解析器重新注册给容器，并重命名为multipartResolver(方法名)
+         // (Spring Boot中的文件上传解析器的名字，就叫multipartResolver)
+         // Detect if the user has created a MultipartResolver but named it incorrectly
+         return resolver;
+      }
+
+   }
+
+   @Configuration(proxyBeanMethods = false)
+   @Conditional(DispatcherServletRegistrationCondition.class)
+   @ConditionalOnClass(ServletRegistration.class)
+   @EnableConfigurationProperties(WebMvcProperties.class)
+   @Import(DispatcherServletConfiguration.class)
+   protected static class DispatcherServletRegistrationConfiguration {
+
+      @Bean(name = DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)
+      @ConditionalOnBean(value = DispatcherServlet.class, name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
+      public DispatcherServletRegistrationBean dispatcherServletRegistration(DispatcherServlet dispatcherServlet,
+            WebMvcProperties webMvcProperties, ObjectProvider<MultipartConfigElement> multipartConfig) {
+         DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(dispatcherServlet,
+               webMvcProperties.getServlet().getPath());
+         registration.setName(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
+         registration.setLoadOnStartup(webMvcProperties.getServlet().getLoadOnStartup());
+         multipartConfig.ifAvailable(registration::setMultipartConfig);
+         return registration;
+      }
+
+   }
+
+   @Order(Ordered.LOWEST_PRECEDENCE - 10)
+   private static class DefaultDispatcherServletCondition extends SpringBootCondition {
+
+      @Override
+      public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+         ConditionMessage.Builder message = ConditionMessage.forCondition("Default DispatcherServlet");
+         ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+         List<String> dispatchServletBeans = Arrays
+               .asList(beanFactory.getBeanNamesForType(DispatcherServlet.class, false, false));
+         if (dispatchServletBeans.contains(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
+            return ConditionOutcome
+                  .noMatch(message.found("dispatcher servlet bean").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
+         }
+         if (beanFactory.containsBean(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
+            return ConditionOutcome.noMatch(
+                  message.found("non dispatcher servlet bean").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
+         }
+         if (dispatchServletBeans.isEmpty()) {
+            return ConditionOutcome.match(message.didNotFind("dispatcher servlet beans").atAll());
+         }
+         return ConditionOutcome.match(message.found("dispatcher servlet bean", "dispatcher servlet beans")
+               .items(Style.QUOTE, dispatchServletBeans)
+               .append("and none is named " + DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
+      }
+
+   }
+
+   @Order(Ordered.LOWEST_PRECEDENCE - 10)
+   private static class DispatcherServletRegistrationCondition extends SpringBootCondition {
+
+      @Override
+      public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+         ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+         ConditionOutcome outcome = checkDefaultDispatcherName(beanFactory);
+         if (!outcome.isMatch()) {
+            return outcome;
+         }
+         return checkServletRegistration(beanFactory);
+      }
+
+      private ConditionOutcome checkDefaultDispatcherName(ConfigurableListableBeanFactory beanFactory) {
+         boolean containsDispatcherBean = beanFactory.containsBean(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
+         if (!containsDispatcherBean) {
+            return ConditionOutcome.match();
+         }
+         List<String> servlets = Arrays
+               .asList(beanFactory.getBeanNamesForType(DispatcherServlet.class, false, false));
+         if (!servlets.contains(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
+            return ConditionOutcome.noMatch(
+                  startMessage().found("non dispatcher servlet").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
+         }
+         return ConditionOutcome.match();
+      }
+
+      private ConditionOutcome checkServletRegistration(ConfigurableListableBeanFactory beanFactory) {
+         ConditionMessage.Builder message = startMessage();
+         List<String> registrations = Arrays
+               .asList(beanFactory.getBeanNamesForType(ServletRegistrationBean.class, false, false));
+         boolean containsDispatcherRegistrationBean = beanFactory
+               .containsBean(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME);
+         if (registrations.isEmpty()) {
+            if (containsDispatcherRegistrationBean) {
+               return ConditionOutcome.noMatch(message.found("non servlet registration bean")
+                     .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
+            }
+            return ConditionOutcome.match(message.didNotFind("servlet registration bean").atAll());
+         }
+         if (registrations.contains(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)) {
+            return ConditionOutcome.noMatch(message.found("servlet registration bean")
+                  .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
+         }
+         if (containsDispatcherRegistrationBean) {
+            return ConditionOutcome.noMatch(message.found("non servlet registration bean")
+                  .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
+         }
+         return ConditionOutcome.match(message.found("servlet registration beans").items(Style.QUOTE, registrations)
+               .append("and none is named " + DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
+      }
+
+      private ConditionMessage.Builder startMessage() {
+         return ConditionMessage.forCondition("DispatcherServlet Registration");
+      }
+
+   }
+
+}
+```
+
+- `@ConditionalOnWebApplication(type = Type.SERVLET)`：Spring Boot 支持两种类型的 Web 应用开发，一种是响应式，一种是原生 Servlet。响应式 Web 开发导入`spring-boot-starter-webflux`依赖，原生 Servlet Web 开发导入`spring-boot-starter-web`依赖。
+
+- `@ConditionalOnClass(DispatcherServlet.class)`：在主类中可以验证项目中存在 DispatcherServlet 类。
 
   ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/20 15:03
-   * @Description 主程序类
-   */
   @SpringBootApplication
   public class MainApplication {
       public static void main(String[] args) {
           ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
   
-          // 获取容器中的Car类型的组件
-          String[] beanNamesForType = run.getBeanNamesForType(Car.class);
-          for (String beanName : beanNamesForType) {
-              System.out.println(beanName);
-          }
-  
-          Car car = run.getBean("car", Car.class);
-          System.out.println(car);
+          String[] beanNamesForType = run.getBeanNamesForType(DispatcherServlet.class);
+          System.out.println(beanNamesForType.length);// 1
       }
   }
-  
-  方式一输出结果：
-      car
-  	Car{brand='BMW', price=200000.0}
-  
-  方式二输出结果：
-      mycar-cn.xisun.web.bean.Car
-  	Car{brand='BMW', price=200000.0}
   ```
 
-  >对于方式一，注册到容器中的组件名，就是 JavaBean 类名的首字母小写。
-  >
-  >对于方式二，注册到容器中的组件名，有所不同，为前缀加 JavaBean 全类名。
+#### HttpEncodingAutoConfiguration
 
-- Controller 中获取：
+例如，`org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration`，是默认加载的 131 个组件之一，其装配规则如下：
+
+```java
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(ServerProperties.class)// 开启ServerProperties类的配置绑定功能，并注册到容器中
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)// 当项目是一个原生的Web Servlet应用时
+@ConditionalOnClass(CharacterEncodingFilter.class)// 当容器中存在CharacterEncodingFilter.class时
+// 当配置文件中server.servlet.encoding属性值为enabled(默认为true)时
+@ConditionalOnProperty(prefix = "server.servlet.encoding", value = "enabled", matchIfMissing = true)
+public class HttpEncodingAutoConfiguration {
+
+   private final Encoding properties;
+
+   public HttpEncodingAutoConfiguration(ServerProperties properties) {
+      this.properties = properties.getServlet().getEncoding();
+   }
+
+   /**
+     * 向容器中注册一个CharacterEncodingFilter组件，此组件就是解决Spring Boot收到的请求出现乱码的问题
+     */
+   @Bean
+   @ConditionalOnMissingBean// 当容器中没有这个Bean时才配置，即用户未配置时，Spring Boot才主动配置一个
+   public CharacterEncodingFilter characterEncodingFilter() {
+      CharacterEncodingFilter filter = new OrderedCharacterEncodingFilter();
+      filter.setEncoding(this.properties.getCharset().name());
+      filter.setForceRequestEncoding(this.properties.shouldForce(Encoding.Type.REQUEST));
+      filter.setForceResponseEncoding(this.properties.shouldForce(Encoding.Type.RESPONSE));
+      return filter;
+   }
+
+   @Bean
+   public LocaleCharsetMappingsCustomizer localeCharsetMappingsCustomizer() {
+      return new LocaleCharsetMappingsCustomizer(this.properties);
+   }
+
+   static class LocaleCharsetMappingsCustomizer
+         implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>, Ordered {
+
+      private final Encoding properties;
+
+      LocaleCharsetMappingsCustomizer(Encoding properties) {
+         this.properties = properties;
+      }
+
+      @Override
+      public void customize(ConfigurableServletWebServerFactory factory) {
+         if (this.properties.getMapping() != null) {
+            factory.setLocaleCharsetMappings(this.properties.getMapping());
+         }
+      }
+
+      @Override
+      public int getOrder() {
+         return 0;
+      }
+
+   }
+
+}
+```
+
+- HttpEncodingAutoConfiguration 配置类会防止 Spring Boot 乱码。
+
+- 测试：
 
   ```java
-  /**
-   * @Author XiSun
-   * @Date 2021/6/20 15:17
-   */
   @Controller
   public class HelloController {
-      @Autowired
-      private Car car;
-  
-      @RequestMapping("/car")
+      @RequestMapping("/helloWho")
       @ResponseBody
-      public Car car() {
-          return car;
-      }
-  
-      @RequestMapping("/hello")
-      @ResponseBody
-      public String hello() {
-          return "Hello, Spring Boot 2!";
+      public String helloWho(@RequestParam("name") String name) {
+          return "Hello, " + name + "!";
       }
   }
   ```
 
-  ![image-20210710220348915](spring-boot/image-20210710220348915.png)
+  ![image-20210714132902955](spring-boot/image-20210714132902955.png)
 
-## Spring Boot 的自动配置原理入门
+  ![image-20210714133027284](spring-boot/image-20210714133027284.png)
 
-### 引导加载自动配置类
+### 修改默认配置
 
-- 主类：
+一般来说，Spring Boot 默认会在底层配好所有需要的组件，但是**如果用户自己配置了，就会以用户配置的优先。**
+
+以 CharacterEncodingFilter 为例，如果用户希望按自己的需求进行配置，可以在配置类中自行添加：
+
+```java
+@Configuration
+public class MyConfig {
+    @Bean
+    public CharacterEncodingFilter characterEncodingFilter() {
+        // filter的实现代码
+    }
+}
+```
+
+从前面对 CharacterEncodingFilter 的分析可以看出，当用户自己配置了 CharacterEncodingFilter 的实例时，Spring Boot 就不会再配置。
+
+也可以根据组件 @ConfigurationProperties 注解绑定的属性，按需做相应的修改。
+
+### 总结
+
+Spring Boot 先加载所有默认的自动配置类，即 xxxxxAutoConfiguration.class，每个自动配置类按照条件进行生效。xxxxxAutoConfiguration.class 在配置时，会从对应的 xxxxxProperties.class 中取值，而 xxxxxProperties.class 会和配置文件中对应的值进行绑定（@EnableConfigurationProperties 注解）。比如：
+
+```java
+@Configuration(proxyBeanMethods = false)
+@Conditional(DefaultDispatcherServletCondition.class)
+@ConditionalOnClass(ServletRegistration.class)
+@EnableConfigurationProperties(WebMvcProperties.class)// WebMvcProperties.class与配置文件绑定
+protected static class DispatcherServletConfiguration {
+
+   @Bean(name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
+   public DispatcherServlet dispatcherServlet(WebMvcProperties webMvcProperties) {// 从容器中的webMvcProperties组件取值
+      DispatcherServlet dispatcherServlet = new DispatcherServlet();
+      dispatcherServlet.setDispatchOptionsRequest(webMvcProperties.isDispatchOptionsRequest());
+      dispatcherServlet.setDispatchTraceRequest(webMvcProperties.isDispatchTraceRequest());
+      dispatcherServlet.setThrowExceptionIfNoHandlerFound(webMvcProperties.isThrowExceptionIfNoHandlerFound());
+      dispatcherServlet.setPublishEvents(webMvcProperties.isPublishRequestHandledEvents());
+      dispatcherServlet.setEnableLoggingRequestDetails(webMvcProperties.isLogRequestDetails());
+      return dispatcherServlet;
+   }
+}
+```
+
+- 生效的配置类，会给容器中装配很多不同功能的组件；
+- 这些组件装配到容器中后，项目就具有了该组件所具有的功能；
+- 如果用户自行配置了某一个组件，则以用户配置的优先。
+
+若想实现定制化配置，有两种方法：
+  - 方法一：用户自行配置组件，添加`@Bean`注解，用以替换 Spring Boot 底层的默认组件。
+  - 方法二：用户查看该组件从配置文件种获取的是什么属性的值，然后按需求自行修改对应的属性值。比如 HttpEncodingAutoConfiguration 对应的就是配置文件中的`server.servlet.encoding`属性。
+    - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
+- 过程：**xxxxxAutoConfiguration.class ---> 注册组件 ---> 从 xxxxxProperties.class 里面拿值 ----> 绑定 application.properties 文件**。
+  - 可以看出，一般通过修改 application.properties 文件中相应的配置，就可完成 Spring Boot 功能的修改。
+
+### 最佳实践
+
+第一步：引入相应的场景依赖。
+
+- 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.build-systems.starters
+
+第二步：查看 Spring Boot 做了哪些自动配置。
+
+- 自己查看底层源码，找出对应配置的参数。一般来说，引入一个场景后，该场景对应的自动配置都会生效。
+
+- 配置文件（application.properties 或 application.yaml）中添加`debug=true`，开启自动配置的报告。启动主程序后，即可在控制台查看所有生效和未生效的配置 ---> Positive（生效）和 Negative（未生效）：
+
+  ```properties
+  debug=true
+  ```
 
   ```java
   @SpringBootApplication
@@ -1316,731 +2306,160 @@ public class User {
   }
   ```
 
-- **`@SpringBootApplication`：**
+  ![image-20210715111453136](spring-boot/image-20210715111453136.png)
 
-  ```java
-  @Target(ElementType.TYPE)
-  @Retention(RetentionPolicy.RUNTIME)
-  @Documented
-  @Inherited
-  @SpringBootConfiguration
-  @EnableAutoConfiguration
-  @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
-        @Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
-  public @interface SpringBootApplication {}
-  ```
+  ![image-20210715111558457](spring-boot/image-20210715111558457.png)
 
-  - `@SpringBootConfiguration`：是 `@Configuration` 的派生注解，表明当前主类实际上也是一个配置类。
+第三步：按照需求，确定是否需要修改默写配置。
 
-  - `@ComponentScan`：指定扫描的包，默认为当前主类所在包及其子包。
+- 参照文档修改配置项
 
-  - **`@EnableAutoConfiguration`：**
+  - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
 
-    ```java
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Documented
-    @Inherited
-    @AutoConfigurationPackage
-    @Import(AutoConfigurationImportSelector.class)
-    public @interface EnableAutoConfiguration {}
-    ```
+  - 自己查看底层源码，分析 xxxxxProperties.class 绑定了配置文件的哪些属性。
 
-    - **`@AutoConfigurationPackage`：**
+  - 比如，修改 Spring Boot 启动时的 banner 图：
 
-      ```java
-      @Target(ElementType.TYPE)
-      @Retention(RetentionPolicy.RUNTIME)
-      @Documented
-      @Inherited
-      @Import(AutoConfigurationPackages.Registrar.class)
-      public @interface AutoConfigurationPackage {}
+    - 原图：
+
+      | [`spring.banner.image.location`](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.core.spring.banner.image.location) | Banner image file location (jpg or png can also be used). | `classpath:banner.gif` |
+      | ------------------------------------------------------------ | --------------------------------------------------------- | ---------------------- |
+      |                                                              |                                                           |                        |
+
+      ![image-20210715113318390](spring-boot/image-20210715113318390.png)
+
+    - 添加配置到配置文件中，或者将 classpath 路径下的 spring.jpg 重命名为 banner.jpg（Spring Boot 默认查找 classpath 下的 banner 图片）：
+
+      ```properties
+      spring.banner.image.location=classpath:spring.jpg
       ```
 
-      - `@Import(AutoConfigurationPackages.Registrar.class)`：向容器中注册了一个 AutoConfigurationPackages.Registrar.class 组件。
+      ![image-20210715113542645](spring-boot/image-20210715113542645.png)
 
-        ```java
-        /**
-         * {@link ImportBeanDefinitionRegistrar} to store the base package from the importing
-         * configuration.
-         */
-        static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImports {
-        
-           @Override
-           public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-              register(registry, new PackageImports(metadata).getPackageNames().toArray(new String[0]));
-           }
-        
-           @Override
-           public Set<Object> determineImports(AnnotationMetadata metadata) {
-              return Collections.singleton(new PackageImports(metadata));
-           }
-        
-        }
-        ```
+    - 新图：
 
-        - `new PackageImports(metadata).getPackageNames()`：拿到元注解所包含的包信息，实际上就是主类所在的包，如 `cn.xisun.web`。
-        - `register()` 的功能，也就是将主类所在包下的所有组件，批量注册到容器中。这也就是默认包路径为主类所在包的原因。
+      ![image-20210715113617461](spring-boot/image-20210715113617461.png)
 
-    - **`@Import(AutoConfigurationImportSelector.class)`：**向容器中注册了一个 AutoConfigurationImportSelector.class 组件，执行如下方法。
+- 自定义加入或者替换组件。
 
-      ```java
-      @Override
-      public String[] selectImports(AnnotationMetadata annotationMetadata) {
-         if (!isEnabled(annotationMetadata)) {
-            return NO_IMPORTS;
-         }
-         AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(annotationMetadata);
-         return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
-      }
-      ```
+  - `@Bean`、`@Component`等。
 
-      - `getAutoConfigurationEntry(annotationMetadata)`：向容器中批量注册一些组件。
+- 自定义器 **xxxxxCustomizer**；
 
-        ```java
-        protected AutoConfigurationEntry getAutoConfigurationEntry(AnnotationMetadata annotationMetadata) {
-           if (!isEnabled(annotationMetadata)) {
-              return EMPTY_ENTRY;
-           }
-           AnnotationAttributes attributes = getAttributes(annotationMetadata);
-           List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
-           configurations = removeDuplicates(configurations);
-           Set<String> exclusions = getExclusions(annotationMetadata, attributes);
-           checkExcludedClasses(configurations, exclusions);
-           configurations.removeAll(exclusions);
-           configurations = getConfigurationClassFilter().filter(configurations);
-           fireAutoConfigurationImportEvents(configurations, exclusions);
-           return new AutoConfigurationEntry(configurations, exclusions);
-        }
-        ```
-
-        - `getCandidateConfigurations(annotationMetadata, attributes);`：获取所有待批量注册的组件。
-
-          ```java
-          protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
-             List<String> configurations = SpringFactoriesLoader.loadFactoryNames(getSpringFactoriesLoaderFactoryClass(),
-                   getBeanClassLoader());
-             Assert.notEmpty(configurations, "No auto configuration classes found in META-INF/spring.factories. If you "
-                   + "are using a custom packaging, make sure that file is correct.");
-             return configurations;
-          }
-          ```
-
-          - `SpringFactoriesLoader.loadFactoryNames(getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());`：具体通过 SpringFactoriesLoader 工厂加载所有的组件。
-
-            ```java
-            /**
-              * The location to look for factories.
-              * <p>Can be present in multiple JAR files.
-              */
-            public static final String FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories";
-            
-            public static List<String> loadFactoryNames(Class<?> factoryType, @Nullable ClassLoader classLoader) {
-               ClassLoader classLoaderToUse = classLoader;
-               if (classLoaderToUse == null) {
-                  classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();
-               }
-               String factoryTypeName = factoryType.getName();
-               return loadSpringFactories(classLoaderToUse).getOrDefault(factoryTypeName, Collections.emptyList());
-            }
-            
-            private static Map<String, List<String>> loadSpringFactories(ClassLoader classLoader) {
-               Map<String, List<String>> result = cache.get(classLoader);
-               if (result != null) {
-                  return result;
-               }
-            
-               result = new HashMap<>();
-               try {
-                  // 在此处，加载项目里
-                  Enumeration<URL> urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);
-                  while (urls.hasMoreElements()) {
-                     URL url = urls.nextElement();
-                     UrlResource resource = new UrlResource(url);
-                     Properties properties = PropertiesLoaderUtils.loadProperties(resource);
-                     for (Map.Entry<?, ?> entry : properties.entrySet()) {
-                        String factoryTypeName = ((String) entry.getKey()).trim();
-                        String[] factoryImplementationNames =
-                              StringUtils.commaDelimitedListToStringArray((String) entry.getValue());
-                        for (String factoryImplementationName : factoryImplementationNames) {
-                           result.computeIfAbsent(factoryTypeName, key -> new ArrayList<>())
-                                 .add(factoryImplementationName.trim());
-                        }
-                     }
-                  }
-            
-                  // Replace all lists with unmodifiable lists containing unique elements
-                  result.replaceAll((factoryType, implementations) -> implementations.stream().distinct()
-                        .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
-                  cache.put(classLoader, result);
-               }
-               catch (IOException ex) {
-                  throw new IllegalArgumentException("Unable to load factories from location [" +
-                        FACTORIES_RESOURCE_LOCATION + "]", ex);
-               }
-               return result;
-            }
-            ```
-
-            - `classLoader.getResources(FACTORIES_RESOURCE_LOCATION);`：此方法扫描项目内各 jar 包的 `META-INF/spring.factories` 路径内声明的资源。主要看 `spring-boot-autoconfigure-2.5.1.jar` 包下的 spring.factories 文件，该文件内声明了 131 个需要自动注册的组件，当 Spring Boot 启动时，就会向容器中注册这些声明的组件：
-
-              ![image-20210713150035110](spring-boot/image-20210713150035110.png)
-
-              ![image-20210713150238536](spring-boot/image-20210713150238536.png)
-
-              ![image-20210713132839154](spring-boot/image-20210713132839154.png)
-
-
-### 按需开启自动配置项
-
-- 在上面的分析中，Spring Boot 在启动时，默认会加载 131 个自动配置的组件。但在实际启动时，各 xxxxAutoConfiguration 组件，会根据 `@Conditional` 注解，即按照条件装配规则，实现按需配置。
-
-- 例如，`org.springframework.boot.autoconfigure.aop.AopAutoConfiguration`：
-
-  ```java
-  @Configuration(proxyBeanMethods = false)
-  @ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)
-  public class AopAutoConfiguration {
-  
-     /**
-       * 当org.aspectj.weaver.Advice.class文件存在时，AspectJAutoProxyingConfiguration生效
-       */
-     @Configuration(proxyBeanMethods = false)
-     @ConditionalOnClass(Advice.class)
-     static class AspectJAutoProxyingConfiguration {
-  
-        @Configuration(proxyBeanMethods = false)
-        @EnableAspectJAutoProxy(proxyTargetClass = false)
-        @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "false")
-        static class JdkDynamicAutoProxyConfiguration {
-  
-        }
-  
-        @Configuration(proxyBeanMethods = false)
-        @EnableAspectJAutoProxy(proxyTargetClass = true)
-        @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
-              matchIfMissing = true)
-        static class CglibAutoProxyConfiguration {
-  
-        }
-     }
-  
-     /**
-       * 当org.aspectj.weaver.Advice.class文件不存在，且配置文件中spring.aop.proxy-target-class属性值为true(默认为true)时，
-       * ClassProxyingConfiguration生效
-       */
-     @Configuration(proxyBeanMethods = false)
-     @ConditionalOnMissingClass("org.aspectj.weaver.Advice")
-     @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
-           matchIfMissing = true)
-     static class ClassProxyingConfiguration {
-        @Bean
-        static BeanFactoryPostProcessor forceAutoProxyCreatorToUseClassProxying() {
-           return (beanFactory) -> {
-              if (beanFactory instanceof BeanDefinitionRegistry) {
-                 BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-                 AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
-                 AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
-              }
-           };
-        }
-     }
-  }
-  ```
-
-  - `@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)`：当配置文件中配置了 `spring.aop.auto` 属性，且值为 true 时，AopAutoConfiguration 生效。默认情况下，即使没有配置此属性，也认为其生效。
-  - 可以看出，当导入 aop 依赖时，会注册 AspectJAutoProxyingConfiguration 配置类，否则，注册 ClassProxyingConfiguration 配置类，且后者是 Spring Boot 默认开启的一个简单的 aop 功能。
-
-- 例如，`org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration`：
-
-  ```java
-  @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)// 当前配置类的配置顺序
-  @Configuration(proxyBeanMethods = false)
-  @ConditionalOnWebApplication(type = Type.SERVLET)// 当项目是一个原生的Web Servlet应用时
-  @ConditionalOnClass(DispatcherServlet.class)// 当容器中存在DispatcherServlet.class时
-  @AutoConfigureAfter(ServletWebServerFactoryAutoConfiguration.class)// 在ServletWebServerFactoryAutoConfiguration后配置
-  public class DispatcherServletAutoConfiguration {
-  
-     /**
-      * The bean name for a DispatcherServlet that will be mapped to the root URL "/".
-      */
-     public static final String DEFAULT_DISPATCHER_SERVLET_BEAN_NAME = "dispatcherServlet";
-  
-     /**
-      * The bean name for a ServletRegistrationBean for the DispatcherServlet "/".
-      */
-     public static final String DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME = "dispatcherServletRegistration";
-  
-     @Configuration(proxyBeanMethods = false)
-     @Conditional(DefaultDispatcherServletCondition.class)
-     @ConditionalOnClass(ServletRegistration.class)// 当容器中存在ServletRegistration.class时
-     @EnableConfigurationProperties(WebMvcProperties.class)// 开启WebMvcProperties类的配置绑定功能，并注册到容器中
-     protected static class DispatcherServletConfiguration {
-  
-        @Bean(name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)// 注册DispatcherServlet组件到容器中，名字为dispatcherServlet
-        public DispatcherServlet dispatcherServlet(WebMvcProperties webMvcProperties) {
-           DispatcherServlet dispatcherServlet = new DispatcherServlet();// 新建了一个DispatcherServlet对象
-           dispatcherServlet.setDispatchOptionsRequest(webMvcProperties.isDispatchOptionsRequest());
-           dispatcherServlet.setDispatchTraceRequest(webMvcProperties.isDispatchTraceRequest());
-           dispatcherServlet.setThrowExceptionIfNoHandlerFound(webMvcProperties.isThrowExceptionIfNoHandlerFound());
-           dispatcherServlet.setPublishEvents(webMvcProperties.isPublishRequestHandledEvents());
-           dispatcherServlet.setEnableLoggingRequestDetails(webMvcProperties.isLogRequestDetails());
-           return dispatcherServlet;
-        }
-  
-        @Bean// 注册MultipartResolver组件到容器中，即文件上传解析器
-        @ConditionalOnBean(MultipartResolver.class)// 当容器中存在MultipartResolver.class时
-        // 当容器中没有name为multipartResolver的MultipartResolver对象时
-        @ConditionalOnMissingBean(name = DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME)
-        // 用@Bean标注的方法传入的对象参数，会从容器中找一个该参数所属类型的对象，并赋值
-        public MultipartResolver multipartResolver(MultipartResolver resolver) {
-           // 因为容器中有MultipartResolver的对象，所以resolver参数会自动绑定该对象
-           // 此方法的作用是，防止有些用户配置的文件上传解析器不符合规范：
-           // 将用户自己配置的文件上传解析器重新注册给容器，并重命名为multipartResolver(方法名)
-           // (Spring Boot种的文件上传解析器的名字，就叫multipartResolver)
-           // Detect if the user has created a MultipartResolver but named it incorrectly
-           return resolver;
-        }
-  
-     }
-  
-     @Configuration(proxyBeanMethods = false)
-     @Conditional(DispatcherServletRegistrationCondition.class)
-     @ConditionalOnClass(ServletRegistration.class)
-     @EnableConfigurationProperties(WebMvcProperties.class)
-     @Import(DispatcherServletConfiguration.class)
-     protected static class DispatcherServletRegistrationConfiguration {
-  
-        @Bean(name = DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)
-        @ConditionalOnBean(value = DispatcherServlet.class, name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
-        public DispatcherServletRegistrationBean dispatcherServletRegistration(DispatcherServlet dispatcherServlet,
-              WebMvcProperties webMvcProperties, ObjectProvider<MultipartConfigElement> multipartConfig) {
-           DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(dispatcherServlet,
-                 webMvcProperties.getServlet().getPath());
-           registration.setName(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
-           registration.setLoadOnStartup(webMvcProperties.getServlet().getLoadOnStartup());
-           multipartConfig.ifAvailable(registration::setMultipartConfig);
-           return registration;
-        }
-  
-     }
-  
-     @Order(Ordered.LOWEST_PRECEDENCE - 10)
-     private static class DefaultDispatcherServletCondition extends SpringBootCondition {
-  
-        @Override
-        public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-           ConditionMessage.Builder message = ConditionMessage.forCondition("Default DispatcherServlet");
-           ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-           List<String> dispatchServletBeans = Arrays
-                 .asList(beanFactory.getBeanNamesForType(DispatcherServlet.class, false, false));
-           if (dispatchServletBeans.contains(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
-              return ConditionOutcome
-                    .noMatch(message.found("dispatcher servlet bean").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
-           }
-           if (beanFactory.containsBean(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
-              return ConditionOutcome.noMatch(
-                    message.found("non dispatcher servlet bean").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
-           }
-           if (dispatchServletBeans.isEmpty()) {
-              return ConditionOutcome.match(message.didNotFind("dispatcher servlet beans").atAll());
-           }
-           return ConditionOutcome.match(message.found("dispatcher servlet bean", "dispatcher servlet beans")
-                 .items(Style.QUOTE, dispatchServletBeans)
-                 .append("and none is named " + DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
-        }
-  
-     }
-  
-     @Order(Ordered.LOWEST_PRECEDENCE - 10)
-     private static class DispatcherServletRegistrationCondition extends SpringBootCondition {
-  
-        @Override
-        public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-           ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-           ConditionOutcome outcome = checkDefaultDispatcherName(beanFactory);
-           if (!outcome.isMatch()) {
-              return outcome;
-           }
-           return checkServletRegistration(beanFactory);
-        }
-  
-        private ConditionOutcome checkDefaultDispatcherName(ConfigurableListableBeanFactory beanFactory) {
-           boolean containsDispatcherBean = beanFactory.containsBean(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
-           if (!containsDispatcherBean) {
-              return ConditionOutcome.match();
-           }
-           List<String> servlets = Arrays
-                 .asList(beanFactory.getBeanNamesForType(DispatcherServlet.class, false, false));
-           if (!servlets.contains(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)) {
-              return ConditionOutcome.noMatch(
-                    startMessage().found("non dispatcher servlet").items(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME));
-           }
-           return ConditionOutcome.match();
-        }
-  
-        private ConditionOutcome checkServletRegistration(ConfigurableListableBeanFactory beanFactory) {
-           ConditionMessage.Builder message = startMessage();
-           List<String> registrations = Arrays
-                 .asList(beanFactory.getBeanNamesForType(ServletRegistrationBean.class, false, false));
-           boolean containsDispatcherRegistrationBean = beanFactory
-                 .containsBean(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME);
-           if (registrations.isEmpty()) {
-              if (containsDispatcherRegistrationBean) {
-                 return ConditionOutcome.noMatch(message.found("non servlet registration bean")
-                       .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
-              }
-              return ConditionOutcome.match(message.didNotFind("servlet registration bean").atAll());
-           }
-           if (registrations.contains(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)) {
-              return ConditionOutcome.noMatch(message.found("servlet registration bean")
-                    .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
-           }
-           if (containsDispatcherRegistrationBean) {
-              return ConditionOutcome.noMatch(message.found("non servlet registration bean")
-                    .items(DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
-           }
-           return ConditionOutcome.match(message.found("servlet registration beans").items(Style.QUOTE, registrations)
-                 .append("and none is named " + DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME));
-        }
-  
-        private ConditionMessage.Builder startMessage() {
-           return ConditionMessage.forCondition("DispatcherServlet Registration");
-        }
-  
-     }
-  
-  }
-  ```
-
-  - `@ConditionalOnWebApplication(type = Type.SERVLET)`：Spring Boot 支持两种类型的 Web 应用开发，一种是响应式，一种是原生 Servlet。响应式 Web 开发导入 `spring-boot-starter-webflux` 依赖，原生 Servlet Web 开发导入 `spring-boot-starter-web` 依赖。
-
-  - `@ConditionalOnClass(DispatcherServlet.class)`：在主类中可以验证项目中存在 DispatcherServlet 类。
-
-    ```java
-    @SpringBootApplication
-    public class MainApplication {
-        public static void main(String[] args) {
-            ConfigurableApplicationContext run = SpringApplication.run(MainApplication.class, args);
-    
-            String[] beanNamesForType = run.getBeanNamesForType(DispatcherServlet.class);
-            System.out.println(beanNamesForType.length);// 1
-        }
-    }
-    ```
-
-- 例如，`org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration`：
-
-  ```java
-  @Configuration(proxyBeanMethods = false)
-  @EnableConfigurationProperties(ServerProperties.class)// 开启ServerProperties类的配置绑定功能，并注册到容器中
-  @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)// 当项目是一个原生的Web Servlet应用时
-  @ConditionalOnClass(CharacterEncodingFilter.class)// 当容器中存在CharacterEncodingFilter.class时
-  // 当配置文件中server.servlet.encoding属性值为enabled(默认为true)时
-  @ConditionalOnProperty(prefix = "server.servlet.encoding", value = "enabled", matchIfMissing = true)
-  public class HttpEncodingAutoConfiguration {
-  
-     private final Encoding properties;
-  
-     public HttpEncodingAutoConfiguration(ServerProperties properties) {
-        this.properties = properties.getServlet().getEncoding();
-     }
-  
-     /**
-       * 向容器中注册一个CharacterEncodingFilter组件，此组件就是解决Spring Boot收到的请求出现乱码的问题
-       */
-     @Bean
-     @ConditionalOnMissingBean// 当容器中没有这个Bean时才配置，即用户未配置时，Spring Boot才主动配置一个
-     public CharacterEncodingFilter characterEncodingFilter() {
-        CharacterEncodingFilter filter = new OrderedCharacterEncodingFilter();
-        filter.setEncoding(this.properties.getCharset().name());
-        filter.setForceRequestEncoding(this.properties.shouldForce(Encoding.Type.REQUEST));
-        filter.setForceResponseEncoding(this.properties.shouldForce(Encoding.Type.RESPONSE));
-        return filter;
-     }
-  
-     @Bean
-     public LocaleCharsetMappingsCustomizer localeCharsetMappingsCustomizer() {
-        return new LocaleCharsetMappingsCustomizer(this.properties);
-     }
-  
-     static class LocaleCharsetMappingsCustomizer
-           implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>, Ordered {
-  
-        private final Encoding properties;
-  
-        LocaleCharsetMappingsCustomizer(Encoding properties) {
-           this.properties = properties;
-        }
-  
-        @Override
-        public void customize(ConfigurableServletWebServerFactory factory) {
-           if (this.properties.getMapping() != null) {
-              factory.setLocaleCharsetMappings(this.properties.getMapping());
-           }
-        }
-  
-        @Override
-        public int getOrder() {
-           return 0;
-        }
-  
-     }
-  
-  }
-  ```
-
-  - HttpEncodingAutoConfiguration 配置类会防止 Spring Boot 乱码。
-
-  - 测试：
-
-    ```java
-    @Controller
-    public class HelloController {
-        @RequestMapping("/helloWho")
-        @ResponseBody
-        public String helloWho(@RequestParam("name") String name) {
-            return "Hello, " + name + "!";
-        }
-    }
-    ```
-
-    ![image-20210714132902955](spring-boot/image-20210714132902955.png)
-
-    ![image-20210714133027284](spring-boot/image-20210714133027284.png)
-
-### 修改默认配置
-
-- 一般来说，Spring Boot 默认会在底层配好所有需要的组件，但是如果用户自己配置了，就会以用户配置的优先。
-
-- 以 CharacterEncodingFilter 为例，如果用户希望按自己的需求进行配置，可以在配置类中自行添加：
-
-  ```java
-  @Configuration
-  public class MyConfig {
-      @Bean
-      public CharacterEncodingFilter characterEncodingFilter() {
-          // filter的实现代码
-          return null;
-      }
-  }
-  ```
-
-- 从前面对 CharacterEncodingFilter 的分析可以看出，当用户自己配置了 CharacterEncodingFilter 的实例时，Spring Boot 就不会再配置。
-
-### 总结
-
-- Spring Boot 先加载所有的自动配置类，即 xxxxxAutoConfiguration.class。
-
-- 每个自动配置类按照条件进行生效。xxxxxAutoConfiguration.class 在配置时，会从对应的 xxxxxProperties.class 中取值，而 xxxxxProperties.class 会和配置文件中对应的值进行绑定。比如：
-
-  ```java
-  @Configuration(proxyBeanMethods = false)
-  @Conditional(DefaultDispatcherServletCondition.class)
-  @ConditionalOnClass(ServletRegistration.class)
-  @EnableConfigurationProperties(WebMvcProperties.class)// WebMvcProperties.class与配置文件绑定
-  protected static class DispatcherServletConfiguration {
-  
-     @Bean(name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
-     public DispatcherServlet dispatcherServlet(WebMvcProperties webMvcProperties) {// 从容器中的webMvcProperties组件取值
-        DispatcherServlet dispatcherServlet = new DispatcherServlet();
-        dispatcherServlet.setDispatchOptionsRequest(webMvcProperties.isDispatchOptionsRequest());
-        dispatcherServlet.setDispatchTraceRequest(webMvcProperties.isDispatchTraceRequest());
-        dispatcherServlet.setThrowExceptionIfNoHandlerFound(webMvcProperties.isThrowExceptionIfNoHandlerFound());
-        dispatcherServlet.setPublishEvents(webMvcProperties.isPublishRequestHandledEvents());
-        dispatcherServlet.setEnableLoggingRequestDetails(webMvcProperties.isLogRequestDetails());
-        return dispatcherServlet;
-     }
-  }
-  ```
-
-- 生效的配置类，会给容器中装配很多不同功能的组件；
-- 这些组件装配到容器中后，项目就具有了该组件所具有的功能；
-- 如果用户自行配置了某一个组件，则以用户配置的优先。
-- 若想实现定制化配置，有两种方法：
-  - 方法一：用户自行配置组件，添加 `@Bean` 注解，用以替换 Spring Boot 底层的默认组件。
-  - 方法二：用户查看该组件从配置文件种获取的是什么属性的值，然后按需求自行修改对应的属性值。比如 HttpEncodingAutoConfiguration 对应的就是配置文件中的 `server.servlet.encoding` 属性。
-    - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
-- 过程：**xxxxxAutoConfiguration.class ---> 注册组件 ---> 从 xxxxxProperties.class 里面拿值 ----> 绑定 application.properties 文件**。
-  - 可以看出，一般通过修改 application.properties 文件中相应的配置，就可完成 Spring Boot 功能的修改。
-
-### 最佳实践
-
-- 第一步：引入相应的场景依赖。
-
-  - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.build-systems.starters
-
-- 第二步：查看 Spring Boot 做了哪些自动配置。
-
-  - 自己查看底层源码，找出对应配置的参数。一般来说，引入一个场景后，该场景对应的自动配置都会生效。
-
-  - 配置文件中添加 `debug=true`，开启自动配置的报告。启动主程序后，即可在控制台查看所有生效和未生效的配置 --- Positive (生效) / Negative (未生效)：
-
-    ```properties
-    debug=true
-    ```
-
-    ```java
-    @SpringBootApplication
-    public class MainApplication {
-        public static void main(String[] args) {
-            SpringApplication.run(MainApplication.class, args);
-        }
-    }
-    ```
-
-    ![image-20210715111453136](spring-boot/image-20210715111453136.png)
-
-    ![image-20210715111558457](spring-boot/image-20210715111558457.png)
-
-- 第三步：按照需求，确定是否需要修改默写配置。
-
-  - 参照文档修改配置项
-
-    - 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties
-
-    - 自己查看底层源码，分析 xxxxxProperties.class 绑定了配置文件的哪些属性。
-
-    - 比如，修改 Spring Boot 启动时的 banner 图：
-
-      - 原图：
-
-        | [`spring.banner.image.location`](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.core.spring.banner.image.location) | Banner image file location (jpg or png can also be used). | `classpath:banner.gif` |
-        | ------------------------------------------------------------ | --------------------------------------------------------- | ---------------------- |
-        |                                                              |                                                           |                        |
-
-        ![image-20210715113318390](spring-boot/image-20210715113318390.png)
-
-      - 添加配置到配置文件中，或者将 classpath 路径下的 spring.jpg 重命名为 banner.jpg (Spring Boot 默认查找 classpath 下的 banner 图片)：
-
-        ```properties
-        spring.banner.image.location=classpath:spring.jpg
-        ```
-
-        ![image-20210715113542645](spring-boot/image-20210715113542645.png)
-
-      - 新图：
-
-        ![image-20210715113617461](spring-boot/image-20210715113617461.png)
-
-  - 自定义加入或者替换组件。
-
-    - `@Bean`、`@Component` 等。
-
-  - 自定义器 **xxxxxCustomizer**；
-
-- 第四步：实现自己所需功能的业务逻辑。
+第四步：实现自己所需功能的业务逻辑。
 
 ## Spring Boot 的开发工具
 
 ### dev-tools
 
-- Maven 添加依赖：
+Maven 添加依赖：
 
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <optional>true</optional>
-  </dependency>
-  ```
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <optional>true</optional>
+</dependency>
+```
 
-- 重新启动项目，在后续开发时，如果对项目有改动，使用 `ctrl + F9` 快捷键，即可刷新项目，实现简单的热更新，其本质上是自动重启项目。
+- 重新启动项目，在后续开发时，如果对项目有改动，使用`ctrl + F9`快捷键，即可刷新项目，实现简单的热更新，其本质上是自动重启项目。
 
-- 如果项目做了某些改动，`ctrl + F9` 之后，控制台会打印重启信息。
+- 如果项目做了某些改动，`ctrl + F9`之后，控制台会打印重启信息。
 
 ### Spring Initailizr
 
-- 项目初始化向导，能够快速的创建 Spring Boot 的项目。
+`Spring Initailizr`是项目初始化向导，能够快速的创建 Spring Boot 的项目。
 
-- New Project 时，选择需要的开发场景，Spring Boot 会自动添加所需要的依赖，并创建好主类：
+New Project 时，选择需要的开发场景，Spring Boot 会自动添加所需要的依赖，并创建好主类：
 
-  ![image-20210715133805834](spring-boot/image-20210715133805834.png)
+![image-20210715133805834](spring-boot/image-20210715133805834.png)
 
-  ![image-20210715134035829](spring-boot/image-20210715134035829.png)
+![image-20210715134035829](spring-boot/image-20210715134035829.png)
 
-  ![image-20210715143251658](spring-boot/image-20210715143251658.png)
+![image-20210715143251658](spring-boot/image-20210715143251658.png)
 
-  ![image-20210715143631578](spring-boot/image-20210715143631578.png)
+![image-20210715143631578](spring-boot/image-20210715143631578.png)
 
-  > static：静态资源，如 css，js 等；templates：Web 页面。
+> static：静态资源，如 css，js 等；templates：Web 页面。
 
-  ```xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-      <modelVersion>4.0.0</modelVersion>
-  
-      <!-- 自动添加parent -->
-      <parent>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-parent</artifactId>
-          <version>2.5.2</version>
-          <relativePath/> <!-- lookup parent from repository -->
-      </parent>
-  
-      <groupId>cn.xisun.springboot</groupId>
-      <artifactId>helloworld</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <name>helloworld</name>
-      <description>Demo project for Spring Boot</description>
-      <properties>
-          <java.version>1.8</java.version>
-      </properties>
-  
-      <!-- 自动添加相关依赖 -->
-      <dependencies>
-          <!-- Web开发 -->
-          <dependency>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-web</artifactId>
-          </dependency>
-  
-          <!-- 单元测试 -->
-          <dependency>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-test</artifactId>
-              <scope>test</scope>
-          </dependency>
-      </dependencies>
-  
-      <!-- 自动添加打包插件 -->
-      <build>
-          <plugins>
-              <plugin>
-                  <groupId>org.springframework.boot</groupId>
-                  <artifactId>spring-boot-maven-plugin</artifactId>
-              </plugin>
-          </plugins>
-      </build>
-  
-  </project>
-  ```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-## Spring Boot 2 核心功能
+    <!-- 自动添加parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.5.2</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>cn.xisun.springboot</groupId>
+    <artifactId>helloworld</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>helloworld</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <!-- 自动添加相关依赖 -->
+    <dependencies>
+        <!-- Web开发 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 单元测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- 自动添加打包插件 -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+## Spring Boot 核心功能
 
 ### 配置文件
 
 #### 文件类型
 
+Spring Boot 配置文件类型，包含两种：`.properties`和`.yaml`。
+
 - properties：同前面 application.properties 配置文件的写法。
 
 - yaml：
 
-  - YAML 是 "YAML Ain't Markup Language" (YAML 不是一种标记语言 ) 的递归缩写。在开发这种语言时，YAML 的意思其实是："Yet Another Markup Language" (仍是一种标记语言)。 
+  - YAML 是 "YAML Ain't Markup Language"（YAML 不是一种标记语言 ）的递归缩写。在开发这种语言时，YAML 的意思其实是："Yet Another Markup Language"（仍是一种标记语言）。 
 
   - yarm 非常适合用来做以数据为中心的配置文件。
 
   - 基本语法：
 
-    - 书写格式：`key: value`，key 和 value 之间有空格；
-    - 大小写敏感；
+    - 书写格式：`key: value`，key 和 value 之间有空格。
+    - 大小写敏感。
 
-    - 使用缩进表示层级关系；
-    - 缩进不允许使用 tab，只允许使用空格；
+    - 使用缩进表示层级关系。
+    - 缩进不允许使用 tab，只允许使用空格。
 
-    - 缩进的空格数不重要，只要相同层级的元素左对齐即可；
-    - \# 表示注释；
+    - 缩进的空格数不重要，只要相同层级的元素左对齐即可。
+    - \# 表示注释。
 
     - 文件中的字符串无需加引号，如果要加，' ' 内的字符串内容会被转义，" " 内的字符串内容不会被转义。
 
@@ -2103,7 +2522,7 @@ public class User {
 
       ```yaml
       # 行内写法
-      key: {key1:value1, key2:value2, key3:value3}
+      key: {key1: value1, key2: value2, key3: value3}
       
       # 缩进写法
       key:
@@ -2125,109 +2544,110 @@ public class User {
       	- value3
       ```
 
-  - 示例：
 
-    - Person 和 Pet 类：
+示例：
 
-      ```java
-      @Setter
-      @Getter
-      @NoArgsConstructor
-      @AllArgsConstructor
-      @ToString
-      @Component
-      @ConfigurationProperties(prefix = "person")
-      public class Person {
-          private String userName;
-      
-          private Boolean boss;
-      
-          private Date birth;
-      
-          private Integer age;
-      
-          private Pet pet;
-      
-          private String[] interests;
-      
-          private List<String> animal;
-      
-          private Map<String, Object> score;
-      
-          private Set<Double> salarys;
-      
-          private Map<String, List<Pet>> allPets;
-      }
-      ```
+  - Person 和 Pet 类：
 
-      ```java
-      @Setter
-      @Getter
-      @NoArgsConstructor
-      @AllArgsConstructor
-      @ToString
-      @Component
-      @ConfigurationProperties(prefix = "pet")
-      public class Pet {
-          private String name;
-      
-          private Double weight;
-      }
-      ```
+    ```java
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    @Component
+    @ConfigurationProperties(prefix = "person")
+    public class Person {
+        private String userName;
+    
+        private Boolean boss;
+    
+        private Date birth;
+    
+        private Integer age;
+    
+        private Pet pet;
+    
+        private String[] interests;
+    
+        private List<String> animal;
+    
+        private Map<String, Object> score;
+    
+        private Set<Double> salarys;
+    
+        private Map<String, List<Pet>> allPets;
+    }
+    ```
 
-    - application.yaml 配置文件 (也可以命名为 application.yml)：
+    ```java
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    @Component
+    @ConfigurationProperties(prefix = "pet")
+    public class Pet {
+        private String name;
+    
+        private Double weight;
+    }
+    ```
 
-      ```yaml
-      person:
-        userName: zhangsan
-        boss: false
-        birth: 2019/12/12 20:12:33
-        age: 18
-        pet:
-          name: tomcat
-          weight: 23.4
-        interests: [篮球, 游泳]
-        animal:
-          - jerry
-          - tom
-        score:
-          english:
-            first: 30
-            second: 40
-            third: 50
-          math: [131, 140, 148]
-          chinese: {first: 128, second: 136}
-        salarys: [3999, 4999.98, 5999.99]
-        allPets:
-          sick:
-            - {name: tom1, weight: 33}
-            - {name: jerry1, weight: 47}
-          healthy: [{name: tom2, weight: 33}, {name: jerry2, weight: 47}]
-      ```
+  - application.yaml 配置文件（也可以命名为 application.yml）：
 
-      > 在实际开发时，配置文件的写法方式，应该统一为行内写法，或者缩进写法，不要混写。
+    ```yaml
+    person:
+      userName: zhangsan
+      boss: false
+      birth: 2019/12/12 20:12:33
+      age: 18
+      pet:
+        name: tomcat
+        weight: 23.4
+      interests: [篮球, 游泳]
+      animal:
+        - jerry
+        - tom
+      score:
+        english:
+          first: 30
+          second: 40
+          third: 50
+        math: [131, 140, 148]
+        chinese: {first: 128, second: 136}
+      salarys: [3999, 4999.98, 5999.99]
+      allPets:
+        sick:
+          - {name: tom1, weight: 33}
+          - {name: jerry1, weight: 47}
+        healthy: [{name: tom2, weight: 33}, {name: jerry2, weight: 47}]
+    ```
 
-    - Controller 测试：
+    > 在实际开发时，配置文件的写法方式，应该统一为行内写法，或者缩进写法，不要混写。
 
-      ```java
-      @Controller
-      public class HelloController {
-          @Autowired
-          private Person person;
-      
-          @RequestMapping("/person")
-          @ResponseBody
-          public Person person() {
-              return person;
-          }
-      }
-      ```
+  - Controller 测试：
 
-      ![image-20210715155740364](spring-boot/image-20210715155740364.png)
+    ```java
+    @Controller
+    public class HelloController {
+        @Autowired
+        private Person person;
+    
+        @RequestMapping("/person")
+        @ResponseBody
+        public Person person() {
+            return person;
+        }
+    }
+    ```
 
-      > 可以看出，容器中的 Person 组件，就是按照 application.yaml 配置文件进行属性配置的。
+    ![image-20210715155740364](spring-boot/image-20210715155740364.png)
 
-- Spring Boot 项目，可以同时存在 properties 和 yaml 两种配置文件，当二者包含相同属性的配置时，propertire 配置文件会覆盖 yaml 配置文件。
+    > 可以看出，容器中的 Person 组件，就是按照 application.yaml 配置文件进行属性配置的。
+
+Spring Boot 项目，可以同时存在 properties 和 yaml 两种配置文件，当二者包含相同属性的配置时，**propertire 配置文件会覆盖 yaml 配置文件**。
 
   - application.properties：
 
@@ -2260,170 +2680,1629 @@ public class User {
 
 #### 配置提示
 
-- 自定义的类和配置文件绑定一般没有提示，需要添加 `spring-boot-configuration-processor` 依赖，这样在配置文件书写时，会进行提示：
+自定义的类和配置文件绑定一般没有提示，需要添加`spring-boot-configuration-processor`依赖，这样在配置文件书写时，会进行提示：
 
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
-  </dependency>
-  ```
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-configuration-processor</artifactId>
+    <optional>true</optional>
+</dependency>
+```
 
-  ![image-20210715164630655](spring-boot/image-20210715164630655.png)
+![image-20210715164630655](spring-boot/image-20210715164630655.png)
 
-  >user-name 与 userName 效果等同。
+>user-name 与 userName 效果等同。
 
-- 因为 `spring-boot-configuration-processor` 依赖是开发过程中提供帮助，在打包程序时，应将其排除，不打包：
+因为`spring-boot-configuration-processor`依赖是开发过程中提供帮助，在打包程序时，应将其排除，不打包：
 
-  ```xml
-  <!-- 打包插件 -->
-  <build>
-      <plugins>
-          <plugin>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-maven-plugin</artifactId>
-      		<!-- 打包时排除依赖 -->
-              <configuration>
-                  <excludes>
-                      <exclude>
-                          <groupId>org.springframework.boot</groupId>
-                          <artifactId>spring-boot-configuration-processor</artifactId>
-                      </exclude>
-                  </excludes>
-              </configuration>
-          </plugin>
-      </plugins>
-  </build>
-  ```
+```xml
+<!-- 打包插件 -->
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+    		<!-- 打包时排除依赖 -->
+            <configuration>
+                <excludes>
+                    <exclude>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-configuration-processor</artifactId>
+                    </exclude>
+                </excludes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
 
 ### Web 开发
 
-- 参考：https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.developing-web-applications
+参考：https://docs.spring.io/spring-boot/docs/current/reference/html/web.html#web
 
-#### Spring MVC 自动配置概览
+Spring Boot is well suited for web application development. You can create a self-contained HTTP server by using embedded Tomcat, Jetty, Undertow, or Netty. Most web applications use the `spring-boot-starter-web` module to get up and running quickly. You can also choose to build reactive web applications by using the `spring-boot-starter-webflux` module.
 
-- Spring Boot provides auto-configuration for Spring MVC that **works well with most applications.**
+If you have not yet developed a Spring Boot web application, you can follow the "Hello World!" example in the *[Getting started](https://docs.spring.io/spring-boot/docs/current/reference/html/getting-started.html#getting-started.first-application)* section.
 
-  - 大多场景都无需自定义配置。
+#### Spring MVC 自动配置默认效果
 
-- The auto-configuration adds the following features on top of Spring’s defaults:
+Spring Boot provides auto-configuration for Spring MVC that works well with most applications. It replaces the need for `@EnableWebMvc` and the two cannot be used together. In addition to Spring MVC’s defaults, the auto-configuration provides the following features:
 
-  - Inclusion of `ContentNegotiatingViewResolver` and `BeanNameViewResolver` beans.
-    - 内容协商视图解析器和 BeanName 视图解析器。
+- Inclusion of `ContentNegotiatingViewResolver` and `BeanNameViewResolver` beans.
+- Support for serving static resources, including support for WebJars (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#web.servlet.spring-mvc.static-content)).
+- Automatic registration of `Converter`, `GenericConverter`, and `Formatter` beans.
+- Support for `HttpMessageConverters` (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#web.servlet.spring-mvc.message-converters)).
+- Automatic registration of `MessageCodesResolver` (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#web.servlet.spring-mvc.message-codes)).
+- Static `index.html` support.
+- Automatic use of a `ConfigurableWebBindingInitializer` bean (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#web.servlet.spring-mvc.binding-initializer)).
 
-  - Support for serving static resources, including support for WebJars (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-static-content))).
-    - 静态资源 (包括 WebJars)。
+If you want to keep those Spring Boot MVC customizations and make more [MVC customizations](https://docs.spring.io/spring-framework/docs/6.0.12/reference/html/web.html#mvc) (interceptors, formatters, view controllers, and other features), you can add your own `@Configuration` class of type `WebMvcConfigurer` but **without** `@EnableWebMvc`.
 
-  - Automatic registration of `Converter`, `GenericConverter`, and `Formatter` beans.
-    - 自动注册 `Converter`， `GenericConverter` 和 `Formatter`。
+If you want to provide custom instances of `RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`, or `ExceptionHandlerExceptionResolver`, and still keep the Spring Boot MVC customizations, you can declare a bean of type `WebMvcRegistrations` and use it to provide custom instances of those components.
 
-  - Support for `HttpMessageConverters` (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-message-converters)).
-    - 支持 `HttpMessageConverters`  (配合内容协商章节理解原理)。
+If you do not want to use the auto-configuration and want to take complete control of Spring MVC, add your own `@Configuration` annotated with `@EnableWebMvc`. Alternatively, add your own `@Configuration`-annotated `DelegatingWebMvcConfiguration` as described in the Javadoc of `@EnableWebMvc`.
 
-  - Automatic registration of `MessageCodesResolver` (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-message-codes)).
-    - 自动注册 `MessageCodesResolver` (国际化用)。
+Spring Boot 为 Spring MVC 提供了自动配置功能，可与大多数应用程序配合使用。它取代了 @EnableWebMvc 的需要，但两者不能同时使用。除了 Spring MVC 的默认设置外，自动配置还提供以下功能：
 
-  - Static `index.html` support.
-    - 静态 index.html 页支持。
+- 包含了 ContentNegotiatingViewResolver 和 BeanNameViewResolver 组件，**方便视图解析**。
+- **默认的静态资源处理机制**： 静态资源放在 static 文件夹下即可直接访问。
+- **自动注册**了 **Converter**，GenericConverter，**Formatter** 组件，适配常见**数据类型转换**和**格式化需求**。
+- **支持 HttpMessageConverters**，可以方便返回 Json 等数据类型。
+- 注册 MessageCodesResolver，方便国际化及错误消息处理。
+- 支持静态 index.html。
+- **自动使用** ConfigurableWebBindingInitializer，实现消息处理、数据绑定、类型转化、数据校验等功能。
 
-  - Custom `Favicon` support (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-favicon)).
-    - 自定义 `Favicon`。
+如果想保持 Spring Boot MVC 的默认配置，并且自定义更多的 MVC 配置，如：interceptors，formatters，view controllers 等。可以使用 @Configuration 注解添加一个 WebMvcConfigurer 类型的配置类，并且不要标注 @EnableWebMvc。
 
-  - Automatic use of a `ConfigurableWebBindingInitializer` bean (covered [later in this document](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-web-binding-initializer)).
-    - 自动使用 `ConfigurableWebBindingInitializer`，(DataBinder 负责将请求数据绑定到 JavaBean 上)。
+如果想保持 Spring Boot MVC 的默认配置，但是自定义核心组件，比如 RequestMappingHandlerMapping，RequestMappingHandlerAdapter，或者 ExceptionHandlerExceptionResolver，给容器中放一个 WebMvcRegistrations 组件即可。
+
+如果想全面接管 Spring MVC，用 @Configuration 标注一个配置类，并加上 @EnableWebMvc 注解，并实现 WebMvcConfigurer 接口。
+
+#### 引入场景启动器
+
+```xml
+<!-- Web开发的场景启动器 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+#### Web 开发的自动配置项
+
+在 org.springframework.boot.autoconfigure 包 META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 文件中，**与 Web 开发对应的自动配置项为**：
+
+```imports
+org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
+org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration
+===== 以下是响应式Web开发应用场景，暂不考虑 =======
+org.springframework.boot.autoconfigure.web.reactive.HttpHandlerAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.ReactiveMultipartAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.ReactiveWebServerFactoryAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.WebSessionIdResolverAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration
+org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration
+===== 以上是响应式Web开发应用场景，暂不考虑 =======
+org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+```
+
+对应 org.springframework.boot.autoconfigure 包下的各类为：
+
+![image-20231001201249627](./spring-boot/image-20231001201249627.png)
+
+##### RestTemplateAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for {@link RestTemplate}.
+ *
+ * @author Stephane Nicoll
+ * @author Phillip Webb
+ * @since 1.4.0
+ */
+@AutoConfiguration(after = HttpMessageConvertersAutoConfiguration.class)
+@ConditionalOnClass(RestTemplate.class)
+@Conditional(NotReactiveWebApplicationCondition.class)
+public class RestTemplateAutoConfiguration {
+}
+```
+
+##### EmbeddedWebServerFactoryCustomizerAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for embedded servlet and reactive
+ * web servers customizations.
+ *
+ * @author Phillip Webb
+ * @since 2.0.0
+ */
+@AutoConfiguration
+@ConditionalOnNotWarDeployment
+@ConditionalOnWebApplication
+@EnableConfigurationProperties(ServerProperties.class)
+public class EmbeddedWebServerFactoryCustomizerAutoConfiguration {
+}
+```
+
+- @EnableConfigurationProperties(ServerProperties.class)，绑定`server`配置，服务器的相关配置，比如编码方式。
+
+  ```java
+  /**
+   * {@link ConfigurationProperties @ConfigurationProperties} for a web server (e.g. port
+   * and path settings).
+   *
+   * @author Dave Syer
+   * @author Stephane Nicoll
+   * @author Andy Wilkinson
+   * @author Ivan Sopov
+   * @author Marcos Barbero
+   * @author Eddú Meléndez
+   * @author Quinten De Swaef
+   * @author Venil Noronha
+   * @author Aurélien Leboulanger
+   * @author Brian Clozel
+   * @author Olivier Lamy
+   * @author Chentao Qu
+   * @author Artsiom Yudovin
+   * @author Andrew McGhie
+   * @author Rafiullah Hamedy
+   * @author Dirk Deyne
+   * @author HaiTao Zhang
+   * @author Victor Mandujano
+   * @author Chris Bono
+   * @author Parviz Rozikov
+   * @author Florian Storz
+   * @author Michael Weidmann
+   * @since 1.0.0
+   */
+  @ConfigurationProperties(prefix = "server", ignoreUnknownFields = true)
+  public class ServerProperties {
+  }
+  ```
+
+##### DispatcherServletAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for the Spring
+ * {@link DispatcherServlet}. Should work for a standalone application where an embedded
+ * web server is already present and also for a deployable application using
+ * {@link SpringBootServletInitializer}.
+ *
+ * @author Phillip Webb
+ * @author Dave Syer
+ * @author Stephane Nicoll
+ * @author Brian Clozel
+ * @since 2.0.0
+ */
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfiguration(after = ServletWebServerFactoryAutoConfiguration.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass(DispatcherServlet.class)
+public class DispatcherServletAutoConfiguration {
+}
+```
+
+##### ServletWebServerFactoryAutoConfiguration
+
+```java
+@AutoConfiguration(after = SslAutoConfiguration.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@ConditionalOnClass(ServletRequest.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@EnableConfigurationProperties(ServerProperties.class)
+@Import({ ServletWebServerFactoryAutoConfiguration.BeanPostProcessorsRegistrar.class,
+		ServletWebServerFactoryConfiguration.EmbeddedTomcat.class,
+		ServletWebServerFactoryConfiguration.EmbeddedJetty.class,
+		ServletWebServerFactoryConfiguration.EmbeddedUndertow.class })
+public class ServletWebServerFactoryAutoConfiguration {
+}
+```
+
+##### ErrorMvcAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} to render errors through an MVC
+ * error controller.
+ *
+ * @author Dave Syer
+ * @author Andy Wilkinson
+ * @author Stephane Nicoll
+ * @author Brian Clozel
+ * @author Scott Frederick
+ * @since 1.0.0
+ */
+// Load before the main WebMvcAutoConfiguration so that the error View is available
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass({ Servlet.class, DispatcherServlet.class })
+@EnableConfigurationProperties({ ServerProperties.class, WebMvcProperties.class })
+public class ErrorMvcAutoConfiguration {
+}
+```
+
+- @EnableConfigurationProperties({ ServerProperties.class, WebMvcProperties.class })，绑定`spring.mvc`配置，Spring MVC 的所有配置。
+
+  ```java
+  /**
+   * {@link ConfigurationProperties properties} for Spring MVC.
+   *
+   * @author Phillip Webb
+   * @author Sébastien Deleuze
+   * @author Stephane Nicoll
+   * @author Eddú Meléndez
+   * @author Brian Clozel
+   * @author Vedran Pavic
+   * @since 2.0.0
+   */
+  @ConfigurationProperties(prefix = "spring.mvc")
+  public class WebMvcProperties {
+  }
+  ```
+
+##### HttpEncodingAutoConfiguration
+
+```java
+@AutoConfiguration
+@EnableConfigurationProperties(ServerProperties.class)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnClass(CharacterEncodingFilter.class)
+@ConditionalOnProperty(prefix = "server.servlet.encoding", value = "enabled", matchIfMissing = true)
+public class HttpEncodingAutoConfiguration {
+}
+```
+
+##### MultipartAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for multipart uploads. Adds a
+ * {@link StandardServletMultipartResolver} if none is present, and adds a
+ * {@link jakarta.servlet.MultipartConfigElement multipartConfigElement} if none is
+ * otherwise defined. The {@link ServletWebServerApplicationContext} will associate the
+ * {@link MultipartConfigElement} bean to any {@link Servlet} beans.
+ * <p>
+ * The {@link jakarta.servlet.MultipartConfigElement} is a Servlet API that's used to
+ * configure how the server handles file uploads.
+ *
+ * @author Greg Turnquist
+ * @author Josh Long
+ * @author Toshiaki Maki
+ * @since 2.0.0
+ */
+@AutoConfiguration
+@ConditionalOnClass({ Servlet.class, StandardServletMultipartResolver.class, MultipartConfigElement.class })
+@ConditionalOnProperty(prefix = "spring.servlet.multipart", name = "enabled", matchIfMissing = true)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@EnableConfigurationProperties(MultipartProperties.class)
+public class MultipartAutoConfiguration {
+}
+```
+
+- @EnableConfigurationProperties(MultipartProperties.class)，绑定`spring.servlet.multipart`配置，文件上传相关配置。
+
+  ```java
+  /**
+   * Properties to be used in configuring a {@link MultipartConfigElement}.
+   * <ul>
+   * <li>{@link #getLocation() location} specifies the directory where uploaded files will
+   * be stored. When not specified, a temporary directory will be used.</li>
+   * <li>{@link #getMaxFileSize() max-file-size} specifies the maximum size permitted for
+   * uploaded files. The default is 1MB</li>
+   * <li>{@link #getMaxRequestSize() max-request-size} specifies the maximum size allowed
+   * for {@literal multipart/form-data} requests. The default is 10MB.</li>
+   * <li>{@link #getFileSizeThreshold() file-size-threshold} specifies the size threshold
+   * after which files will be written to disk. The default is 0.</li>
+   * </ul>
+   * <p>
+   * These properties are ultimately passed to {@link MultipartConfigFactory} which means
+   * you may specify numeric values using {@literal long} values or using more readable
+   * {@link DataSize} variants.
+   *
+   * @author Josh Long
+   * @author Toshiaki Maki
+   * @author Stephane Nicoll
+   * @since 2.0.0
+   */
+  @ConfigurationProperties(prefix = "spring.servlet.multipart", ignoreUnknownFields = false)
+  public class MultipartProperties {
+  }
+  ```
+
+##### WebMvcAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for {@link EnableWebMvc Web MVC}.
+ *
+ * @author Phillip Webb
+ * @author Dave Syer
+ * @author Andy Wilkinson
+ * @author Sébastien Deleuze
+ * @author Eddú Meléndez
+ * @author Stephane Nicoll
+ * @author Kristine Jetzke
+ * @author Bruce Brouwer
+ * @author Artsiom Yudovin
+ * @author Scott Frederick
+ * @since 2.0.0
+ */
+@AutoConfiguration(after = { DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
+		ValidationAutoConfiguration.class })
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })
+@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
+@ImportRuntimeHints(WebResourcesRuntimeHints.class)
+public class WebMvcAutoConfiguration {
+}
+```
+
+#### WebMvcAutoConfiguration 组件的原理
+
+类结构：
+
+![image-20231003213225270](./spring-boot/image-20231003213225270.png)
+
+##### 生效的条件
+
+```java
+@AutoConfiguration(after = { DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
+		ValidationAutoConfiguration.class })
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })
+@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
+@ImportRuntimeHints(WebResourcesRuntimeHints.class)
+public class WebMvcAutoConfiguration {
+}
+```
+
+- **@AutoConfiguration(after = { DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class, ValidationAutoConfiguration.class })**：在 DispatcherServletAutoConfiguration，TaskExecutionAutoConfiguration 和 ValidationAutoConfiguration 配置之后才配置。
+
+- **@ConditionalOnWebApplication(type = Type.SERVLET)**：只对`基于 Servlet 的 Web 应用`才生效。
+
+  ```java
+  /**
+   * {@link Conditional @Conditional} that matches when the application is a web
+   * application. By default, any web application will match but it can be narrowed using
+   * the {@link #type()} attribute.
+   *
+   * @author Dave Syer
+   * @author Stephane Nicoll
+   * @since 1.0.0
+   */
+  @Target({ ElementType.TYPE, ElementType.METHOD })
+  @Retention(RetentionPolicy.RUNTIME)
+  @Documented
+  @Conditional(OnWebApplicationCondition.class)
+  public @interface ConditionalOnWebApplication {
+  
+  	/**
+  	 * The required type of the web application.
+  	 * @return the required web application type
+  	 */
+  	Type type() default Type.ANY;
+  
+  	/**
+  	 * Available application types.
+  	 */
+  	enum Type {
+  
+  		/**
+  		 * Any web application will match.
+  		 */
+  		ANY,
+  
+  		/**
+  		 * Only servlet-based web application will match.
+  		 */
+  		SERVLET,
+  
+  		/**
+  		 * Only reactive-based web application will match.
+  		 */
+  		REACTIVE
+  
+  	}
+  
+  }
+  ```
+
+- **@ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })**：容器中有 Servlet，DispatcherServlet 和 WebMvcConfigurer 时才生效。
+
+- **@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)**：容器中没有 WebMvcConfigurationSupport 时才生效，默认没有。
+
+- **@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)**：优先级。
+
+##### OrderedHiddenHttpMethodFilter 和 OrderedFormContentFilter
+
+WebMvcAutoConfiguration 给容器中放入了`两个 Filter`：
+
+```java
+@Bean
+@ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
+@ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
+public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+    return new OrderedHiddenHttpMethodFilter();
+}
+
+@Bean
+@ConditionalOnMissingBean(FormContentFilter.class)
+@ConditionalOnProperty(prefix = "spring.mvc.formcontent.filter", name = "enabled", matchIfMissing = true)
+public OrderedFormContentFilter formContentFilter() {
+    return new OrderedFormContentFilter();
+}
+```
+
+- OrderedHiddenHttpMethodFilter：**浏览器默认只支持 GET 和 POST 请求，`HiddenHttpMethodFilter`允许浏览器提交 REST 请求，即 PUT，DELETE 和 PATCH。**
+
+  ```java
+  /**
+   * {@link HiddenHttpMethodFilter} that also implements {@link Ordered}.
+   *
+   * @author Phillip Webb
+   * @since 2.0.0
+   */
+  public class OrderedHiddenHttpMethodFilter extends HiddenHttpMethodFilter implements OrderedFilter {
+  }
+  ```
+
+  ```java
+  /**
+   * {@link jakarta.servlet.Filter} that converts posted method parameters into HTTP methods,
+   * retrievable via {@link HttpServletRequest#getMethod()}. Since browsers currently only
+   * support GET and POST, a common technique - used by the Prototype library, for instance -
+   * is to use a normal POST with an additional hidden form field ({@code _method})
+   * to pass the "real" HTTP method along. This filter reads that parameter and changes
+   * the {@link HttpServletRequestWrapper#getMethod()} return value accordingly.
+   * Only {@code "PUT"}, {@code "DELETE"} and {@code "PATCH"} HTTP methods are allowed.
+   *
+   * <p>The name of the request parameter defaults to {@code _method}, but can be
+   * adapted via the {@link #setMethodParam(String) methodParam} property.
+   *
+   * <p><b>NOTE: This filter needs to run after multipart processing in case of a multipart
+   * POST request, due to its inherent need for checking a POST body parameter.</b>
+   * So typically, put a Spring {@link org.springframework.web.multipart.support.MultipartFilter}
+   * <i>before</i> this HiddenHttpMethodFilter in your {@code web.xml} filter chain.
+   *
+   * @author Arjen Poutsma
+   * @author Juergen Hoeller
+   * @since 3.0
+   */
+  public class HiddenHttpMethodFilter extends OncePerRequestFilter {
+  }
+  ```
+
+- OrderedFormContentFilter：**默认情况下，GET（数据放在 URL 后面）和 POST（数据放在请求体）请求可以携带数据，而 PUT，DELETE 和 PATCH 的请求体数据会被忽略，`FormContentFilter`可以解决此问题。**
+
+  ```java
+  /**
+   * {@link FormContentFilter} that also implements {@link Ordered}.
+   *
+   * @author Joao Pedro Evangelista
+   * @author Brian Clozel
+   * @since 2.1.0
+   */
+  public class OrderedFormContentFilter extends FormContentFilter implements OrderedFilter {
+  }
+  ```
+
+  ```java
+  /**
+   * {@code Filter} that parses form data for HTTP PUT, PATCH, and DELETE requests
+   * and exposes it as Servlet request parameters. By default the Servlet spec
+   * only requires this for HTTP POST.
+   *
+   * @author Rossen Stoyanchev
+   * @since 5.1
+   */
+  public class FormContentFilter extends OncePerRequestFilter {
+  }
+  ```
+
+##### WebMvcAutoConfigurationAdapter
+
+```java
+// Defined as a nested config to ensure WebMvcConfigurer is not read when not
+// on the classpath
+@Configuration(proxyBeanMethods = false)
+@Import(EnableWebMvcConfiguration.class)
+@EnableConfigurationProperties({ WebMvcProperties.class, WebProperties.class })
+@Order(0)
+public static class WebMvcAutoConfigurationAdapter implements WebMvcConfigurer, ServletContextAware {
+}
+```
+
+- **@Import(EnableWebMvcConfiguration.class)**：额外导入了其他配置。
+- **@EnableConfigurationProperties({ WebMvcProperties.class, WebProperties.class })**：绑定`spring.mvc`和`spring.web`配置，所有的功能最终会和配置文件进行绑定。
+- WebMvcAutoConfiguration 给容器中放了**`WebMvcConfigurer`**组件，它能够给 Spring MVC 添加各种定制功能。
+
+###### WebMvcConfigurer 接口
+
+WebMvcConfigurer 接口**提供了配置 Spring MVC 底层的所有组件入口**：
+
+![image-20231003113607011](./spring-boot/image-20231003113607011.png)
+
+```java
+/**
+ * Defines callback methods to customize the Java-based configuration for
+ * Spring MVC enabled via {@code @EnableWebMvc}.
+ *
+ * <p>{@code @EnableWebMvc}-annotated configuration classes may implement
+ * this interface to be called back and given a chance to customize the
+ * default configuration.
+ *
+ * @author Rossen Stoyanchev
+ * @author Keith Donald
+ * @author David Syer
+ * @since 3.1
+ */
+public interface WebMvcConfigurer {
+
+	/**
+	 * Help with configuring {@link HandlerMapping} path matching options such as
+	 * whether to use parsed {@code PathPatterns} or String pattern matching
+	 * with {@code PathMatcher}, whether to match trailing slashes, and more.
+	 * @since 4.0.3
+	 * @see PathMatchConfigurer
+	 */
+	default void configurePathMatch(PathMatchConfigurer configurer) {
+	}
+
+	/**
+	 * Configure content negotiation options.
+	 */
+	default void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+	}
+
+	/**
+	 * Configure asynchronous request handling options.
+	 */
+	default void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+	}
+
+	/**
+	 * Configure a handler to delegate unhandled requests by forwarding to the
+	 * Servlet container's "default" servlet. A common use case for this is when
+	 * the {@link DispatcherServlet} is mapped to "/" thus overriding the
+	 * Servlet container's default handling of static resources.
+	 */
+	default void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+	}
+
+	/**
+	 * Add {@link Converter Converters} and {@link Formatter Formatters} in addition to the ones
+	 * registered by default.
+	 */
+	default void addFormatters(FormatterRegistry registry) {
+	}
+
+	/**
+	 * Add Spring MVC lifecycle interceptors for pre- and post-processing of
+	 * controller method invocations and resource handler requests.
+	 * Interceptors can be registered to apply to all requests or be limited
+	 * to a subset of URL patterns.
+	 */
+	default void addInterceptors(InterceptorRegistry registry) {
+	}
+
+	/**
+	 * Add handlers to serve static resources such as images, js, and, css
+	 * files from specific locations under web application root, the classpath,
+	 * and others.
+	 * @see ResourceHandlerRegistry
+	 */
+	default void addResourceHandlers(ResourceHandlerRegistry registry) {
+	}
+
+	/**
+	 * Configure "global" cross-origin request processing. The configured CORS
+	 * mappings apply to annotated controllers, functional endpoints, and static
+	 * resources.
+	 * <p>Annotated controllers can further declare more fine-grained config via
+	 * {@link org.springframework.web.bind.annotation.CrossOrigin @CrossOrigin}.
+	 * In such cases "global" CORS configuration declared here is
+	 * {@link org.springframework.web.cors.CorsConfiguration#combine(CorsConfiguration) combined}
+	 * with local CORS configuration defined on a controller method.
+	 * @since 4.2
+	 * @see CorsRegistry
+	 * @see CorsConfiguration#combine(CorsConfiguration)
+	 */
+	default void addCorsMappings(CorsRegistry registry) {
+	}
+
+	/**
+	 * Configure simple automated controllers pre-configured with the response
+	 * status code and/or a view to render the response body. This is useful in
+	 * cases where there is no need for custom controller logic -- e.g. render a
+	 * home page, perform simple site URL redirects, return a 404 status with
+	 * HTML content, a 204 with no content, and more.
+	 * @see ViewControllerRegistry
+	 */
+	default void addViewControllers(ViewControllerRegistry registry) {
+	}
+
+	/**
+	 * Configure view resolvers to translate String-based view names returned from
+	 * controllers into concrete {@link org.springframework.web.servlet.View}
+	 * implementations to perform rendering with.
+	 * @since 4.1
+	 */
+	default void configureViewResolvers(ViewResolverRegistry registry) {
+	}
+
+	/**
+	 * Add resolvers to support custom controller method argument types.
+	 * <p>This does not override the built-in support for resolving handler
+	 * method arguments. To customize the built-in support for argument
+	 * resolution, configure {@link RequestMappingHandlerAdapter} directly.
+	 * @param resolvers initially an empty list
+	 */
+	default void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+	}
+
+	/**
+	 * Add handlers to support custom controller method return value types.
+	 * <p>Using this option does not override the built-in support for handling
+	 * return values. To customize the built-in support for handling return
+	 * values, configure RequestMappingHandlerAdapter directly.
+	 * @param handlers initially an empty list
+	 */
+	default void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> handlers) {
+	}
+
+	/**
+	 * Configure the {@link HttpMessageConverter HttpMessageConverter}s for
+	 * reading from the request body and for writing to the response body.
+	 * <p>By default, all built-in converters are configured as long as the
+	 * corresponding 3rd party libraries such Jackson JSON, JAXB2, and others
+	 * are present on the classpath.
+	 * <p>Note that use of this method turns off default converter
+	 * registration. However, in a Spring Boot application the
+	 * {@code WebMvcAutoConfiguration} adds any {@code HttpMessageConverter}
+	 * beans as well as default converters. Hence, in a Boot application use
+	 * <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/web.html#web.servlet.spring-mvc.message-converters">HttpMessageConverters</a>.
+	 * Alternatively, for any scenario, use
+	 * {@link #extendMessageConverters(java.util.List)} to modify the configured
+	 * list of message converters.
+	 * @param converters initially an empty list of converters
+	 */
+	default void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+	}
+
+	/**
+	 * Extend or modify the list of converters after it has been, either
+	 * {@link #configureMessageConverters(List) configured} or initialized with
+	 * a default list.
+	 * <p>Note that the order of converter registration is important. Especially
+	 * in cases where clients accept {@link org.springframework.http.MediaType#ALL}
+	 * the converters configured earlier will be preferred.
+	 * @param converters the list of configured converters to be extended
+	 * @since 4.1.3
+	 */
+	default void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+	}
+
+	/**
+	 * Configure exception resolvers.
+	 * <p>The given list starts out empty. If it is left empty, the framework
+	 * configures a default set of resolvers, see
+	 * {@link WebMvcConfigurationSupport#addDefaultHandlerExceptionResolvers(List, org.springframework.web.accept.ContentNegotiationManager)}.
+	 * Or if any exception resolvers are added to the list, then the application
+	 * effectively takes over and must provide, fully initialized, exception
+	 * resolvers.
+	 * <p>Alternatively you can use
+	 * {@link #extendHandlerExceptionResolvers(List)} which allows you to extend
+	 * or modify the list of exception resolvers configured by default.
+	 * @param resolvers initially an empty list
+	 * @see #extendHandlerExceptionResolvers(List)
+	 * @see WebMvcConfigurationSupport#addDefaultHandlerExceptionResolvers(List, org.springframework.web.accept.ContentNegotiationManager)
+	 */
+	default void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
+	}
+
+	/**
+	 * Extending or modify the list of exception resolvers configured by default.
+	 * This can be useful for inserting a custom exception resolver without
+	 * interfering with default ones.
+	 * @param resolvers the list of configured resolvers to extend
+	 * @since 4.3
+	 * @see WebMvcConfigurationSupport#addDefaultHandlerExceptionResolvers(List, org.springframework.web.accept.ContentNegotiationManager)
+	 */
+	default void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
+	}
+
+	/**
+	 * Provide a custom {@link Validator} instead of the one created by default.
+	 * The default implementation, assuming JSR-303 is on the classpath, is:
+	 * {@link org.springframework.validation.beanvalidation.OptionalValidatorFactoryBean}.
+	 * Leave the return value as {@code null} to keep the default.
+	 */
+	@Nullable
+	default Validator getValidator() {
+		return null;
+	}
+
+	/**
+	 * Provide a custom {@link MessageCodesResolver} for building message codes
+	 * from data binding and validation error codes. Leave the return value as
+	 * {@code null} to keep the default.
+	 */
+	@Nullable
+	default MessageCodesResolver getMessageCodesResolver() {
+		return null;
+	}
+
+}
+```
+
+###### WebMvcConfigurer 配置底层行为的原理
+
+- WebMvcAutoConfiguration 是一个自动配置类，它里面有一个`EnableWebMvcConfiguration`。
+
+- EnableWebMvcConfiguration 继承`DelegatingWebMvcConfiguration`，这两个都生效
+
+  ```java
+  @Configuration(proxyBeanMethods = false)
+  @EnableConfigurationProperties(WebProperties.class)
+  public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
+  }
+  ```
+
+- DelegatingWebMvcConfiguration 利用 DI 把容器中所有的 WebMvcConfigurer 都注入进来。
+
+  ```java
+  /**
+   * A subclass of {@code WebMvcConfigurationSupport} that detects and delegates
+   * to all beans of type {@link WebMvcConfigurer} allowing them to customize the
+   * configuration provided by {@code WebMvcConfigurationSupport}. This is the
+   * class actually imported by {@link EnableWebMvc @EnableWebMvc}.
+   *
+   * @author Rossen Stoyanchev
+   * @since 3.1
+   */
+  @Configuration(proxyBeanMethods = false)
+  public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
+  
+  	private final WebMvcConfigurerComposite configurers = new WebMvcConfigurerComposite();
+  
+  
+  	@Autowired(required = false)
+  	public void setConfigurers(List<WebMvcConfigurer> configurers) {
+  		if (!CollectionUtils.isEmpty(configurers)) {
+  			this.configurers.addWebMvcConfigurers(configurers);
+  		}
+  	}
+  }
+  ```
+
+- 当调用 DelegatingWebMvcConfiguration 的方法配置底层规则时，它实际会调用所有的 WebMvcConfigurer 的配置底层方法。（WebMvcConfigurerComposite 实现了 WebMvcConfigurer 接口）
+
+  ```java
+  /**
+   * A {@link WebMvcConfigurer} that delegates to one or more others.
+   *
+   * @author Rossen Stoyanchev
+   * @since 3.1
+   */
+  class WebMvcConfigurerComposite implements WebMvcConfigurer {
+  }
+  ```
+
+  ![image-20231004173846425](./spring-boot/image-20231004173846425.png)
+
+  ```java
+  @Override
+  protected void configurePathMatch(PathMatchConfigurer configurer) {
+      this.configurers.configurePathMatch(configurer);
+  }
+  ```
+
+  ```java
+  @Override
+  public void configurePathMatch(PathMatchConfigurer configurer) {
+      for (WebMvcConfigurer delegate : this.delegates) {
+          delegate.configurePathMatch(configurer);
+      }
+  }
+  ```
+
+- 因此，当容器中放一个 WebMvcConfigurer，就能配置底层行为。
+
+###### 静态资源规则
+
+```java
+@Override
+public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    if (!this.resourceProperties.isAddMappings()) {
+        logger.debug("Default resource handling disabled");
+        return;
+    }
+    addResourceHandler(registry, this.mvcProperties.getWebjarsPathPattern(),
+            "classpath:/META-INF/resources/webjars/");
+    addResourceHandler(registry, this.mvcProperties.getStaticPathPattern(), (registration) -> {
+        registration.addResourceLocations(this.resourceProperties.getStaticLocations());
+        if (this.servletContext != null) {
+            ServletContextResource resource = new ServletContextResource(this.servletContext, SERVLET_LOCATION);
+            registration.addResourceLocations(resource);
+        }
+    });
+}
+```
+
+- 规则一：访问`/webjars/**`路径就去`classpath:/META-INF/resources/webjars/`下找资源。
+
+  ```java
+  addResourceHandler(registry, this.mvcProperties.getWebjarsPathPattern(), "classpath:/META-INF/resources/webjars/");
+  ```
+
+  - 首先，到 https://www.webjars.org/ 查找需要的依赖，通过 Maven 导入：
+
+    ![image-20231003201651410](./spring-boot/image-20231003201651410.png)
+
+    ```xml
+    <dependency>
+        <groupId>org.webjars.npm</groupId>
+        <artifactId>github-com-vueComponent-pro-layout</artifactId>
+        <version>1.0.8</version>
+    </dependency>
+    ```
+
+  - 然后，访问类路径里 META-INF/resources/webjars/ 下的相关资源：
+
+    ![image-20231003203001657](./spring-boot/image-20231003203001657.png)
+
+    ![image-20231003203044948](./spring-boot/image-20231003203044948.png)
+
+- 规则二：访问`/**`路径就去静态资源默认的四个位置找资源，即`classpath:/META-INF/resources/`，`classpath:/resources/`，`classpath:/static/`，`classpath:/public/`。
+
+  ```java
+  registration.addResourceLocations(this.resourceProperties.getStaticLocations());
+  ```
+
+  ```java
+  private static final String[] CLASSPATH_RESOURCE_LOCATIONS = { "classpath:/META-INF/resources/",
+  				"classpath:/resources/", "classpath:/static/", "classpath:/public/" };
+  ```
+
+  ![image-20231003200725753](./spring-boot/image-20231003200725753.png)
+
+  - Spring Boot 静态资源访问映射`/**`，即拦截所有的请求。当一个请求进来时，先去找 Controller 看能不能处理，不能处理的所有请求，都会交给静态资源处理器。如果静态资源也找不到，则响应 404 页面。
+
+- 规则三：静态资源默认都有`缓存规则`的设置，默认未设置。
+
+  ```java
+  private void addResourceHandler(ResourceHandlerRegistry registry, String pattern,
+  				Consumer<ResourceHandlerRegistration> customizer) {
+      if (registry.hasMappingForPattern(pattern)) {
+          return;
+      }
+      ResourceHandlerRegistration registration = registry.addResourceHandler(pattern);
+      customizer.accept(registration);
+      registration.setCachePeriod(getSeconds(this.resourceProperties.getCache().getPeriod()));
+      registration.setCacheControl(this.resourceProperties.getCache().getCachecontrol().toHttpCacheControl());
+      registration.setUseLastModified(this.resourceProperties.getCache().isUseLastModified());
+      customizeResourceHandlerRegistration(registration);
+  }
+  ```
+
+  - 所有缓存的设置，直接通过配置文件`spring.web`配置。
+  - **cachePeriod**： 缓存周期，多久不用找服务器要新的。默认为 0，以秒为单位。
+  - **cacheControl**： HTTP 缓存控制，默认无。参考 [https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching#概览)。
+  - **useLastModified**：是否使用 lastModified 头，默认 false。（是否使用最后一次修改时间，配合 HTTP Cache 规则）
+
+###### 自定义静态资源规则
+
+**配置文件方式：**
+
+```yaml
+server:
+  port: 8080
+
+# spring.web：
+# 1.配置国际化的区域信息
+# 2.静态资源策略：开启、处理链、缓存等
+
+spring:
+  web:
+    resources:
+      add-mappings: true # 开启静态资源映射规则，默认true
+      static-locations: # 自定义静态资源文件夹位置，默认是四个路径
+        - classpath:/a/
+        - classpath:/b/
+        - classpath:/static/
+      cache:
+        period: 3600 # 缓存周期，默认0秒
+        cachecontrol:
+          max-age: 7200 # 缓存详细合并项控制，会覆盖period配置，浏览器第一次请求服务器，服务器告诉浏览器此资源缓存7200秒，7200秒以内的所有此资源访问不用发给服务器请求，7200秒以后发请求给服务器
+          cache-public: true # 共享缓存
+        use-last-modified: true # 开启使用资源last-modified时间，来对比服务器和浏览器的资源是否相同没有变化，相同返回304，默认true
+  mvc:
+    static-path-pattern: /static/** # 静态资源访问路径前缀，默认/**
+    webjars-path-pattern: /wj/** # 自定义webjars访问路径前缀，默认/webjars/**
+```
+
+- 各项配置，均可以从对应的类中获取参数信息，例如：
+
+  ```java
+  /**
+   * {@link ConfigurationProperties Configuration properties} for general web concerns.
+   *
+   * @author Andy Wilkinson
+   * @since 2.4.0
+   */
+  @ConfigurationProperties("spring.web")
+  public class WebProperties {
+      public static class Resources {
+  
+  		private static final String[] CLASSPATH_RESOURCE_LOCATIONS = { "classpath:/META-INF/resources/",
+  				"classpath:/resources/", "classpath:/static/", "classpath:/public/" };
+  
+  		/**
+  		 * Locations of static resources. Defaults to classpath:[/META-INF/resources/,
+  		 * /resources/, /static/, /public/].
+  		 */
+  		private String[] staticLocations = CLASSPATH_RESOURCE_LOCATIONS;
+  
+  		/**
+  		 * Whether to enable default resource handling.
+  		 */
+  		private boolean addMappings = true;
+  
+  		private boolean customized = false;
+      }
+  }
+  ```
+
+  ```java
+  /**
+   * {@link ConfigurationProperties properties} for Spring MVC.
+   *
+   * @author Phillip Webb
+   * @author Sébastien Deleuze
+   * @author Stephane Nicoll
+   * @author Eddú Meléndez
+   * @author Brian Clozel
+   * @author Vedran Pavic
+   * @since 2.0.0
+   */
+  @ConfigurationProperties(prefix = "spring.mvc")
+  public class WebMvcProperties {
+  
+  	/**
+  	 * Formatting strategy for message codes. For instance, 'PREFIX_ERROR_CODE'.
+  	 */
+  	private DefaultMessageCodesResolver.Format messageCodesResolverFormat;
+  
+  	private final Format format = new Format();
+  
+  	/**
+  	 * Whether to dispatch TRACE requests to the FrameworkServlet doService method.
+  	 */
+  	private boolean dispatchTraceRequest = false;
+  
+  	/**
+  	 * Whether to dispatch OPTIONS requests to the FrameworkServlet doService method.
+  	 */
+  	private boolean dispatchOptionsRequest = true;
+  
+  	/**
+  	 * Whether the content of the "default" model should be ignored during redirect
+  	 * scenarios.
+  	 */
+  	private boolean ignoreDefaultModelOnRedirect = true;
+  
+  	/**
+  	 * Whether to publish a ServletRequestHandledEvent at the end of each request.
+  	 */
+  	private boolean publishRequestHandledEvents = true;
+  
+  	/**
+  	 * Whether a "NoHandlerFoundException" should be thrown if no Handler was found to
+  	 * process a request.
+  	 */
+  	private boolean throwExceptionIfNoHandlerFound = false;
+  
+  	/**
+  	 * Whether logging of (potentially sensitive) request details at DEBUG and TRACE level
+  	 * is allowed.
+  	 */
+  	private boolean logRequestDetails;
+  
+  	/**
+  	 * Whether to enable warn logging of exceptions resolved by a
+  	 * "HandlerExceptionResolver", except for "DefaultHandlerExceptionResolver".
+  	 */
+  	private boolean logResolvedException = false;
+  
+  	/**
+  	 * Path pattern used for static resources.
+  	 */
+  	private String staticPathPattern = "/**";
+  
+  	/**
+  	 * Path pattern used for WebJar assets.
+  	 */
+  	private String webjarsPathPattern = "/webjars/**";
+  }
+  ```
+
+**代码方式：**
+
+写法一和写法二效果相同，其原理是**只要容器中有一个 WebMvcConfigurer 组件，配置的底层行为都会生效。**注意`@EnableWebMvc`注解会禁用 Spring Boot 的默认配置。
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/4 15:10
+ * 写法一
+ */
+@Configuration
+public class MyWebMvcConfigurer implements WebMvcConfigurer {
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 保留默认的规则
+        WebMvcConfigurer.super.addResourceHandlers(registry);
+
+        // 自定义的规则
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/c/", "classpath:/d/")
+                .setCacheControl(CacheControl.maxAge(1180, TimeUnit.SECONDS));
+    }
+}
+```
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/4 15:10
+ * 写法二
+ */
+@Configuration
+public class MyWebMvcConfigurer {
+    
+    @Bean
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+                registry.addResourceHandler("/static/**")
+                        .addResourceLocations("classpath:/a/", "classpath:/b/")
+                        .setCacheControl(CacheControl.maxAge(1180, TimeUnit.SECONDS));
+            }
+        };
+    }
+}
+```
+
+- 访问静态资源：
+
+  ![image-20231004151833134](./spring-boot/image-20231004151833134.png)
+
+###### 路径匹配
+
+```java
+@Override
+public void configurePathMatch(PathMatchConfigurer configurer) {
+    if (this.mvcProperties.getPathmatch()
+       .getMatchingStrategy() == WebMvcProperties.MatchingStrategy.ANT_PATH_MATCHER) {
+       configurer.setPathMatcher(new AntPathMatcher());
+       this.dispatcherServletPath.ifAvailable((dispatcherPath) -> {
+          String servletUrlMapping = dispatcherPath.getServletUrlMapping();
+          if (servletUrlMapping.equals("/") && singleDispatcherServlet()) {
+             UrlPathHelper urlPathHelper = new UrlPathHelper();
+             urlPathHelper.setAlwaysUseFullPath(true);
+             configurer.setUrlPathHelper(urlPathHelper);
+          }
+       });
+    }
+}
+```
+
+Spring 5.3 之后加入了更多的请求路径匹配的实现策略，以前只支持`AntPathMatcher`策略，现在提供了`PathPatternParser`策略，并且可以指定到底使用那种策略。
+
+- 默认使用 PathPatternParser 策略：
+
+  ```java
+  public static class Pathmatch {
+  
+      /**
+       * Choice of strategy for matching request paths against registered mappings.
+       */
+      private MatchingStrategy matchingStrategy = MatchingStrategy.PATH_PATTERN_PARSER;
+  
+      public MatchingStrategy getMatchingStrategy() {
+          return this.matchingStrategy;
+      }
+  
+      public void setMatchingStrategy(MatchingStrategy matchingStrategy) {
+          this.matchingStrategy = matchingStrategy;
+      }
+  
+  }
+  ```
+
+  ```java
+  /**
+   * Matching strategy options.
+   *
+   * @since 2.4.0
+   */
+  public enum MatchingStrategy {
+  
+      /**
+       * Use the {@code AntPathMatcher} implementation.
+       */
+      ANT_PATH_MATCHER,
+  
+      /**
+       * Use the {@code PathPatternParser} implementation.
+       */
+      PATH_PATTERN_PARSER
+  
+  }
+  ```
+
+- 如果路径中间需要有 **，替换成 AntPathMatcher 风格路径：
+
+  ```yaml
+  spring:
+    mvc:
+      pathmatch:
+        matching-strategy: ant_path_matcher # ant_path_matcher是老版策略，path_pattern_parser是新版策略
+  ```
+
+  ```java
+  @GetMapping("/a*/b?/{p1:[a-f]+}")
+  public String hello(HttpServletRequest request, @PathVariable("p1") String path) {
+      // 获取请求路径
+      return request.getRequestURI();
+  }
+  ```
+
+  ![image-20231004211922861](./spring-boot/image-20231004211922861.png)
+
+AntPathMatcher 与 PathPatternParser 对比：
+
+- PathPatternParser 在 jmh 基准测试下，有 6 ~ 8 倍吞吐量提升，降低 30% ~ 40% 空间分配率。
+
+- PathPatternParser 兼容 AntPathMatcher 语法，并支持更多类型的路径模式。
+
+- PathPatternParser  语法，** 多段匹配的支持仅允许在模式末尾使用，AntPathMatcher 可以在模式中间使用。
+
+  ```java
+  @GetMapping("/a*/b?/**/{p1:[a-f]+}")
+  public String hello(HttpServletRequest request, @PathVariable("p1") String path) {
+      // 获取请求路径
+      return request.getRequestURI();
+  }
+  ```
+
+  ![image-20231004211948928](./spring-boot/image-20231004211948928.png)
+
+>Ant 风格的路径模式语法具有以下规则：
+>
+>- `*`：表示**任意数量**的字符。
+>- `?`：表示任意**一个字符**。
+>- `**`：表示**任意数量的目录**。
+>- `{}`：表示一个命名的模式**占位符**。
+>- `[]`：表示**字符集合**，例如 [a-z] 表示小写字母。
+>
+>例如：
+>
+>- `*.html`：匹配任意名称，扩展名为.html的文件。
+>- `/folder1/*/*.java`：匹配在 folder1 目录下的任意两级目录下的 .java 文件。
+>- `/folder2/**/*.jsp`：匹配在 folder2 目录下任意目录深度的 .jsp 文件。
+>- `/{type}/{id}.html`：匹配任意文件名为 {id}.html，在任意命名的 {type} 目录下的文件。
+>
+>注意，Ant 风格的路径模式语法中的特殊字符需要转义，如：
+>
+>- 要匹配文件路径中的星号，则需要转义为`\\*`。
+>- 要匹配文件路径中的问号，则需要转义为`\\?`。
+
+##### EnableWebMvcConfiguration
+
+```java
+/**
+ * Configuration equivalent to {@code @EnableWebMvc}.
+ */
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(WebProperties.class)
+public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
+}
+```
+
+```java
+/**
+ * A subclass of {@code WebMvcConfigurationSupport} that detects and delegates
+ * to all beans of type {@link WebMvcConfigurer} allowing them to customize the
+ * configuration provided by {@code WebMvcConfigurationSupport}. This is the
+ * class actually imported by {@link EnableWebMvc @EnableWebMvc}.
+ *
+ * @author Rossen Stoyanchev
+ * @since 3.1
+ */
+@Configuration(proxyBeanMethods = false)
+public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
+}
+```
+
+- EnableWebMvcConfiguration 给容器中放了`WebMvcConfigurationSupport`组件。如果自定义了 WebMvcConfigurationSupport 组件，Spring Boot 默认的 WebMvcAutoConfiguration 组件会失效。
+- WebMvcAutoConfiguration 生效条件之一是，要求容器中没有 WebMvcConfigurationSupport 组件，此处的 WebMvcConfigurationSupport 是在 WebMvcAutoConfiguration 内部定义的，不会影响其生效。
+
+###### 欢迎页
+
+Spring Boot supports both static and templated welcome pages. It first looks for an `index.html` file in the configured static content locations. If one is not found, it then looks for an `index` template. If either is found, it is automatically used as the welcome page of the application.
+
+```java
+@Bean
+public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
+        FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
+    return createWelcomePageHandlerMapping(applicationContext, mvcConversionService, mvcResourceUrlProvider,
+            WelcomePageHandlerMapping::new);
+}
+
+@Bean
+public WelcomePageNotAcceptableHandlerMapping welcomePageNotAcceptableHandlerMapping(
+        ApplicationContext applicationContext, FormattingConversionService mvcConversionService,
+        ResourceUrlProvider mvcResourceUrlProvider) {
+    return createWelcomePageHandlerMapping(applicationContext, mvcConversionService, mvcResourceUrlProvider,
+            WelcomePageNotAcceptableHandlerMapping::new);
+}
+
+private <T extends AbstractUrlHandlerMapping> T createWelcomePageHandlerMapping(
+        ApplicationContext applicationContext, FormattingConversionService mvcConversionService,
+        ResourceUrlProvider mvcResourceUrlProvider, WelcomePageHandlerMappingFactory<T> factory) {
+    TemplateAvailabilityProviders templateAvailabilityProviders = new TemplateAvailabilityProviders(
+            applicationContext);
+    String staticPathPattern = this.mvcProperties.getStaticPathPattern();
+    // 创建欢迎页HandlerMapping
+    T handlerMapping = factory.create(templateAvailabilityProviders, applicationContext, getIndexHtmlResource(),
+            staticPathPattern);
+    handlerMapping.setInterceptors(getInterceptors(mvcConversionService, mvcResourceUrlProvider));
+    handlerMapping.setCorsConfigurations(getCorsConfigurations());
+    return handlerMapping;
+}
+```
+
+- **String staticPathPattern = this.mvcProperties.getStaticPathPattern()**：/**。
+
+- **getIndexHtmlResource()**：遍历 classpath:/META-INF/resources/，classpath:/resources/，classpath:/static/，classpath:/public/ 这四个资源路径，查找 index.html 页面。
+
+  ```java
+  private Resource getIndexHtmlResource() {
+      for (String location : this.resourceProperties.getStaticLocations()) {
+          Resource indexHtml = getIndexHtmlResource(location);
+          if (indexHtml != null) {
+              return indexHtml;
+          }
+      }
+      ServletContext servletContext = getServletContext();
+      if (servletContext != null) {
+          return getIndexHtmlResource(new ServletContextResource(servletContext, SERVLET_LOCATION));
+      }
+      return null;
+  }
+  ```
+
+- 访问`/**`路径下的所有请求，都在四个静态资源路径下找，欢迎页也一样，只要静态资源的位置有一个 index.html 页面，项目启动默认访问该页面，如果没有，则在 templates 下找 index 模板页。
+
+  ![image-20231004110447231](./spring-boot/image-20231004110447231.png)
+
+>Spring Boot 支持两种方式的欢迎页，一种是存放在静态资源存储路径下的 index.html，另一种是能处理动态请求`/index`的 Controller。
+
+###### Favicon
+
+As with other static resources, Spring Boot checks for a `favicon.ico` in the configured static content locations. If such a file is present, it is automatically used as the favicon of the application.
+
+Spring Boot 启动时，会在静态资源目录下找 favicon.ico，如果找到之后，会自动将其作为服务的图标。
+
+##### 内容协商
+
+<img src="./spring-boot/image-20231004222441976.png" alt="image-20231004222441976" style="zoom: 80%;" />
+
+###### 多端内容适配
+
+默认规则如下：
+
+- 基于**请求头**内容协商：（默认开启）
+  - 客户端向服务端发送请求，携带 HTTP 标准的 **Accept 请求头**。
+    - **Accept**: `application/json`，`text/xml`或`text/yaml`。
+    - 服务端根据客户端**请求头期望的数据类型**进行**动态返回**。
+- 基于**请求参数**内容协商：（需要开启）
+  - 发送请求 GET /projects/spring-boot?format=json。
+    - 匹配到 @GetMapping("/projects/spring-boot") 。
+    - 根据**参数协商**，优先返回 Json 类型数据【**需要开启参数匹配设置**】。
+  - 发送请求 GET /projects/spring-boot?format=xml，则优先返回 xml 类型数据。
+
+效果演示：请求同一个接口，可以返回 Json 和 xml 两种不同格式的数据。
+
+- Maven 引入依赖：
+
+  ```xml
+  <!-- 内容协商，xml格式依赖 -->
+  <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+  </dependency>
+  ```
+
+- 添加`@JacksonXmlRootElement`注解：
+
+  ```java
+  /**
+   * @author XiSun
+   * @since 2023/10/6 14:35
+   */
+  @JacksonXmlRootElement
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public class Person {
+  
+      private Long id;
+  
+      private String userName;
+  
+      private String email;
+  
+      private Integer age;
+  
+  }
+  ```
+
+- 开启基于请求参数的内容协商：
+
+  ```yaml
+  spring:
+    mvc:
+      contentnegotiation:
+        favor-parameter: true # 开启基于请求参数的内容协商功能，默认false，此功能不开启
+        parameter-name: type # 默认参数名format
+  ```
+
+- Controller：
+
+  ```java
+  /**
+   * @author XiSun
+   * @since 2023/10/6 15:36
+   */
+  @RestController
+  public class PersonController {
+  
+      @GetMapping("/person")
+      public Person getPerson() {
+          return new Person(1L, "张三", "123@qq.com", 18);
+      }
+  }
+  ```
+
+- 访问`http://localhost:8080/person`，默认返回的是 xml 格式，效果等同于`http://localhost:8080/person?type=xml`：
+
+  ![image-20231006154102070](./spring-boot/image-20231006154102070.png)
+
+- 访问`http://localhost:8080/person?type=json`，返回 Json 格式的数据：
+
+  ![image-20231006154136001](./spring-boot/image-20231006154136001.png)
+
+###### 自定义返回内容
+
+Maven 引入依赖：
+
+```xml
+<!-- 内容协商，yaml格式依赖 -->
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-yaml</artifactId>
+</dependency>
+```
+
+增加`HttpMessageConverter`组件，专门负责把对象写出为 yaml 格式：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/4 15:10
+ */
+@Configuration
+public class MyWebMvcConfigurer implements WebMvcConfigurer {
+
+    // 写法一：配置一个能把对象转为yaml的MessageConverter
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        WebMvcConfigurer.super.configureMessageConverters(converters);
+        converters.add(new MyYamlHttpMessageConverter());
+    }
+
+    /*@Bean
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override // 写法二：配置一个能把对象转为yaml的messageConverter
+            public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+                converters.add(new MyYamlHttpMessageConverter());
+            }
+        };
+    }*/
+}
+```
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/6 15:53
+ */
+public class MyYamlHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
+    private ObjectMapper objectMapper = null; // 把对象转成yaml
+
+    public MyYamlHttpMessageConverter() {
+        // 告诉SpringBoot这个MessageConverter支持哪种媒体类型
+        super(new MediaType("text", "yaml", Charset.forName("UTF-8")));
+        YAMLFactory factory = new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
+        this.objectMapper = new ObjectMapper(factory);
+    }
+
+    @Override
+    protected boolean supports(Class<?> clazz) {
+        // 只要是对象类型，不是基本类型
+        return true;
+    }
+
+    @Override  //@RequestBody
+    protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        return null;
+    }
+
+    @Override //@ResponseBody 把对象怎么写出去
+    protected void writeInternal(Object methodReturnValue, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+        // try-with写法，自动关流
+        try (OutputStream os = outputMessage.getBody()) {
+            this.objectMapper.writeValue(os, methodReturnValue);
+        }
+    }
+}
+```
+
+编写配置文件，新增一种媒体类型：
+
+```yaml
+spring:
+  mvc:
+    contentnegotiation:
+      favor-parameter: true # 开启基于请求参数的内容协商功能，默认此功能不开启
+      parameter-name: type # 默认参数名format
+      media-types:
+        yaml: text/yaml # 新增一种媒体类型
+```
+
+###### 原理：HttpMessageConverter
 
 
-- If you want to keep those Spring Boot MVC customizations and make more [MVC customizations](https://docs.spring.io/spring/docs/5.2.9.RELEASE/spring-framework-reference/web.html#mvc) (interceptors, formatters, view controllers, and other features), you can add your own `@Configuration` class of type `WebMvcConfigurer` but **without** `@EnableWebMvc`.
-  - 不用 `@EnableWebMvc` 注解，使用 `@Configuration` + WebMvcConfigurer 自定义规则。
 
-- If you want to provide custom instances of `RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`, or `ExceptionHandlerExceptionResolver`, and still keep the Spring Boot MVC customizations, you can declare a bean of type `WebMvcRegistrations` and use it to provide custom instances of those components.
-  - 声明 WebMvcRegistrations 改变默认底层组件。
+#### 模板引擎
 
-- If you want to take complete control of Spring MVC, you can add your own `@Configuration` annotated with `@EnableWebMvc`, or alternatively add your own `@Configuration`-annotated `DelegatingWebMvcConfiguration` as described in the Javadoc of `@EnableWebMvc`.
-  - 使用 `@EnableWebMvc` + `@Configuration` + DelegatingWebMvcConfiguration 全面接管 Spring MVC。
+`// TODO`
+
+#### 国际化
+
+#### 错误处理
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #### Spring MVC 静态资源访问及原理
 
 ##### 静态资源访问
 
-- 静态资源目录
+###### 静态资源目录
 
-  - 只要静态资源放在类路径下的 `/static` 或者 `/public` 或者 `/resources` 或者 `/META-INF/resources`，都可以访问。
+只要静态资源放在类路径下的`/static`或者`/public`或者`/resources`或者`/META-INF/resources`，都可以访问。
 
-    ![image-20210715172620534](spring-boot/image-20210715172620534.png)
+![image-20210715172620534](spring-boot/image-20210715172620534.png)
 
-  - 访问方式：`当前项目根路径 / + 静态资源名`。例如：`http://localhost:8080/spring1.jpg`。
+访问方式：`当前项目根路径 / + 静态资源名`。例如：`http://localhost:8080/spring1.jpg`。
 
-  - 原理：Spring Boot 静态资源访问映射 `/**`，即拦截所有的请求。当一个请求进来时，先去找 Controller 看能不能处理，不能处理的所有请求，都会交给静态资源处理器。如果静态资源也找不到，则响应 404 页面。
+原理：Spring Boot 静态资源访问映射`/**`，即拦截所有的请求。当一个请求进来时，先去找 Controller 看能不能处理，不能处理的所有请求，都会交给静态资源处理器。如果静态资源也找不到，则响应 404 页面。
 
-    ![image-20210716112544630](spring-boot/image-20210716112544630.png)
+![image-20210716112544630](spring-boot/image-20210716112544630.png)
 
-  - 改变静态资源默认的存储路径：
+改变静态资源默认的存储路径：
 
-    ```yaml
-    # 单个路径
-    spring:
-      web:
-        resources:
-          static-locations: classpath:images
-    ```
+```yaml
+# 单个路径
+spring:
+  web:
+    resources:
+      static-locations: classpath:images
+```
 
-    ```yaml
-    # 多个路径
-    spring:
-      web:
-        resources:
-          static-locations: [classpath:images, classpath:statics]
-    ```
+```yaml
+# 多个路径
+spring:
+  web:
+    resources:
+      static-locations: [classpath:images, classpath:statics]
+```
 
-    ![image-20210716115724190](spring-boot/image-20210716115724190.png)
+![image-20210716115724190](spring-boot/image-20210716115724190.png)
 
-    > 静态资源都需要放在 application.yaml 配置文件里标明的路径下 (有时可能不生效，更改一下路径名，刷新几次)。
-    >
-    > 默认的那几个路径不再生效，默认路径如下：
-    >
-    > ```java
-    > private static final String[] CLASSPATH_RESOURCE_LOCATIONS = new String[]{"classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/"};
-    > ```
+> 静态资源都需要放在 application.yaml 配置文件里标明的路径下（有时可能不生效，更改一下路径名，刷新几次）。
+>
+> 默认的那几个路径不再生效，默认路径如下：
+>
+> ```java
+> private static final String[] CLASSPATH_RESOURCE_LOCATIONS = new String[]{"classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/"};
+> ```
 
-- 静态资源访问前缀
+###### 静态资源访问前缀
 
-  - 静态资源访问时，默认没有前缀。
+静态资源访问时，默认没有前缀，改变静态资源的访问前缀：
 
-  - 改变静态资源的访问前缀：
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /res/**
+```
 
-    ```yaml
-    spring:
-      mvc:
-        static-path-pattern: /res/**
-    ```
+如上，再次访问静态资源时，都需要添加前缀。比如：`http://localhost:8080/res/spring.jpg`。
 
-  - 再次访问静态资源时，都需要添加前缀。比如：`http://localhost:8080/res/spring.jpg`。
+###### webjar（了解）
 
-- webjar (了解)
+Spring 把常用的一些 js 打包成 jar 包，添加引用后即可使用。官方地址：https://www.webjars.org/
 
-  - Spring 把常用的一些 js 打包成 jar 包，添加引用后即可使用。官方地址：https://www.webjars.org/
+![image-20210716132425106](spring-boot/image-20210716132425106.png)
 
-    ![image-20210716132425106](spring-boot/image-20210716132425106.png)
+例如，使用 jquery，Maven 引入依赖：
 
-  - 例如，使用 jquery，Maven 引入依赖：
+```xml
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>jquery</artifactId>
+    <version>3.6.0</version>
+</dependency>
+```
 
-    ```xml
-    <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>jquery</artifactId>
-        <version>3.6.0</version>
-    </dependency>
-    ```
+![image-20210716133416070](spring-boot/image-20210716133416070.png)
 
-    ![image-20210716133416070](spring-boot/image-20210716133416070.png)
+访问时，根据添加的 jquery 依赖的资源结构，确定访问地址：`http://localhost:8080/webjars/jquery/3.6.0/jquery.js`。
 
-  - 访问时，根据添加的 jquery 依赖的资源结构，确定访问地址：`http://localhost:8080/webjars/jquery/3.6.0/jquery.js`。
+![image-20210716133549052](spring-boot/image-20210716133549052.png)
 
-    ![image-20210716133549052](spring-boot/image-20210716133549052.png)
-
-    > 不同的 webjars，其访问地址可能不同，需要按照相应依赖里面的资源包路径确定。
+> 不同的 webjars，其访问地址可能不同，需要按照相应依赖里面的资源包路径确定。
 
 ##### 欢迎页支持
 
