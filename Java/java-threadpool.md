@@ -103,13 +103,13 @@ public ThreadPoolExecutor(int corePoolSize,
 
 #### 任务执行顺序
 
-- 当线程数小于 corePoolSize 时，创建线程执行新任务。
+- **当线程数小于 corePoolSize 时，创建线程执行新任务。**
 
-- 当线程数大于等于 corePoolSize，并且 workQueue 没有满时，新任务放入 workQueue 中。
+- **当线程数大于等于 corePoolSize，并且 workQueue 没有满时，新任务放入 workQueue 中。**
 
-- 当线程数大于等于 corePoolSize，并且 workQueue 满时，新任务创建新线程运行，但线程总数要小于 maximumPoolSize。
+- **当线程数大于等于 corePoolSize，并且 workQueue 满时，新任务创建新线程运行，但线程总数要小于 maximumPoolSize。**
 
-- 当线程总数等于 maximumPoolSize，并且 workQueue 满时，执行 handler 的 rejectedExecution，也就是拒绝策略。
+- **当线程总数等于 maximumPoolSize，并且 workQueue 满时，执行 handler 的 rejectedExecution，也就是拒绝策略。**
 
 ![img](java-threadpool/20200709102721415.png)
 

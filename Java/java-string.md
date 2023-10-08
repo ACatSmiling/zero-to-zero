@@ -55,7 +55,7 @@ String：字符串，使用双引号引起来表示。
   }
   ```
 
-<img src="java-string/image-20210311165147346.png" alt="image-20210311165147346" style="zoom:80%;" />
+<img src="java-string/image-20210311165147346.png" alt="image-20210311165147346" style="zoom: 50%;" />
 
 ## String 对象的创建
 
@@ -65,7 +65,7 @@ String：字符串，使用双引号引起来表示。
 
 常用的几种创建方式：
 
-<img src="java-string/image-20210311172851224.png" alt="image-20210311172851224" style="zoom:67%;" />
+<img src="java-string/image-20210311172851224.png" alt="image-20210311172851224" style="zoom: 50%;" />
 
 实例：
 
@@ -119,7 +119,7 @@ class Person {
 
 内存解析说明：
 
-<img src="java-string/image-20210311173259265.png" alt="image-20210311173259265" style="zoom:67%;" />
+<img src="java-string/image-20210311173259265.png" alt="image-20210311173259265" style="zoom: 50%;" />
 
 字符串初始化的过程：
 
@@ -162,7 +162,7 @@ public class Test {
 
 内存解析说明：
 
-<img src="java-string/image-20210311212720801.png" alt="image-20210311212720801" style="zoom: 80%;" />
+<img src="java-string/image-20210311212720801.png" alt="image-20210311212720801" style="zoom: 67%;" />
 
 特殊的情况：
 
@@ -195,7 +195,7 @@ public class StringTest {
     - **字符串常量存储在字符串常量池，目的是共享。**
     - **字符串非常量对象存储在堆中。**
 
-    <img src="java-string/image-20210311194809127.png" alt="image-20210311194809127" style="zoom:67%;" />
+    <img src="java-string/image-20210311194809127.png" alt="image-20210311194809127" style="zoom: 50%;" />
 
   - 下面程序的运行结果是：
 

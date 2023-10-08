@@ -249,7 +249,7 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 要想实现多线程，必须在主线程中创建新的线程对象。Java 语言使用 Thread 类及其子类的对象来表示线程，并用`Thread.State`类定义了线程的几种状态，在它的一个完整的生命周期中通常要经历如下的五种状态：
 
-<img src="java-thread/image-20210307170916324.png" alt="image-20210307170916324" style="zoom: 67%;" />
+<img src="java-thread/image-20210307170916324.png" alt="image-20210307170916324" style="zoom: 50%;" />
 
 - `新建`：当一个 Thread 类或其子类的对象被声明并创建时，新生的线程对象处于新建状态。
 - `就绪`：处于新建状态的线程被`start()`后，将进入线程队列等待 CPU 时间片，此时它已具备了运行的条件，只是没分配到 CPU 资源。
@@ -261,7 +261,7 @@ Java 中的线程分为两类：一种是`用户线程`，一种是`守护线程
 
 线程创建的一般过程：
 
-<img src="java-thread/image-20210310100001907.png" alt="image-20210310100001907" style="zoom: 67%;" />
+<img src="java-thread/image-20210310100001907.png" alt="image-20210310100001907" style="zoom: 50%;" />
 
 ### 方式一：继承 Thread 类
 
@@ -800,7 +800,7 @@ class TicketThread extends Thread {
 
 > **obj 可以使用 TicketThread.class（当前类）替代，TicketThread 类只会加载一次，类也是对象。**
 
-]实现 Runnable 接口方式的修正：
+实现 Runnable 接口方式的修正：
 
 ```java
 public class TestRunnable {
@@ -976,7 +976,7 @@ class TicketMethod2 implements Runnable {
 
 声明格式：
 
-<img src="java-thread/image-20210310103811885.png" alt="image-20210310103811885" style="zoom:67%;" />
+<img src="java-thread/image-20210310103811885.png" alt="image-20210310103811885" style="zoom: 50%;" />
 
 继承 Thread 类方式的修正：
 
