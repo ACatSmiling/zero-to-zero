@@ -4200,25 +4200,875 @@ spring:
 
 #### 错误处理
 
+##### Spring MVC 错误处理机制
 
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/4 21:15
+ */
+@RestController
+public class DemoController {
 
+    @GetMapping("/test_exception")
+    public String testException() {
+        int i = 1 / 0;
+        return "无异常";
+    }
+}
+```
 
+访问请求：
 
+![image-20231009084115336](./spring-boot/image-20231009084115336.png)
 
+添加错误处理机制：
 
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/4 21:15
+ */
+@RestController
+public class DemoController {
 
+    @GetMapping("/test_exception")
+    public String testException() {
+        int i = 1 / 0;
+        return "无异常";
+    }
 
+    /**
+     * @ExceptionHandler 标识一个方法处理错误，默认只能处理这个类发生的指定错误
+     * @ControllerAdvice 统一处理所有错误
+     */
+    @ResponseBody
+    @ExceptionHandler
+    public String handleException(Exception e) {
+        return "异常原因：" + e.getMessage();
+    }
+}
+```
 
+再次访问请求：
 
+![image-20231009091742651](./spring-boot/image-20231009091742651.png)
 
+全局处理所有 @Controller 发生的错误，使用`@ControllerAdvice`注解：
 
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/9 9:19
+ */
+@ControllerAdvice // @ControllerAdvice标识的类，集中处理所有@Controller发生的错误
+public class GlobalExceptionHandler {
+    @ResponseBody
+    @ExceptionHandler
+    public String handleException(Exception e) {
+        return "异常原因：" + e.getMessage();
+    }
+}
+```
 
+##### Spring Boot 错误处理机制
 
+Spring Boot 的错误处理的自动配置都在 spring-boot-autoconfigure 包的`ErrorMvcAutoConfiguration`中：
 
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} to render errors through an MVC
+ * error controller.
+ *
+ * @author Dave Syer
+ * @author Andy Wilkinson
+ * @author Stephane Nicoll
+ * @author Brian Clozel
+ * @author Scott Frederick
+ * @since 1.0.0
+ */
+// Load before the main WebMvcAutoConfiguration so that the error View is available
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass({ Servlet.class, DispatcherServlet.class })
+@EnableConfigurationProperties({ ServerProperties.class, WebMvcProperties.class })
+public class ErrorMvcAutoConfiguration {
+}
+```
 
+整体流程图可归纳如下：
 
+![image-20231009064829699](./spring-boot/image-20231009064829699.png)
 
+###### 两大核心机制
 
+从上面的流程图中，可以得到 Spring Boot 错误处理的两大核心机制：
+
+- Spring MVC的错误处理机制依然保留，Spring MVC 处理不了的，才会**交给 Spring Boot进行处理（转发给 /error 这个请求处理）。**
+
+- Spring Boot 会自适应处理错误（内容协商），**对 Web 响应页面**或**对客户端响应 Json 数据**。
+
+  ![image-20231009082837445](./spring-boot/image-20231009082837445.png)
+
+  ![image-20231009083344163](./spring-boot/image-20231009083344163.png)
+
+###### /error 请求
+
+ErrorMvcAutoConfiguration 中，给容器注入了以下 Bean：
+
+```java
+@Bean
+@ConditionalOnMissingBean(value = ErrorController.class, search = SearchStrategy.CURRENT)
+public BasicErrorController basicErrorController(ErrorAttributes errorAttributes,
+       ObjectProvider<ErrorViewResolver> errorViewResolvers) {
+    return new BasicErrorController(errorAttributes, this.serverProperties.getError(),
+          errorViewResolvers.orderedStream().toList());
+}
+```
+
+```java
+/**
+ * Basic global error {@link Controller @Controller}, rendering {@link ErrorAttributes}.
+ * More specific errors can be handled either using Spring MVC abstractions (e.g.
+ * {@code @ExceptionHandler}) or by adding servlet
+ * {@link AbstractServletWebServerFactory#setErrorPages server error pages}.
+ *
+ * @author Dave Syer
+ * @author Phillip Webb
+ * @author Michael Stummvoll
+ * @author Stephane Nicoll
+ * @author Scott Frederick
+ * @since 1.0.0
+ * @see ErrorAttributes
+ * @see ErrorProperties
+ */
+@Controller
+@RequestMapping("${server.error.path:${error.path:/error}}")
+public class BasicErrorController extends AbstractErrorController {
+}
+```
+
+在`BasicErrorController`中，可以看到默认的请求路径是`/error`，可以通过`server.error.path`修改配置：
+
+```yaml
+server:
+  port: 8080
+  error:
+    path: /error # 默认错误的请求路径
+```
+
+BasicErrorController 中，对于不同的需求，会输出不同的内容（内容协商）：
+
+```java
+// 返回HTML
+@RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
+public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
+    // 状态码
+    HttpStatus status = getStatus(request);
+    Map<String, Object> model = Collections
+       .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
+    response.setStatus(status.value());
+    ModelAndView modelAndView = resolveErrorView(request, response, status, model);
+    return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+}
+
+// 返回ResponseEntity，即Json数据
+@RequestMapping
+public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
+    HttpStatus status = getStatus(request);
+    if (status == HttpStatus.NO_CONTENT) {
+       return new ResponseEntity<>(status);
+    }
+    Map<String, Object> body = getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.ALL));
+    return new ResponseEntity<>(body, status);
+}
+```
+
+**`错误页面解析过程`**：
+
+```java
+// 第一步：解析错误的自定义视图地址
+ModelAndView modelAndView = resolveErrorView(request, response, status, model);
+// 第二步：如果解析不到错误页面的地址，默认的错误页就是error
+return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+```
+
+- **第一步：解析错误的自定义视图地址。**resolveErrorView(request, response, status, model) 方法：
+
+  ```java
+  /**
+   * Resolve any specific error views. By default this method delegates to
+   * {@link ErrorViewResolver ErrorViewResolvers}.
+   * @param request the request
+   * @param response the response
+   * @param status the HTTP status
+   * @param model the suggested model
+   * @return a specific {@link ModelAndView} or {@code null} if the default should be
+   * used
+   * @since 1.4.0
+   */
+  protected ModelAndView resolveErrorView(HttpServletRequest request, HttpServletResponse response, HttpStatus status,
+          Map<String, Object> model) {
+      for (ErrorViewResolver resolver : this.errorViewResolvers) {
+          ModelAndView modelAndView = resolver.resolveErrorView(request, status, model);
+          if (modelAndView != null) {
+              return modelAndView;
+          }
+      }
+      return null;
+  }
+  ```
+
+  - **this.errorViewResolvers**：`错误视图解析器`。resolver.resolveErrorView(request, status, model) 方法，指向`DefaultErrorViewResolver`：
+
+    ```java
+    @Override
+    public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map<String, Object> model) {
+        ModelAndView modelAndView = resolve(String.valueOf(status.value()), model);
+        if (modelAndView == null && SERIES_VIEWS.containsKey(status.series())) {
+            modelAndView = resolve(SERIES_VIEWS.get(status.series()), model);
+        }
+        return modelAndView;
+    }
+    ```
+
+  - DefaultErrorViewResolver 这个错误视图解析器，是在 ErrorMvcAutoConfiguration 中注入的：
+
+    ```java
+    @Configuration(proxyBeanMethods = false)
+    @EnableConfigurationProperties({ WebProperties.class, WebMvcProperties.class })
+    static class DefaultErrorViewResolverConfiguration {
+    
+        private final ApplicationContext applicationContext;
+    
+        private final Resources resources;
+    
+        DefaultErrorViewResolverConfiguration(ApplicationContext applicationContext, WebProperties webProperties) {
+            this.applicationContext = applicationContext;
+            this.resources = webProperties.getResources();
+        }
+    
+        @Bean
+        @ConditionalOnBean(DispatcherServlet.class)
+        @ConditionalOnMissingBean(ErrorViewResolver.class)
+        DefaultErrorViewResolver conventionErrorViewResolver() {
+            return new DefaultErrorViewResolver(this.applicationContext, this.resources);
+        }
+    
+    }
+    ```
+
+  - 继续跟踪 DefaultErrorViewResolver 的错误解析方法：
+
+    ```java
+    @Override
+    public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map<String, Object> model) {
+        // String.valueOf(status.value()：精确的错误状态码
+        ModelAndView modelAndView = resolve(String.valueOf(status.value()), model);
+        if (modelAndView == null && SERIES_VIEWS.containsKey(status.series())) {
+            // 如果modelAndView为null，表明根据精确的错误状态码查找不到错误页，则从SERIES_VIEWS中找
+            modelAndView = resolve(SERIES_VIEWS.get(status.series()), model);
+        }
+        return modelAndView;
+    }
+    
+    private ModelAndView resolve(String viewName, Map<String, Object> model) {
+        String errorViewName = "error/" + viewName;
+        // 查找模板引擎中对应的精确的错误状态码命名的html文件
+        TemplateAvailabilityProvider provider = this.templateAvailabilityProviders.getProvider(errorViewName,
+                this.applicationContext);
+        if (provider != null) {
+            // 如果存在，则返回该模板引擎中的html文件
+            return new ModelAndView(errorViewName, model);
+        }
+        // 如果不存在
+        return resolveResource(errorViewName, model);
+    }
+    
+    private ModelAndView resolveResource(String viewName, Map<String, Object> model) {
+        // this.resources.getStaticLocations()：静态资源路径
+        for (String location : this.resources.getStaticLocations()) {
+            try {
+                Resource resource = this.applicationContext.getResource(location);
+                // 查找静态资源路径下，精确的错误状态码命名的html文件
+                resource = resource.createRelative(viewName + ".html");
+                if (resource.exists()) {
+                    return new ModelAndView(new HtmlResourceView(resource), model);
+                }
+            }
+            catch (Exception ex) {
+            }
+        }
+        return null;
+    }
+    ```
+
+    - 如果发生了 500、404、503、403 等这些错误：
+
+      - 如果**有模板引擎**，默认查找`classpath:/templates/error/精确码.html`这个页面。
+
+        ![image-20231009173208044](./spring-boot/image-20231009173208044.png)
+
+        ```html
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Title</title>
+        </head>
+        <body>
+        500精确码错误页面
+        </body>
+        </html>
+        ```
+
+        ![image-20231009172949323](./spring-boot/image-20231009172949323.png)
+
+      - 如果**没有模板引擎**，则在静态资源文件夹下找`精确码.html`这个页面。
+
+    - 如果匹配不到`精确码.html`这些精确的错误页，就去找`5xx.html`，`4xx.html`模糊匹配的页面：
+
+      ```java
+      static {
+          Map<Series, String> views = new EnumMap<>(Series.class);
+          views.put(Series.CLIENT_ERROR, "4xx");
+          views.put(Series.SERVER_ERROR, "5xx");
+          SERIES_VIEWS = Collections.unmodifiableMap(views);
+      }
+      ```
+
+      - 如果**有模板引擎**，默认查找`classpath:/templates/error/4xx.html`或`classpath:/templates/error/5xx.html`这个页面。
+
+        ![image-20231009173253707](./spring-boot/image-20231009173253707.png)
+
+        ```html
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Title</title>
+        </head>
+        <body>
+        4xx模糊码错误页面
+        </body>
+        </html>
+        ```
+
+        ![image-20231009172935392](./spring-boot/image-20231009172935392.png)
+
+      - 如果**没有模板引擎**，则在静态资源文件夹下找`4xx.html`或`5xx.html`这个页面。
+
+- **第二步：如果解析不到错误页面的地址，默认的错误页就是 error。**
+
+  - 如果模板引擎路径`templates`下有`error.html`页面，就直接渲染：
+
+    ![image-20231009163853007](./spring-boot/image-20231009163853007.png)
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+    模板引擎：error页
+    </body>
+    </html>
+    ```
+
+    ![image-20231009163924628](./spring-boot/image-20231009163924628.png)
+
+  - 如果没有 error.html 页面，ErrorMvcAutoConfiguration 中定义了默认的 error 页面，这个默认的页面，就是`白页`（Whitelabel Error Page）：
+
+    ```java
+    @Bean(name = "error")
+    @ConditionalOnMissingBean(name = "error")
+    public View defaultErrorView() {
+        return this.defaultErrorView;
+    }
+    ```
+
+    ```java
+    /**
+     * Simple {@link View} implementation that writes a default HTML error page.
+     */
+    private static class StaticView implements View {
+    
+        private static final MediaType TEXT_HTML_UTF8 = new MediaType("text", "html", StandardCharsets.UTF_8);
+    
+        private static final Log logger = LogFactory.getLog(StaticView.class);
+    
+        @Override
+        public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response)
+              throws Exception {
+           if (response.isCommitted()) {
+              String message = getMessage(model);
+              logger.error(message);
+              return;
+           }
+           response.setContentType(TEXT_HTML_UTF8.toString());
+           StringBuilder builder = new StringBuilder();
+           Object timestamp = model.get("timestamp");
+           Object message = model.get("message");
+           Object trace = model.get("trace");
+           if (response.getContentType() == null) {
+              response.setContentType(getContentType());
+           }
+           builder.append("<html><body><h1>Whitelabel Error Page</h1>")
+              .append("<p>This application has no explicit mapping for /error, so you are seeing this as a fallback.</p>")
+              .append("<div id='created'>")
+              .append(timestamp)
+              .append("</div>")
+              .append("<div>There was an unexpected error (type=")
+              .append(htmlEscape(model.get("error")))
+              .append(", status=")
+              .append(htmlEscape(model.get("status")))
+              .append(").</div>");
+           if (message != null) {
+              builder.append("<div>").append(htmlEscape(message)).append("</div>");
+           }
+           if (trace != null) {
+              builder.append("<div style='white-space:pre-wrap;'>").append(htmlEscape(trace)).append("</div>");
+           }
+           builder.append("</body></html>");
+           response.getWriter().append(builder.toString());
+        }
+    
+        private String htmlEscape(Object input) {
+           return (input != null) ? HtmlUtils.htmlEscape(input.toString()) : null;
+        }
+    
+        private String getMessage(Map<String, ?> model) {
+           Object path = model.get("path");
+           String message = "Cannot render error page for request [" + path + "]";
+           if (model.get("message") != null) {
+              message += " and exception [" + model.get("message") + "]";
+           }
+           message += " as the response has already been committed.";
+           message += " As a result, the response may have the wrong status code.";
+           return message;
+        }
+    
+        @Override
+        public String getContentType() {
+           return "text/html";
+        }
+    
+    }
+    ```
+
+>Json 格式的数据响应，同 HTML 页面的分析，默认的数据为：
+>
+>```java
+>@Bean
+>@ConditionalOnMissingBean(value = ErrorAttributes.class, search = SearchStrategy.CURRENT)
+>public DefaultErrorAttributes errorAttributes() {
+>    return new DefaultErrorAttributes();
+>}
+>```
+
+##### 自定义错误响应
+
+###### 自定义 HTML 页面响应
+
+根据 Spring Boot 的错误页面规则，在相应目录下，自定义错误页面模板。
+
+###### 自定义 Json 响应
+
+使用`@ControllerAdvice`注解和`@ExceptionHandler`注解，进行统一的异常处理。
+
+##### 最佳实战
+
+###### 前后端分离
+
+后台发生的所有错误，使用`@ControllerAdvice`注解和`@ExceptionHandler`注解，进行统一的异常处理。
+
+###### 服务端页面渲染
+
+不可预知的一些，HTTP 码表示的服务器或客户端错误：
+
+- 在`classpath:/templates/error/`路径，放常用精确的错误码页面，例如`404.html`，`500.html`。
+- 在`classpath:/templates/error/`路径，放通用模糊匹配的错误码页面，例如`4xx.html`，`5xx.html`。
+
+发生业务错误：
+
+- **核心业务**，每一种错误，都应该代码控制（try...catch...），**跳转到自己定制的错误页**。
+- **通用业务**，在`classpath:/templates/error.html`页面，**显示错误信息**。
+
+无论是页面，还是 Json 数据，最终响应到页面时，其`可用的 Model 数据`如下：
+
+![image-20231009210849260](./spring-boot/image-20231009210849260.png)
+
+#### 嵌入式容器
+
+**`Servlet 容器`**：管理、运行 **Servlet 组件**（Servlet、Filter、Listener）的环境，一般指**服务器**。
+
+##### 自动配置原理
+
+Spring Boot 默认嵌入 Tomcat 作为 Servlet 容器。**自动配置类**是`ServletWebServerFactoryAutoConfiguration`，`EmbeddedWebServerFactoryCustomizerAutoConfiguration`。
+
+###### ServletWebServerFactoryAutoConfiguration
+
+```java
+/**
+ * {@link EnableAutoConfiguration Auto-configuration} for servlet web servers.
+ *
+ * @author Phillip Webb
+ * @author Dave Syer
+ * @author Ivan Sopov
+ * @author Brian Clozel
+ * @author Stephane Nicoll
+ * @author Scott Frederick
+ * @since 2.0.0
+ */
+@AutoConfiguration(after = SslAutoConfiguration.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@ConditionalOnClass(ServletRequest.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@EnableConfigurationProperties(ServerProperties.class)
+@Import({ ServletWebServerFactoryAutoConfiguration.BeanPostProcessorsRegistrar.class,
+       ServletWebServerFactoryConfiguration.EmbeddedTomcat.class,
+       ServletWebServerFactoryConfiguration.EmbeddedJetty.class,
+       ServletWebServerFactoryConfiguration.EmbeddedUndertow.class })
+public class ServletWebServerFactoryAutoConfiguration {
+}
+```
+
+- `ServletWebServerFactoryAutoConfiguration`自动配置了嵌入式容器场景。
+
+- 绑定了`ServerProperties`配置类，所有和服务器有关的配置，都可以通过`server`配置文件修改。
+
+- ServletWebServerFactoryAutoConfiguration 导入了 嵌入式的三大服务器`Tomcat`、`Jetty`、`Undertow`。
+
+  ```java
+  @Import({ ServletWebServerFactoryAutoConfiguration.BeanPostProcessorsRegistrar.class,
+         ServletWebServerFactoryConfiguration.EmbeddedTomcat.class,
+         ServletWebServerFactoryConfiguration.EmbeddedJetty.class,
+         ServletWebServerFactoryConfiguration.EmbeddedUndertow.class })
+  ```
+
+  - 导入`Tomcat`、`Jetty`、`Undertow`都有条件注解，系统中有对应的类才行（也就是需要先导入对应的包）。
+
+    ```java
+    /**
+     * Configuration classes for servlet web servers
+     * <p>
+     * Those should be {@code @Import} in a regular auto-configuration class to guarantee
+     * their order of execution.
+     *
+     * @author Phillip Webb
+     * @author Dave Syer
+     * @author Ivan Sopov
+     * @author Brian Clozel
+     * @author Stephane Nicoll
+     * @author Raheela Asalm
+     * @author Sergey Serdyuk
+     */
+    @Configuration(proxyBeanMethods = false)
+    class ServletWebServerFactoryConfiguration {
+    
+    	@Configuration(proxyBeanMethods = false)
+    	@ConditionalOnClass({ Servlet.class, Tomcat.class, UpgradeProtocol.class })// 容器中需要存在Tomcat相关的类
+    	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
+    	static class EmbeddedTomcat {
+    
+    		@Bean
+    		TomcatServletWebServerFactory tomcatServletWebServerFactory(
+    				ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
+    				ObjectProvider<TomcatContextCustomizer> contextCustomizers,
+    				ObjectProvider<TomcatProtocolHandlerCustomizer<?>> protocolHandlerCustomizers) {
+    			TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+    			factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
+    			factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
+    			factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+    			return factory;
+    		}
+    
+    	}
+    
+    	/**
+    	 * Nested configuration if Jetty is being used.
+    	 */
+    	@Configuration(proxyBeanMethods = false)
+    	@ConditionalOnClass({ Servlet.class, Server.class, Loader.class, WebAppContext.class })// 容器中需要存在Jetty相关的类
+    	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
+    	static class EmbeddedJetty {
+    
+    		@Bean
+    		JettyServletWebServerFactory jettyServletWebServerFactory(
+    				ObjectProvider<JettyServerCustomizer> serverCustomizers) {
+    			JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
+    			factory.getServerCustomizers().addAll(serverCustomizers.orderedStream().toList());
+    			return factory;
+    		}
+    
+    	}
+    
+    	/**
+    	 * Nested configuration if Undertow is being used.
+    	 */
+    	@Configuration(proxyBeanMethods = false)
+    	@ConditionalOnClass({ Servlet.class, Undertow.class, SslClientAuthMode.class })// 容器中需要存在Undertow相关的类
+    	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
+    	static class EmbeddedUndertow {
+    
+    		@Bean
+    		UndertowServletWebServerFactory undertowServletWebServerFactory(
+    				ObjectProvider<UndertowDeploymentInfoCustomizer> deploymentInfoCustomizers,
+    				ObjectProvider<UndertowBuilderCustomizer> builderCustomizers) {
+    			UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
+    			factory.getDeploymentInfoCustomizers().addAll(deploymentInfoCustomizers.orderedStream().toList());
+    			factory.getBuilderCustomizers().addAll(builderCustomizers.orderedStream().toList());
+    			return factory;
+    		}
+    
+    		@Bean
+    		UndertowServletWebServerFactoryCustomizer undertowServletWebServerFactoryCustomizer(
+    				ServerProperties serverProperties) {
+    			return new UndertowServletWebServerFactoryCustomizer(serverProperties);
+    		}
+    
+    	}
+    
+    }
+    ```
+
+  - TomcatServletWebServerFactory，JettyServletWebServerFactory，UndertowServletWebServerFactory，三者都继承至`ServletWebServerFactory`，也就是都给容器中放入了一个  **Web 服务器工厂（造 Web 服务器的工厂）**。
+
+  - Web 服务器工厂都有一个功能，`getWebServer()`，其作用是获取 Web 服务器：
+
+    ```java
+    /**
+     * Factory interface that can be used to create a {@link WebServer}.
+     *
+     * @author Phillip Webb
+     * @since 2.0.0
+     * @see WebServer
+     */
+    @FunctionalInterface
+    public interface ServletWebServerFactory extends WebServerFactory {
+    
+    	/**
+    	 * Gets a new fully configured but paused {@link WebServer} instance. Clients should
+    	 * not be able to connect to the returned server until {@link WebServer#start()} is
+    	 * called (which happens when the {@code ApplicationContext} has been fully
+    	 * refreshed).
+    	 * @param initializers {@link ServletContextInitializer}s that should be applied as
+    	 * the server starts
+    	 * @return a fully configured and started {@link WebServer}
+    	 * @see WebServer#stop()
+    	 */
+    	WebServer getWebServer(ServletContextInitializer... initializers);
+    
+    }
+    ```
+
+  - Spring Boot 的 Web 启动器，默认导入了 Tomcat 的依赖，也就是默认 Tomcat 配置生效，给容器中放入了`TomcatServletWebServerFactory`。
+
+    ```xml
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <version>3.1.4</version>
+      <scope>compile</scope>
+    </dependency>
+    ```
+
+  - TomcatServletWebServerFactory 中，创建了 Tomcat 服务器：
+
+    ```java
+    @Override
+    public WebServer getWebServer(ServletContextInitializer... initializers) {
+        if (this.disableMBeanRegistry) {
+            Registry.disableRegistry();
+        }
+        Tomcat tomcat = new Tomcat();// 创建Tomcat服务器
+        File baseDir = (this.baseDirectory != null) ? this.baseDirectory : createTempDir("tomcat");
+        tomcat.setBaseDir(baseDir.getAbsolutePath());
+        for (LifecycleListener listener : this.serverLifecycleListeners) {
+            tomcat.getServer().addLifecycleListener(listener);
+        }
+        Connector connector = new Connector(this.protocol);
+        connector.setThrowOnFailure(true);
+        tomcat.getService().addConnector(connector);
+        customizeConnector(connector);
+        tomcat.setConnector(connector);
+        tomcat.getHost().setAutoDeploy(false);
+        configureEngine(tomcat.getEngine());
+        for (Connector additionalConnector : this.additionalTomcatConnectors) {
+            tomcat.getService().addConnector(additionalConnector);
+        }
+        prepareContext(tomcat.getHost(), initializers);
+        return getTomcatWebServer(tomcat);
+    }
+    ```
+
+- ServletWebServerFactory 什么时候会创建 webServer 出来：
+
+  ![image-20231009224354499](./spring-boot/image-20231009224354499.png)
+
+  ```java
+  /**
+   * A {@link WebApplicationContext} that can be used to bootstrap itself from a contained
+   * {@link ServletWebServerFactory} bean.
+   * <p>
+   * This context will create, initialize and run an {@link WebServer} by searching for a
+   * single {@link ServletWebServerFactory} bean within the {@link ApplicationContext}
+   * itself. The {@link ServletWebServerFactory} is free to use standard Spring concepts
+   * (such as dependency injection, lifecycle callbacks and property placeholder variables).
+   * <p>
+   * In addition, any {@link Servlet} or {@link Filter} beans defined in the context will be
+   * automatically registered with the web server. In the case of a single Servlet bean, the
+   * '/' mapping will be used. If multiple Servlet beans are found then the lowercase bean
+   * name will be used as a mapping prefix. Any Servlet named 'dispatcherServlet' will
+   * always be mapped to '/'. Filter beans will be mapped to all URLs ('/*').
+   * <p>
+   * For more advanced configuration, the context can instead define beans that implement
+   * the {@link ServletContextInitializer} interface (most often
+   * {@link ServletRegistrationBean}s and/or {@link FilterRegistrationBean}s). To prevent
+   * double registration, the use of {@link ServletContextInitializer} beans will disable
+   * automatic Servlet and Filter bean registration.
+   * <p>
+   * Although this context can be used directly, most developers should consider using the
+   * {@link AnnotationConfigServletWebServerApplicationContext} or
+   * {@link XmlServletWebServerApplicationContext} variants.
+   *
+   * @author Phillip Webb
+   * @author Dave Syer
+   * @author Scott Frederick
+   * @since 2.0.0
+   * @see AnnotationConfigServletWebServerApplicationContext
+   * @see XmlServletWebServerApplicationContext
+   * @see ServletWebServerFactory
+   */
+  public class ServletWebServerApplicationContext extends GenericWebApplicationContext
+  		implements ConfigurableWebServerApplicationContext {
+      
+      private void createWebServer() {
+  		WebServer webServer = this.webServer;
+  		ServletContext servletContext = getServletContext();
+  		if (webServer == null && servletContext == null) {
+  			StartupStep createWebServer = getApplicationStartup().start("spring.boot.webserver.create");
+  			ServletWebServerFactory factory = getWebServerFactory();
+  			createWebServer.tag("factory", factory.getClass().toString());
+  			this.webServer = factory.getWebServer(getSelfInitializer());
+  			createWebServer.end();
+  			getBeanFactory().registerSingleton("webServerGracefulShutdown",
+  					new WebServerGracefulShutdownLifecycle(this.webServer));
+  			getBeanFactory().registerSingleton("webServerStartStop",
+  					new WebServerStartStopLifecycle(this, this.webServer));
+  		}
+  		else if (servletContext != null) {
+  			try {
+  				getSelfInitializer().onStartup(servletContext);
+  			}
+  			catch (ServletException ex) {
+  				throw new ApplicationContextException("Cannot initialize servlet context", ex);
+  			}
+  		}
+  		initPropertySources();
+  	}
+      
+  }
+  ```
+
+  - `ServletWebServerApplicationContext`是 IoC 容器，也就是在服务启动的时候，会调用并创建 Web 服务器。
+
+  - 进一步，`createWebServer()`方法，在`onRefresh()`方法调用，这个方法是 Spring 容器刷新（启动）的时候，会预留一个时机，刷新子容器。
+
+    ```java
+    @Override
+    protected void onRefresh() {
+        super.onRefresh();
+        try {
+            createWebServer();
+        }
+        catch (Throwable ex) {
+            throw new ApplicationContextException("Unable to start web server", ex);
+        }
+    }
+    ```
+
+>`onRefresh()`方法在 AbstractApplicationContext 类的`refresh()`方法中调用，也就是容器刷新`十二大步`的刷新子容器会调用：
+>
+>```java
+>@Override
+>public void refresh() throws BeansException, IllegalStateException {
+>    synchronized (this.startupShutdownMonitor) {
+>       StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
+>
+>       // Prepare this context for refreshing.
+>       prepareRefresh();// 第一步
+>
+>       // Tell the subclass to refresh the internal bean factory.
+>       ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();// 第二步
+>
+>       // Prepare the bean factory for use in this context.
+>       prepareBeanFactory(beanFactory);// 第三步
+>
+>       try {
+>          // Allows post-processing of the bean factory in context subclasses.
+>          postProcessBeanFactory(beanFactory);// 第四步
+>
+>          StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
+>          // Invoke factory processors registered as beans in the context.
+>          invokeBeanFactoryPostProcessors(beanFactory);// 第五步
+>
+>          // Register bean processors that intercept bean creation.
+>          registerBeanPostProcessors(beanFactory);
+>          beanPostProcess.end();// 第六步
+>
+>          // Initialize message source for this context.
+>          initMessageSource();// 第七步
+>
+>          // Initialize event multicaster for this context.
+>          initApplicationEventMulticaster();// 第八步
+>
+>          // Initialize other special beans in specific context subclasses.
+>          onRefresh();// 第九步
+>
+>          // Check for listener beans and register them.
+>          registerListeners();// 第十步
+>
+>          // Instantiate all remaining (non-lazy-init) singletons.
+>          finishBeanFactoryInitialization(beanFactory);// 第十一步
+>
+>          // Last step: publish corresponding event.
+>          finishRefresh();// 第十二步
+>       }
+>
+>       catch (BeansException ex) {
+>          if (logger.isWarnEnabled()) {
+>             logger.warn("Exception encountered during context initialization - " +
+>                   "cancelling refresh attempt: " + ex);
+>          }
+>
+>          // Destroy already created singletons to avoid dangling resources.
+>          destroyBeans();
+>
+>          // Reset 'active' flag.
+>          cancelRefresh(ex);
+>
+>          // Propagate exception to caller.
+>          throw ex;
+>       }
+>
+>       finally {
+>          // Reset common introspection caches in Spring's core, since we
+>          // might not ever need metadata for singleton beans anymore...
+>          resetCommonCaches();
+>          contextRefresh.end();
+>       }
+>    }
+>}
+>```
+
+###### 总结
+
+**Web 场景的 Spring 容器启动，在 onRefresh 的时候，会调用创建 Web 服务器的方法。Web 服务器的创建是通过 WebServerFactory 完成的，容器中会根据导入了什么包的条件注解，启动相关的服务器配置，默认是 EmbeddedTomcat，会给容器中放一个 TomcatServletWebServerFactory，这就使得项目启动时，自动创建出 Tomcat 服务器。**
+
+##### 自定义容器
 
 
 
