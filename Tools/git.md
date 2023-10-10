@@ -1,6 +1,6 @@
 *date: 2022-01-04*
 
-## Github 代码开发的一般流程
+## Git 代码开发的一般流程
 
 1. PM（项目主管/项目经理） 在 Github 创建任务，分配给开发人员；
 
@@ -16,7 +16,7 @@
 
 7. 开发人员在 Github 上 Mark done 确认开发完成，并关闭 issue。这一步在提交合并请求时，可以通过描述中填写“close #1”等字样，直接关闭 issue。
 
-## Github 配置
+## Git 配置
 
 第一步，配置用户名和邮箱地址：
 
@@ -63,7 +63,7 @@ Connection to github.com closed.
 
 > 第一次输入时，需要点击 yes。
 
-## Github 常用命令
+## Git 常用命令
 
 clone 远程仓库代码到本地：
 
@@ -160,7 +160,7 @@ Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projec
 $ git reset
 ```
 
-## Github 提交代码到新分支
+## Git 提交代码到新分支
 
 第一步：在新代码路径下右键选择打开 Git Bash，并初始化。
 
@@ -225,7 +225,37 @@ $ git push origin develop
   $ git push origin develop:master
   ```
 
-## Github 修改 master 分支为 main 
+## Git 拉取远程次分支代码到本地
+
+```bash
+# 本地分支
+$ git branch
+* master
+
+# 远程分支
+$ git branch -a
+* master
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/develop
+  remotes/origin/master
+
+# 拉取origin/develop到本地
+$ git fetch origin develop
+From xxx
+ * branch            develop    -> FETCH_HEAD
+
+# 本地切换到新分支
+$ git checkout develop
+Switched to a new branch 'develop'
+branch 'develop' set up to track 'origin/develop'.
+
+# 本地分支
+$ git branch
+* develop
+  master
+```
+
+## Git 修改 master 分支为 main 
 
 因为一些原因，2020年10月1日后，Github 将所有新建的仓库的默认分支从`master`修改为`main`，这种情况下，为了避免麻烦，需要将旧仓库的 master 分支迁移到 main 分支上。
 
