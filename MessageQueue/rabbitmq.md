@@ -1,5 +1,9 @@
 *date: 2022-04-28*
 
+
+
+[TOC]
+
 ## 概述
 
 ### 什么是 MQ
@@ -16,7 +20,7 @@ MQ（message queue），从字面意思上看，本质是个队列，FIFO 先进
 
 以电商应用为例，应用中有订单系统、库存系统、物流系统、支付系统。用户创建订单后，如果耦合调用库存系统、物流系统、支付系统，任何一个子系统出了故障，都会造成下单操作异常。当转变成基于消息队列的方式后，系统间调用的问题会减少很多，比如物流系统因为发生故障，需要几分钟来修复。在这几分钟的时间里，物流系统要处理的内存被缓存在消息队列中，用户的下单操作可以正常完成。当物流系统恢复后，继续处理订单信息即可，中单用户感受不到物流系统的故障，提升系统的可用性。
 
-![image-20221126150208936](rabbitmq/image-20221126150208936.png)
+<img src="rabbitmq/image-20221126150208936.png" alt="image-20221126150208936" style="zoom:80%;" />
 
 #### 异步处理
 
@@ -46,7 +50,7 @@ RocketMQ 出自阿里巴巴的开源产品，用 Java 语言实现，在设计�
 
 优点：单机吞吐量十万级，可用性非常高，分布式架构，消息可以做到 0 丢失，MQ 功能较为完善，还是分布式的，扩展性好，支持 10 亿级别的消息堆积，不会因为堆积导致性能下降，源码是 Java，可以自己阅读源码，定制自己公司的 MQ。
 
-缺点：支持的客户端语言不多，目前是 Java 及 C++，其中 C++不成熟；社区活跃度一般，没有在 MQ 核心中去实现 JMS 等接口，有些系统要迁移需要修改大量代码。
+缺点：支持的客户端语言不多，目前是 Java 及 C++，其中 C++ 不成熟；社区活跃度一般，没有在 MQ 核心中去实现 JMS 等接口，有些系统要迁移需要修改大量代码。
 
 #### RabbitMQ
 
@@ -93,11 +97,11 @@ RabbitMQ 是一个消息中间件：它接受并转发消息。你可以把它�
 
 ### 核心架构
 
-![image-20221127130413766](rabbitmq/image-20221127130413766.png)
+<img src="rabbitmq/image-20221127130413766.png" alt="image-20221127130413766" style="zoom:80%;" />
 
 ### 工作原理
 
-![image-20221127130539774](rabbitmq/image-20221127130539774.png)
+<img src="rabbitmq/image-20221127130539774.png" alt="image-20221127130539774" style="zoom: 67%;" />
 
 #### Broker
 
@@ -127,428 +131,1159 @@ Message 到达 Broker 的第一站，根据分发规则，匹配查询表中的 
 
 Exchange 和 Queue 之间的虚拟连接，Binding 中可以包含 routing key，Binding 信息被保存到 Exchange 中的查询表中，用于 Message 的分发依据。
 
-### 安装
+### Docker 安装
 
 官网：https://www.rabbitmq.com/
 
 下载地址：https://www.rabbitmq.com/download.html
 
-支持 docker 安装：
+docker 命令安装：
 
 ```bash
-# 下载镜像
-root@xisun-develop:/home/xisun# docker pull rabbitmq:3.11-management
+# 带web端管理系统
+$ docker pull rabbitmq:3.11-management
 
-# 查看镜像id
-root@xisun-develop:/home/xisun# docker images
-REPOSITORY              TAG               IMAGE ID       CREATED         SIZE
-rabbitmq                3.11-management   789501296640   10 hours ago    263MB
-
-# 启动容器
-root@xisun-develop:/home/xisun# docker run -d -p 5672:5672 -p 15672:15672 --name rabbit_3.11 789501296640
-
-# 查看容器
-root@xisun-develop:/home/xisun# docker ps
-CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                                                                                                                                                 NAMES
-19a2b7f8de6b   789501296640   "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   4369/tcp, 5671/tcp, 0.0.0.0:5672->5672/tcp, :::5672->5672/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:15672->15672/tcp, :::15672->15672/tcp   rabbit_3.11
-
-# 查看日志
-root@xisun-develop:/home/xisun# docker logs -f 19a2b7f8de6b
-2022-11-29 14:30:37.159743+00:00 [notice] <0.44.0> Application syslog exited with reason: stopped
-2022-11-29 14:30:37.175660+00:00 [notice] <0.229.0> Logging: switching to configured handler(s); following messages may not be visible in this log output
-2022-11-29 14:30:37.221401+00:00 [notice] <0.229.0> Logging: configured log handlers are now ACTIVE
-2022-11-29 14:30:37.726195+00:00 [info] <0.229.0> ra: starting system quorum_queues
-2022-11-29 14:30:37.726396+00:00 [info] <0.229.0> starting Ra system: quorum_queues in directory: /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/quorum/rabbit@19a2b7f8de6b
-2022-11-29 14:30:37.891769+00:00 [info] <0.265.0> ra system 'quorum_queues' running pre init for 0 registered servers
-2022-11-29 14:30:37.921309+00:00 [info] <0.266.0> ra: meta data store initialised for system quorum_queues. 0 record(s) recovered
-2022-11-29 14:30:37.956701+00:00 [notice] <0.271.0> WAL: ra_log_wal init, open tbls: ra_log_open_mem_tables, closed tbls: ra_log_closed_mem_tables
-2022-11-29 14:30:37.970783+00:00 [info] <0.229.0> ra: starting system coordination
-2022-11-29 14:30:37.970914+00:00 [info] <0.229.0> starting Ra system: coordination in directory: /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/coordination/rabbit@19a2b7f8de6b
-2022-11-29 14:30:37.973896+00:00 [info] <0.278.0> ra system 'coordination' running pre init for 0 registered servers
-2022-11-29 14:30:37.976799+00:00 [info] <0.279.0> ra: meta data store initialised for system coordination. 0 record(s) recovered
-2022-11-29 14:30:37.977181+00:00 [notice] <0.284.0> WAL: ra_coordination_log_wal init, open tbls: ra_coordination_log_open_mem_tables, closed tbls: ra_coordination_log_closed_mem_tables
-2022-11-29 14:30:37.981647+00:00 [info] <0.229.0> 
-2022-11-29 14:30:37.981647+00:00 [info] <0.229.0>  Starting RabbitMQ 3.11.4 on Erlang 25.1.2 [jit]
-2022-11-29 14:30:37.981647+00:00 [info] <0.229.0>  Copyright (c) 2007-2022 VMware, Inc. or its affiliates.
-2022-11-29 14:30:37.981647+00:00 [info] <0.229.0>  Licensed under the MPL 2.0. Website: https://rabbitmq.com
-
-  ##  ##      RabbitMQ 3.11.4
-  ##  ##
-  ##########  Copyright (c) 2007-2022 VMware, Inc. or its affiliates.
-  ######  ##
-  ##########  Licensed under the MPL 2.0. Website: https://rabbitmq.com
-
-  Erlang:      25.1.2 [jit]
-  TLS Library: OpenSSL - OpenSSL 1.1.1s  1 Nov 2022
-  Release series support status: supported
-
-  Doc guides:  https://rabbitmq.com/documentation.html
-  Support:     https://rabbitmq.com/contact.html
-  Tutorials:   https://rabbitmq.com/getstarted.html
-  Monitoring:  https://rabbitmq.com/monitoring.html
-
-  Logs: /var/log/rabbitmq/rabbit@19a2b7f8de6b_upgrade.log
-        <stdout>
-
-  Config file(s): /etc/rabbitmq/conf.d/10-defaults.conf
-
-  Starting broker...2022-11-29 14:30:37.986368+00:00 [info] <0.229.0> 
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  node           : rabbit@19a2b7f8de6b
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  home dir       : /var/lib/rabbitmq
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  config file(s) : /etc/rabbitmq/conf.d/10-defaults.conf
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  cookie hash    : YINB0Nxw/+yA+vCDyj1v3Q==
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  log(s)         : /var/log/rabbitmq/rabbit@19a2b7f8de6b_upgrade.log
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>                 : <stdout>
-2022-11-29 14:30:37.986368+00:00 [info] <0.229.0>  database dir   : /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b
-2022-11-29 14:30:45.055976+00:00 [info] <0.229.0> Running boot step pre_boot defined by app rabbit
-2022-11-29 14:30:45.056120+00:00 [info] <0.229.0> Running boot step rabbit_global_counters defined by app rabbit
-2022-11-29 14:30:45.056747+00:00 [info] <0.229.0> Running boot step rabbit_osiris_metrics defined by app rabbit
-2022-11-29 14:30:45.057083+00:00 [info] <0.229.0> Running boot step rabbit_core_metrics defined by app rabbit
-2022-11-29 14:30:45.059220+00:00 [info] <0.229.0> Running boot step rabbit_alarm defined by app rabbit
-2022-11-29 14:30:45.068011+00:00 [info] <0.298.0> Memory high watermark set to 1555 MiB (1631510528 bytes) of 3889 MiB (4078776320 bytes) total
-2022-11-29 14:30:45.075069+00:00 [info] <0.300.0> Enabling free disk space monitoring
-2022-11-29 14:30:45.075239+00:00 [info] <0.300.0> Disk free limit set to 50MB
-2022-11-29 14:30:45.079324+00:00 [info] <0.229.0> Running boot step code_server_cache defined by app rabbit
-2022-11-29 14:30:45.079559+00:00 [info] <0.229.0> Running boot step file_handle_cache defined by app rabbit
-2022-11-29 14:30:45.080031+00:00 [info] <0.303.0> Limiting to approx 1048479 file handles (943629 sockets)
-2022-11-29 14:30:45.080512+00:00 [info] <0.304.0> FHC read buffering: OFF
-2022-11-29 14:30:45.080730+00:00 [info] <0.304.0> FHC write buffering: ON
-2022-11-29 14:30:45.082312+00:00 [info] <0.229.0> Running boot step worker_pool defined by app rabbit
-2022-11-29 14:30:45.082434+00:00 [info] <0.286.0> Will use 4 processes for default worker pool
-2022-11-29 14:30:45.082474+00:00 [info] <0.286.0> Starting worker pool 'worker_pool' with 4 processes in it
-2022-11-29 14:30:45.083173+00:00 [info] <0.229.0> Running boot step database defined by app rabbit
-2022-11-29 14:30:45.084378+00:00 [info] <0.229.0> Node database directory at /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b is empty. Assuming we need to join an existing cluster or initialise from scratch...
-2022-11-29 14:30:45.084534+00:00 [info] <0.229.0> Configured peer discovery backend: rabbit_peer_discovery_classic_config
-2022-11-29 14:30:45.084587+00:00 [info] <0.229.0> Will try to lock with peer discovery backend rabbit_peer_discovery_classic_config
-2022-11-29 14:30:45.084727+00:00 [info] <0.229.0> All discovered existing cluster peers:
-2022-11-29 14:30:45.084767+00:00 [info] <0.229.0> Discovered no peer nodes to cluster with. Some discovery backends can filter nodes out based on a readiness criteria. Enabling debug logging might help troubleshoot.
-2022-11-29 14:30:45.087782+00:00 [notice] <0.44.0> Application mnesia exited with reason: stopped
-2022-11-29 14:30:45.300501+00:00 [info] <0.229.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-11-29 14:30:45.300917+00:00 [info] <0.229.0> Successfully synced tables from a peer
-2022-11-29 14:30:45.316464+00:00 [info] <0.229.0> Feature flags: `feature_flags_v2`: supported, attempt to enable...
-2022-11-29 14:30:45.362341+00:00 [notice] <0.287.0> Feature flags: attempt to enable `classic_mirrored_queue_version`...
-2022-11-29 14:30:45.411347+00:00 [notice] <0.287.0> Feature flags: `classic_mirrored_queue_version` enabled
-2022-11-29 14:30:45.412359+00:00 [notice] <0.287.0> Feature flags: attempt to enable `classic_queue_type_delivery_support`...
-2022-11-29 14:30:45.434830+00:00 [notice] <0.287.0> Feature flags: attempt to enable `stream_queue`...
-2022-11-29 14:30:45.482771+00:00 [notice] <0.287.0> Feature flags: `stream_queue` enabled
-2022-11-29 14:30:45.509881+00:00 [notice] <0.287.0> Feature flags: `classic_queue_type_delivery_support` enabled
-2022-11-29 14:30:45.510852+00:00 [notice] <0.287.0> Feature flags: attempt to enable `direct_exchange_routing_v2`...
-2022-11-29 14:30:45.533757+00:00 [info] <0.497.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-11-29 14:30:45.534089+00:00 [info] <0.497.0> Successfully synced tables from a peer
-2022-11-29 14:30:45.565110+00:00 [notice] <0.287.0> Feature flags: `direct_exchange_routing_v2` enabled
-2022-11-29 14:30:45.566410+00:00 [notice] <0.287.0> Feature flags: attempt to enable `drop_unroutable_metric`...
-2022-11-29 14:30:45.612286+00:00 [notice] <0.287.0> Feature flags: `drop_unroutable_metric` enabled
-2022-11-29 14:30:45.613583+00:00 [notice] <0.287.0> Feature flags: attempt to enable `empty_basic_get_metric`...
-2022-11-29 14:30:45.660885+00:00 [notice] <0.287.0> Feature flags: `empty_basic_get_metric` enabled
-2022-11-29 14:30:45.661686+00:00 [notice] <0.287.0> Feature flags: attempt to enable `listener_records_in_ets`...
-2022-11-29 14:30:45.743765+00:00 [notice] <0.287.0> Feature flags: `listener_records_in_ets` enabled
-2022-11-29 14:30:45.745710+00:00 [notice] <0.287.0> Feature flags: attempt to enable `stream_single_active_consumer`...
-2022-11-29 14:30:45.798423+00:00 [notice] <0.287.0> Feature flags: `stream_single_active_consumer` enabled
-2022-11-29 14:30:45.800046+00:00 [notice] <0.287.0> Feature flags: attempt to enable `tracking_records_in_ets`...
-2022-11-29 14:30:45.848854+00:00 [notice] <0.287.0> Feature flags: `tracking_records_in_ets` enabled
-2022-11-29 14:30:45.851354+00:00 [info] <0.229.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-11-29 14:30:45.851581+00:00 [info] <0.229.0> Successfully synced tables from a peer
-2022-11-29 14:30:45.873787+00:00 [info] <0.229.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-11-29 14:30:45.874151+00:00 [info] <0.229.0> Successfully synced tables from a peer
-2022-11-29 14:30:45.874248+00:00 [info] <0.229.0> Peer discovery backend rabbit_peer_discovery_classic_config does not support registration, skipping registration.
-2022-11-29 14:30:45.874347+00:00 [info] <0.229.0> Will try to unlock with peer discovery backend rabbit_peer_discovery_classic_config
-2022-11-29 14:30:45.874680+00:00 [info] <0.229.0> Running boot step tracking_metadata_store defined by app rabbit
-2022-11-29 14:30:45.875007+00:00 [info] <0.619.0> Setting up a table for connection tracking on this node: tracked_connection
-2022-11-29 14:30:45.875159+00:00 [info] <0.619.0> Setting up a table for per-vhost connection counting on this node: tracked_connection_per_vhost
-2022-11-29 14:30:45.875347+00:00 [info] <0.619.0> Setting up a table for per-user connection counting on this node: tracked_connection_per_user
-2022-11-29 14:30:45.875532+00:00 [info] <0.619.0> Setting up a table for channel tracking on this node: tracked_channel
-2022-11-29 14:30:45.875655+00:00 [info] <0.619.0> Setting up a table for channel tracking on this node: tracked_channel_per_user
-2022-11-29 14:30:45.875919+00:00 [info] <0.229.0> Running boot step networking_metadata_store defined by app rabbit
-2022-11-29 14:30:45.876342+00:00 [info] <0.229.0> Running boot step database_sync defined by app rabbit
-2022-11-29 14:30:45.876573+00:00 [info] <0.229.0> Running boot step feature_flags defined by app rabbit
-2022-11-29 14:30:45.877025+00:00 [info] <0.229.0> Running boot step codec_correctness_check defined by app rabbit
-2022-11-29 14:30:45.877085+00:00 [info] <0.229.0> Running boot step external_infrastructure defined by app rabbit
-2022-11-29 14:30:45.877132+00:00 [info] <0.229.0> Running boot step rabbit_event defined by app rabbit
-2022-11-29 14:30:45.877649+00:00 [info] <0.229.0> Running boot step rabbit_registry defined by app rabbit
-2022-11-29 14:30:45.878105+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_amqplain defined by app rabbit
-2022-11-29 14:30:45.878190+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_cr_demo defined by app rabbit
-2022-11-29 14:30:45.878326+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_plain defined by app rabbit
-2022-11-29 14:30:45.878371+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_direct defined by app rabbit
-2022-11-29 14:30:45.878436+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_fanout defined by app rabbit
-2022-11-29 14:30:45.878522+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_headers defined by app rabbit
-2022-11-29 14:30:45.878621+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_topic defined by app rabbit
-2022-11-29 14:30:45.878725+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_all defined by app rabbit
-2022-11-29 14:30:45.878846+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_exactly defined by app rabbit
-2022-11-29 14:30:45.878970+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_nodes defined by app rabbit
-2022-11-29 14:30:45.879113+00:00 [info] <0.229.0> Running boot step rabbit_priority_queue defined by app rabbit
-2022-11-29 14:30:45.879180+00:00 [info] <0.229.0> Priority queues enabled, real BQ is rabbit_variable_queue
-2022-11-29 14:30:45.879406+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_client_local defined by app rabbit
-2022-11-29 14:30:45.879560+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_min_masters defined by app rabbit
-2022-11-29 14:30:45.879699+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_random defined by app rabbit
-2022-11-29 14:30:45.879886+00:00 [info] <0.229.0> Running boot step kernel_ready defined by app rabbit
-2022-11-29 14:30:45.879992+00:00 [info] <0.229.0> Running boot step rabbit_sysmon_minder defined by app rabbit
-2022-11-29 14:30:45.880242+00:00 [info] <0.229.0> Running boot step rabbit_epmd_monitor defined by app rabbit
-2022-11-29 14:30:45.886435+00:00 [info] <0.628.0> epmd monitor knows us, inter-node communication (distribution) port: 25672
-2022-11-29 14:30:45.886836+00:00 [info] <0.229.0> Running boot step guid_generator defined by app rabbit
-2022-11-29 14:30:45.889861+00:00 [info] <0.229.0> Running boot step rabbit_node_monitor defined by app rabbit
-2022-11-29 14:30:45.890371+00:00 [info] <0.632.0> Starting rabbit_node_monitor
-2022-11-29 14:30:45.890744+00:00 [info] <0.229.0> Running boot step delegate_sup defined by app rabbit
-2022-11-29 14:30:45.891888+00:00 [info] <0.229.0> Running boot step rabbit_memory_monitor defined by app rabbit
-2022-11-29 14:30:45.892358+00:00 [info] <0.229.0> Running boot step rabbit_fifo_dlx_sup defined by app rabbit
-2022-11-29 14:30:45.892609+00:00 [info] <0.229.0> Running boot step core_initialized defined by app rabbit
-2022-11-29 14:30:45.892691+00:00 [info] <0.229.0> Running boot step upgrade_queues defined by app rabbit
-2022-11-29 14:30:45.906365+00:00 [info] <0.229.0> message_store upgrades: 1 to apply
-2022-11-29 14:30:45.906675+00:00 [info] <0.229.0> message_store upgrades: Applying rabbit_variable_queue:move_messages_to_vhost_store
-2022-11-29 14:30:45.906968+00:00 [info] <0.229.0> message_store upgrades: No durable queues found. Skipping message store migration
-2022-11-29 14:30:45.907090+00:00 [info] <0.229.0> message_store upgrades: Removing the old message store data
-2022-11-29 14:30:45.909696+00:00 [info] <0.229.0> message_store upgrades: All upgrades applied successfully
-2022-11-29 14:30:45.925945+00:00 [info] <0.229.0> Running boot step channel_tracking defined by app rabbit
-2022-11-29 14:30:45.926092+00:00 [info] <0.229.0> Running boot step rabbit_channel_tracking_handler defined by app rabbit
-2022-11-29 14:30:45.926273+00:00 [info] <0.229.0> Running boot step connection_tracking defined by app rabbit
-2022-11-29 14:30:45.926387+00:00 [info] <0.229.0> Running boot step rabbit_connection_tracking_handler defined by app rabbit
-2022-11-29 14:30:45.926516+00:00 [info] <0.229.0> Running boot step rabbit_definitions_hashing defined by app rabbit
-2022-11-29 14:30:45.926708+00:00 [info] <0.229.0> Running boot step rabbit_exchange_parameters defined by app rabbit
-2022-11-29 14:30:45.926943+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_misc defined by app rabbit
-2022-11-29 14:30:45.927375+00:00 [info] <0.229.0> Running boot step rabbit_policies defined by app rabbit
-2022-11-29 14:30:45.928420+00:00 [info] <0.229.0> Running boot step rabbit_policy defined by app rabbit
-2022-11-29 14:30:45.928616+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_validator defined by app rabbit
-2022-11-29 14:30:45.928734+00:00 [info] <0.229.0> Running boot step rabbit_quorum_memory_manager defined by app rabbit
-2022-11-29 14:30:45.928874+00:00 [info] <0.229.0> Running boot step rabbit_stream_coordinator defined by app rabbit
-2022-11-29 14:30:45.929219+00:00 [info] <0.229.0> Running boot step rabbit_vhost_limit defined by app rabbit
-2022-11-29 14:30:45.929485+00:00 [info] <0.229.0> Running boot step rabbit_mgmt_reset_handler defined by app rabbitmq_management
-2022-11-29 14:30:45.929674+00:00 [info] <0.229.0> Running boot step rabbit_mgmt_db_handler defined by app rabbitmq_management_agent
-2022-11-29 14:30:45.929992+00:00 [info] <0.229.0> Management plugin: using rates mode 'basic'
-2022-11-29 14:30:45.931472+00:00 [info] <0.229.0> Running boot step recovery defined by app rabbit
-2022-11-29 14:30:45.934450+00:00 [info] <0.229.0> Running boot step empty_db_check defined by app rabbit
-2022-11-29 14:30:45.934625+00:00 [info] <0.229.0> Will seed default virtual host and user...
-2022-11-29 14:30:45.934766+00:00 [info] <0.229.0> Adding vhost '/' (description: 'Default virtual host', tags: [])
-2022-11-29 14:30:45.937855+00:00 [info] <0.229.0> Applying default limits to vhost '<<"/">>': []
-2022-11-29 14:30:45.954305+00:00 [info] <0.674.0> Making sure data directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L' for vhost '/' exists
-2022-11-29 14:30:45.957445+00:00 [info] <0.674.0> Setting segment_entry_count for vhost '/' with 0 queues to '2048'
-2022-11-29 14:30:45.962252+00:00 [info] <0.674.0> Starting message stores for vhost '/'
-2022-11-29 14:30:45.962852+00:00 [info] <0.679.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_transient": using rabbit_msg_store_ets_index to provide index
-2022-11-29 14:30:45.966389+00:00 [info] <0.674.0> Started message store of type transient for vhost '/'
-2022-11-29 14:30:45.966951+00:00 [info] <0.683.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": using rabbit_msg_store_ets_index to provide index
-2022-11-29 14:30:45.968939+00:00 [warning] <0.683.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": rebuilding indices from scratch
-2022-11-29 14:30:45.971223+00:00 [info] <0.674.0> Started message store of type persistent for vhost '/'
-2022-11-29 14:30:45.971552+00:00 [info] <0.674.0> Recovering 0 queues of type rabbit_classic_queue took 13ms
-2022-11-29 14:30:45.971670+00:00 [info] <0.674.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms
-2022-11-29 14:30:45.971744+00:00 [info] <0.674.0> Recovering 0 queues of type rabbit_stream_queue took 0ms
-2022-11-29 14:30:45.977407+00:00 [info] <0.229.0> Created user 'guest'
-2022-11-29 14:30:45.980070+00:00 [info] <0.229.0> Successfully set user tags for user 'guest' to [administrator]
-2022-11-29 14:30:45.982397+00:00 [info] <0.229.0> Successfully set permissions for 'guest' in virtual host '/' to '.*', '.*', '.*'
-2022-11-29 14:30:45.982506+00:00 [info] <0.229.0> Running boot step rabbit_observer_cli defined by app rabbit
-2022-11-29 14:30:45.982571+00:00 [info] <0.229.0> Running boot step rabbit_looking_glass defined by app rabbit
-2022-11-29 14:30:45.982611+00:00 [info] <0.229.0> Running boot step rabbit_core_metrics_gc defined by app rabbit
-2022-11-29 14:30:45.982737+00:00 [info] <0.229.0> Running boot step background_gc defined by app rabbit
-2022-11-29 14:30:45.983320+00:00 [info] <0.229.0> Running boot step routing_ready defined by app rabbit
-2022-11-29 14:30:45.983438+00:00 [info] <0.229.0> Running boot step pre_flight defined by app rabbit
-2022-11-29 14:30:45.983525+00:00 [info] <0.229.0> Running boot step notify_cluster defined by app rabbit
-2022-11-29 14:30:45.983581+00:00 [info] <0.229.0> Running boot step networking defined by app rabbit
-2022-11-29 14:30:45.983916+00:00 [info] <0.229.0> Running boot step definition_import_worker_pool defined by app rabbit
-2022-11-29 14:30:45.984043+00:00 [info] <0.286.0> Starting worker pool 'definition_import_pool' with 4 processes in it
-2022-11-29 14:30:45.985015+00:00 [info] <0.229.0> Running boot step cluster_name defined by app rabbit
-2022-11-29 14:30:45.985184+00:00 [info] <0.229.0> Initialising internal cluster ID to 'rabbitmq-cluster-id-Rgmy80L7i0i0Xz2_UoDa0w'
-2022-11-29 14:30:45.987984+00:00 [info] <0.229.0> Running boot step direct_client defined by app rabbit
-2022-11-29 14:30:45.988405+00:00 [info] <0.229.0> Running boot step rabbit_maintenance_mode_state defined by app rabbit
-2022-11-29 14:30:45.988478+00:00 [info] <0.229.0> Creating table rabbit_node_maintenance_states for maintenance mode status
-2022-11-29 14:30:45.996369+00:00 [info] <0.229.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management
-2022-11-29 14:30:45.996812+00:00 [info] <0.720.0> Resetting node maintenance status
-2022-11-29 14:30:46.021755+00:00 [info] <0.779.0> Management plugin: HTTP (non-TLS) listener started on port 15672
-2022-11-29 14:30:46.022119+00:00 [info] <0.807.0> Statistics database started.
-2022-11-29 14:30:46.022325+00:00 [info] <0.806.0> Starting worker pool 'management_worker_pool' with 3 processes in it
-2022-11-29 14:30:46.040355+00:00 [info] <0.821.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692
-2022-11-29 14:30:46.040728+00:00 [info] <0.720.0> Ready to start client connection listeners
-2022-11-29 14:30:46.044244+00:00 [info] <0.865.0> started TCP listener on [::]:5672
- completed with 4 plugins.
-2022-11-29 14:30:46.348502+00:00 [info] <0.720.0> Server startup complete; 4 plugins started.
-2022-11-29 14:30:46.348502+00:00 [info] <0.720.0>  * rabbitmq_prometheus
-2022-11-29 14:30:46.348502+00:00 [info] <0.720.0>  * rabbitmq_management
-2022-11-29 14:30:46.348502+00:00 [info] <0.720.0>  * rabbitmq_web_dispatch
-2022-11-29 14:30:46.348502+00:00 [info] <0.720.0>  * rabbitmq_management_agent
-2022-11-29 14:34:17.138816+00:00 [notice] <0.61.0> SIGTERM received - shutting down
-2022-11-29 14:34:17.138816+00:00 [notice] <0.61.0> 
-2022-11-29 14:34:17.144131+00:00 [warning] <0.771.0> HTTP listener registry could not find context rabbitmq_prometheus_tls
-2022-11-29 14:34:17.156815+00:00 [warning] <0.771.0> HTTP listener registry could not find context rabbitmq_management_tls
-2022-11-29 14:34:17.170790+00:00 [info] <0.229.0> Peer discovery backend rabbit_peer_discovery_classic_config does not support registration, skipping unregistration.
-2022-11-29 14:34:17.171046+00:00 [info] <0.865.0> stopped TCP listener on [::]:5672
-2022-11-29 14:34:17.173498+00:00 [info] <0.885.0> Closing all connections in vhost '/' on node 'rabbit@19a2b7f8de6b' because the vhost is stopping
-2022-11-29 14:34:17.174286+00:00 [info] <0.683.0> Stopping message store for directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent'
-2022-11-29 14:34:17.182228+00:00 [info] <0.683.0> Message store for directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent' is stopped
-2022-11-29 14:34:17.182755+00:00 [info] <0.679.0> Stopping message store for directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient'
-2022-11-29 14:34:17.800091+00:00 [info] <0.679.0> Message store for directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient' is stopped
-2022-11-29 14:34:17.801559+00:00 [info] <0.623.0> Management plugin: to stop collect_statistics.
-2022-12-04 11:38:07.721875+00:00 [notice] <0.44.0> Application syslog exited with reason: stopped
-2022-12-04 11:38:07.732253+00:00 [notice] <0.229.0> Logging: switching to configured handler(s); following messages may not be visible in this log output
-2022-12-04 11:38:07.773125+00:00 [notice] <0.229.0> Logging: configured log handlers are now ACTIVE
-2022-12-04 11:38:12.785501+00:00 [info] <0.229.0> ra: starting system quorum_queues
-2022-12-04 11:38:12.785601+00:00 [info] <0.229.0> starting Ra system: quorum_queues in directory: /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/quorum/rabbit@19a2b7f8de6b
-2022-12-04 11:38:12.787654+00:00 [info] <0.295.0> ra system 'quorum_queues' running pre init for 0 registered servers
-2022-12-04 11:38:12.788915+00:00 [info] <0.298.0> ra: meta data store initialised for system quorum_queues. 0 record(s) recovered
-2022-12-04 11:38:12.789175+00:00 [notice] <0.307.0> WAL: ra_log_wal init, open tbls: ra_log_open_mem_tables, closed tbls: ra_log_closed_mem_tables
-2022-12-04 11:38:12.792211+00:00 [info] <0.229.0> ra: starting system coordination
-2022-12-04 11:38:12.792551+00:00 [info] <0.229.0> starting Ra system: coordination in directory: /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/coordination/rabbit@19a2b7f8de6b
-2022-12-04 11:38:12.798013+00:00 [info] <0.328.0> ra system 'coordination' running pre init for 0 registered servers
-2022-12-04 11:38:12.800385+00:00 [info] <0.330.0> ra: meta data store initialised for system coordination. 0 record(s) recovered
-2022-12-04 11:38:12.800581+00:00 [notice] <0.344.0> WAL: ra_coordination_log_wal init, open tbls: ra_coordination_log_open_mem_tables, closed tbls: ra_coordination_log_closed_mem_tables
-2022-12-04 11:38:12.804814+00:00 [info] <0.229.0> 
-2022-12-04 11:38:12.804814+00:00 [info] <0.229.0>  Starting RabbitMQ 3.11.4 on Erlang 25.1.2 [jit]
-2022-12-04 11:38:12.804814+00:00 [info] <0.229.0>  Copyright (c) 2007-2022 VMware, Inc. or its affiliates.
-2022-12-04 11:38:12.804814+00:00 [info] <0.229.0>  Licensed under the MPL 2.0. Website: https://rabbitmq.com
-
-  ##  ##      RabbitMQ 3.11.4
-  ##  ##
-  ##########  Copyright (c) 2007-2022 VMware, Inc. or its affiliates.
-  ######  ##
-  ##########  Licensed under the MPL 2.0. Website: https://rabbitmq.com
-
-  Erlang:      25.1.2 [jit]
-  TLS Library: OpenSSL - OpenSSL 1.1.1s  1 Nov 2022
-  Release series support status: supported
-
-  Doc guides:  https://rabbitmq.com/documentation.html
-  Support:     https://rabbitmq.com/contact.html
-  Tutorials:   https://rabbitmq.com/getstarted.html
-  Monitoring:  https://rabbitmq.com/monitoring.html
-
-  Logs: /var/log/rabbitmq/rabbit@19a2b7f8de6b_upgrade.log
-        <stdout>
-
-  Config file(s): /etc/rabbitmq/conf.d/10-defaults.conf
-
-  Starting broker...2022-12-04 11:38:12.807838+00:00 [info] <0.229.0> 
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  node           : rabbit@19a2b7f8de6b
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  home dir       : /var/lib/rabbitmq
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  config file(s) : /etc/rabbitmq/conf.d/10-defaults.conf
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  cookie hash    : YINB0Nxw/+yA+vCDyj1v3Q==
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  log(s)         : /var/log/rabbitmq/rabbit@19a2b7f8de6b_upgrade.log
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>                 : <stdout>
-2022-12-04 11:38:12.807838+00:00 [info] <0.229.0>  database dir   : /var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b
-2022-12-04 11:38:14.082068+00:00 [info] <0.229.0> Running boot step pre_boot defined by app rabbit
-2022-12-04 11:38:14.082319+00:00 [info] <0.229.0> Running boot step rabbit_global_counters defined by app rabbit
-2022-12-04 11:38:14.083274+00:00 [info] <0.229.0> Running boot step rabbit_osiris_metrics defined by app rabbit
-2022-12-04 11:38:14.083438+00:00 [info] <0.229.0> Running boot step rabbit_core_metrics defined by app rabbit
-2022-12-04 11:38:14.083828+00:00 [info] <0.229.0> Running boot step rabbit_alarm defined by app rabbit
-2022-12-04 11:38:14.093197+00:00 [info] <0.376.0> Memory high watermark set to 1555 MiB (1631510528 bytes) of 3889 MiB (4078776320 bytes) total
-2022-12-04 11:38:14.097331+00:00 [info] <0.378.0> Enabling free disk space monitoring
-2022-12-04 11:38:14.097413+00:00 [info] <0.378.0> Disk free limit set to 50MB
-2022-12-04 11:38:14.099807+00:00 [info] <0.229.0> Running boot step code_server_cache defined by app rabbit
-2022-12-04 11:38:14.100086+00:00 [info] <0.229.0> Running boot step file_handle_cache defined by app rabbit
-2022-12-04 11:38:14.100471+00:00 [info] <0.381.0> Limiting to approx 1048479 file handles (943629 sockets)
-2022-12-04 11:38:14.100603+00:00 [info] <0.382.0> FHC read buffering: OFF
-2022-12-04 11:38:14.100641+00:00 [info] <0.382.0> FHC write buffering: ON
-2022-12-04 11:38:14.101775+00:00 [info] <0.229.0> Running boot step worker_pool defined by app rabbit
-2022-12-04 11:38:14.101958+00:00 [info] <0.357.0> Will use 4 processes for default worker pool
-2022-12-04 11:38:14.102072+00:00 [info] <0.357.0> Starting worker pool 'worker_pool' with 4 processes in it
-2022-12-04 11:38:14.102613+00:00 [info] <0.229.0> Running boot step database defined by app rabbit
-2022-12-04 11:38:14.104824+00:00 [info] <0.229.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-12-04 11:38:14.104988+00:00 [info] <0.229.0> Successfully synced tables from a peer
-2022-12-04 11:38:14.113671+00:00 [info] <0.229.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
-2022-12-04 11:38:14.113811+00:00 [info] <0.229.0> Successfully synced tables from a peer
-2022-12-04 11:38:14.113840+00:00 [info] <0.229.0> Peer discovery backend rabbit_peer_discovery_classic_config does not support registration, skipping registration.
-2022-12-04 11:38:14.113906+00:00 [info] <0.229.0> Running boot step tracking_metadata_store defined by app rabbit
-2022-12-04 11:38:14.114009+00:00 [info] <0.399.0> Setting up a table for connection tracking on this node: tracked_connection
-2022-12-04 11:38:14.114061+00:00 [info] <0.399.0> Setting up a table for per-vhost connection counting on this node: tracked_connection_per_vhost
-2022-12-04 11:38:14.114100+00:00 [info] <0.399.0> Setting up a table for per-user connection counting on this node: tracked_connection_per_user
-2022-12-04 11:38:14.114140+00:00 [info] <0.399.0> Setting up a table for channel tracking on this node: tracked_channel
-2022-12-04 11:38:14.114174+00:00 [info] <0.399.0> Setting up a table for channel tracking on this node: tracked_channel_per_user
-2022-12-04 11:38:14.114217+00:00 [info] <0.229.0> Running boot step networking_metadata_store defined by app rabbit
-2022-12-04 11:38:14.114258+00:00 [info] <0.229.0> Running boot step database_sync defined by app rabbit
-2022-12-04 11:38:14.114297+00:00 [info] <0.229.0> Running boot step feature_flags defined by app rabbit
-2022-12-04 11:38:14.114418+00:00 [info] <0.229.0> Running boot step codec_correctness_check defined by app rabbit
-2022-12-04 11:38:14.114449+00:00 [info] <0.229.0> Running boot step external_infrastructure defined by app rabbit
-2022-12-04 11:38:14.114515+00:00 [info] <0.229.0> Running boot step rabbit_event defined by app rabbit
-2022-12-04 11:38:14.114731+00:00 [info] <0.229.0> Running boot step rabbit_registry defined by app rabbit
-2022-12-04 11:38:14.114883+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_amqplain defined by app rabbit
-2022-12-04 11:38:14.114962+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_cr_demo defined by app rabbit
-2022-12-04 11:38:14.115011+00:00 [info] <0.229.0> Running boot step rabbit_auth_mechanism_plain defined by app rabbit
-2022-12-04 11:38:14.115181+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_direct defined by app rabbit
-2022-12-04 11:38:14.115262+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_fanout defined by app rabbit
-2022-12-04 11:38:14.115353+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_headers defined by app rabbit
-2022-12-04 11:38:14.115431+00:00 [info] <0.229.0> Running boot step rabbit_exchange_type_topic defined by app rabbit
-2022-12-04 11:38:14.115552+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_all defined by app rabbit
-2022-12-04 11:38:14.115673+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_exactly defined by app rabbit
-2022-12-04 11:38:14.115785+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_mode_nodes defined by app rabbit
-2022-12-04 11:38:14.115849+00:00 [info] <0.229.0> Running boot step rabbit_priority_queue defined by app rabbit
-2022-12-04 11:38:14.115894+00:00 [info] <0.229.0> Priority queues enabled, real BQ is rabbit_variable_queue
-2022-12-04 11:38:14.115967+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_client_local defined by app rabbit
-2022-12-04 11:38:14.116031+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_min_masters defined by app rabbit
-2022-12-04 11:38:14.116080+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_random defined by app rabbit
-2022-12-04 11:38:14.116161+00:00 [info] <0.229.0> Running boot step kernel_ready defined by app rabbit
-2022-12-04 11:38:14.116187+00:00 [info] <0.229.0> Running boot step rabbit_sysmon_minder defined by app rabbit
-2022-12-04 11:38:14.116489+00:00 [info] <0.229.0> Running boot step rabbit_epmd_monitor defined by app rabbit
-2022-12-04 11:38:14.117574+00:00 [info] <0.408.0> epmd monitor knows us, inter-node communication (distribution) port: 25672
-2022-12-04 11:38:14.117733+00:00 [info] <0.229.0> Running boot step guid_generator defined by app rabbit
-2022-12-04 11:38:14.120071+00:00 [info] <0.229.0> Running boot step rabbit_node_monitor defined by app rabbit
-2022-12-04 11:38:14.120316+00:00 [info] <0.412.0> Starting rabbit_node_monitor
-2022-12-04 11:38:14.120483+00:00 [info] <0.229.0> Running boot step delegate_sup defined by app rabbit
-2022-12-04 11:38:14.120867+00:00 [info] <0.229.0> Running boot step rabbit_memory_monitor defined by app rabbit
-2022-12-04 11:38:14.121001+00:00 [info] <0.229.0> Running boot step rabbit_fifo_dlx_sup defined by app rabbit
-2022-12-04 11:38:14.121333+00:00 [info] <0.229.0> Running boot step core_initialized defined by app rabbit
-2022-12-04 11:38:14.121415+00:00 [info] <0.229.0> Running boot step upgrade_queues defined by app rabbit
-2022-12-04 11:38:14.129754+00:00 [info] <0.229.0> Running boot step channel_tracking defined by app rabbit
-2022-12-04 11:38:14.129863+00:00 [info] <0.229.0> Running boot step rabbit_channel_tracking_handler defined by app rabbit
-2022-12-04 11:38:14.129912+00:00 [info] <0.229.0> Running boot step connection_tracking defined by app rabbit
-2022-12-04 11:38:14.129950+00:00 [info] <0.229.0> Running boot step rabbit_connection_tracking_handler defined by app rabbit
-2022-12-04 11:38:14.130008+00:00 [info] <0.229.0> Running boot step rabbit_definitions_hashing defined by app rabbit
-2022-12-04 11:38:14.130105+00:00 [info] <0.229.0> Running boot step rabbit_exchange_parameters defined by app rabbit
-2022-12-04 11:38:14.130202+00:00 [info] <0.229.0> Running boot step rabbit_mirror_queue_misc defined by app rabbit
-2022-12-04 11:38:14.130366+00:00 [info] <0.229.0> Running boot step rabbit_policies defined by app rabbit
-2022-12-04 11:38:14.130675+00:00 [info] <0.229.0> Running boot step rabbit_policy defined by app rabbit
-2022-12-04 11:38:14.130759+00:00 [info] <0.229.0> Running boot step rabbit_queue_location_validator defined by app rabbit
-2022-12-04 11:38:14.130793+00:00 [info] <0.229.0> Running boot step rabbit_quorum_memory_manager defined by app rabbit
-2022-12-04 11:38:14.130833+00:00 [info] <0.229.0> Running boot step rabbit_stream_coordinator defined by app rabbit
-2022-12-04 11:38:14.130978+00:00 [info] <0.229.0> Running boot step rabbit_vhost_limit defined by app rabbit
-2022-12-04 11:38:14.131054+00:00 [info] <0.229.0> Running boot step rabbit_mgmt_reset_handler defined by app rabbitmq_management
-2022-12-04 11:38:14.131090+00:00 [info] <0.229.0> Running boot step rabbit_mgmt_db_handler defined by app rabbitmq_management_agent
-2022-12-04 11:38:14.131129+00:00 [info] <0.229.0> Management plugin: using rates mode 'basic'
-2022-12-04 11:38:14.131570+00:00 [info] <0.229.0> Running boot step recovery defined by app rabbit
-2022-12-04 11:38:14.132803+00:00 [info] <0.446.0> Making sure data directory '/var/lib/rabbitmq/mnesia/rabbit@19a2b7f8de6b/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L' for vhost '/' exists
-2022-12-04 11:38:14.136204+00:00 [info] <0.446.0> Starting message stores for vhost '/'
-2022-12-04 11:38:14.136509+00:00 [info] <0.451.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_transient": using rabbit_msg_store_ets_index to provide index
-2022-12-04 11:38:14.138774+00:00 [info] <0.446.0> Started message store of type transient for vhost '/'
-2022-12-04 11:38:14.138950+00:00 [info] <0.455.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": using rabbit_msg_store_ets_index to provide index
-2022-12-04 11:38:14.142905+00:00 [info] <0.446.0> Started message store of type persistent for vhost '/'
-2022-12-04 11:38:14.143164+00:00 [info] <0.446.0> Recovering 0 queues of type rabbit_classic_queue took 9ms
-2022-12-04 11:38:14.143236+00:00 [info] <0.446.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms
-2022-12-04 11:38:14.143267+00:00 [info] <0.446.0> Recovering 0 queues of type rabbit_stream_queue took 0ms
-2022-12-04 11:38:14.144911+00:00 [info] <0.229.0> Running boot step empty_db_check defined by app rabbit
-2022-12-04 11:38:14.145056+00:00 [info] <0.229.0> Will not seed default virtual host and user: have definitions to load...
-2022-12-04 11:38:14.145093+00:00 [info] <0.229.0> Running boot step rabbit_observer_cli defined by app rabbit
-2022-12-04 11:38:14.145180+00:00 [info] <0.229.0> Running boot step rabbit_looking_glass defined by app rabbit
-2022-12-04 11:38:14.145231+00:00 [info] <0.229.0> Running boot step rabbit_core_metrics_gc defined by app rabbit
-2022-12-04 11:38:14.145358+00:00 [info] <0.229.0> Running boot step background_gc defined by app rabbit
-2022-12-04 11:38:14.145609+00:00 [info] <0.229.0> Running boot step routing_ready defined by app rabbit
-2022-12-04 11:38:14.145682+00:00 [info] <0.229.0> Running boot step pre_flight defined by app rabbit
-2022-12-04 11:38:14.145725+00:00 [info] <0.229.0> Running boot step notify_cluster defined by app rabbit
-2022-12-04 11:38:14.145762+00:00 [info] <0.229.0> Running boot step networking defined by app rabbit
-2022-12-04 11:38:14.145791+00:00 [info] <0.229.0> Running boot step definition_import_worker_pool defined by app rabbit
-2022-12-04 11:38:14.145842+00:00 [info] <0.357.0> Starting worker pool 'definition_import_pool' with 4 processes in it
-2022-12-04 11:38:14.146218+00:00 [info] <0.229.0> Running boot step cluster_name defined by app rabbit
-2022-12-04 11:38:14.146284+00:00 [info] <0.229.0> Running boot step direct_client defined by app rabbit
-2022-12-04 11:38:14.146351+00:00 [info] <0.229.0> Running boot step rabbit_maintenance_mode_state defined by app rabbit
-2022-12-04 11:38:14.146380+00:00 [info] <0.229.0> Creating table rabbit_node_maintenance_states for maintenance mode status
-2022-12-04 11:38:14.146564+00:00 [info] <0.229.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management
-2022-12-04 11:38:14.146780+00:00 [info] <0.484.0> Resetting node maintenance status
-2022-12-04 11:38:14.166005+00:00 [info] <0.543.0> Management plugin: HTTP (non-TLS) listener started on port 15672
-2022-12-04 11:38:14.166223+00:00 [info] <0.571.0> Statistics database started.
-2022-12-04 11:38:14.166389+00:00 [info] <0.570.0> Starting worker pool 'management_worker_pool' with 3 processes in it
-2022-12-04 11:38:14.181026+00:00 [info] <0.585.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692
-2022-12-04 11:38:14.181301+00:00 [info] <0.484.0> Ready to start client connection listeners
-2022-12-04 11:38:14.184342+00:00 [info] <0.629.0> started TCP listener on [::]:5672
- completed with 4 plugins.
-2022-12-04 11:38:14.336169+00:00 [info] <0.484.0> Server startup complete; 4 plugins started.
-2022-12-04 11:38:14.336169+00:00 [info] <0.484.0>  * rabbitmq_prometheus
-2022-12-04 11:38:14.336169+00:00 [info] <0.484.0>  * rabbitmq_management
-2022-12-04 11:38:14.336169+00:00 [info] <0.484.0>  * rabbitmq_web_dispatch
-2022-12-04 11:38:14.336169+00:00 [info] <0.484.0>  * rabbitmq_management_agent
+# 15672是web管理端访问端口
+$ docker run --name rabbitmq -p 5672:5672 -p 15672:15672 \
+-e RABBITMQ_DEFAULT_USER=rbmq \
+-e RABBITMQ_DEFAULT_PASS=rbmq \
+--hostname=rabbitmqhosta \
+-v /home/rabbitmq/data:/var/lib/rabbitmq \
+-d rabbitmq:3.11-management
 ```
 
->1. Rabbitmq 镜像默认不带 Web 端管理插件，指定了镜像 tag 为 3.11-management，表示下载包含 Web 管理插件的镜像版本。
->2. -p 指定容器内部端口号与宿主机之间的映射，RabbitMq 默认使用`5672`为数据通信端口，`15672`为 Web 管理界面访问端口。
->3. 从日志可以看出，RabbitMq 默认创建了 guest 用户，并且赋予 administrator 角色权限，同时服务监听 5672 端口的 TCP 连接和 15672 端口的 HTTP 连接，至此说明安装成功。
+docker-compose.yaml 示例：
 
-访问 RabbitMq 的 Web 端管理界面默认用户名和密码都是`guest`
+```yaml
+version: "3.4"
 
-<img src="rabbitmq/image-20221204214928111.png" alt="image-20221204214928111" style="zoom:67%;" />
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:  
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbitmqhosta
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/data:/var/lib/rabbitmq
+    environment:
+      - "RABBITMQ_DEFAULT_USER=rbmq"
+      - "RABBITMQ_DEFAULT_PASS=rbmq"
+    networks:
+      - apps
+    restart: on-failure:3
+```
+
+说明：
+
+- RabbitMQ 镜像默认不带 Web 端管理插件，指定了镜像 tag 为 3.11-management，表示下载包含 Web 管理插件的镜像版本。`rabbitmq-plugins enable rabbitmq_management`命令，开启 Web 管理插件。
+- -p 指定容器内部端口号与宿主机之间的映射，RabbitMQ 默认使用`5672`为数据通信端口，`15672`为 Web 管理界面访问端口。
+- `RabbitMQ 默认创建 guest 用户，密码也是 guest`，并且赋予 administrator 角色权限，同时服务监听 5672 端口的 TCP 连接和 15672 端口的 HTTP 连接，此处修改为 rbmq。
+
+### 访问页面
+
+访问 RabbitMQ 的 Web 端管理界面，http://192.168.2.197:15672/：
+
+![image-20231012220930673](./rabbitmq/image-20231012220930673.png)
+
+## Hello World
+
+**pom.xml：**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.xisun.rabbitmq</groupId>
+    <artifactId>xisun-rabbitmq</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.4</version>
+    </parent>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- RabbitMQ场景启动器-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <!-- RabbitMQ测试依赖-->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+> Spring Boot 的 autoconfigue 包中，配置了 org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration，`RabbitAutoConfiguration`定义了 RabbitMQ 的自动配置行为：
+>
+> ```java
+> /**
+>  * {@link EnableAutoConfiguration Auto-configuration} for {@link RabbitTemplate}.
+>  * <p>
+>  * This configuration class is active only when the RabbitMQ and Spring AMQP client
+>  * libraries are on the classpath.
+>  * <p>
+>  * Registers the following beans:
+>  * <ul>
+>  * <li>{@link org.springframework.amqp.rabbit.core.RabbitTemplate RabbitTemplate} if there
+>  * is no other bean of the same type in the context.</li>
+>  * <li>{@link org.springframework.amqp.rabbit.connection.CachingConnectionFactory
+>  * CachingConnectionFactory} instance if there is no other bean of the same type in the
+>  * context.</li>
+>  * <li>{@link org.springframework.amqp.core.AmqpAdmin } instance as long as
+>  * {@literal spring.rabbitmq.dynamic=true}.</li>
+>  * </ul>
+>  *
+>  * @author Greg Turnquist
+>  * @author Josh Long
+>  * @author Stephane Nicoll
+>  * @author Gary Russell
+>  * @author Phillip Webb
+>  * @author Artsiom Yudovin
+>  * @author Chris Bono
+>  * @author Moritz Halbritter
+>  * @author Andy Wilkinson
+>  * @since 1.0.0
+>  */
+> @AutoConfiguration
+> @ConditionalOnClass({ RabbitTemplate.class, Channel.class })
+> @EnableConfigurationProperties(RabbitProperties.class)
+> @Import({ RabbitAnnotationDrivenConfiguration.class, RabbitStreamConfiguration.class })
+> public class RabbitAutoConfiguration {
+> }
+> ```
+
+**application.yaml：**
+
+```yaml
+spring:
+  rabbitmq:
+    host: 192.168.2.100
+    port: 5672
+    username: rbmq
+    password: rbmq
+```
+
+**模型：**
+
+![image-20231013084601117](./rabbitmq/image-20231013084601117.png)
+
+**生产者：**
+
+```java
+package cn.xisun.rabbitmq.demo;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * @author XiSun
+ * @since 2023/10/12 22:33
+ */
+@Slf4j
+public class Producer {
+
+    // 队列名称
+    private final static String QUEUE_NAME = "hello";
+
+    public static void main(String[] args) {
+        // 创建一个连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("192.168.2.100");
+        factory.setUsername("rbmq");
+        factory.setPassword("rbmq");
+        // channel实现了自动close接口，自动关闭，不需要显式关闭
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            /*
+             * 生成一个队列：
+             * 参数1：队列名称
+             * 参数2：队列里面的消息是否持久化，默认消息存储在内存中
+             * 参数3：该队列是否只供一个消费者进行消费，消息是否进行共享，true表示可以多个消费者消费，false表示只能一个消费者消费
+             * 参数4：是否自动删除，最后一个消费者端开连接以后，该队列是否自动删除，true表示自动删除，false表示不自动删除
+             * 参数5：其他参数，本示例暂不添加
+             */
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            String message = "hello world";
+            /*
+             * 发送一个消息：
+             * 参数1：发送到哪个交换机，本示例使用的是默认的交换机
+             * 参数2：路由的key是哪个，本示例使用的是队列的名称
+             * 参数3：其他的参数信息，本示例暂不添加
+             * 参数4：发送消息的消息体
+             */
+            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+            log.info("消息发送完毕");
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+**消费者：**
+
+```java
+package cn.xisun.rabbitmq.demo;
+
+import com.rabbitmq.client.*;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * @author XiSun
+ * @since 2023/10/12 22:33
+ */
+@Slf4j
+public class Consumer {
+
+    // 队列名称
+    private final static String QUEUE_NAME = "hello";
+
+    public static void main(String[] args) {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("192.168.2.100");
+        factory.setUsername("rbmq");
+        factory.setPassword("rbmq");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            log.info("等待接收消息....");
+
+            // 推送的消息如何进行消费的接口回调
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+            };
+
+            // 取消消费的一个回调接口，如在消费的时候队列被删除掉了
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+            /*
+             * 消费者消费消息：
+             * 参数1：消费哪个队列
+             * 参数2：消费成功之后是否要自动应答，true表示自动应答，false表示手动应答
+             * 参数3：消费者消费消息成功时的回调
+             * 参数4：消费者消费消息失败时的回调
+             */
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+**启动生产者：**
+
+```java
+10:19:23.058 [main] INFO cn.xisun.rabbitmq.demo.Consumer -- 等待接收消息....
+10:19:23.067 [pool-1-thread-4] INFO cn.xisun.rabbitmq.demo.Consumer -- 消费的消息是：hello world
+```
+
+![image-20231013101909238](./rabbitmq/image-20231013101909238.png)
+
+**启动消费者：**
+
+```java
+10:19:23.058 [main] INFO cn.xisun.rabbitmq.demo.Consumer -- 等待接收消息....
+10:19:23.067 [pool-1-thread-4] INFO cn.xisun.rabbitmq.demo.Consumer -- 消费的消息是：hello world
+```
+
+![image-20231013102028954](./rabbitmq/image-20231013102028954.png)
+
+## Work Queues
+
+`工作队列`，又称任务队列，它的主要思想是**避免立即执行资源密集型任务**，且不得不等待任务完成。相反，可以安排任务在之后执行，把任务封装为消息并将其发送到队列，在后台运行的工作进程将弹出任务并最终执行作业。当有多个工作线程时，这些工作线程将一起处理这些任务。
+
+![1697164340897](./rabbitmq/1697164340897.jpg)
+
+### 轮训分发消息
+
+RabbitMqUtils.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 10:36
+ */
+public class RabbitMqUtils {
+
+    /**
+     * 获取一个连接的channel
+     *
+     * @return
+     * @throws Exception
+     */
+    public static Channel getChannel() throws IOException, TimeoutException {
+        //创建一个连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("192.168.2.100");
+        factory.setUsername("rbmq");
+        factory.setPassword("rbmq");
+        Connection connection = factory.newConnection();
+        return connection.createChannel();
+    }
+
+}
+```
+
+Task01.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 11:00
+ */
+@Slf4j
+public class Task {
+
+    private final static String QUEUE_NAME = "hello";
+
+    public static void main(String[] args) {
+        try (Channel channel = RabbitMqUtils.getChannel()) {
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            // 从控制台当中接受信息
+            Scanner scanner = new Scanner(System.in);
+            while (scanner.hasNext()) {
+                String message = scanner.next();
+                channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+                log.info("消息发送完毕：{}", message);
+            }
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Work01.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 10:50
+ */
+@Slf4j
+public class Worker01 {
+
+    private static final String QUEUE_NAME = "hello";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker01 消费者启动等待消费......");
+
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Work02.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 10:50
+ */
+@Slf4j
+public class Worker02 {
+
+    private static final String QUEUE_NAME = "hello";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker02 消费者启动等待消费......");
+
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+启动 Task01，Work01，Work02，然后发送消息：
+
+- Task01 控制台：
+
+  ```java
+  AA
+  11:29:29.039 [main] INFO cn.xisun.rabbitmq.workqueue.Task -- 消息发送完毕：AA
+  BB
+  11:29:30.695 [main] INFO cn.xisun.rabbitmq.workqueue.Task -- 消息发送完毕：BB
+  CC
+  11:29:31.813 [main] INFO cn.xisun.rabbitmq.workqueue.Task -- 消息发送完毕：CC
+  DD
+  11:29:32.754 [main] INFO cn.xisun.rabbitmq.workqueue.Task -- 消息发送完毕：DD
+  ```
+
+- Work01 控制台：
+
+  ```java
+  11:29:07.137 [main] INFO cn.xisun.rabbitmq.workqueue.Worker01 -- Worker01 消费者启动等待消费......
+  11:29:29.041 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.Worker01 -- 消费的消息是：AA
+  11:29:31.815 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.Worker01 -- 消费的消息是：CC
+  ```
+
+- Work02 控制台：
+
+  ```java
+  11:29:12.164 [main] INFO cn.xisun.rabbitmq.workqueue.Worker02 -- Worker01 消费者启动等待消费......
+  11:29:30.699 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.Worker02 -- 消费的消息是：BB
+  11:29:32.756 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.Worker02 -- 消费的消息是：DD
+  ```
+
+> 注意 Work01 和 Work02 与 demo 示例中的 Consumer 的区别，Consumer 中异常捕获的写法，channel 和 connection 会被关闭，此处没有执行关闭操作。
+
+### 消息应答
+
+消费者完成一个任务可能需要一段时间，如果其中一个消费者在处理一个长的任务，并仅只完成了部分突然挂掉了，会发生什么情况？
+
+RabbitMQ 一旦向消费者传递了一条消息，便立即将该消息标记为删除。在这种情况下，如果突然有个消费者挂掉了，将会丢失该消费者正在处理的消息，以及后续发送给该消费者的消息，因为它无法接收到。
+
+为了保证消息在发送过程中不丢失，RabbitMQ 引入`消息应答机制`，消息应答就是：**消费者在接收到消息并且处理该消息之后，告诉 RabbitMQ 它已经处理了，RabbitMQ 可以把该消息删除了。** 
+
+#### 自动应答
+
+自动应答模式下，消息发送后立即被认为已经传送成功。这种模式需要在**高吞吐量和数据传输安全性方面做权衡**，因为这种模式如果消息在接收到之前，消费者那边出现连接或者 channel 关闭，那么消息就丢失了。另一方面，这种模式消费者那边可以传递过载的消息，**没有对传递的消息数量进行限制**，这样有可能使得消费者这边由于接收太多还来不及处理的消息，导致这些消息的积压，最终使得内存耗尽，这些消费者线程被操作系统杀死。
+
+**因此，自动应答模式，仅适用在消费者可以高效并以某种速率处理这些消息的情况下使用**。
+
+#### 手动应答的方法
+
+##### basicAck
+
+```java
+/**
+ * Acknowledge one or several received
+ * messages. Supply the deliveryTag from the {@link com.rabbitmq.client.AMQP.Basic.GetOk}
+ * or {@link com.rabbitmq.client.AMQP.Basic.Deliver} method
+ * containing the received message being acknowledged.
+ * @see com.rabbitmq.client.AMQP.Basic.Ack
+ * @param deliveryTag the tag from the received {@link com.rabbitmq.client.AMQP.Basic.GetOk} or {@link com.rabbitmq.client.AMQP.Basic.Deliver}
+ * @param multiple true to acknowledge all messages up to and
+ * including the supplied delivery tag; false to acknowledge just
+ * the supplied delivery tag.
+ * @throws java.io.IOException if an error is encountered
+ */
+void basicAck(long deliveryTag, boolean multiple) throws IOException;
+```
+
+- `肯定确定`：RabbitMQ 已知道该消息，并且成功的处理消息，可以将其丢弃了。
+
+##### basicNack
+
+```java
+/**
+ * Reject one or several received messages.
+ *
+ * Supply the <code>deliveryTag</code> from the {@link com.rabbitmq.client.AMQP.Basic.GetOk}
+ * or {@link com.rabbitmq.client.AMQP.Basic.Deliver} method containing the message to be rejected.
+ * @see com.rabbitmq.client.AMQP.Basic.Nack
+ * @param deliveryTag the tag from the received {@link com.rabbitmq.client.AMQP.Basic.GetOk} or {@link com.rabbitmq.client.AMQP.Basic.Deliver}
+ * @param multiple true to reject all messages up to and including
+ * the supplied delivery tag; false to reject just the supplied
+ * delivery tag.
+ * @param requeue true if the rejected message(s) should be requeued rather
+ * than discarded/dead-lettered
+ * @throws java.io.IOException if an error is encountered
+ */
+void basicNack(long deliveryTag, boolean multiple, boolean requeue) throws IOException;
+```
+
+- `否定确认`。
+
+##### basicReject
+
+```java
+/**
+ * Reject a message. Supply the deliveryTag from the {@link com.rabbitmq.client.AMQP.Basic.GetOk}
+ * or {@link com.rabbitmq.client.AMQP.Basic.Deliver} method
+ * containing the received message being rejected.
+ * @see com.rabbitmq.client.AMQP.Basic.Reject
+ * @param deliveryTag the tag from the received {@link com.rabbitmq.client.AMQP.Basic.GetOk} or {@link com.rabbitmq.client.AMQP.Basic.Deliver}
+ * @param requeue true if the rejected message should be requeued rather than discarded/dead-lettered
+ * @throws java.io.IOException if an error is encountered
+ */
+void basicReject(long deliveryTag, boolean requeue) throws IOException;
+```
+
+- `否定确认`：与 basicNack() 相比，少一个 multiple 参数，表示不处理该消息，而是直接拒绝，可以将其丢弃。
+
+##### multiple 参数
+
+<img src="./rabbitmq/image-20231013131130852.png" alt="image-20231013131130852" style="zoom:50%;" />
+
+multiple 的 true 和 false 代表不同意思：
+
+- `true`：**表示批量应答 channel 上未应答的消息。**比如，channel 上有传送 tag 的消息 5、6、7 和 8，当前 tag 是 8，此时 5 ~ 8 的这些还未应答的消息，都会被确认收到消息应答。
+
+- `false`：同上面相比，只会应答 tag = 8 的消息，5、6 和 7 这三个消息依然不会被确认收到消息应答。
+
+#### 消息自动重新入队
+
+<img src="./rabbitmq/image-20231013133014954.png" alt="image-20231013133014954" style="zoom:80%;" />
+
+如果消费者由于某些原因失去连接（其通道已关闭，连接已关闭或 TCP 连接丢失），导致消息未发送 ACK 确认，RabbitMQ 将了解到消息未完全处理，并将对其`重新排队`。如果此时其他消费者可以处理，它将很快将其重新分发给另一个消费者。这样，即使某个消费者偶尔死亡，也可以确保不会丢失任何消息。
+
+#### 手动应答示例
+
+消息`默认采用的是自动应答`，所以要想实现消息消费过程中不丢失，需要把自动应答改为手动应答。
+
+SleepUtils.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:46
+ */
+public class SleepUtils {
+    public static void sleep(int second) {
+        try {
+            Thread.sleep(1000 * second);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+```
+
+Task02.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:41
+ */
+@Slf4j
+public class Task02 {
+
+    private final static String ACK_QUEUE_NAME = "ack_queue";
+
+    public static void main(String[] args) {
+        try (Channel channel = RabbitMqUtils.getChannel()) {
+            channel.queueDeclare(ACK_QUEUE_NAME, false, false, false, null);
+            // 从控制台当中接受信息
+            Scanner scanner = new Scanner(System.in);
+            while (scanner.hasNext()) {
+                String message = scanner.next();
+                channel.basicPublish("", ACK_QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+                log.info("消息发送完毕：{}", message);
+            }
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Worker03.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:43
+ */
+@Slf4j
+public class Worker03 {
+
+    private static final String ACK_QUEUE_NAME = "ack_queue";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+                SleepUtils.sleep(1);
+                log.info("消息处理时间较短");
+                /*
+                 * 参数1：消息标记，tag
+                 * 参数2：是否批量应答未应答消息
+                 */
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker03 消费者启动等待消费......");
+
+            // 采用手动应答
+            boolean autoAck = false;
+            channel.basicConsume(ACK_QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Worker04.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:43
+ */
+@Slf4j
+public class Worker04 {
+
+    private static final String ACK_QUEUE_NAME = "ack_queue";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+                SleepUtils.sleep(60);
+                log.info("消息处理时间较长");
+                /*
+                 * 参数1：消息标记，tag
+                 * 参数2：是否批量应答未应答消息
+                 */
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker04 消费者启动等待消费......");
+
+            // 采用手动应答
+            boolean autoAck = false;
+            channel.basicConsume(ACK_QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+启动 Task02，Work03，Work04，然后发送消息：
+
+- Task02 控制台：
+
+  ```java
+  aa
+  13:59:17.605 [main] INFO cn.xisun.rabbitmq.workqueue.Task02 -- 消息发送完毕：aa
+  bb
+  13:59:20.223 [main] INFO cn.xisun.rabbitmq.workqueue.Task02 -- 消息发送完毕：bb
+  cc
+  13:59:22.348 [main] INFO cn.xisun.rabbitmq.workqueue.Task02 -- 消息发送完毕：cc
+  dd
+  13:59:25.235 [main] INFO cn.xisun.rabbitmq.workqueue.Task02 -- 消息发送完毕：dd
+  ```
+
+- Work03 控制台：
+
+  ```java
+  13:59:10.675 [main] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- Worker03 消费者启动等待消费......
+  13:59:17.609 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消费的消息是：aa
+  13:59:18.620 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消息处理时间较短
+  13:59:22.349 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消费的消息是：cc
+  13:59:23.357 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消息处理时间较短
+  13:59:33.223 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消费的消息是：bb
+  13:59:34.229 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消息处理时间较短
+  13:59:34.229 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消费的消息是：dd
+  13:59:35.241 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.Worker03 -- 消息处理时间较短
+  ```
+
+- Work04 控制台：
+
+  ```java
+  13:59:13.527 [main] INFO cn.xisun.rabbitmq.workqueue.Worker04 -- Worker04 消费者启动等待消费......
+  13:59:20.227 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.Worker04 -- 消费的消息是：bb
+  ```
+
+从结果中可以看出，第一条消息 aa，由 Work03 消费处理，第二条消息 bb，由 Work04 消费处理，第三条消息 cc，由 Work03 消费处理。第四条消息 dd，轮询应该由 Work04 消费处理，但因为 Work04 处理的消息 bb 耗时较久，还没结束任务，如果此时关闭 Work04 服务，可以看到，消息 bb 和消息 dd，都会转发到 Work03 进行处理。（**消息 bb 没有丢失，自动重新入队了**）
+
+### **RabbitMQ** 持久化
+
+刚刚已经看到了如何处理任务不丢失的情况，但是如何保障当 RabbitMQ 服务停掉以后，消息生产者发送过来的消息不丢失呢？
+
+默认情况下 RabbitMQ 退出或由于某种原因崩溃时，它会忽视队列和消息，除非告知它不要这样做。确保消息不会丢失需要做两件事：**需要将队列和消息都标记为持久化**。
+
+#### 队列实现持久化
+
+之前创建的队列都是非持久化的，RabbitMQ 如果重启，该队列就会被删除掉，如果要队列实现持久化，需要在`声明队列的时候把 durable 参数设置为持久化`。
+
+```java
+// 设置消息队列持久化
+boolean durable = true;
+channel.queueDeclare(ACK_QUEUE_NAME, durable, false, false, null);
+```
+
+>如果之前声明的队列不是持久化的，需要把原先队列先删除，或者重新创建一个持久化的队列，不然会出现错误：
+>
+>```java
+>Caused by: com.rabbitmq.client.ShutdownSignalException: channel error; protocol method: #method<channel.close>(reply-code=406, reply-text=PRECONDITION_FAILED - inequivalent arg 'durable' for queue 'ack_queue' in vhost '/': received 'true' but current is 'false', class-id=50, method-id=10)
+>	at com.rabbitmq.client.impl.ChannelN.asyncShutdown(ChannelN.java:517)
+>	at com.rabbitmq.client.impl.ChannelN.processAsync(ChannelN.java:341)
+>	at com.rabbitmq.client.impl.AMQChannel.handleCompleteInboundCommand(AMQChannel.java:185)
+>	at com.rabbitmq.client.impl.AMQChannel.handleFrame(AMQChannel.java:117)
+>	at com.rabbitmq.client.impl.AMQConnection.readFrame(AMQConnection.java:746)
+>	at com.rabbitmq.client.impl.AMQConnection.access$300(AMQConnection.java:47)
+>	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:673)
+>	at java.base/java.lang.Thread.run(Thread.java:833)
+>```
+
+非持久化的队列：
+
+![image-20231013161211892](./rabbitmq/image-20231013161211892.png)
+
+持久化的队列：
+
+![image-20231013161538567](./rabbitmq/image-20231013161538567.png)
+
+> 持久化的队列，即使 RabbitMQ 服务重新启动，也依然会存在。
+
+#### 消息实现持久化
+
+要想让消息实现持久化，需要在消息生产者修改代码，添加`MessageProperties.PERSISTENT_TEXT_PLAIN`这个属性。
+
+```java
+// 当durable为true的时候，设置消息持久化
+channel.basicPublish("", ACK_QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
+```
+
+> **将消息标记为持久化，并不能完全保证不会丢失消息。**尽管它告诉 RabbitMQ 需要将消息保存到磁盘，但是这里依然存在，当消息准备存储到磁盘的时候，此时消息还在缓存中，并没有真正写入磁盘。如果这个时候服务宕机，这些缓存中的消息也会丢失。
+>
+> 因此，单单添加 MessageProperties.PERSISTENT_TEXT_PLAIN 属性的持久性保证并不强，但是对于简单任务队列而言，这已经绰绰有余了。如果需要更强有力的持久化策略，参考后边 "发布确认" 章节。
+
+#### 不公平分发
+
+RabbitMQ 分发消息采用的轮询分发，但是在某种场景下这种策略并不是很好，比如有两个消费者在处理任务，其中有个消费者 1 处理任务的速度非常快，而另外一个消费者 2 处理速度却很慢，这个时候继续采用轮询分发，就会导致处理速度快的这个消费者很大一部分时间处于空闲状态，而处理慢的那个消费者一直在满负载。对于这种情况，轮询分发这种公平分发方式，就存在着缺陷。
+
+为了避免这种情况，可以在消费者端设置参数`channel.basicQos(1)`：
+
+```java
+Channel channel = RabbitMqUtils.getChannel();
+// 设置不公平分发，默认为0，即公平分发（此处设置的，实际上就是一个预取值）
+int prefetchCount = 1;
+channel.basicQos(prefetchCount);
+```
+
+- 消费者设置不公平分发后，如果当前任务未处理完或者还没有应答，就不继续分配新任务给当前消费者，RabbitMQ 会把新任务分配给其他空闲消费者。
+- 如果所有的消费者都没有完成拿到的任务，队列还在不停的添加新任务，队列有可能就会遇到队列被撑满的情况，这个时候就只能添加新的消费者，或者改变其他存储任务的策略。
+
+控制台：
+
+![image-20231013164233323](./rabbitmq/image-20231013164233323.png)
+
+重新启动 Task02，Work03，Work04，然后发送消息：
+
+- Task02 控制台：
+
+  ```java
+  AA
+  16:45:21.596 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：AA
+  BB
+  16:45:23.848 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：BB
+  CC
+  16:45:28.201 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：CC
+  DD
+  16:45:29.752 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：DD				# DD消息发送后，等Work03消费完BB消息，再继续发送新的消息
+  EE
+  16:46:46.978 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：EE
+  FF
+  16:46:48.844 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Task02 -- 消息发送完毕：FF
+  ```
+
+- Work03 控制台：
+
+  ```java
+  16:41:10.985 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- Worker03 消费者启动等待消费......
+  16:45:21.601 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消费的消息是：AA
+  16:45:22.606 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消息处理时间较短
+  16:45:28.202 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消费的消息是：CC
+  16:45:29.216 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消息处理时间较短
+  16:45:29.753 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消费的消息是：DD
+  16:45:30.757 [pool-1-thread-6] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消息处理时间较短
+  16:46:46.979 [pool-1-thread-7] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消费的消息是：EE
+  16:46:47.992 [pool-1-thread-7] INFO cn.xisun.rabbitmq.workqueue.ack.Worker03 -- 消息处理时间较短
+  ```
+
+- Work04 控制台：
+
+  ```java
+  16:41:13.445 [main] INFO cn.xisun.rabbitmq.workqueue.ack.Worker04 -- Worker04 消费者启动等待消费......
+  16:45:23.852 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.ack.Worker04 -- 消费的消息是：BB
+  16:46:23.866 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.ack.Worker04 -- 消息处理时间较长
+  16:46:48.845 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.ack.Worker04 -- 消费的消息是：FF
+  16:47:48.856 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.ack.Worker04 -- 消息处理时间较长
+  ```
+
+#### 预取值
+
+生产者消息的发送是异步执行的，来自消费者的手动确认本质上也是异步的，在任何时候，channel 上肯定不止只有一个消息，channel 上存在一个**未确认的消息缓冲区**。对于这个消息缓冲区，**需要限制其大小，以避免缓冲区存在无限制的未确认消息。**此时，可以通过使用`channel.basicQos(int prefetchCount)`方法设置`预取计数值`来完成的。
+
+`预取值可以定义 channel 上允许的未确认消息的最大数量`。一旦 channel 达到配置的数量，RabbitMQ 将停止在该 channel 上传递更多消息，除非`至少有一个未处理的消息被确认了`。
+
+![1697189707102](./rabbitmq/1697189707102.jpg)
+
+例如，假设在通道上有未确认的消息 5、6、7，8，并且通道的预取值设置为 4，此时 RabbitMQ 将不会在该通道上再传递任何消息，除非至少有一个未应答的消息被 ACK。假设 tag = 6 这个消息刚刚被确认 ACK，RabbitMQ 将会感知到这个情况，然后会再发送一条消息到该通道上。
+
+![1697190015628](./rabbitmq/1697190015628.jpg)
+
+**消息应答和 QoS 预取值对用户吞吐量有重大影响。**通常，增加预取值将提高向消费者传递消息的速度。**虽然自动应答传输消息速率是最佳的，但是，在这种情况下已传递但尚未处理的消息的数量也会增加，从而增加了消费者的 RAM 消耗**（内存）。
+
+应该小心使用具有无限预处理的自动确认模式或手动确认模式，消费者消费了大量的消息如果没有确认的话，会导致消费者连接节点的内存消耗变大，找到合适的预取值是一个反复试验的过程，不同的负载该值取值也不同。`通常，100 ~ 300 范围内的值可提供最佳的吞吐量，并且不会给消费者带来太大的风险。`预取值为 1 是最保守的，这将使吞吐量变得很低，特别是在消费者连接等待时间较长的环境中，比如连接延迟很严重。
+
+##### 示例
+
+Task03.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:41
+ */
+@Slf4j
+public class Task03 {
+
+    private final static String ACK_QUEUE_NAME = "prefetch_queue";
+
+    public static void main(String[] args) {
+        try (Channel channel = RabbitMqUtils.getChannel()) {
+            // 设置消息队列持久化
+            boolean durable = true;
+            channel.queueDeclare(ACK_QUEUE_NAME, durable, false, false, null);
+            // 从控制台当中接受信息
+            Scanner scanner = new Scanner(System.in);
+            while (scanner.hasNext()) {
+                String message = scanner.next();
+                // 当durable为true的时候，设置消息持久化
+                channel.basicPublish("", ACK_QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
+                log.info("消息发送完毕：{}", message);
+            }
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Work05.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:43
+ */
+@Slf4j
+public class Worker05 {
+
+    private static final String ACK_QUEUE_NAME = "prefetch_queue";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+            // 预取值设置为2
+            int prefetchCount = 2;
+            channel.basicQos(prefetchCount);
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+                SleepUtils.sleep(10);
+                log.info("消息处理时间较快");
+                /*
+                 * 参数1：消息标记，tag
+                 * 参数2：是否批量应答未应答消息
+                 */
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker05 消费者启动等待消费......");
+
+            // 采用手动应答
+            boolean autoAck = false;
+            channel.basicConsume(ACK_QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+Work06.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/13 13:43
+ */
+@Slf4j
+public class Worker06 {
+
+    private static final String ACK_QUEUE_NAME = "prefetch_queue";
+
+    public static void main(String[] args) {
+        try {
+            Channel channel = RabbitMqUtils.getChannel();
+            // 设置预取值为5
+            int prefetchCount = 5;
+            channel.basicQos(prefetchCount);
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody());
+                log.info("消费的消息是：{}", message);
+                SleepUtils.sleep(20);
+                log.info("消息处理时间很慢");
+                /*
+                 * 参数1：消息标记，tag
+                 * 参数2：是否批量应答未应答消息
+                 */
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            };
+
+            CancelCallback cancelCallback = (consumerTag) -> {
+                log.info("消息消费被中断");
+            };
+
+            log.info("Worker04 消费者启动等待消费......");
+
+            // 采用手动应答
+            boolean autoAck = false;
+            channel.basicConsume(ACK_QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+启动 Task03，Work05，Work06，然后发送消息：
+
+- Task03 控制台：
+
+  ```java
+  11
+  17:46:25.849 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：11
+  22
+  17:46:26.626 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：22
+  33
+  17:46:27.262 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：33
+  44
+  17:46:28.018 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：44
+  55
+  17:46:28.707 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：55
+  66
+  17:46:29.394 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：66
+  77
+  17:46:30.053 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Task03 -- 消息发送完毕：77
+  ```
+
+- Work05 控制台：
+
+  ```java
+  17:46:11.322 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker05 -- Worker05 消费者启动等待消费......
+  17:46:25.853 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker05 -- 消费的消息是：11
+  17:46:35.867 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker05 -- 消息处理时间较快
+  17:46:35.870 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker05 -- 消费的消息是：33
+  17:46:45.872 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker05 -- 消息处理时间较快
+  ```
+
+- Work06 控制台：
+
+  ```java
+  17:46:14.193 [main] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- Worker04 消费者启动等待消费......
+  17:46:26.629 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消费的消息是：22
+  17:46:46.639 [pool-1-thread-4] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消息处理时间很慢
+  17:46:46.640 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消费的消息是：44
+  17:47:06.641 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消息处理时间很慢
+  17:47:06.641 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消费的消息是：55
+  17:47:26.646 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消息处理时间很慢
+  17:47:26.647 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消费的消息是：66
+  17:47:46.656 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消息处理时间很慢
+  17:47:46.656 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消费的消息是：77
+  17:48:06.661 [pool-1-thread-5] INFO cn.xisun.rabbitmq.workqueue.prefetch.Worker06 -- 消息处理时间很慢
+  ```
+
+当 Task03 发送消息时，以一个较快的速度，连续发送 7 条消息。从结果可以看到，虽然 Work05 的消息处理时间较快，Work06 的消息处理时间很慢，但是因为 Work05 的预取值为 2，Work06 的预取值为 5，最后，Work05 只处理了 2 条消息，而 Work06 处理了 5 条消息。
+
+## 发布确认
+
+### 原理
+
+`生产者将信道设置成 confirm 模式后，即可进行发布确认。`信道进入 confirm 模式时，所有在该信道上面发布的消息都将会被指派一个`唯一的 ID`（从 1 开始），一旦消息被投递到所有匹配的队列之后，Broker 就会发送一个 ACK 确认给生产者（包含消息的唯一 ID），这就使得生产者知道消息已经正确到达目的队列了。
+
+如果队列和消息开启了持久化，那么确认消息会在将消息写入磁盘之后发出。Broker 回传给生产者的确认消息中，`delivery-tag 域`包含了确认消息的序列号，此外 Broker 也可以设置 basic.ack 的 `multiple 域`，表示到这个序列号之前的所有消息都已经得到了处理。
+
+confirm 模式最大的好处在于它是异步的，一旦发布一条消息，生产者应用程序就可以在等信道返回确认的同时继续发送下一条消息，当消息最终得到确认之后，生产者应用便可以通过回调方法来处理该确认消息，如果 RabbitMQ 因为自身内部错误导致消息丢失，就会发送一条 NACK 消息，生产者应用程序同样可以在回调方法中处理该 NACK 消息。
+
+### 策略
+
+#### 开启发布确认
+
+`发布确认默认是没有开启的`，如果要开启需要调用 channel 的 `confirmSelect 方法`：
+
+```java
+Channel channel = RabbitMqUtils.getChannel();
+// 开启发布确认
+channel.confirmSelect();
+```
+
+#### 单个发布确认
+
+`单个发布确认`是一种简单的确认方式，它是一种**同步确认发布**的方式，也就是发布一个消息之后只有它被确认发布后，后续的消息才能继续发布。
+
+相关方法：
+
+```java
+/**
+ * Wait until all messages published since the last call have been
+ * either ack'd or nack'd by the broker.  Note, when called on a
+ * non-Confirm channel, waitForConfirms throws an IllegalStateException.
+ * @return whether all the messages were ack'd (and none were nack'd)
+ * @throws java.lang.IllegalStateException
+ */
+boolean waitForConfirms() throws InterruptedException;
+
+/**
+ * Wait until all messages published since the last call have been
+ * either ack'd or nack'd by the broker; or until timeout elapses.
+ * If the timeout expires a TimeoutException is thrown.  When
+ * called on a non-Confirm channel, waitForConfirms throws an
+ * IllegalStateException.
+ * @return whether all the messages were ack'd (and none were nack'd)
+ * @throws java.lang.IllegalStateException
+ */
+boolean waitForConfirms(long timeout) throws InterruptedException, TimeoutException;
+
+/** Wait until all messages published since the last call have
+ * been either ack'd or nack'd by the broker.  If any of the
+ * messages were nack'd, waitForConfirmsOrDie will throw an
+ * IOException.  When called on a non-Confirm channel, it will
+ * throw an IllegalStateException.
+ * @throws java.lang.IllegalStateException
+ */
+ void waitForConfirmsOrDie() throws IOException, InterruptedException;
+
+/** Wait until all messages published since the last call have
+ * been either ack'd or nack'd by the broker; or until timeout elapses.
+ * If the timeout expires a TimeoutException is thrown.  If any of the
+ * messages were nack'd, waitForConfirmsOrDie will throw an
+ * IOException.  When called on a non-Confirm channel, it will
+ * throw an IllegalStateException.
+ * @throws java.lang.IllegalStateException
+ */
+void waitForConfirmsOrDie(long timeout) throws IOException, InterruptedException, TimeoutException;
+```
+
+单个发布确认有一个最大的缺点：**发布速度特别的慢**，因为没有确认发布的消息会阻塞所有后续消息的发布。这种方式最多提供**每秒不超过数百条发布消息的吞吐量**。
+
+代码示例：
 
 
 
+#### 批量发布确认
+
+与单个等待确认消息相比，`批量确认发布`是先发布一批消息，然后一起确认，这种方式**可以极大地提高吞吐量**。批量确认发布也是**同步确认发布**的方式，也一样会阻塞消息的发布。
+
+批量确认发布也有缺点：**当发生故障导致发布出现问题时，因为不知道是哪个消息出现问题，因此必须将整个批处理保存在内存中，以记录重要的信息而后重新发布消息。**
+
+代码示例：
 
 
-**rabbitmq-plugins enable rabbitmq_management**
+
+#### 异步发布确认
+
+`异步发布确认`编程逻辑比单个和批量发布确认要复杂，但是性价比最高，无论是可靠性，还是效率，都优于二者。异步发布确认是利用**回调函数**来达到消息可靠性传递的，这个中间件也是通过回调函数来保证是否投递成功。
+
+
+
+## 交换机
+
+## 死信队列
+
+## 延迟队列
+
+## 发布确认高级
+
+## **RabbitMQ** 其他知识点
+
+## **RabbitMQ** 集群
