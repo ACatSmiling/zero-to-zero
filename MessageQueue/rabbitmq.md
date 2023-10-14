@@ -332,6 +332,20 @@ RabbitMQ 一共有六种工作模式，分别为`简单模式`、`工作队列�
 </project>
 ```
 
+> 如果不使用 Spring Boot 创建项目，RabbitMQ 的依赖为（参考：https://www.rabbitmq.com/java-client.html）：
+>
+> ```xml
+> <dependency>
+>   <groupId>com.rabbitmq</groupId>
+>   <artifactId>amqp-client</artifactId>
+>   <version>5.19.0</version>
+> </dependency>
+> ```
+>
+> RabbitMQ 个版本对 JDK 的要求：
+>
+> ![image-20231014232630425](./rabbitmq/image-20231014232630425.png)
+>
 > Spring Boot 的 autoconfigue 包中，配置了 org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration，`RabbitAutoConfiguration`定义了 RabbitMQ 的自动配置行为：
 >
 > ```java
