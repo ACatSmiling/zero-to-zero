@@ -1,5 +1,9 @@
 *date: 2021-06-12*
 
+
+
+[TOC]
+
 ## Spring Boot 简介
 
 官网：https://spring.io/projects/spring-boot
@@ -2748,7 +2752,7 @@ Spring Boot 为 Spring MVC 提供了自动配置功能，可与大多数应用�
 - 包含了 ContentNegotiatingViewResolver 和 BeanNameViewResolver 组件，**方便视图解析**。
 - **默认的静态资源处理机制**： 静态资源放在 static 文件夹下即可直接访问。
 - **自动注册**了 **Converter**，GenericConverter，**Formatter** 组件，适配常见**数据类型转换**和**格式化需求**。
-- **支持 HttpMessageConverters**，可以方便返回 Json 等数据类型。
+- **支持 HttpMessageConverters**，可以方便返回 JSON 等数据类型。
 - 注册 MessageCodesResolver，方便国际化及错误消息处理。
 - 支持静态 index.html。
 - **自动使用** ConfigurableWebBindingInitializer，实现消息处理、数据绑定、类型转化、数据校验等功能。
@@ -2757,7 +2761,70 @@ Spring Boot 为 Spring MVC 提供了自动配置功能，可与大多数应用�
 
 如果想保持 Spring Boot MVC 的默认配置，但是自定义核心组件，比如 RequestMappingHandlerMapping，RequestMappingHandlerAdapter，或者 ExceptionHandlerExceptionResolver，给容器中放一个 WebMvcRegistrations 组件即可。
 
-如果想全面接管 Spring MVC，用 @Configuration 标注一个配置类，并加上 @EnableWebMvc 注解，并实现 WebMvcConfigurer 接口。
+如果想全面接管 Spring MVC，用 @Configuration 标注一个配置类，实现 WebMvcConfigurer 接口，并加上 @EnableWebMvc 注解。
+
+##### 三种使用方式
+
+| 方式           | 用法                                                         | 效果                                                         |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **全自动**     | 直接编写控制器逻辑。                                         | 全部使用**自动配置的默认效果**。                             |
+| **`手自一体`** | `@Configuration`注解 + 配置`WebMvcConfigurer`组件 + 配置`WebMvcRegistrations`组件，不添加`@EnableWebMvc`注解。 | **保留自动配置的效果，并增加手动设置部分功能**，可以自定义 Spring MVC 的底层组件。 |
+| **全手动**     | `@Configuration`注解 + 配置`WebMvcConfigurer`组件，并添加`@EnableWebMvc`注解。 | **禁用自动配置的效果，全部全手动设置**。                     |
+
+>使用`@Configuration`注解，给容器中注入一个配置类，实现`WebMvcConfigurer`接口，但是不要标注`@EnableWebMvc`注解，即可实现手自一体的效果。
+>
+>`WebMvcRegistrations`接口，是 Spring MVC 的三个核心组件：
+>
+>```java
+>/**
+> * Interface to register key components of the {@link WebMvcConfigurationSupport} in place
+> * of the default ones provided by Spring MVC.
+> * <p>
+> * All custom instances are later processed by Boot and Spring MVC configurations. A
+> * single instance of this component should be registered, otherwise making it impossible
+> * to choose from redundant MVC components.
+> *
+> * @author Brian Clozel
+> * @since 2.0.0
+> * @see org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.EnableWebMvcConfiguration
+> */
+>public interface WebMvcRegistrations {
+>
+>    /**
+>     * Return the custom {@link RequestMappingHandlerMapping} that should be used and
+>     * processed by the MVC configuration.
+>     * @return the custom {@link RequestMappingHandlerMapping} instance
+>     */
+>    default RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+>       return null;
+>    }
+>
+>    /**
+>     * Return the custom {@link RequestMappingHandlerAdapter} that should be used and
+>     * processed by the MVC configuration.
+>     * @return the custom {@link RequestMappingHandlerAdapter} instance
+>     */
+>    default RequestMappingHandlerAdapter getRequestMappingHandlerAdapter() {
+>       return null;
+>    }
+>
+>    /**
+>     * Return the custom {@link ExceptionHandlerExceptionResolver} that should be used and
+>     * processed by the MVC configuration.
+>     * @return the custom {@link ExceptionHandlerExceptionResolver} instance
+>     */
+>    default ExceptionHandlerExceptionResolver getExceptionHandlerExceptionResolver() {
+>       return null;
+>    }
+>
+>}
+>```
+
+##### 两种使用模式
+
+- `前后端分离模式`： `@RestController `注解，可以直接响应 JSON 格式的数据。
+
+- `前后端不分离模式`：`@Controller`注解 + `Thymeleaf 模板引擎`。
 
 #### 引入场景启动器
 
@@ -3211,6 +3278,8 @@ public OrderedFormContentFilter formContentFilter() {
   }
   ```
 
+>详见本章节最后的 "Spring MVC 请求参数的处理（补充）" 部分。
+
 ##### WebMvcAutoConfigurationAdapter
 
 ```java
@@ -3233,6 +3302,25 @@ public static class WebMvcAutoConfigurationAdapter implements WebMvcConfigurer, 
 WebMvcConfigurer 接口**提供了配置 Spring MVC 底层的所有组件入口**：
 
 ![image-20231003113607011](./spring-boot/image-20231003113607011.png)
+
+| 提供方法                           | 核心参数                              | 功能                                                         | 默认                                                         |
+| ---------------------------------- | ------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| addArgumentResolvers               | List<HandlerMethodArgumentResolver>   | **添加参数解析器**                                           | Spring MVC 默认提供                                          |
+| addCorsMappings                    | CorsRegistry                          | **添加跨域处理**                                             | 无                                                           |
+| addFormatters                      | FormatterRegistry                     | **添加格式化器**：支持属性上 @NumberFormat 和 @DatetimeFormat 的数据类型转换。 | GenericConversionService                                     |
+| addInterceptors                    | InterceptorRegistry                   | **添加拦截器**：拦截收到的所有请求。                         | 无                                                           |
+| addResourceHandlers                | ResourceHandlerRegistry               | **添加静态资源处理**：静态资源路径映射、缓存控制等。         | ResourceHandlerRegistry                                      |
+| addReturnValueHandlers             | List<HandlerMethodReturnValueHandler> | **添加返回值解析器**                                         | Spring MVC 默认提供                                          |
+| addViewControllers                 | ViewControllerRegistry                | **添加视图映射**：直接将请求路径与物理视图映射，用于无 Java 业务逻辑的直接视图页渲染。 | 无，其功能等同于 Spring MVC 的 <mvc:view-controller> 标签。  |
+| configureAsyncSupport              | AsyncSupportConfigurer                | **配置异步支持**                                             | TaskExecutionAutoConfiguration                               |
+| configureContentNegotiation        | ContentNegotiationConfigurer          | **配置内容协商**：支持多种数据格式返回，如果需要返回 JSON 格式以外的格式吗，需要配置支持该类型的 HttpMessageConverter。 | 只支持 JSON                                                  |
+| configureDefaultServletHandling    | DefaultServletHandlerConfigurer       | **配置默认 Servlet**：可以覆盖 Tomcat 的 DefaultServlet，默认让 DispatcherServlet 拦截 / 请求。 | 无                                                           |
+| configureHandlerExceptionResolvers | List<HandlerExceptionResolver>        | **配置异常处理器**                                           | 默认 3 个：ExceptionHandlerExceptionResolver，ResponseStatusExceptionResolver，DefaultHandlerExceptionResolver。 |
+| configureMessageConverters         | List<HttpMessageConverter<?>>         | **配置消息转换器**：标注 @ResponseBody 的返回值，会利用 MessageConverter 直接写出去。 | 8 个，支持 Byte，String，Multipart，Resource，JSON。         |
+| configurePathMatch                 | PathMatchConfigurer                   | **配置路径匹配**：自定义 URL 路径匹配，可以自动为所有路径加上指定前缀，比如 /api。 | 无                                                           |
+| configureViewResolvers             | ViewResolverRegistry                  | **配置视图解析器**：可以将逻辑视图转为物理视图。             | ViewResolverComposite                                        |
+| getMessageCodesResolver            | 无                                    | **获取消息码解析器**：国际化使用。                           | 无                                                           |
+| getValidator                       | 无                                    | **获取数据校验**：校验 Controller 上使用 @Valid 注解标注的参数的合法性，需要导入 starter-validator 依赖。 | 无                                                           |
 
 ```java
 /**
@@ -4023,10 +4111,10 @@ Spring Boot 启动时，会在静态资源目录下找 favicon.ico，如果找�
 - 基于**请求参数**内容协商：（需要开启）
   - 发送请求 GET /projects/spring-boot?format=json。
     - 匹配到 @GetMapping("/projects/spring-boot") 。
-    - 根据**参数协商**，优先返回 Json 类型数据【**需要开启参数匹配设置**】。
+    - 根据**参数协商**，优先返回 JSON 类型数据【**需要开启参数匹配设置**】。
   - 发送请求 GET /projects/spring-boot?format=xml，则优先返回 xml 类型数据。
 
-效果演示：请求同一个接口，可以返回 Json 和 xml 两种不同格式的数据。
+效果演示：请求同一个接口，可以返回 JSON 和 xml 两种不同格式的数据。
 
 - Maven 引入依赖：
 
@@ -4093,7 +4181,7 @@ Spring Boot 启动时，会在静态资源目录下找 favicon.ico，如果找�
 
   ![image-20231006154102070](./spring-boot/image-20231006154102070.png)
 
-- 访问`http://localhost:8080/person?type=json`，返回 Json 格式的数据：
+- 访问`http://localhost:8080/person?type=json`，返回 JSON 格式的数据：
 
   ![image-20231006154136001](./spring-boot/image-20231006154136001.png)
 
@@ -4306,7 +4394,7 @@ public class ErrorMvcAutoConfiguration {
 
 - Spring MVC的错误处理机制依然保留，Spring MVC 处理不了的，才会**交给 Spring Boot进行处理（转发给 /error 这个请求处理）。**
 
-- Spring Boot 会自适应处理错误（内容协商），**对 Web 响应页面**或**对客户端响应 Json 数据**。
+- Spring Boot 会自适应处理错误（内容协商），**对 Web 响应页面**或**对客户端响应 JSON 数据**。
 
   ![image-20231009082837445](./spring-boot/image-20231009082837445.png)
 
@@ -4372,7 +4460,7 @@ public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse re
     return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
 }
 
-// 返回ResponseEntity，即Json数据
+// 返回ResponseEntity，即JSON数据
 @RequestMapping
 public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
     HttpStatus status = getStatus(request);
@@ -4658,7 +4746,7 @@ return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
     }
     ```
 
->Json 格式的数据响应，同 HTML 页面的分析，默认的数据为：
+>JSON 格式的数据响应，同 HTML 页面的分析，默认的数据为：
 >
 >```java
 >@Bean
@@ -4674,11 +4762,11 @@ return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
 
 根据 Spring Boot 的错误页面规则，在相应目录下，自定义错误页面模板。
 
-###### 自定义 Json 响应
+###### 自定义 JSON 响应
 
 使用`@ControllerAdvice`注解和`@ExceptionHandler`注解，进行统一的异常处理。
 
-##### 最佳实战
+##### 最佳实践
 
 ###### 前后端分离
 
@@ -4696,7 +4784,7 @@ return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
 - **核心业务**，每一种错误，都应该代码控制（try...catch...），**跳转到自己定制的错误页**。
 - **通用业务**，在`classpath:/templates/error.html`页面，**显示错误信息**。
 
-无论是页面，还是 Json 数据，最终响应到页面时，其`可用的 Model 数据`如下：
+无论是页面，还是 JSON 数据，最终响应到页面时，其`可用的 Model 数据`如下：
 
 ![image-20231009210849260](./spring-boot/image-20231009210849260.png)
 
@@ -5068,139 +5156,991 @@ public class ServletWebServerFactoryAutoConfiguration {
 
 **Web 场景的 Spring 容器启动，在 onRefresh 的时候，会调用创建 Web 服务器的方法。Web 服务器的创建是通过 WebServerFactory 完成的，容器中会根据导入了什么包的条件注解，启动相关的服务器配置，默认是 EmbeddedTomcat，会给容器中放一个 TomcatServletWebServerFactory，这就使得项目启动时，自动创建出 Tomcat 服务器。**
 
-##### 自定义容器
+##### 切换容器
 
+Spring Boot 配置中添加了 Tomcat，Jetty，Undertow 这三种服务器：
 
+![image-20231010202744341](./spring-boot/image-20231010202744341.png)
 
+- 默认使用的是 Tomcat 服务器。
 
+- 如果想切换其他服务器，按如下方式引入依赖：
 
+  ```xml
+  <properties>
+      <servlet-api.version>3.1.0</servlet-api.version>
+  </properties>
+  
+  <dependencies>
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-web</artifactId>
+          <exclusions>
+              <!-- Exclude the Tomcat dependency -->
+              <exclusion>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-tomcat</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+  
+      <!-- Use Jetty instead -->
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jetty</artifactId>
+      </dependency>
+  </dependencies>
+  ```
 
+##### 最佳实践
 
-#### Spring MVC 静态资源访问及原理
+- 在配置文件中，修改`server`下的相关配置，就可以修改**服务器参数**。
 
-##### 静态资源访问
+- 通过前面的分析，可以看到，Spring Boot 给容器中注入 TomcatServletWebServerFactory、JettyServletWebServerFactory 和 UndertowServletWebServerFactory 的前提是，容器中没有`ServletWebServerFactory`，如果给容器中自定义放入一个 ServletWebServerFactory，就可以禁用掉 Spring Boot 默认注入的服务器工厂，从而实现`自定义嵌入任意服务器`。
 
-###### 静态资源目录
+  ```java
+  @ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
+  ```
 
-只要静态资源放在类路径下的`/static`或者`/public`或者`/resources`或者`/META-INF/resources`，都可以访问。
+#### 全面接管 Spring MVC
 
-![image-20210715172620534](spring-boot/image-20210715172620534.png)
+Spring Boot 默认配置好了 Spring MVC 的所有常用特性，如果我们需要全面接管 Spring MVC 的所有配置并**禁用默认配置**（全手动模式），仅需要编写一个`WebMvcConfigurer`配置类，并标注`@EnableWebMvc`即可：
 
-访问方式：`当前项目根路径 / + 静态资源名`。例如：`http://localhost:8080/spring1.jpg`。
+- **`@EnableWebMvc 注解`**：禁用默认配置。
+- **`WebMvcConfigurer 组件`**：定义 Spring MVC 的底层行为。
 
-原理：Spring Boot 静态资源访问映射`/**`，即拦截所有的请求。当一个请求进来时，先去找 Controller 看能不能处理，不能处理的所有请求，都会交给静态资源处理器。如果静态资源也找不到，则响应 404 页面。
+##### WebMvcAutoConfiguration 自动配置了哪些规则
 
-![image-20210716112544630](spring-boot/image-20210716112544630.png)
+Spring MVC 自动配置场景配置了如下所有**默认行为**：
 
-改变静态资源默认的存储路径：
+- 支持 RESTful 的 filter：`HiddenHttpMethodFilter`。
 
-```yaml
-# 单个路径
-spring:
-  web:
-    resources:
-      static-locations: classpath:images
-```
+  ```java
+  @Bean
+  @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
+  @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
+  public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+      return new OrderedHiddenHttpMethodFilter();
+  }
+  ```
 
-```yaml
-# 多个路径
-spring:
-  web:
-    resources:
-      static-locations: [classpath:images, classpath:statics]
-```
+- 支持非 POST 请求的请求体携带数据：`FormContentFilter`。
 
-![image-20210716115724190](spring-boot/image-20210716115724190.png)
+  ```java
+  @Bean
+  @ConditionalOnMissingBean(FormContentFilter.class)
+  @ConditionalOnProperty(prefix = "spring.mvc.formcontent.filter", name = "enabled", matchIfMissing = true)
+  public OrderedFormContentFilter formContentFilter() {
+      return new OrderedFormContentFilter();
+  }
+  ```
 
-> 静态资源都需要放在 application.yaml 配置文件里标明的路径下（有时可能不生效，更改一下路径名，刷新几次）。
->
-> 默认的那几个路径不再生效，默认路径如下：
->
-> ```java
-> private static final String[] CLASSPATH_RESOURCE_LOCATIONS = new String[]{"classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/"};
-> ```
+- 注入`WebMvcAutoConfigurationAdapter`组件：
 
-###### 静态资源访问前缀
+  ```java
+  // Defined as a nested config to ensure WebMvcConfigurer is not read when not
+  // on the classpath
+  @Configuration(proxyBeanMethods = false)
+  @Import(EnableWebMvcConfiguration.class)
+  @EnableConfigurationProperties({ WebMvcProperties.class, WebProperties.class })
+  @Order(0)
+  public static class WebMvcAutoConfigurationAdapter implements WebMvcConfigurer, ServletContextAware {
+  }
+  ```
 
-静态资源访问时，默认没有前缀，改变静态资源的访问前缀：
+  - WebMvcAutoConfigurationAdapter 是一个 WebMvcConfigurer，定义了 Spring MVC 的底层组件。
 
-```yaml
-spring:
-  mvc:
-    static-path-pattern: /res/**
-```
+  - WebMvcAutoConfigurationAdapter 实现了 WebMvcConfigurer 底层组件的默认功能，所有功能详见之前的分析。
 
-如上，再次访问静态资源时，都需要添加前缀。比如：`http://localhost:8080/res/spring.jpg`。
+  - 视图解析器：`InternalResourceViewResolver`。
 
-###### webjar（了解）
+    ```java
+    @Bean
+    @ConditionalOnMissingBean
+    public InternalResourceViewResolver defaultViewResolver() {
+        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+        resolver.setPrefix(this.mvcProperties.getView().getPrefix());
+        resolver.setSuffix(this.mvcProperties.getView().getSuffix());
+        return resolver;
+    }
+    ```
 
-Spring 把常用的一些 js 打包成 jar 包，添加引用后即可使用。官方地址：https://www.webjars.org/
+  - 视图解析器：`BeanNameViewResolver`，定义了**视图名（Controller 方法的返回值字符串）就是组件名**。
 
-![image-20210716132425106](spring-boot/image-20210716132425106.png)
+    ```java
+    @Bean
+    @ConditionalOnBean(View.class)
+    @ConditionalOnMissingBean
+    public BeanNameViewResolver beanNameViewResolver() {
+        BeanNameViewResolver resolver = new BeanNameViewResolver();
+        resolver.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
+        return resolver;
+    }
+    ```
 
-例如，使用 jquery，Maven 引入依赖：
+  - 内容协商解析器：`ContentNegotiatingViewResolver`。
 
-```xml
-<dependency>
-    <groupId>org.webjars</groupId>
-    <artifactId>jquery</artifactId>
-    <version>3.6.0</version>
-</dependency>
-```
+    ```java
+    @Bean
+    @ConditionalOnBean(ViewResolver.class)
+    @ConditionalOnMissingBean(name = "viewResolver", value = ContentNegotiatingViewResolver.class)
+    public ContentNegotiatingViewResolver viewResolver(BeanFactory beanFactory) {
+        ContentNegotiatingViewResolver resolver = new ContentNegotiatingViewResolver();
+        resolver.setContentNegotiationManager(beanFactory.getBean(ContentNegotiationManager.class));
+        // ContentNegotiatingViewResolver uses all the other view resolvers to locate
+        // a view so it should have a high precedence
+        resolver.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return resolver;
+    }
+    ```
 
-![image-20210716133416070](spring-boot/image-20210716133416070.png)
+  - 请求上下文过滤器：`RequestContextFilter`，能够在**任意位置**直接获取当前请求。
 
-访问时，根据添加的 jquery 依赖的资源结构，确定访问地址：`http://localhost:8080/webjars/jquery/3.6.0/jquery.js`。
+    ```java
+    @Bean
+    @ConditionalOnMissingBean({ RequestContextListener.class, RequestContextFilter.class })
+    @ConditionalOnMissingFilterBean(RequestContextFilter.class)
+    public static RequestContextFilter requestContextFilter() {
+        return new OrderedRequestContextFilter();
+    }
+    ```
 
-![image-20210716133549052](spring-boot/image-20210716133549052.png)
+    - RequestContextFilter 中，一个请求到达时，会先保存起来。
 
-> 不同的 webjars，其访问地址可能不同，需要按照相应依赖里面的资源包路径确定。
+      ```java
+      @Override
+      protected void doFilterInternal(
+              HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+              throws ServletException, IOException {
+      
+          ServletRequestAttributes attributes = new ServletRequestAttributes(request, response);
+          initContextHolders(request, attributes);// 保存请求
+      
+          try {
+              filterChain.doFilter(request, response);
+          }
+          finally {
+              resetContextHolders();
+              if (logger.isTraceEnabled()) {
+                  logger.trace("Cleared thread-bound request context: " + request);
+              }
+              attributes.requestCompleted();
+          }
+      }
+      
+      private void initContextHolders(HttpServletRequest request, ServletRequestAttributes requestAttributes) {
+          LocaleContextHolder.setLocale(request.getLocale(), this.threadContextInheritable);
+          RequestContextHolder.setRequestAttributes(requestAttributes, this.threadContextInheritable);// 请求被保存到RequestContextHolder中
+          if (logger.isTraceEnabled()) {
+              logger.trace("Bound request context to thread: " + request);
+          }
+      }
+      ```
 
-##### 欢迎页支持
+    - 如果想在其他任意位置获取该请求，有两种方式：
 
-- Spring Boot supports both static and templated welcome pages. It first looks for an `index.html` file in the configured static content locations. If one is not found, it then looks for an `index` template. If either is found, it is automatically used as the welcome page of the application.
+      ```java
+      /**
+       * @author XiSun
+       * @since 2023/10/4 21:15
+       */
+      @RestController
+      public class DemoController {
+          // 方式一，在请求中加入HttpServletRequest参数，就是当前请求，HttpServletRequest可以作为参数，传给任意Service
+          @GetMapping("/test")
+          public String test(HttpServletRequest request) {
+              
+              return "...";
+          }
+      }
+      ```
 
-  - Spring Boot 支持两种方式的欢迎页，一种是存放在静态资源存储路径下的 index.html，另一种是能处理动态请求 `/index` 的 Controller。
+      ```java
+      // 方式二，在Service中获取，Controller中调用该方法
+      /**
+       * @author XiSun
+       * @since 2023/10/4 21:15
+       */
+      @RestController
+      public class DemoController {
+      
+          @Resource
+          private TestService testService;
+      
+          @GetMapping("/test")
+          public String test() {
+              testService.test();
+              return "...";
+          }
+      
+      }
+      
+      /**
+       * @author XiSun
+       * @since 2023/10/10 22:38
+       */
+      @Service
+      public class TestService {
+      
+          public void test() {
+              // 在任意位置，随时可以通过RequestContextHolder获取到当前请求和响应的信息
+              ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      
+              assert attributes != null;
+      
+              // 当前请求
+              HttpServletRequest request = attributes.getRequest();
+              // 当前响应
+              HttpServletResponse response = attributes.getResponse();
+      
+              // 当前请求的路径
+              String requestURI = request.getRequestURI();
+          }
+      }
+      ```
 
-  - 静态欢迎页：
+- 注入`EnableWebMvcConfiguration`组件：
 
-    ```yaml
-    spring:
-      # 配置静态资源路径，会导致welcome page失效
-      #  mvc:
-      #    static-path-pattern: /res/**
+  ```java
+  /**
+   * Configuration equivalent to {@code @EnableWebMvc}.
+   */
+  @Configuration(proxyBeanMethods = false)
+  @EnableConfigurationProperties(WebProperties.class)
+  public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
+  }
+  ```
+
+  - Handler 适配器`RequestMappingHandlerAdapter`。
+
+    ```java
+    @Bean
+    @Override
+    public RequestMappingHandlerAdapter requestMappingHandlerAdapter(
+            @Qualifier("mvcContentNegotiationManager") ContentNegotiationManager contentNegotiationManager,
+            @Qualifier("mvcConversionService") FormattingConversionService conversionService,
+            @Qualifier("mvcValidator") Validator validator) {
+        RequestMappingHandlerAdapter adapter = super.requestMappingHandlerAdapter(contentNegotiationManager,
+                conversionService, validator);
+        setIgnoreDefaultModelOnRedirect(adapter);
+        return adapter;
+    }
+    ```
+
+  - 欢迎页功能支持：`WelcomePageHandlerMapping`。
+
+    ```java
+    @Bean
+    public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
+            FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
+        return createWelcomePageHandlerMapping(applicationContext, mvcConversionService, mvcResourceUrlProvider,
+                WelcomePageHandlerMapping::new);
+    }
     
-      web:
-        resources:
-          static-locations: [classpath:images, classpath:statics]
+    @Bean
+    public WelcomePageNotAcceptableHandlerMapping welcomePageNotAcceptableHandlerMapping(
+            ApplicationContext applicationContext, FormattingConversionService mvcConversionService,
+            ResourceUrlProvider mvcResourceUrlProvider) {
+        return createWelcomePageHandlerMapping(applicationContext, mvcConversionService, mvcResourceUrlProvider,
+                WelcomePageNotAcceptableHandlerMapping::new);
+    }
     ```
 
-    ![image-20210716150324478](spring-boot/image-20210716150324478.png)
+  - 找每个请求由谁处理的映射关系：`RequestMappingHandlerMapping`。
 
-    ```html
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
-    <h1>Hello, Xisun!</h1>
-    </body>
-    </html>
+    ```java
+    @Override
+    protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
+        if (this.mvcRegistrations != null) {
+            RequestMappingHandlerMapping mapping = this.mvcRegistrations.getRequestMappingHandlerMapping();
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return super.createRequestMappingHandlerMapping();
+    }
     ```
 
-    ![image-20210716150414792](spring-boot/image-20210716150414792.png)
+  - 默认的异常解析器：`ExceptionHandlerExceptionResolver`。
 
-  - 动态请求：`/index`，交由相应的 Controller 处理。
+    ```java
+    @Override
+    protected ExceptionHandlerExceptionResolver createExceptionHandlerExceptionResolver() {
+        if (this.mvcRegistrations != null) {
+           ExceptionHandlerExceptionResolver resolver = this.mvcRegistrations
+              .getExceptionHandlerExceptionResolver();
+           if (resolver != null) {
+              return resolver;
+           }
+        }
+        return super.createExceptionHandlerExceptionResolver();
+    }
+    ```
 
-##### 静态资源配置原理
+  - 国际化解析器：`LocaleResolver`。
 
-- Spring Boot 在启动时，默认加载 xxxxxAutoConfiguration.class，即各种自动配置类。
+    ```java
+    @Override
+    @Bean
+    @ConditionalOnMissingBean(name = DispatcherServlet.LOCALE_RESOLVER_BEAN_NAME)
+    public LocaleResolver localeResolver() {
+        if (this.webProperties.getLocaleResolver() == WebProperties.LocaleResolver.FIXED) {
+            return new FixedLocaleResolver(this.webProperties.getLocale());
+        }
+        AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
+        localeResolver.setDefaultLocale(this.webProperties.getLocale());
+        return localeResolver;
+    }
+    ```
 
-  - 分析 Spring Boot 的某一项功能时，应该先查找其对应的自动配置类，从底层源码开始。
+  - 主题解析器：`ThemeResolver`。
 
-- 与 Spring MVC 相关的自动配置类，是 `org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration`：
+    ```java
+    @Override
+    @Bean
+    @ConditionalOnMissingBean(name = DispatcherServlet.THEME_RESOLVER_BEAN_NAME)
+    @Deprecated(since = "3.0.0", forRemoval = false)
+    @SuppressWarnings("deprecation")
+    public org.springframework.web.servlet.ThemeResolver themeResolver() {
+        return super.themeResolver();
+    }
+    ```
+
+  - 临时数据共享：`FlashMapManager`。
+
+    ```java
+    @Override
+    @Bean
+    @ConditionalOnMissingBean(name = DispatcherServlet.FLASH_MAP_MANAGER_BEAN_NAME)
+    public FlashMapManager flashMapManager() {
+        return super.flashMapManager();
+    }
+    ```
+
+  - 数据格式化 、类型转换：`FormattingConversionService`。
+
+    ```java
+    @Bean
+    @Override
+    public FormattingConversionService mvcConversionService() {
+        Format format = this.mvcProperties.getFormat();
+        WebConversionService conversionService = new WebConversionService(
+                new DateTimeFormatters().dateFormat(format.getDate())
+                    .timeFormat(format.getTime())
+                    .dateTimeFormat(format.getDateTime()));
+        addFormatters(conversionService);
+        return conversionService;
+    }
+    ```
+
+    - 如果想修改日期的格式，在配置文件中修改：
+
+      ```yaml
+      spring:
+        mvc:
+          format:
+            date: yyyy-MM-dd # 自定义日期格式
+            time: HH:mm:ss
+      ```
+
+  - 数据校验：`Validator`。
+
+    ```java
+    @Bean
+    @Override
+    public Validator mvcValidator() {
+        if (!ClassUtils.isPresent("jakarta.validation.Validator", getClass().getClassLoader())) {// JSR303提供的数据校验功能
+            return super.mvcValidator();
+        }
+        return ValidatorAdapter.get(getApplicationContext(), getValidator());
+    }
+    ```
+
+  - 请求参数的封装与绑定：`WebBindingInitializer`。
+
+    ```java
+    @Override
+    protected ConfigurableWebBindingInitializer getConfigurableWebBindingInitializer(
+            FormattingConversionService mvcConversionService, Validator mvcValidator) {
+        try {
+            return this.beanFactory.getBean(ConfigurableWebBindingInitializer.class);
+        }
+        catch (NoSuchBeanDefinitionException ex) {
+            return super.getConfigurableWebBindingInitializer(mvcConversionService, mvcValidator);
+        }
+    }
+    ```
+
+  - 内容协商管理器：`ContentNegotiationManager`。
+
+    ```java
+    @Bean
+    @Override
+    @SuppressWarnings("deprecation")
+    public ContentNegotiationManager mvcContentNegotiationManager() {
+        ContentNegotiationManager manager = super.mvcContentNegotiationManager();
+        List<ContentNegotiationStrategy> strategies = manager.getStrategies();
+        ListIterator<ContentNegotiationStrategy> iterator = strategies.listIterator();
+        while (iterator.hasNext()) {
+           ContentNegotiationStrategy strategy = iterator.next();
+           if (strategy instanceof org.springframework.web.accept.PathExtensionContentNegotiationStrategy) {
+              iterator.set(new OptionalPathExtensionContentNegotiationStrategy(strategy));
+           }
+        }
+        return manager;
+    }
+    ```
+
+- 静态资源链规则：`ResourceChainCustomizerConfiguration`。
+
+  ```java
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnEnabledResourceChain
+  static class ResourceChainCustomizerConfiguration {
+  
+      @Bean
+      ResourceChainResourceHandlerRegistrationCustomizer resourceHandlerRegistrationCustomizer(
+            WebProperties webProperties) {
+         return new ResourceChainResourceHandlerRegistrationCustomizer(webProperties.getResources());
+      }
+  
+  }
+  ```
+
+- 错误详情处理：`ProblemDetailsExceptionHandler`，此处默认只处理 Spring MVC 内部场景的错误异常。
+
+  ```java
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnProperty(prefix = "spring.mvc.problemdetails", name = "enabled", havingValue = "true")
+  static class ProblemDetailsErrorHandlingConfiguration {
+  
+      @Bean
+      @ConditionalOnMissingBean(ResponseEntityExceptionHandler.class)
+      ProblemDetailsExceptionHandler problemDetailsExceptionHandler() {
+          return new ProblemDetailsExceptionHandler();
+      }
+  
+  }
+  ```
+
+  ```java
+  /**
+   * {@code @ControllerAdvice} annotated {@link ResponseEntityExceptionHandler} that is
+   * auto-configured for problem details support.
+   *
+   * @author Brian Clozel
+   */
+  @ControllerAdvice// 全局处理异常
+  class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
+  
+  }
+  ```
+
+  ```java
+  /**
+   * A class with an {@code @ExceptionHandler} method that handles all Spring MVC
+   * raised exceptions by returning a {@link ResponseEntity} with RFC 7807
+   * formatted error details in the body.
+   *
+   * <p>Convenient as a base class of an {@link ControllerAdvice @ControllerAdvice}
+   * for global exception handling in an application. Subclasses can override
+   * individual methods that handle a specific exception, override
+   * {@link #handleExceptionInternal} to override common handling of all exceptions,
+   * or override {@link #createResponseEntity} to intercept the final step of creating
+   * the {@link ResponseEntity} from the selected HTTP status code, headers, and body.
+   *
+   * @author Rossen Stoyanchev
+   * @since 3.2
+   */
+  public abstract class ResponseEntityExceptionHandler implements MessageSourceAware {
+      
+      	/**
+  	 * Handle all exceptions raised within Spring MVC handling of the request.
+  	 * @param ex the exception to handle
+  	 * @param request the current request
+  	 */
+  	@ExceptionHandler({// 默认只处理Spring MVC内部场景的错误异常
+          HttpRequestMethodNotSupportedException.class,
+          HttpMediaTypeNotSupportedException.class,
+          HttpMediaTypeNotAcceptableException.class,
+          MissingPathVariableException.class,
+          MissingServletRequestParameterException.class,
+          MissingServletRequestPartException.class,
+          ServletRequestBindingException.class,
+          MethodArgumentNotValidException.class,
+          NoHandlerFoundException.class,
+          AsyncRequestTimeoutException.class,
+          ErrorResponseException.class,
+          ConversionNotSupportedException.class,
+          TypeMismatchException.class,
+          HttpMessageNotReadableException.class,
+          HttpMessageNotWritableException.class,
+          BindException.class
+      })
+      
+  }
+  ```
+
+##### @EnableWebMvc 禁用默认配置
+
+```java
+/**
+ * Adding this annotation to an {@code @Configuration} class imports the Spring MVC
+ * configuration from {@link WebMvcConfigurationSupport}, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableWebMvc
+ * &#064;ComponentScan(basePackageClasses = MyConfiguration.class)
+ * public class MyConfiguration {
+ * }
+ * </pre>
+ *
+ * <p>To customize the imported configuration, implement the interface
+ * {@link WebMvcConfigurer} and override individual methods, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableWebMvc
+ * &#064;ComponentScan(basePackageClasses = MyConfiguration.class)
+ * public class MyConfiguration implements WebMvcConfigurer {
+ *
+ *     &#064;Override
+ *     public void addFormatters(FormatterRegistry formatterRegistry) {
+ *         formatterRegistry.addConverter(new MyConverter());
+ *     }
+ *
+ *     &#064;Override
+ *     public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+ *         converters.add(new MyHttpMessageConverter());
+ *     }
+ *
+ * }
+ * </pre>
+ *
+ * <p><strong>Note:</strong> only one {@code @Configuration} class may have the
+ * {@code @EnableWebMvc} annotation to import the Spring Web MVC
+ * configuration. There can however be multiple {@code @Configuration} classes
+ * implementing {@code WebMvcConfigurer} in order to customize the provided
+ * configuration.
+ *
+ * <p>If {@link WebMvcConfigurer} does not expose some more advanced setting that
+ * needs to be configured, consider removing the {@code @EnableWebMvc}
+ * annotation and extending directly from {@link WebMvcConfigurationSupport}
+ * or {@link DelegatingWebMvcConfiguration}, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;ComponentScan(basePackageClasses = { MyConfiguration.class })
+ * public class MyConfiguration extends WebMvcConfigurationSupport {
+ *
+ *     &#064;Override
+ *     public void addFormatters(FormatterRegistry formatterRegistry) {
+ *         formatterRegistry.addConverter(new MyConverter());
+ *     }
+ *
+ *     &#064;Bean
+ *     public RequestMappingHandlerAdapter requestMappingHandlerAdapter() {
+ *         // Create or delegate to "super" to create and
+ *         // customize properties of RequestMappingHandlerAdapter
+ *     }
+ * }
+ * </pre>
+ *
+ * @author Dave Syer
+ * @author Rossen Stoyanchev
+ * @since 3.1
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
+ * @see org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+@Import(DelegatingWebMvcConfiguration.class)
+public @interface EnableWebMvc {
+}
+```
+
+- `@EnableWebMvc`给容器中注入`DelegatingWebMvcConfiguration`组件，这是一个`WebMvcConfigurationSupport`类型的组件。
+
+- 而`WebMvcAutoConfiguration`有一个核心的条件注解：`@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)`，即容器中没有 WebMvcConfigurationSupport 组件时，WebMvcAutoConfiguration 才会生效。
+
+  ```java
+  @AutoConfiguration(after = { DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
+  		ValidationAutoConfiguration.class })
+  @ConditionalOnWebApplication(type = Type.SERVLET)
+  @ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })
+  @ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
+  @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
+  @ImportRuntimeHints(WebResourcesRuntimeHints.class)
+  public class WebMvcAutoConfiguration {
+  }
+  ```
+
+- 因此，@EnableWebMvc 注解注入 WebMvcConfigurationSupport 后，会导致 WebMvcAutoConfiguration 失效，也就禁用了默认行为。
+
+#### Web 开发新特性
+
+##### Problemdetails
+
+[RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) 中，定义了**错误信息**返回一种新格式：`application/problem+json`。
+
+![image-20231011091554379](./spring-boot/image-20231011091554379.png)
+
+在 WebMvcAutoConfiguration 中，添加了以下配置，该配置绑定`spring.mvc.problemdetails.ebabled`参数：
+
+```java
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnProperty(prefix = "spring.mvc.problemdetails", name = "enabled", havingValue = "true")
+static class ProblemDetailsErrorHandlingConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(ResponseEntityExceptionHandler.class)
+    ProblemDetailsExceptionHandler problemDetailsExceptionHandler() {
+       return new ProblemDetailsExceptionHandler();
+    }
+
+}
+```
+
+- `ProblemDetailsExceptionHandler `是一个`@ControllerAdvice`注解标注的类，表明其集中处理系统异常：
+
+  ```java
+  /**
+   * {@code @ControllerAdvice} annotated {@link ResponseEntityExceptionHandler} that is
+   * auto-configured for problem details support.
+   *
+   * @author Brian Clozel
+   */
+  @ControllerAdvice
+  class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
+  
+  }
+  ```
+
+- 如前分析，@ControllerAdvice 注解默认只处理以下常见异常。当系统出现以下异常时，Spring Boot 能够支持以`RFC 7807`规范方式返回错误数据。
+
+  ```java
+  /**
+   * Handle all exceptions raised within Spring MVC handling of the request.
+   * @param ex the exception to handle
+   * @param request the current request
+   */
+  @ExceptionHandler({
+          HttpRequestMethodNotSupportedException.class,// 请求方法不支持异常
+          HttpMediaTypeNotSupportedException.class,
+          HttpMediaTypeNotAcceptableException.class,
+          MissingPathVariableException.class,
+          MissingServletRequestParameterException.class,
+          MissingServletRequestPartException.class,
+          ServletRequestBindingException.class,
+          MethodArgumentNotValidException.class,
+          NoHandlerFoundException.class,
+          AsyncRequestTimeoutException.class,
+          ErrorResponseException.class,
+          ConversionNotSupportedException.class,
+          TypeMismatchException.class,
+          HttpMessageNotReadableException.class,
+          HttpMessageNotWritableException.class,
+          BindException.class
+      })
+  ```
+
+- 默认情况下，spring.mvc.problemdetails.ebabled 不生效，需要在配置文件中将其开启：
+
+  ```yaml
+  spring:
+    mvc:
+      problemdetails:
+        enabled: true # 默认关闭
+  ```
+
+  - 不生效的情况下，测试 HttpRequestMethodNotSupportedException 异常，使用 POST 方式访问 GET 请求 http://localhost:8080/person：
+
+    ![image-20231011100140566](./spring-boot/image-20231011100140566.png)
+
+    ![image-20231011100205727](./spring-boot/image-20231011100205727.png)
+
+    ![image-20231011100257611](./spring-boot/image-20231011100257611.png)
+
+  - 生效的情况下，测试 HttpRequestMethodNotSupportedException 异常，使用 POST 方式访问 GET 请求 http://localhost:8080/person：
+
+    ![image-20231011100916861](./spring-boot/image-20231011100916861.png)
+
+    ![image-20231011101017825](./spring-boot/image-20231011101017825.png)
+
+    ![image-20231011101958232](./spring-boot/image-20231011101958232.png)
+
+##### 函数式 Web
+
+Spring MVC 5.2 以后，允许使用`函数式`的方式，定义 Web 的请求处理流程。
+
+Web 请求处理的两种方式：
+
+1. `@Controller + @RequestMapping`：**耦合式**，路由和业务耦合。
+2. `函数式 Web`：**分离式**，路由和业务分离。
+
+场景：使用 RESTful 的方式，实现 Person 的 CRUD。
+
+- GET /user/1：获取 1 号用户。
+- GET /users： 获取所有用户。
+- POST /user：请求体携带 JSON，新增一个用户。
+- PUT /user/1：请求体携带 JSON，修改 1 号用户。
+- DELETE /user/1：删除 1 号用户 。
+
+**函数式 Web 的核心类：**
+
+- `RouterFunction`：定义路由信息，即发送的什么请求，由对应的谁来处理。
+- `RequestPredicate`：请求谓语，定义请求的方式（GET、POST 等）、请求参数等。
+- `ServerRequest`：封装请求的完整数据。
+- `ServerResponse`：封装响应的完整数据。
+
+示例代码：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/11 10:30
+ */
+@Configuration
+public class WebFunctionConfig {
+
+    /**
+     * 函数式Web：
+     * 1 给容器中诸如一个Bean，类型是RouterFunction<ServerResponse>
+     * 2 每个业务准备一个自己的Handler
+     *
+     * @return
+     */
+    @Bean
+    public RouterFunction<ServerResponse> personRouter(PersonBizHandler personBizHandler) {// @Bean注解的方法参数，会被自动注入进来
+        return RouterFunctions.route()
+            	// 请求中必须要有一个值为b的a参数
+                .GET("/user/{id}", RequestPredicates.accept(MediaType.ALL).and(RequestPredicates.param("a", "b")), personBizHandler::getPerson)
+                .GET("/users", personBizHandler::getPersons)
+                .POST("/user", RequestPredicates.accept(MediaType.APPLICATION_JSON), personBizHandler::savePerson)
+                .PUT("/user/{id}", RequestPredicates.accept(MediaType.APPLICATION_JSON), personBizHandler::updatePerson)
+                .DELETE("/user/{id}", personBizHandler::deletePerson)
+                .build();//开始定义路由信息
+    }
+
+}
+```
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/11 10:52
+ */
+@Slf4j
+@Service
+public class PersonBizHandler {
+
+    /**
+     * 查询指定id的用户
+     *
+     * @param request
+     * @return
+     */
+    public ServerResponse getPerson(ServerRequest request) throws Exception {
+        String id = request.pathVariable("id");
+        log.info("查询 【{}】 用户信息，数据库正在检索", id);
+        // 业务处理
+        Person person = new Person(1L, "哈哈", "aa@qq.com", 18);
+        // 构造响应
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(person);
+    }
+
+
+    /**
+     * 获取所有用户
+     *
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public ServerResponse getPersons(ServerRequest request) throws Exception {
+        log.info("查询所有用户信息完成");
+        // 业务处理
+        List<Person> list = Arrays.asList(new Person(1L, "哈哈", "aa@qq.com", 18),
+                new Person(2L, "哈哈2", "aa2@qq.com", 12));
+
+        // 构造响应
+        return ServerResponse.ok().body(list); // 凡是body中的对象，就是以前@ResponseBody原理，利用HttpMessageConverter写出为JSON
+    }
+
+
+    /**
+     * 保存用户
+     *
+     * @param request
+     * @return
+     */
+    public ServerResponse savePerson(ServerRequest request) throws ServletException, IOException {
+        // 提取请求体
+        Person body = request.body(Person.class);
+        log.info("保存用户信息：{}", body);
+        return ServerResponse.ok().build();
+    }
+
+    /**
+     * 更新用户
+     *
+     * @param request
+     * @return
+     */
+    public ServerResponse updatePerson(ServerRequest request) throws ServletException, IOException {
+        Person body = request.body(Person.class);
+        log.info("保存用户信息更新: {}", body);
+        return ServerResponse.ok().build();
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param request
+     * @return
+     */
+    public ServerResponse deletePerson(ServerRequest request) {
+        String id = request.pathVariable("id");
+        log.info("删除【{}】用户信息", id);
+        return ServerResponse.ok().build();
+    }
+}
+```
+
+#### Spring MVC 请求参数的处理（补充）
+
+> 本章节的源码，基于 Spring Boot 2.0 代码。
+
+##### 请求映射的方式
+
+###### @RequestMapping
+
+常使用`@RequestMapping`注解声明请求映射。比如：
+
+```java
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Mapping
+public @interface RequestMapping {
+    String name() default "";
+
+    @AliasFor("path")
+    String[] value() default {};
+
+    @AliasFor("value")
+    String[] path() default {};
+
+    RequestMethod[] method() default {};
+
+    String[] params() default {};
+
+    String[] headers() default {};
+
+    String[] consumes() default {};
+
+    String[] produces() default {};
+}
+```
+
+```java
+@RestController
+public class HelloController {
+    @RequestMapping("/hello")
+    public String hello() {
+        return "HellO, Spring Boot!";
+    }
+}
+```
+
+###### REST 风格支持
+
+REST 风格支持：使用 HTTP 请求方式的动词来表示对资源的操作。
+
+- 以前：`/getUser`表示获取用户请求，`/saveUser`表示保存用户请求，`/editUser`表示修改用户请求，`/deleteUser`表示删除用户请求。
+
+- 现在： `/user`表示所有与 User 相关的请求，GET 请求表示获取用户，POST 请求表示保存用户，PUT 请求表示修改用户，DELETE 请求表示删除用户。
+
+默认情况下，浏览器只发送 GET 和 POST 请求，不支持 PUT 和 DELETE 请求。如果要完成 REST 风格的请求，需要在容器中配置一个`HiddenHttpMethodFilter`的组件。
+
+```java
+public class HiddenHttpMethodFilter extends OncePerRequestFilter {
+
+   private static final List<String> ALLOWED_METHODS =
+         Collections.unmodifiableList(Arrays.asList(HttpMethod.PUT.name(),
+               HttpMethod.DELETE.name(), HttpMethod.PATCH.name()));
+
+   // 表单提交时,添加一个隐藏的_method参数,该参数的值,作为最终的实际请求
+   /** Default method parameter: {@code _method}. */
+   public static final String DEFAULT_METHOD_PARAM = "_method";
+
+   private String methodParam = DEFAULT_METHOD_PARAM;
+
+
+   /**
+    * Set the parameter name to look for HTTP methods.
+    * @see #DEFAULT_METHOD_PARAM
+    */
+   public void setMethodParam(String methodParam) {
+      Assert.hasText(methodParam, "'methodParam' must not be empty");
+      this.methodParam = methodParam;
+   }
+
+   @Override
+   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+         throws ServletException, IOException {
+
+      // 原生Request(POST请求)
+      HttpServletRequest requestToUse = request;
+
+      // 原理: 发送的请求没有异常,且是POST请求时,会获取请求中的_method参数的值,并根据该值发送实际的请求
+      if ("POST".equals(request.getMethod()) && request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE) == null) {
+         String paramValue = request.getParameter(this.methodParam);
+         if (StringUtils.hasLength(paramValue)) {
+            String method = paramValue.toUpperCase(Locale.ENGLISH);
+            // ALLOWED_METHODS: 兼容PUT、DELETE和PATCH请求
+            if (ALLOWED_METHODS.contains(method)) {
+               // 创建了一个新的请求,作为最终实际的请求
+               // 包装Request(根据_method参数的值,作为实际请求)
+               requestToUse = new HttpMethodRequestWrapper(request, method);
+            }
+         }
+      }
+
+      filterChain.doFilter(requestToUse, response);
+   }
+
+
+   /**
+    * Simple {@link HttpServletRequest} wrapper that returns the supplied method for
+    * {@link HttpServletRequest#getMethod()}.
+    */
+   private static class HttpMethodRequestWrapper extends HttpServletRequestWrapper {
+
+      private final String method;
+
+      public HttpMethodRequestWrapper(HttpServletRequest request, String method) {
+         super(request);
+         this.method = method;
+      }
+
+      @Override
+      public String getMethod() {
+         return this.method;
+      }
+   }
+
+}
+```
+
+- HiddenHttpMethodFilter 会拦截 POST 请求，并根据请求中的 _method 参数的值，发送实际的请求。
+
+- HiddenHttpMethodFilter 兼容 PUT、DELETE 和 PATCH 请求，也就是说，除了 GET 和 POST 请求，Rest 风格支持上述的三种请求。
+
+- Spring Boot 自动配置的 WebMvcAutoConfiguration 中，默认提供了一个`OrderedHiddenHttpMethodFilter`，但`spring.mvc.hiddenmethod.filter`值默认为 false，也就是说，**Spring Boot 默认不开启 REST 风格支持。**
 
   ```java
   @Configuration(proxyBeanMethods = false)
@@ -5210,264 +6150,592 @@ Spring 把常用的一些 js 打包成 jar 包，添加引用后即可使用。�
   @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
   @AutoConfigureAfter({ DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
         ValidationAutoConfiguration.class })
-  public class WebMvcAutoConfiguration {}
+  public class WebMvcAutoConfiguration {
+     @Bean
+     @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
+     @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
+     public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+        return new OrderedHiddenHttpMethodFilter();
+     }
+  }
   ```
 
-  - WebMvcAutoConfiguration 配置类中的 WebMvcAutoConfigurationAdapter 组件，对应了静态资源路径和访问前缀有关的规则：
+  ```java
+  public class OrderedHiddenHttpMethodFilter extends HiddenHttpMethodFilter implements OrderedFilter {}
+  ```
+
+- 配置类中手动开启 REST 风格支持：
+
+  ```yaml
+  spring:
+    mvc:
+      hiddenmethod:
+        filter:
+          enabled: true
+  ```
+
+- 用法：表单 method 设置为 POST，添加隐藏域 _method，值按需求设置为 PUT 和 DELETE。如果本意是发送 POST 请求，则不需要 _method 属性。
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+  <h1>Hello, Xisun!</h1>
+  <form action="/user" method="get">
+      <input value="RESET-GET 提交" type="submit">
+  </form>
+  
+  <form action="/user" method="post">
+      <input value="RESET-POST 提交" type="submit">
+  </form>
+  
+  <form action="/user" method="post">
+      <input name="_method" value="PUT" type="hidden">
+      <input value="RESET-PUT 提交" type="submit">
+  </form>
+  
+  <form action="/user" method="post">
+      <input name="_method" value="DELETE" type="hidden">
+      <input value="RESET-DELETE 提交" type="submit">
+  </form>
+  </body>
+  </html>
+  ```
+
+  ```java
+  @RestController
+  public class HelloController {
+      // @RequestMapping(value = "/user", method = RequestMethod.GET)
+      @GetMapping("/user")
+      public String getUser() {
+          return "GET-张三";
+      }
+  
+      // @RequestMapping(value = "/user", method = RequestMethod.POST)
+      @PostMapping("/user")
+      public String saveUser() {
+          return "POST-张三";
+      }
+  
+      // @RequestMapping(value = "/user", method = RequestMethod.PUT)
+      @PutMapping("/user")
+      public String putUser() {
+          return "PUT-张三";
+      }
+  
+      // @RequestMapping(value = "/user", method = RequestMethod.DELETE)
+      @DeleteMapping("/user")
+      public String deleteUser() {
+          return "DELETE-张三";
+      }
+  }
+  ```
+
+  >`@GetMapping`、`@PostMapping`、`@PutMapping`和`@DeleteMapping`四个派生注解，效果等同上面的写法。
+
+- 原理（表单提交时的情况）：
+
+  - 表单提交时，只有 GET 请求和 POST 请求两种方式。
+  - 表单提交会带上 \_method 参数，比如`_method=PUT`。
+  - 请求过来时，会被 HiddenHttpMethodFilter 拦截：
+    - 判断请求是正常的，并且是 POST 请求；
+    - 获取到 \_method 参数的值。
+      - 兼容以下请求：PUT、DELETE 和 PATCH。
+    - 将原生 Request (post 请求)，使用包装模式 requesWrapper，重写`getMethod()`，返回传入的 \_method 的值。
+    - 过滤器链放行的时候用 requesWrapper。后续的方法调用`getMethod()`时，调用的是 requesWrapper 重写后的方法。
+    - 经过以上过程，实现了表单提交时的 Rest 风格。
+  - 如果使用客户端工具，比如 PostMan，会直接发送 PUT、DELETE 等方式的请求，无需使用 HiddenHttpMethodFilter。
+
+- 扩展：修改默认的 \_method 参数名。
+
+  ```java
+  @Bean
+  @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
+  @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
+  public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+     return new OrderedHiddenHttpMethodFilter();
+  }
+  ```
+
+  - 根据 OrderedHiddenHttpMethodFilter 的条件性注解，可以看出，当容器内没有 HiddenHttpMethodFilter 组件时，会默认注册一个 OrderedHiddenHttpMethodFilter 组件，而 OrderedHiddenHttpMethodFilter 组件默认使用 _method 参数。因此，如果希望修改 _method 参数，可以自己自定义注册一个 HiddenHttpMethodFilter 组件。
 
     ```java
     @Configuration(proxyBeanMethods = false)
-    @Import(EnableWebMvcConfiguration.class)
-    // 开启WebMvcProperties、ResourceProperties和WebProperties类配置绑定功能，并注册到容器中
-    // 1.WebMvcProperties.class: spring.mvc
-    // 2.ResourceProperties.class: spring.resources
-    // 3.WebProperties.class: spring.web
-    @EnableConfigurationProperties({ WebMvcProperties.class,
-          org.springframework.boot.autoconfigure.web.ResourceProperties.class, WebProperties.class })
-    @Order(0)
-    public static class WebMvcAutoConfigurationAdapter implements WebMvcConfigurer, ServletContextAware {
-        
-       /**
-        * WebMvcAutoConfigurationAdapter配置类只有一个有参构造器
-        * 有参构造器所有参数的值都会从容器中确定
-        * resourceProperties: 获取和spring.resources属性的所有值绑定的对象
-        * webProperties: 获取和spring.web属性的所有值绑定的对象;
-        * mvcProperties: 获取和spring.mvc属性的所有值绑定的对象;
-        * beanFactory: Spring的beanFactory;
-        * messageConvertersProvider: 找到所有的HttpMessageConverters;
-        * resourceHandlerRegistrationCustomizerProvider: 找到资源处理器的自定义器
-        * dispatcherServletPath: 
-        * servletRegistrations: 给应用注册Servlet、Filter....
-        */
-       public WebMvcAutoConfigurationAdapter(
-             org.springframework.boot.autoconfigure.web.ResourceProperties resourceProperties,
-             WebProperties webProperties, WebMvcProperties mvcProperties, ListableBeanFactory beanFactory,
-             ObjectProvider<HttpMessageConverters> messageConvertersProvider,
-             ObjectProvider<ResourceHandlerRegistrationCustomizer> resourceHandlerRegistrationCustomizerProvider,
-             ObjectProvider<DispatcherServletPath> dispatcherServletPath,
-             ObjectProvider<ServletRegistrationBean<?>> servletRegistrations) {
-          this.resourceProperties = resourceProperties.hasBeenCustomized() ? resourceProperties
-                : webProperties.getResources();
-          this.mvcProperties = mvcProperties;
-          this.beanFactory = beanFactory;
-          this.messageConvertersProvider = messageConvertersProvider;
-          this.resourceHandlerRegistrationCustomizer = resourceHandlerRegistrationCustomizerProvider.getIfAvailable();
-          this.dispatcherServletPath = dispatcherServletPath;
-          this.servletRegistrations = servletRegistrations;
-          this.mvcProperties.checkConfiguration();
-       }
-    
-       /**
-        * webjars资源处理的默认规则
-        */
-       @Override
-       public void addResourceHandlers(ResourceHandlerRegistry registry) {
-          if (!this.resourceProperties.isAddMappings()) {
-             logger.debug("Default resource handling disabled");
-             return;
-          }
-          // webjars: 映射规则是/webjars/**,资源路径是各jar包下的classpath:/META-INF/resources/webjars/
-          addResourceHandler(registry, "/webjars/**", "classpath:/META-INF/resources/webjars/");
-          // this.mvcProperties.getStaticPathPattern(): 静态资源默认映射是/**
-          addResourceHandler(registry, this.mvcProperties.getStaticPathPattern(), (registration) -> {
-             registration.addResourceLocations(this.resourceProperties.getStaticLocations());
-             if (this.servletContext != null) {
-                ServletContextResource resource = new ServletContextResource(this.servletContext, SERVLET_LOCATION);
-                registration.addResourceLocations(resource);
-             }
-          });
-       }
-    
-    }
-    ```
-
-    ```java
-    @ConfigurationProperties("spring.web")
-    public class WebProperties {
-    
-       public static class Resources {
-          // 静态资源默认存储路径
-          private static final String[] CLASSPATH_RESOURCE_LOCATIONS = { "classpath:/META-INF/resources/",
-                "classpath:/resources/", "classpath:/static/", "classpath:/public/" };
-           
-          /**
-    		* Whether to enable default resource handling.
-    		* 通过设置spring.web.add-mappings: false, 能够禁用所有静态资源的规则, 
-    		* 也就是说无论静态资源存放在哪，都无法访问，默认为true
-    		*/
-    	  private boolean addMappings = true;
-       }
-    }
-    ```
-
-  - WebMvcAutoConfiguration 配置类中的 EnableWebMvcConfiguration 组件，对应了欢迎页的处理规则：
-
-    ```java
-    @Configuration(proxyBeanMethods = false)
-    @EnableConfigurationProperties(WebProperties.class)
-    public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
-    
-       // HandlerMapping: 处理器映射,保存了每一个Handler能处理哪些请求.
-       @Bean
-       public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
-             FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
-          WelcomePageHandlerMapping welcomePageHandlerMapping = new WelcomePageHandlerMapping(
-                new TemplateAvailabilityProviders(applicationContext), applicationContext, getWelcomePage(),
-                this.mvcProperties.getStaticPathPattern());
-          welcomePageHandlerMapping.setInterceptors(getInterceptors(mvcConversionService, mvcResourceUrlProvider));
-          welcomePageHandlerMapping.setCorsConfigurations(getCorsConfigurations());
-          return welcomePageHandlerMapping;
-       }
-    
-    }
-    ```
-
-    ```java
-    final class WelcomePageHandlerMapping extends AbstractUrlHandlerMapping {
-    
-       WelcomePageHandlerMapping(TemplateAvailabilityProviders templateAvailabilityProviders,
-             ApplicationContext applicationContext, Resource welcomePage, String staticPathPattern) {
-          // 如果使用欢迎页功能,默认映射是/**,访问index.html
-          if (welcomePage != null && "/**".equals(staticPathPattern)) {
-             logger.info("Adding welcome page: " + welcomePage);
-             setRootViewName("forward:index.html");
-          }
-          // 如果上面的条件不满足,转为发送/index请求,查看Controller是否能匹配并处理
-          else if (welcomeTemplateExists(templateAvailabilityProviders, applicationContext)) {
-             logger.info("Adding welcome page template: index");
-             setRootViewName("index");
-          }
-       }
-    }
-    ```
-
-#### Spring MVC 请求参数的处理
-
-##### 请求映射
-
-- 请求映射的方式
-
-  - 常使用 `@RequestMapping` 注解声明请求映射。比如：
-
-    ```java
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Documented
-    @Mapping
-    public @interface RequestMapping {
-        String name() default "";
-    
-        @AliasFor("path")
-        String[] value() default {};
-    
-        @AliasFor("value")
-        String[] path() default {};
-    
-        RequestMethod[] method() default {};
-    
-        String[] params() default {};
-    
-        String[] headers() default {};
-    
-        String[] consumes() default {};
-    
-        String[] produces() default {};
-    }
-    ```
-
-    ```java
-    @RestController
-    public class HelloController {
-        @RequestMapping("/hello")
-        public String hello() {
-            return "HellO, Spring Boot!";
+    public class WebMvcConfig {
+        @Bean
+        public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+            HiddenHttpMethodFilter hiddenHttpMethodFilter = new HiddenHttpMethodFilter();
+            // 修改默认的_method参数
+            hiddenHttpMethodFilter.setMethodParam("_real");
+            return hiddenHttpMethodFilter;
         }
     }
     ```
 
-  - Rest 风格支持：使用 HTTP 请求方式的动词来表示对资源的操作。
-    - 以前：`/getUser` 表示获取用户请求，`/saveUser` 表示保存用户请求，`/editUser` 表示修改用户请求，`/deleteUser` 表示删除用户请求。
-    
-    - 现在： `/user` 表示所有与 User 相关的请求，GET 请求表示获取用户，POST 请求表示保存用户，PUT 请求表示修改用户，DELETE 请求表示删除用户。
-    
-    - 默认情况下，浏览器只发送 GET 和 POST 请求，不支持 PUT 和 DELETE 请求。如果要完成 Rest 风格的请求，需要在容器中配置一个 HiddenHttpMethodFilter 的组件。
-    
-      ```java
-      public class HiddenHttpMethodFilter extends OncePerRequestFilter {
-      
-         private static final List<String> ALLOWED_METHODS =
-               Collections.unmodifiableList(Arrays.asList(HttpMethod.PUT.name(),
-                     HttpMethod.DELETE.name(), HttpMethod.PATCH.name()));
-      
-         // 表单提交时,添加一个隐藏的_method参数,该参数的值,作为最终的实际请求
-         /** Default method parameter: {@code _method}. */
-         public static final String DEFAULT_METHOD_PARAM = "_method";
-      
-         private String methodParam = DEFAULT_METHOD_PARAM;
-      
-      
-         /**
-          * Set the parameter name to look for HTTP methods.
-          * @see #DEFAULT_METHOD_PARAM
-          */
-         public void setMethodParam(String methodParam) {
-            Assert.hasText(methodParam, "'methodParam' must not be empty");
-            this.methodParam = methodParam;
-         }
-      
-         @Override
-         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-               throws ServletException, IOException {
-      
-            // 原生Request(POST请求)
-            HttpServletRequest requestToUse = request;
-      
-            // 原理: 发送的请求没有异常,且是POST请求时,会获取请求中的_method参数的值,并根据该值发送实际的请求
-            if ("POST".equals(request.getMethod()) && request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE) == null) {
-               String paramValue = request.getParameter(this.methodParam);
-               if (StringUtils.hasLength(paramValue)) {
-                  String method = paramValue.toUpperCase(Locale.ENGLISH);
-                  // ALLOWED_METHODS: 兼容PUT、DELETE和PATCH请求
-                  if (ALLOWED_METHODS.contains(method)) {
-                     // 创建了一个新的请求,作为最终实际的请求
-                     // 包装Request(根据_method参数的值,作为实际请求)
-                     requestToUse = new HttpMethodRequestWrapper(request, method);
-                  }
-               }
-            }
-      
-            filterChain.doFilter(requestToUse, response);
-         }
-      
-      
-         /**
-          * Simple {@link HttpServletRequest} wrapper that returns the supplied method for
-          * {@link HttpServletRequest#getMethod()}.
-          */
-         private static class HttpMethodRequestWrapper extends HttpServletRequestWrapper {
-      
-            private final String method;
-      
-            public HttpMethodRequestWrapper(HttpServletRequest request, String method) {
-               super(request);
-               this.method = method;
-            }
-      
-            @Override
-            public String getMethod() {
-               return this.method;
-            }
-         }
-      
-      }
-      ```
-    
-      - HiddenHttpMethodFilter 会拦截 POST 请求，并根据请求中的 _method 参数的值，发送实际的请求。
-    
-      - HiddenHttpMethodFilter 兼容 PUT、DELETE 和 PATCH 请求，也就是说，除了 GET 和 POST 请求，Rest 风格支持上述的三种请求。
-    
-      - Spring Boot 自动配置的 WebMvcAutoConfiguration 中，默认提供了一个 OrderedHiddenHttpMethodFilter，但 `spring.mvc.hiddenmethod.filter` 值默认为 false，也就是说，Spring Boot 默认不开启 Rest 风格支持。
-    
+##### 请求映射的原理
+
+处理 Web 请求时，Spring Boot 底层使用的是 Spring MVC，当请求到达时，都会先经过`DispatcherServlet`，这是 Web 请求的开始。
+
+DispatcherServlet 的继承树结构（ctrl + H）：
+
+![image-20210717225144630](spring-boot/image-20210717225144630.png)
+
+- `HttpServletBean`：没有重写 HttpServlet 的 doGet() 和 doPost()，查看其子类。
+
+- `FrameworkServlet`：重写了 HttpServlet 的 doGet() 和 doPost()，以及其他方法。可以看出，都调用了 processRequest()，最终执行 doService()，这个方法在 FrameworkServlet 类中没有实现，查看其子类。
+
+  ```java
+  @Override
+  protected final void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+  
+     processRequest(request, response);
+  }
+  
+  /**
+   * Delegate POST requests to {@link #processRequest}.
+   * @see #doService
+   */
+  @Override
+  protected final void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+  
+     processRequest(request, response);
+  }
+  
+  /**
+   * Delegate PUT requests to {@link #processRequest}.
+   * @see #doService
+   */
+  @Override
+  protected final void doPut(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+  
+     processRequest(request, response);
+  }
+  
+  /**
+   * Delegate DELETE requests to {@link #processRequest}.
+   * @see #doService
+   */
+  @Override
+  protected final void doDelete(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+  
+     processRequest(request, response);
+  }
+  ```
+
+  ```java
+  protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+  
+     long startTime = System.currentTimeMillis();
+     Throwable failureCause = null;
+  
+     LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+     LocaleContext localeContext = buildLocaleContext(request);
+  
+     RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
+     ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
+  
+     WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+     asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
+  
+     initContextHolders(request, localeContext, requestAttributes);
+  
+     try {
+        // 最终执行的方法
+        doService(request, response);
+     }
+     catch (ServletException | IOException ex) {
+        failureCause = ex;
+        throw ex;
+     }
+     catch (Throwable ex) {
+        failureCause = ex;
+        throw new NestedServletException("Request processing failed", ex);
+     }
+  
+     finally {
+        resetContextHolders(request, previousLocaleContext, previousAttributes);
+        if (requestAttributes != null) {
+           requestAttributes.requestCompleted();
+        }
+        logResult(request, response, failureCause, asyncManager);
+        publishRequestHandledEvent(request, response, startTime, failureCause);
+     }
+  }
+  ```
+
+  ```java
+  // FrameworkServlet中没有实现doService(),查看其子类的实现
+  protected abstract void doService(HttpServletRequest request, HttpServletResponse response)
+        throws Exception;
+  ```
+
+- **`DispatcherServlet`**：重写了 doService()，核心方法在于调用 doDispatch()，**这个方法是处理 Web 请求的最终方法。**
+
+  ```java
+  @Override
+  protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+     logRequest(request);
+  
+     // Keep a snapshot of the request attributes in case of an include,
+     // to be able to restore the original attributes after the include.
+     Map<String, Object> attributesSnapshot = null;
+     if (WebUtils.isIncludeRequest(request)) {
+        attributesSnapshot = new HashMap<>();
+        Enumeration<?> attrNames = request.getAttributeNames();
+        while (attrNames.hasMoreElements()) {
+           String attrName = (String) attrNames.nextElement();
+           if (this.cleanupAfterInclude || attrName.startsWith(DEFAULT_STRATEGIES_PREFIX)) {
+              attributesSnapshot.put(attrName, request.getAttribute(attrName));
+           }
+        }
+     }
+  
+     // Make framework objects available to handlers and view objects.
+     request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
+     request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
+     request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
+     request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
+  
+     if (this.flashMapManager != null) {
+        FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
+        if (inputFlashMap != null) {
+           request.setAttribute(INPUT_FLASH_MAP_ATTRIBUTE, Collections.unmodifiableMap(inputFlashMap));
+        }
+        request.setAttribute(OUTPUT_FLASH_MAP_ATTRIBUTE, new FlashMap());
+        request.setAttribute(FLASH_MAP_MANAGER_ATTRIBUTE, this.flashMapManager);
+     }
+  
+     RequestPath previousRequestPath = null;
+     if (this.parseRequestPath) {
+        previousRequestPath = (RequestPath) request.getAttribute(ServletRequestPathUtils.PATH_ATTRIBUTE);
+        ServletRequestPathUtils.parseAndCache(request);
+     }
+  
+     try {
+        // 核心方法
+        doDispatch(request, response);
+     }
+     finally {
+        if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
+           // Restore the original attribute snapshot, in case of an include.
+           if (attributesSnapshot != null) {
+              restoreAttributesAfterInclude(request, attributesSnapshot);
+           }
+        }
+        if (this.parseRequestPath) {
+           ServletRequestPathUtils.setParsedRequestPath(previousRequestPath, request);
+        }
+     }
+  }
+  ```
+
+  ```java
+  protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+     HttpServletRequest processedRequest = request;
+     HandlerExecutionChain mappedHandler = null;
+     boolean multipartRequestParsed = false;
+  
+     WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+  
+     try {
+        ModelAndView mv = null;
+        Exception dispatchException = null;
+  
+        try {
+           processedRequest = checkMultipart(request);
+           multipartRequestParsed = (processedRequest != request);
+  
+           // Determine handler for the current request.
+           // 找出当前请求使用哪个Handler处理,也就是Controller里的哪个方法
+           mappedHandler = getHandler(processedRequest);
+           if (mappedHandler == null) {
+              noHandlerFound(processedRequest, response);
+              return;
+           }
+  
+           // Determine handler adapter for the current request.
+           HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+  
+           // Process last-modified header, if supported by the handler.
+           String method = request.getMethod();
+           boolean isGet = HttpMethod.GET.matches(method);
+           if (isGet || HttpMethod.HEAD.matches(method)) {
+              long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
+              if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
+                 return;
+              }
+           }
+  
+           if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+              return;
+           }
+  
+           // Actually invoke the handler.
+           mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+  
+           if (asyncManager.isConcurrentHandlingStarted()) {
+              return;
+           }
+  
+           applyDefaultViewName(processedRequest, mv);
+           mappedHandler.applyPostHandle(processedRequest, response, mv);
+        }
+        catch (Exception ex) {
+           dispatchException = ex;
+        }
+        catch (Throwable err) {
+           // As of 4.3, we're processing Errors thrown from handler methods as well,
+           // making them available for @ExceptionHandler methods and other scenarios.
+           dispatchException = new NestedServletException("Handler dispatch failed", err);
+        }
+        processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+     }
+     catch (Exception ex) {
+        triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
+     }
+     catch (Throwable err) {
+        triggerAfterCompletion(processedRequest, response, mappedHandler,
+              new NestedServletException("Handler processing failed", err));
+     }
+     finally {
+        if (asyncManager.isConcurrentHandlingStarted()) {
+           // Instead of postHandle and afterCompletion
+           if (mappedHandler != null) {
+              mappedHandler.applyAfterConcurrentHandlingStarted(processedRequest, response);
+           }
+        }
+        else {
+           // Clean up any resources used by a multipart request.
+           if (multipartRequestParsed) {
+              cleanupMultipart(processedRequest);
+           }
+        }
+     }
+  }
+  ```
+
+  - `mappedHandler = getHandler(processedRequest);`：找出当前请求使用哪个 Handler 处理，也就是 Controller 里的哪个方法。
+
+    ```java
+    @Nullable
+    protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+       if (this.handlerMappings != null) {
+          // 对每一个handlerMapping映射规则循环,以找到符合当前请求的映射
+          for (HandlerMapping mapping : this.handlerMappings) {
+             HandlerExecutionChain handler = mapping.getHandler(request);
+             if (handler != null) {
+                return handler;
+             }
+          }
+       }
+       return null;
+    }
+    ```
+
+    - processedRequest：当前的请求，包含了请求的路径。
+
+      <img src="spring-boot/image-20210718132758156.png" alt="image-20210718132758156" style="zoom:80%;" />
+
+    - handlerMappings：处理器映射器，是对请求的处理规则。
+
+      <img src="spring-boot/image-20210718133108782.png" alt="image-20210718133108782" style="zoom:80%;" />
+
+      - 不同的 HandlerMapping 会处理不同的请求，上图中的五个 HandlerMapping，对应不同的功能。
+
+        - 此处先着重说明 RequestMappingHandlerMapping 和 WelcomePageHandlerMapping。
+
+      - 请求进来时，会遍历尝试所有的 HandlerMapping，看其是否有符合的请求信息。
+
+        - 如果有，就找到这个请求对应的 handler；
+        - 如果没有，就继续遍历下一个 HandlerMapping 查找。
+
+      - **RequestMappingHandlerMapping**：
+
+        - 保存了所有 @RequestMapping 注解对应的 handler 的映射规则。
+
+        - 在 Spring Boot 启动时，就会扫描所有包内 Controller 中的 @RequestMapping 注解，然后保存每一个注解中的规则。
+
+          ![image-20210718140932222](spring-boot/image-20210718140932222.png)
+
+        - 每一个映射规则，都有其所在的 Controller 和对应的方法：
+
+          ![image-20210718141237274](spring-boot/image-20210718141237274.png)
+
+        - RequestMappingHandlerMapping 的依赖树：
+
+          ![image-20210718142901281](spring-boot/image-20210718142901281.png)
+
+        - RequestMappingHandlerMapping 的`getHandler()`：（Debug 模式下，F7 进入方法内部，查看方法的具体执行方，F8 则跳过当前方法，不查看细节）
+
+          ```java
+          public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
+          		implements HandlerMapping, Ordered, BeanNameAware {
+              @Override
+              @Nullable
+              public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+                 // 获取当前请求对应的handler!!!F7进入方法内部
+                 Object handler = getHandlerInternal(request);
+                  
+                 // 找到了handler之后,即可进行之后的业务功能、逻辑处理等操作
+                 if (handler == null) {
+                    handler = getDefaultHandler();
+                 }
+                 if (handler == null) {
+                    return null;
+                 }
+                 // Bean name or resolved handler?
+                 if (handler instanceof String) {
+                    String handlerName = (String) handler;
+                    handler = obtainApplicationContext().getBean(handlerName);
+                 }
+          
+                 // Ensure presence of cached lookupPath for interceptors and others
+                 if (!ServletRequestPathUtils.hasCachedPath(request)) {
+                    initLookupPath(request);
+                 }
+          
+                 HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
+          
+                 if (logger.isTraceEnabled()) {
+                    logger.trace("Mapped to " + handler);
+                 }
+                 else if (logger.isDebugEnabled() && !DispatcherType.ASYNC.equals(request.getDispatcherType())) {
+                    logger.debug("Mapped to " + executionChain.getHandler());
+                 }
+          
+                 if (hasCorsConfigurationSource(handler) || CorsUtils.isPreFlightRequest(request)) {
+                    CorsConfiguration config = getCorsConfiguration(handler, request);
+                    if (getCorsConfigurationSource() != null) {
+                       CorsConfiguration globalConfig = getCorsConfigurationSource().getCorsConfiguration(request);
+                       config = (globalConfig != null ? globalConfig.combine(config) : config);
+                    }
+                    if (config != null) {
+                       config.validateAllowCredentials();
+                    }
+                    executionChain = getCorsHandlerExecutionChain(request, executionChain, config);
+                 }
+          
+                 return executionChain;
+              }
+          }
+          ```
+
+          ```java
+          public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMethodMapping<RequestMappingInfo> {
+              @Override
+              @Nullable
+              protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+                 request.removeAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
+                 try {
+                    // 具体调用!!!F7进入方法内部
+                    return super.getHandlerInternal(request);
+                 }
+                 finally {
+                    ProducesRequestCondition.clearMediaTypesAttribute(request);
+                 }
+              }
+          }
+          ```
+
+          ```java
+          public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMapping implements InitializingBean {
+             // Handler method lookup
+          
+             /**
+              * Look up a handler method for the given request.
+              */
+             @Override
+             @Nullable
+             protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+                // 当前请求的路径,例如: /user
+                String lookupPath = initLookupPath(request);
+                // 加锁
+                this.mappingRegistry.acquireReadLock();
+                try {
+                   // 查找当前请求的lookupPath路径,应该由哪个Handler处理!!!F7进入方法内部
+                   HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
+                   return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
+                }
+                finally {
+                   this.mappingRegistry.releaseReadLock();
+                }
+             }
+          }
+          ```
+
+          ```java
+          @Nullable
+          protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
+             List<Match> matches = new ArrayList<>();
+             // 查找RequestMappingHandlerMapping中注册的所有能够处理lookupPath请求的Mapping,可能有多个
+             List<T> directPathMatches = this.mappingRegistry.getMappingsByDirectPath(lookupPath);
+             if (directPathMatches != null) {
+                // 找到的Mapping,经过验证,找到最佳匹配的Mapping,然后添加到matches集合中
+                addMatchingMappings(directPathMatches, matches, request);
+             }
+             if (matches.isEmpty()) {
+                // 如果没找到,做一些空值处理
+                addMatchingMappings(this.mappingRegistry.getRegistrations().keySet(), matches, request);
+             }
+             if (!matches.isEmpty()) {
+                // 得到的最佳匹配的Mapping,正常情况下只能有一个
+                Match bestMatch = matches.get(0);
+                // 同一个请求,如果有多个Mapping,会抛出异常
+                if (matches.size() > 1) {
+                   Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
+                   matches.sort(comparator);
+                   bestMatch = matches.get(0);
+                   if (logger.isTraceEnabled()) {
+                      logger.trace(matches.size() + " matching mappings: " + matches);
+                   }
+                   if (CorsUtils.isPreFlightRequest(request)) {
+                      for (Match match : matches) {
+                         if (match.hasCorsConfig()) {
+                            return PREFLIGHT_AMBIGUOUS_MATCH;
+                         }
+                      }
+                   }
+                   else {
+                      Match secondBestMatch = matches.get(1);
+                      if (comparator.compare(bestMatch, secondBestMatch) == 0) {
+                         Method m1 = bestMatch.getHandlerMethod().getMethod();
+                         Method m2 = secondBestMatch.getHandlerMethod().getMethod();
+                         String uri = request.getRequestURI();
+                         throw new IllegalStateException(
+                               "Ambiguous handler methods mapped for '" + uri + "': {" + m1 + ", " + m2 + "}");
+                      }
+                   }
+                }
+                request.setAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE, bestMatch.getHandlerMethod());
+                handleMatch(bestMatch.mapping, lookupPath, request);
+                // 返回最佳匹配的结果,如下图所示,这个结果就是此次请求所对应的Mapping,以及所在的Controller和方法
+                return bestMatch.getHandlerMethod();
+             }
+             else {
+                return handleNoMatch(this.mappingRegistry.getRegistrations().keySet(), lookupPath, request);
+             }
+          }
+          ```
+
+          ![image-20210718175748062](spring-boot/image-20210718175748062.png)
+
+      - WelcomePageHandlerMapping：处理欢迎页的映射规则，访问 / 能访问到 index.html。
+
+        ![image-20210718133924900](spring-boot/image-20210718133924900.png)
+
+        ![image-20210718134030643](spring-boot/image-20210718134030643.png)
+
+      - Spring Boot 在启动时，会在 WebMvcAutoConfiguration 配置类中注册 HandlerMapping：
+
         ```java
         @Configuration(proxyBeanMethods = false)
         @ConditionalOnWebApplication(type = Type.SERVLET)
@@ -5477,838 +6745,665 @@ Spring 把常用的一些 js 打包成 jar 包，添加引用后即可使用。�
         @AutoConfigureAfter({ DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
               ValidationAutoConfiguration.class })
         public class WebMvcAutoConfiguration {
-           @Bean
-           @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
-           @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
-           public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
-              return new OrderedHiddenHttpMethodFilter();
-           }
-        }
-        ```
-    
-        ```java
-        public class OrderedHiddenHttpMethodFilter extends HiddenHttpMethodFilter implements OrderedFilter {}
-        ```
-    
-  - 配置类中手动开启 Rest 风格支持：
-
-    ```yaml
-    spring:
-      mvc:
-        hiddenmethod:
-          filter:
-            enabled: true
-    ```
-
-  - 用法：表单 method 设置为 POST，添加隐藏域 _method，值按需求设置为 PUT 和 DELETE。如果本意是发送 POST 请求，则不需要 _method 属性。
-
-    ```html
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
-    <h1>Hello, Xisun!</h1>
-    <form action="/user" method="get">
-        <input value="RESET-GET 提交" type="submit">
-    </form>
-    
-    <form action="/user" method="post">
-        <input value="RESET-POST 提交" type="submit">
-    </form>
-    
-    <form action="/user" method="post">
-        <input name="_method" value="PUT" type="hidden">
-        <input value="RESET-PUT 提交" type="submit">
-    </form>
-    
-    <form action="/user" method="post">
-        <input name="_method" value="DELETE" type="hidden">
-        <input value="RESET-DELETE 提交" type="submit">
-    </form>
-    </body>
-    </html>
-    ```
-
-    ```java
-    @RestController
-    public class HelloController {
-        // @RequestMapping(value = "/user", method = RequestMethod.GET)
-        @GetMapping("/user")
-        public String getUser() {
-            return "GET-张三";
-        }
-    
-        // @RequestMapping(value = "/user", method = RequestMethod.POST)
-        @PostMapping("/user")
-        public String saveUser() {
-            return "POST-张三";
-        }
-    
-        // @RequestMapping(value = "/user", method = RequestMethod.PUT)
-        @PutMapping("/user")
-        public String putUser() {
-            return "PUT-张三";
-        }
-    
-        // @RequestMapping(value = "/user", method = RequestMethod.DELETE)
-        @DeleteMapping("/user")
-        public String deleteUser() {
-            return "DELETE-张三";
-        }
-    }
-    ```
-
-    >`@GetMapping`、`@PostMapping`、`@PutMapping` 和 `@DeleteMapping` 四个派生注解，效果等同上面的写法。
-
-  - 原理 (表单提交时的情况)：
-
-    - 表单提交时，只有 GET 请求和 POST 请求两种方式。
-    - 表单提交会带上 \_method 参数，比如 `_method=PUT`。
-    - 请求过来时，会被 HiddenHttpMethodFilter 拦截：
-      - 判断请求是正常的，并且是 POST 请求；
-      - 获取到 \_method 参数的值。
-        - 兼容以下请求：PUT、DELETE 和 PATCH。
-      - 将原生 Request (post 请求)，使用包装模式 requesWrapper，重写 `getMethod()`，返回传入的 \_method 的值。
-      - 过滤器链放行的时候用 requesWrapper。后续的方法调用 `getMethod()` 时，调用的是 requesWrapper 重写后的方法。
-      - 经过以上过程，实现了表单提交时的 Rest 风格。
-    - 如果使用客户端工具，比如 PostMan，会直接发送 PUT、DELETE 等方式的请求，无需使用 HiddenHttpMethodFilter。
-
-  - 扩展：修改默认的 \_method 参数名。
-
-    ```java
-    @Bean
-    @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
-    @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled")
-    public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
-       return new OrderedHiddenHttpMethodFilter();
-    }
-    ```
-
-    - 根据 OrderedHiddenHttpMethodFilter 的条件性注解，可以看出，当容器内没有 HiddenHttpMethodFilter 组件时，会默认注册一个 OrderedHiddenHttpMethodFilter 组件，而 OrderedHiddenHttpMethodFilter 组件默认使用 _method 参数。因此，如果希望修改 _method 参数，可以自己自定义注册一个 HiddenHttpMethodFilter 组件。
-
-      ```java
-      @Configuration(proxyBeanMethods = false)
-      public class WebMvcConfig {
-          @Bean
-          public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
-              HiddenHttpMethodFilter hiddenHttpMethodFilter = new HiddenHttpMethodFilter();
-              // 修改默认的_method参数
-              hiddenHttpMethodFilter.setMethodParam("_real");
-              return hiddenHttpMethodFilter;
-          }
-      }
-      ```
-
-- 请求映射的原理
-
-  - 处理 Web 请求时，Spring Boot 底层使用的是 Spring MVC，当请求到达时，都会先经过 DispatcherServlet，这是 Web 请求的开始。
-
-  - DispatcherServlet 的继承树结构 (`ctrl + H`)：
-
-    ![image-20210717225144630](spring-boot/image-20210717225144630.png)
-
-    - HttpServletBean：没有重写 HttpServlet 的 `doGet()` 和 `doPost()`，查看其子类。
-
-    - FrameworkServlet：重写了 HttpServlet 的 `doGet()` 和 `doPost()`，以及其他方法。可以看出，都调用了 `processRequest()`，最终执行 `doService()`，这个方法在 FrameworkServlet 类中没有实现，查看其子类。
-
-      ```java
-      @Override
-      protected final void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-      
-         processRequest(request, response);
-      }
-      
-      /**
-       * Delegate POST requests to {@link #processRequest}.
-       * @see #doService
-       */
-      @Override
-      protected final void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-      
-         processRequest(request, response);
-      }
-      
-      /**
-       * Delegate PUT requests to {@link #processRequest}.
-       * @see #doService
-       */
-      @Override
-      protected final void doPut(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-      
-         processRequest(request, response);
-      }
-      
-      /**
-       * Delegate DELETE requests to {@link #processRequest}.
-       * @see #doService
-       */
-      @Override
-      protected final void doDelete(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-      
-         processRequest(request, response);
-      }
-      ```
-
-      ```java
-      protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-      
-         long startTime = System.currentTimeMillis();
-         Throwable failureCause = null;
-      
-         LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
-         LocaleContext localeContext = buildLocaleContext(request);
-      
-         RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
-         ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
-      
-         WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
-         asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
-      
-         initContextHolders(request, localeContext, requestAttributes);
-      
-         try {
-            // 最终执行的方法
-            doService(request, response);
-         }
-         catch (ServletException | IOException ex) {
-            failureCause = ex;
-            throw ex;
-         }
-         catch (Throwable ex) {
-            failureCause = ex;
-            throw new NestedServletException("Request processing failed", ex);
-         }
-      
-         finally {
-            resetContextHolders(request, previousLocaleContext, previousAttributes);
-            if (requestAttributes != null) {
-               requestAttributes.requestCompleted();
-            }
-            logResult(request, response, failureCause, asyncManager);
-            publishRequestHandledEvent(request, response, startTime, failureCause);
-         }
-      }
-      ```
-
-      ```java
-      // FrameworkServlet中没有实现doService(),查看其子类的实现
-      protected abstract void doService(HttpServletRequest request, HttpServletResponse response)
-            throws Exception;
-      ```
-
-    - DispatcherServlet：重写了 `doService()`，核心方法在于调用 `doDispatch()`，这个方法是处理 Web 请求的最终方法。
-
-      ```java
-      @Override
-      protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
-         logRequest(request);
-      
-         // Keep a snapshot of the request attributes in case of an include,
-         // to be able to restore the original attributes after the include.
-         Map<String, Object> attributesSnapshot = null;
-         if (WebUtils.isIncludeRequest(request)) {
-            attributesSnapshot = new HashMap<>();
-            Enumeration<?> attrNames = request.getAttributeNames();
-            while (attrNames.hasMoreElements()) {
-               String attrName = (String) attrNames.nextElement();
-               if (this.cleanupAfterInclude || attrName.startsWith(DEFAULT_STRATEGIES_PREFIX)) {
-                  attributesSnapshot.put(attrName, request.getAttribute(attrName));
-               }
-            }
-         }
-      
-         // Make framework objects available to handlers and view objects.
-         request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
-         request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
-         request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
-         request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
-      
-         if (this.flashMapManager != null) {
-            FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
-            if (inputFlashMap != null) {
-               request.setAttribute(INPUT_FLASH_MAP_ATTRIBUTE, Collections.unmodifiableMap(inputFlashMap));
-            }
-            request.setAttribute(OUTPUT_FLASH_MAP_ATTRIBUTE, new FlashMap());
-            request.setAttribute(FLASH_MAP_MANAGER_ATTRIBUTE, this.flashMapManager);
-         }
-      
-         RequestPath previousRequestPath = null;
-         if (this.parseRequestPath) {
-            previousRequestPath = (RequestPath) request.getAttribute(ServletRequestPathUtils.PATH_ATTRIBUTE);
-            ServletRequestPathUtils.parseAndCache(request);
-         }
-      
-         try {
-            // 核心方法
-            doDispatch(request, response);
-         }
-         finally {
-            if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
-               // Restore the original attribute snapshot, in case of an include.
-               if (attributesSnapshot != null) {
-                  restoreAttributesAfterInclude(request, attributesSnapshot);
-               }
-            }
-            if (this.parseRequestPath) {
-               ServletRequestPathUtils.setParsedRequestPath(previousRequestPath, request);
-            }
-         }
-      }
-      ```
-
-      ```java
-      protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
-         HttpServletRequest processedRequest = request;
-         HandlerExecutionChain mappedHandler = null;
-         boolean multipartRequestParsed = false;
-      
-         WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
-      
-         try {
-            ModelAndView mv = null;
-            Exception dispatchException = null;
-      
-            try {
-               processedRequest = checkMultipart(request);
-               multipartRequestParsed = (processedRequest != request);
-      
-               // Determine handler for the current request.
-               // 找出当前请求使用哪个Handler处理,也就是Controller里的哪个方法
-               mappedHandler = getHandler(processedRequest);
-               if (mappedHandler == null) {
-                  noHandlerFound(processedRequest, response);
-                  return;
-               }
-      
-               // Determine handler adapter for the current request.
-               HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
-      
-               // Process last-modified header, if supported by the handler.
-               String method = request.getMethod();
-               boolean isGet = HttpMethod.GET.matches(method);
-               if (isGet || HttpMethod.HEAD.matches(method)) {
-                  long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
-                  if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
-                     return;
-                  }
-               }
-      
-               if (!mappedHandler.applyPreHandle(processedRequest, response)) {
-                  return;
-               }
-      
-               // Actually invoke the handler.
-               mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
-      
-               if (asyncManager.isConcurrentHandlingStarted()) {
-                  return;
-               }
-      
-               applyDefaultViewName(processedRequest, mv);
-               mappedHandler.applyPostHandle(processedRequest, response, mv);
-            }
-            catch (Exception ex) {
-               dispatchException = ex;
-            }
-            catch (Throwable err) {
-               // As of 4.3, we're processing Errors thrown from handler methods as well,
-               // making them available for @ExceptionHandler methods and other scenarios.
-               dispatchException = new NestedServletException("Handler dispatch failed", err);
-            }
-            processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
-         }
-         catch (Exception ex) {
-            triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
-         }
-         catch (Throwable err) {
-            triggerAfterCompletion(processedRequest, response, mappedHandler,
-                  new NestedServletException("Handler processing failed", err));
-         }
-         finally {
-            if (asyncManager.isConcurrentHandlingStarted()) {
-               // Instead of postHandle and afterCompletion
-               if (mappedHandler != null) {
-                  mappedHandler.applyAfterConcurrentHandlingStarted(processedRequest, response);
-               }
-            }
-            else {
-               // Clean up any resources used by a multipart request.
-               if (multipartRequestParsed) {
-                  cleanupMultipart(processedRequest);
-               }
-            }
-         }
-      }
-      ```
-  
-      - `mappedHandler = getHandler(processedRequest);`：找出当前请求使用哪个 Handler 处理，也就是 Controller 里的哪个方法。
-  
-        ```java
-        @Nullable
-        protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-           if (this.handlerMappings != null) {
-              // 对每一个handlerMapping映射规则循环,以找到符合当前请求的映射
-              for (HandlerMapping mapping : this.handlerMappings) {
-                 HandlerExecutionChain handler = mapping.getHandler(request);
-                 if (handler != null) {
-                    return handler;
-                 }
-              }
-           }
-           return null;
-        }
-        ```
-  
-        - processedRequest：当前的请求，包含了请求的路径。
-  
-          ![image-20210718132758156](spring-boot/image-20210718132758156.png)
-  
-        - handlerMappings：处理器映射器，是对请求的处理规则。
-  
-          ![image-20210718133108782](spring-boot/image-20210718133108782.png)
-  
-          - 不同的 HandlerMapping 会处理不同的请求，上图中的五个 HandlerMapping，对应不同的功能。
-  
-            - 此处先着重说明 RequestMappingHandlerMapping 和 WelcomePageHandlerMapping。
-  
-          - 请求进来时，会遍历尝试所有的 HandlerMapping，看其是否有符合的请求信息。
-  
-            - 如果有，就找到这个请求对应的 handler；
-            - 如果没有，就继续遍历下一个 HandlerMapping 查找。
-  
-          - **RequestMappingHandlerMapping**：
-  
-            - 保存了所有 `@RequestMapping` 注解对应的 handler 的映射规则。
-  
-            - 在 Spring Boot 启动时，就会扫描所有包内 Controller 中的 `@RequestMapping` 注解，然后保存每一个注解中的规则。
-  
-              ![image-20210718140932222](spring-boot/image-20210718140932222.png)
-  
-            - 每一个映射规则，都有其所在的 Controller 和对应的方法：
-  
-              ![image-20210718141237274](spring-boot/image-20210718141237274.png)
-  
-            - RequestMappingHandlerMapping 的依赖树：
-  
-              ![image-20210718142901281](spring-boot/image-20210718142901281.png)
-  
-            - RequestMappingHandlerMapping 的 `getHandler()`：(Debug 模式下，F7 进入方法内部，查看方法的具体执行方，F8 则跳过当前方法，不查看细节)
-  
-              ```java
-              public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
-              		implements HandlerMapping, Ordered, BeanNameAware {
-                  @Override
-                  @Nullable
-                  public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-                     // 获取当前请求对应的handler!!!F7进入方法内部
-                     Object handler = getHandlerInternal(request);
-                      
-                     // 找到了handler之后,即可进行之后的业务功能、逻辑处理等操作
-                     if (handler == null) {
-                        handler = getDefaultHandler();
-                     }
-                     if (handler == null) {
-                        return null;
-                     }
-                     // Bean name or resolved handler?
-                     if (handler instanceof String) {
-                        String handlerName = (String) handler;
-                        handler = obtainApplicationContext().getBean(handlerName);
-                     }
-              
-                     // Ensure presence of cached lookupPath for interceptors and others
-                     if (!ServletRequestPathUtils.hasCachedPath(request)) {
-                        initLookupPath(request);
-                     }
-              
-                     HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
-              
-                     if (logger.isTraceEnabled()) {
-                        logger.trace("Mapped to " + handler);
-                     }
-                     else if (logger.isDebugEnabled() && !DispatcherType.ASYNC.equals(request.getDispatcherType())) {
-                        logger.debug("Mapped to " + executionChain.getHandler());
-                     }
-              
-                     if (hasCorsConfigurationSource(handler) || CorsUtils.isPreFlightRequest(request)) {
-                        CorsConfiguration config = getCorsConfiguration(handler, request);
-                        if (getCorsConfigurationSource() != null) {
-                           CorsConfiguration globalConfig = getCorsConfigurationSource().getCorsConfiguration(request);
-                           config = (globalConfig != null ? globalConfig.combine(config) : config);
-                        }
-                        if (config != null) {
-                           config.validateAllowCredentials();
-                        }
-                        executionChain = getCorsHandlerExecutionChain(request, executionChain, config);
-                     }
-              
-                     return executionChain;
-                  }
-              }
-              ```
-  
-              ```java
-              public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMethodMapping<RequestMappingInfo> {
-                  @Override
-                  @Nullable
-                  protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
-                     request.removeAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
-                     try {
-                        // 具体调用!!!F7进入方法内部
-                        return super.getHandlerInternal(request);
-                     }
-                     finally {
-                        ProducesRequestCondition.clearMediaTypesAttribute(request);
-                     }
-                  }
-              }
-              ```
-  
-              ```java
-              public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMapping implements InitializingBean {
-                 // Handler method lookup
-              
-                 /**
-                  * Look up a handler method for the given request.
-                  */
-                 @Override
-                 @Nullable
-                 protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
-                    // 当前请求的路径,例如: /user
-                    String lookupPath = initLookupPath(request);
-                    // 加锁
-                    this.mappingRegistry.acquireReadLock();
-                    try {
-                       // 查找当前请求的lookupPath路径,应该由哪个Handler处理!!!F7进入方法内部
-                       HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
-                       return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
-                    }
-                    finally {
-                       this.mappingRegistry.releaseReadLock();
-                    }
-                 }
-              }
-              ```
-  
-              ```java
-              @Nullable
-              protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
-                 List<Match> matches = new ArrayList<>();
-                 // 查找RequestMappingHandlerMapping中注册的所有能够处理lookupPath请求的Mapping,可能有多个
-                 List<T> directPathMatches = this.mappingRegistry.getMappingsByDirectPath(lookupPath);
-                 if (directPathMatches != null) {
-                    // 找到的Mapping,经过验证,找到最佳匹配的Mapping,然后添加到matches集合中
-                    addMatchingMappings(directPathMatches, matches, request);
-                 }
-                 if (matches.isEmpty()) {
-                    // 如果没找到,做一些空值处理
-                    addMatchingMappings(this.mappingRegistry.getRegistrations().keySet(), matches, request);
-                 }
-                 if (!matches.isEmpty()) {
-                    // 得到的最佳匹配的Mapping,正常情况下只能有一个
-                    Match bestMatch = matches.get(0);
-                    // 同一个请求,如果有多个Mapping,会抛出异常
-                    if (matches.size() > 1) {
-                       Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
-                       matches.sort(comparator);
-                       bestMatch = matches.get(0);
-                       if (logger.isTraceEnabled()) {
-                          logger.trace(matches.size() + " matching mappings: " + matches);
-                       }
-                       if (CorsUtils.isPreFlightRequest(request)) {
-                          for (Match match : matches) {
-                             if (match.hasCorsConfig()) {
-                                return PREFLIGHT_AMBIGUOUS_MATCH;
-                             }
-                          }
-                       }
-                       else {
-                          Match secondBestMatch = matches.get(1);
-                          if (comparator.compare(bestMatch, secondBestMatch) == 0) {
-                             Method m1 = bestMatch.getHandlerMethod().getMethod();
-                             Method m2 = secondBestMatch.getHandlerMethod().getMethod();
-                             String uri = request.getRequestURI();
-                             throw new IllegalStateException(
-                                   "Ambiguous handler methods mapped for '" + uri + "': {" + m1 + ", " + m2 + "}");
-                          }
-                       }
-                    }
-                    request.setAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE, bestMatch.getHandlerMethod());
-                    handleMatch(bestMatch.mapping, lookupPath, request);
-                    // 返回最佳匹配的结果,如下图所示,这个结果就是此次请求所对应的Mapping,以及所在的Controller和方法
-                    return bestMatch.getHandlerMethod();
-                 }
-                 else {
-                    return handleNoMatch(this.mappingRegistry.getRegistrations().keySet(), lookupPath, request);
-                 }
-              }
-              ```
-  
-              ![image-20210718175748062](spring-boot/image-20210718175748062.png)
-  
-          - WelcomePageHandlerMapping：处理欢迎页的映射规则，访问 `/` 能访问到 index.html。
-  
-            ![image-20210718133924900](spring-boot/image-20210718133924900.png)
-  
-            ![image-20210718134030643](spring-boot/image-20210718134030643.png)
-  
-          - Spring Boot 在启动时，会在 WebMvcAutoConfiguration 配置类中注册 HandlerMapping：
-  
-            ```java
             @Configuration(proxyBeanMethods = false)
-            @ConditionalOnWebApplication(type = Type.SERVLET)
-            @ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })
-            @ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
-            @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
-            @AutoConfigureAfter({ DispatcherServletAutoConfiguration.class, TaskExecutionAutoConfiguration.class,
-                  ValidationAutoConfiguration.class })
-            public class WebMvcAutoConfiguration {
-                @Configuration(proxyBeanMethods = false)
-            	@EnableConfigurationProperties(WebProperties.class)
-            	public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
-                    // RequestMappingHandlerMapping!!!
-            		@Bean
-            		@Primary
-            		@Override
-            		public RequestMappingHandlerMapping requestMappingHandlerMapping(
-            				@Qualifier("mvcContentNegotiationManager") ContentNegotiationManager contentNegotiationManager,
-            				@Qualifier("mvcConversionService") FormattingConversionService conversionService,
-            				@Qualifier("mvcResourceUrlProvider") ResourceUrlProvider resourceUrlProvider) {
-            			// Must be @Primary for MvcUriComponentsBuilder to work
-            			return super.requestMappingHandlerMapping(contentNegotiationManager, conversionService,
-            					resourceUrlProvider);
-            		}
-            
-                    // WelcomePageHandlerMapping!!!
-            		@Bean
-            		public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
-            				FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
-            			WelcomePageHandlerMapping welcomePageHandlerMapping = new WelcomePageHandlerMapping(
-            					new TemplateAvailabilityProviders(applicationContext), applicationContext, getWelcomePage(),
-            					this.mvcProperties.getStaticPathPattern());
-            			welcomePageHandlerMapping.setInterceptors(getInterceptors(mvcConversionService, mvcResourceUrlProvider));
-            			welcomePageHandlerMapping.setCorsConfigurations(getCorsConfigurations());
-            			return welcomePageHandlerMapping;
-            		}
-            	}
-            }
-            ```
-  
-          - 如果需要一些自定义的映射处理，我们也可以自己向容器中注册 HandlerMapping。
-  
-            - 自定义 HandlerMapping 的场合，比如：项目内包含一个系统的两个版本，v1 和 v2 版本调用不同的映射。
-  
+        	@EnableConfigurationProperties(WebProperties.class)
+        	public static class EnableWebMvcConfiguration extends DelegatingWebMvcConfiguration implements ResourceLoaderAware {
+                // RequestMappingHandlerMapping!!!
+        		@Bean
+        		@Primary
+        		@Override
+        		public RequestMappingHandlerMapping requestMappingHandlerMapping(
+        				@Qualifier("mvcContentNegotiationManager") ContentNegotiationManager contentNegotiationManager,
+        				@Qualifier("mvcConversionService") FormattingConversionService conversionService,
+        				@Qualifier("mvcResourceUrlProvider") ResourceUrlProvider resourceUrlProvider) {
+        			// Must be @Primary for MvcUriComponentsBuilder to work
+        			return super.requestMappingHandlerMapping(contentNegotiationManager, conversionService,
+        					resourceUrlProvider);
+        		}
+        
+                // WelcomePageHandlerMapping!!!
+        		@Bean
+        		public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
+        				FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
+        			WelcomePageHandlerMapping welcomePageHandlerMapping = new WelcomePageHandlerMapping(
+        					new TemplateAvailabilityProviders(applicationContext), applicationContext, getWelcomePage(),
+        					this.mvcProperties.getStaticPathPattern());
+        			welcomePageHandlerMapping.setInterceptors(getInterceptors(mvcConversionService, mvcResourceUrlProvider));
+        			welcomePageHandlerMapping.setCorsConfigurations(getCorsConfigurations());
+        			return welcomePageHandlerMapping;
+        		}
+        	}
+        }
+        ```
+
+      - 如果需要一些自定义的映射处理，我们也可以自己向容器中注册 HandlerMapping。
+
+        - 自定义 HandlerMapping 的场合，比如：项目内包含一个系统的两个版本，v1 和 v2 版本调用不同的映射。
 
 ##### 普通参数与基本注解
 
-- 注解：
+###### @PathVariable，@RequestHeader，@RequestParam，@CookieValue
 
-  - `@PathVariable`，`@RequestHeader`，`@RequestParam`，`@CookieValue`
+Controller：
 
-    - Controller：
+```java
+@RestController
+public class ParameterController {
+    /**
+     * 假设访问路径为: localhost:8080/car/3/owner/lisi?age=18&interests=basketball&interests=football
+     * <p>
+     * 说明: 3这个位置为id,lisi这个位置为userName,?age=18&interests=basketball&interests=football为请求参数
+     * <p>
+     * 使用@PathVariable注解:
+     * 1.指定变量名时,可以获取访问路径中对应的变量值
+     * 2.不指定变量名时,可以获取访问路径中所有的变量值,但必须是Map<String, String>格式
+     * <p>
+     * 使用@RequestHeader注解:
+     * 1.指定变量名时,可以获取请求头中指定的变量值
+     * 2.不指定变量名时,可以获取请求头中所有的变量值,但必须是Map<String, String>格式
+     * <p>
+     * 使用@RequestParam注解:
+     * 1.指定变量名时,可以获取请求参数中指定的变量值
+     * 2.不指定变量名时,可以获取请求参数中所有的变量值,但必须是Map<String, String>格式
+     * <p>
+     * 使用@CookieValue注解:
+     * 1.指定变量名时,可以获取Cookie中指定的变量值,也可以直接转换为Cookie对象
+     * 2.注意: 如果请求中没有Cookie,使用@CookieValue注解会报错
+     */
+    @GetMapping("/car/{id}/owner/{userName}")
+    public Map<String, Object> getCar(@PathVariable("id") Integer id,
+                                      @PathVariable("userName") String userName,
+                                      @PathVariable Map<String, String> paths,
+                                      @RequestHeader("User-Agent") String userAgent,
+                                      @RequestHeader Map<String, String> headers,
+                                      @RequestParam("age") Integer age,
+                                      @RequestParam("interests") List<String> interests,
+                                      @RequestParam Map<String, String> params
+                                      /*@CookieValue("_ga") String ga,
+                                      @CookieValue("_ga") Cookie cookie*/) {
+        Map<String, Object> map = new HashMap<>();
+        
+        // 存放请求中路径变量的值
+        map.put("id", id);
+        map.put("userName", userName);
+        map.put("paths", paths);
 
-      ```java
-      @RestController
-      public class ParameterController {
-          /**
-           * 假设访问路径为: localhost:8080/car/3/owner/lisi?age=18&interests=basketball&interests=football
-           * <p>
-           * 说明: 3这个位置为id,lisi这个位置为userName,?age=18&interests=basketball&interests=football为请求参数
-           * <p>
-           * 使用@PathVariable注解:
-           * 1.指定变量名时,可以获取访问路径中对应的变量值
-           * 2.不指定变量名时,可以获取访问路径中所有的变量值,但必须是Map<String, String>格式
-           * <p>
-           * 使用@RequestHeader注解:
-           * 1.指定变量名时,可以获取请求头中指定的变量值
-           * 2.不指定变量名时,可以获取请求头中所有的变量值,但必须是Map<String, String>格式
-           * <p>
-           * 使用@RequestParam注解:
-           * 1.指定变量名时,可以获取请求参数中指定的变量值
-           * 2.不指定变量名时,可以获取请求参数中所有的变量值,但必须是Map<String, String>格式
-           * <p>
-           * 使用@CookieValue注解:
-           * 1.指定变量名时,可以获取Cookie中指定的变量值,也可以直接转换为Cookie对象
-           * 2.注意: 如果请求中没有Cookie,使用@CookieValue注解会报错
-           */
-          @GetMapping("/car/{id}/owner/{userName}")
-          public Map<String, Object> getCar(@PathVariable("id") Integer id,
-                                            @PathVariable("userName") String userName,
-                                            @PathVariable Map<String, String> paths,
-                                            @RequestHeader("User-Agent") String userAgent,
-                                            @RequestHeader Map<String, String> headers,
-                                            @RequestParam("age") Integer age,
-                                            @RequestParam("interests") List<String> interests,
-                                            @RequestParam Map<String, String> params
-                                            /*@CookieValue("_ga") String ga,
-                                            @CookieValue("_ga") Cookie cookie*/) {
-              Map<String, Object> map = new HashMap<>();
-              
-              // 存放请求中路径变量的值
-              map.put("id", id);
-              map.put("userName", userName);
-              map.put("paths", paths);
-      
-              // 存放请求头中的值
-              map.put("userAgent", userAgent);
-              map.put("headers", headers);
-      
-              // 存放请求参数中的值
-              map.put("age", age);
-              map.put("interests", interests);
-              map.put("params", params);
-      
-              // 存放Cookie中的值
-              /*map.put("_ga", ga);
-              System.out.println("打印Cookie对象: " + cookie);
-              System.out.println(cookie.getName() + " ------> " + cookie.getValue());*/
-              return map;
-          }
-      }
-      ```
+        // 存放请求头中的值
+        map.put("userAgent", userAgent);
+        map.put("headers", headers);
 
-    - 测试：
+        // 存放请求参数中的值
+        map.put("age", age);
+        map.put("interests", interests);
+        map.put("params", params);
 
-      ![image-20210719155355517](spring-boot/image-20210719155355517.png)
+        // 存放Cookie中的值
+        /*map.put("_ga", ga);
+        System.out.println("打印Cookie对象: " + cookie);
+        System.out.println(cookie.getName() + " ------> " + cookie.getValue());*/
+        return map;
+    }
+}
+```
 
-      - 细节：
+测试：
 
-      ![image-20210719160053974](spring-boot/image-20210719160053974.png)
+![image-20210719155355517](spring-boot/image-20210719155355517.png)
 
-      ![image-20210719155911239](spring-boot/image-20210719155911239.png)
+细节：
 
-  - `@RequestBody`
+![image-20210719160053974](spring-boot/image-20210719160053974.png)
 
-    - index.html：
+![image-20210719155911239](spring-boot/image-20210719155911239.png)
 
-      ```html
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <title>Title</title>
-      </head>
-      <body>
-      <h1>Hello, Xisun!</h1>
-      <form action="/save" method="post">
-          用户名: <input name="userName">
-          邮箱:<input name="email">
-          <input type="submit" value="提交">
-      </form>
-      </body>
-      </html>
-      ```
+###### @RequestBody
 
-    - Controller：
+index.html：
 
-      ```java
-      @RestController
-      public class ParameterController {
-          /**
-           * 对于POST请求,可以使用@RequestBody注解,获取表单提交中的参数
-           */
-          @PostMapping("/save")
-          public Map<String, Object> postMethod(@RequestBody String content) {
-              Map<String, Object> map = new HashMap<>();
-              map.put("content", content);
-              return map;
-          }
-      }
-      ```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Hello, Xisun!</h1>
+<form action="/save" method="post">
+    用户名: <input name="userName">
+    邮箱:<input name="email">
+    <input type="submit" value="提交">
+</form>
+</body>
+</html>
+```
 
-    - 测试：
+Controller：
 
-      ![image-20210719162448727](spring-boot/image-20210719162448727.png)
+```java
+@RestController
+public class ParameterController {
+    /**
+     * 对于POST请求,可以使用@RequestBody注解,获取表单提交中的参数
+     */
+    @PostMapping("/save")
+    public Map<String, Object> postMethod(@RequestBody String content) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("content", content);
+        return map;
+    }
+}
+```
 
-      ![](spring-boot/image-20210719163040040.png)
+测试：
 
-      ![image-20210719163217031](spring-boot/image-20210719163217031.png)
+![image-20210719162448727](spring-boot/image-20210719162448727.png)
 
-  - `@RequestAttribute`
+![](spring-boot/image-20210719163040040.png)
 
-    - Controller：
+![image-20210719163217031](spring-boot/image-20210719163217031.png)
 
-      ```java
-      @Controller
-      public class RequestController {
-          @GetMapping("/goto")
-          public String goToPage(HttpServletRequest request) {
-              // 收到/goto请求时,在请求中添加一个或多个属性,然后转发到/success请求
-              request.setAttribute("msg", "go to success");
-              request.setAttribute("code", 200);
-              return "forward:/success";// return "/success";  这种方式也可以正常转发
-          }
-      
-          /**
-           * 有两种方式获得Request中的属性值:
-           * 方式一: 使用@RequestAttribute注解,并指定需要获取的属性名
-           * 方式二: 直接从Request对象中获得属性值
-           * 注意: 直接访问/success请求会出异常,因为该请求中没有msg和code这两个属性
-           */
-          @ResponseBody
-          @GetMapping("/success")
-          public Map<String, Object> success(@RequestAttribute("msg") String msg,
-                                             @RequestAttribute("code") Integer code,
-                                             HttpServletRequest request) {
-              Map<String, Object> map = new HashMap<>();
-      
-              // 方式一: 使用@RequestAttribute注解获取的Request中的属性值
-              map.put("annotationMsg", msg);
-              map.put("annotationCode", code);
-      
-              // 方式二: 直接从Request对象中获得属性值
-              String reqMsg = (String) request.getAttribute("msg");
-              map.put("requestMsg", reqMsg);
-              Integer reqCode = (Integer) request.getAttribute("code");
-              map.put("requestCode", reqCode);
-              return map;
-          }
-      }
-      ```
+###### @RequestAttribute
 
-    - 测试：
+Controller：
 
-      ![image-20210719170034261](spring-boot/image-20210719170034261.png)
+```java
+@Controller
+public class RequestController {
+    @GetMapping("/goto")
+    public String goToPage(HttpServletRequest request) {
+        // 收到/goto请求时,在请求中添加一个或多个属性,然后转发到/success请求
+        request.setAttribute("msg", "go to success");
+        request.setAttribute("code", 200);
+        return "forward:/success";// return "/success";  这种方式也可以正常转发
+    }
 
-      ![image-20210719170135235](spring-boot/image-20210719170135235.png)
+    /**
+     * 有两种方式获得Request中的属性值:
+     * 方式一: 使用@RequestAttribute注解,并指定需要获取的属性名
+     * 方式二: 直接从Request对象中获得属性值
+     * 注意: 直接访问/success请求会出异常,因为该请求中没有msg和code这两个属性
+     */
+    @ResponseBody
+    @GetMapping("/success")
+    public Map<String, Object> success(@RequestAttribute("msg") String msg,
+                                       @RequestAttribute("code") Integer code,
+                                       HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
 
-      ![image-20210719170328498](spring-boot/image-20210719170328498.png)
+        // 方式一: 使用@RequestAttribute注解获取的Request中的属性值
+        map.put("annotationMsg", msg);
+        map.put("annotationCode", code);
 
-  - `@MatrixVariable`：矩阵变量注解，此处省略不谈。
+        // 方式二: 直接从Request对象中获得属性值
+        String reqMsg = (String) request.getAttribute("msg");
+        map.put("requestMsg", reqMsg);
+        Integer reqCode = (Integer) request.getAttribute("code");
+        map.put("requestCode", reqCode);
+        return map;
+    }
+}
+```
 
-  - `@ModelAttribute`：此处省略不谈。
+测试：
 
-- `// TODO`
+![image-20210719170034261](spring-boot/image-20210719170034261.png)
 
-### 数据访问
+![image-20210719170135235](spring-boot/image-20210719170135235.png)
 
-`// TODO`
+![image-20210719170328498](spring-boot/image-20210719170328498.png)
 
-### 单元测试
+### 数据整合
 
-`// TODO`
+场景：Spring Boot 整合`Spring`、`SpringMVC`、`MyBatis`进行**数据访问场景**开发。
 
-### 指标监控
+#### 基本操作
 
-`// TODO`
+##### Maven 引入依赖
 
-### 原理解析
+```xml
+<!-- Web开发的场景启动器 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
 
-`// TODO`
+<!-- MyBatis的场景启动器 -->
+<!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>3.0.1</version>
+</dependency>
+
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+##### 配置数据源
+
+```properties
+spring.datasource.url=jdbc:mysql://192.168.200.100:3306/demo
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+```
+
+##### 配置 MyBatis
+
+```properties
+# 指定mapper映射文件位置
+mybatis.mapper-locations=classpath:/mapper/*.xml
+# 参数项调整
+mybatis.configuration.map-underscore-to-camel-case=true
+```
+
+##### CRUD 编写
+
+- 编写 Bean。
+- 编写 Mapper。
+- 使用`mybatisx`插件，快速生成 MapperXML。
+- 测试 CRUD。
+
+#### 自动配置原理
+
+##### JDBC 场景的自动配置
+
+`mybatis-spring-boot-starter`导入了`spring-boot-starter-jdbc`，JDBC 是操作数据库的场景。
+
+在 org.springframework.boot.autoconfigure 包 META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 文件中，**与 JDBC 对应的自动配置项为**：
+
+```imports
+org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.JndiDataSourceAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.XADataSourceAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+```
+
+- `DataSourceAutoConfiguration`：
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-configuration} for {@link DataSource}.
+   *
+   * @author Dave Syer
+   * @author Phillip Webb
+   * @author Stephane Nicoll
+   * @author Kazuki Shimizu
+   * @since 1.0.0
+   */
+  @AutoConfiguration(before = SqlInitializationAutoConfiguration.class)
+  @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })
+  @ConditionalOnMissingBean(type = "io.r2dbc.spi.ConnectionFactory")
+  @EnableConfigurationProperties(DataSourceProperties.class)
+  @Import(DataSourcePoolMetadataProvidersConfiguration.class)
+  public class DataSourceAutoConfiguration {
+  }
+  ```
+
+  - **数据源的自动配置**。
+
+  - 所有和数据源有关的配置都绑定在`DataSourceProperties`（spring.datasource）。
+
+  - DataSourceAutoConfiguration 中配置了多种数据源，默认使用`HikariDataSource`数据源（其他数据源需要导入对应的依赖）。
+
+    ```java
+    @Configuration(proxyBeanMethods = false)
+    @Conditional(PooledDataSourceCondition.class)
+    @ConditionalOnMissingBean({ DataSource.class, XADataSource.class })
+    @Import({ DataSourceConfiguration.Hikari.class, DataSourceConfiguration.Tomcat.class,
+            DataSourceConfiguration.Dbcp2.class, DataSourceConfiguration.OracleUcp.class,
+            DataSourceConfiguration.Generic.class, DataSourceJmxConfiguration.class })
+    protected static class PooledDataSourceConfiguration {
+    }
+    ```
+
+- `JdbcTemplateAutoConfiguration`：
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-configuration} for {@link JdbcTemplate} and
+   * {@link NamedParameterJdbcTemplate}.
+   *
+   * @author Dave Syer
+   * @author Phillip Webb
+   * @author Stephane Nicoll
+   * @author Kazuki Shimizu
+   * @since 1.4.0
+   */
+  @AutoConfiguration(after = DataSourceAutoConfiguration.class)
+  @ConditionalOnClass({ DataSource.class, JdbcTemplate.class })
+  @ConditionalOnSingleCandidate(DataSource.class)
+  @EnableConfigurationProperties(JdbcProperties.class)
+  @Import({ DatabaseInitializationDependencyConfigurer.class, JdbcTemplateConfiguration.class,
+         NamedParameterJdbcTemplateConfiguration.class })
+  public class JdbcTemplateAutoConfiguration {
+  }
+  ```
+
+  - 给容器中注入了`JdbcTemplate`，用来操作数据库。（实际基本不用这个工具）
+
+- `JndiDataSourceAutoConfiguration`：
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-configuration} for a JNDI located
+   * {@link DataSource}.
+   *
+   * @author Phillip Webb
+   * @author Andy Wilkinson
+   * @since 1.2.0
+   */
+  @AutoConfiguration(before = { XADataSourceAutoConfiguration.class, DataSourceAutoConfiguration.class })
+  @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })
+  @ConditionalOnProperty(prefix = "spring.datasource", name = "jndi-name")
+  @EnableConfigurationProperties(DataSourceProperties.class)
+  public class JndiDataSourceAutoConfiguration {
+  }
+  ```
+
+- `XADataSourceAutoConfiguration`：
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-configuration} for {@link DataSource} with XA.
+   *
+   * @author Phillip Webb
+   * @author Josh Long
+   * @author Madhura Bhave
+   * @author Moritz Halbritter
+   * @author Andy Wilkinson
+   * @since 1.2.0
+   */
+  @AutoConfiguration(before = DataSourceAutoConfiguration.class)
+  @EnableConfigurationProperties(DataSourceProperties.class)
+  @ConditionalOnClass({ DataSource.class, TransactionManager.class, EmbeddedDatabaseType.class })
+  @ConditionalOnBean(XADataSourceWrapper.class)
+  @ConditionalOnMissingBean(DataSource.class)
+  public class XADataSourceAutoConfiguration implements BeanClassLoaderAware {
+  }
+  ```
+
+  - **基于 XA 二阶提交协议的分布式事务数据源**，需要导入对应的依赖才生效。
+
+- `DataSourceTransactionManagerAutoConfiguration`：
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-configuration} for {@link JdbcTransactionManager}.
+   *
+   * @author Dave Syer
+   * @author Stephane Nicoll
+   * @author Andy Wilkinson
+   * @author Kazuki Shimizu
+   * @since 1.0.0
+   */
+  @AutoConfiguration(before = TransactionAutoConfiguration.class)
+  @ConditionalOnClass({ JdbcTemplate.class, TransactionManager.class })
+  @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
+  @EnableConfigurationProperties(DataSourceProperties.class)
+  public class DataSourceTransactionManagerAutoConfiguration {
+  }
+  ```
+
+  - 给容器中注入了一个事务管理器，用来**支持事务**。
+
+##### MyBatis 场景的自动配置
+
+mybatis-spring-boot-starter 中，导入了 MyBatis 的自动配置包`mybatis-spring-boot-autoconfigure`：
+
+```xml
+<dependency>
+  <groupId>org.mybatis.spring.boot</groupId>
+  <artifactId>mybatis-spring-boot-autoconfigure</artifactId>
+</dependency>
+```
+
+在 mybatis-spring-boot-autoconfigure 包中，默认加载两个自动配置类：
+
+![image-20231011172917552](./spring-boot/image-20231011172917552.png)
+
+```imports
+org.mybatis.spring.boot.autoconfigure.MybatisLanguageDriverAutoConfiguration
+org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
+```
+
+- `MybatisLanguageDriverAutoConfiguration`：配置了 MyBatis 支持的语言驱动。 
+
+- `MyBatisAutoConfiguration`：配置了 MyBatis 的整合流程。
+
+  ```java
+  /**
+   * {@link EnableAutoConfiguration Auto-Configuration} for Mybatis. Contributes a {@link SqlSessionFactory} and a
+   * {@link SqlSessionTemplate}. If {@link org.mybatis.spring.annotation.MapperScan} is used, or a configuration file is
+   * specified as a property, those will be considered, otherwise this auto-configuration will attempt to register mappers
+   * based on the interface definitions in or under the root auto-configuration package.
+   *
+   * @author Eddú Meléndez
+   * @author Josh Long
+   * @author Kazuki Shimizu
+   * @author Eduardo Macarrón
+   */
+  @org.springframework.context.annotation.Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass({ SqlSessionFactory.class, SqlSessionFactoryBean.class })
+  @ConditionalOnSingleCandidate(DataSource.class)
+  @EnableConfigurationProperties(MybatisProperties.class)
+  @AutoConfigureAfter({ DataSourceAutoConfiguration.class, MybatisLanguageDriverAutoConfiguration.class })
+  public class MybatisAutoConfiguration implements InitializingBean {
+  }
+  ```
+
+  - `@ConditionalOnSingleCandidate(DataSource.class)`：容器中只能有一个数据源。
+  - `@AutoConfigureAfter({ DataSourceAutoConfiguration.class, MybatisLanguageDriverAutoConfiguration.class })`：在数据源和 MyBatis 语言驱动配置完成之后，MyBatis 的自动配置才会进行。
+  - `@EnableConfigurationProperties(MybatisProperties.class)`：MyBatis 的所有配置绑定 MybatisProperties，即`mybatis`。
+
+###### SqlSessionFactory
+
+MyBatisAutoConfiguration 中，给容器注入了`SqlSessionFactory`（MyBatis 核心组件），其作用是**创建和数据库的一次会话**。
+
+```java
+@Bean
+@ConditionalOnMissingBean
+public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
+}
+```
+
+###### SqlSessionTemplate
+
+MyBatisAutoConfiguration 中，给容器注入了`SqlSessionTemplate`（MyBatis 核心组件），其作用是**操作数据库**。
+
+```java
+@Bean
+@ConditionalOnMissingBean
+public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
+}
+```
+
+##### @MapperScan
+
+每个 **Mapper 接口的代理对象**是怎么创建放到容器中的，详见`@MapperScan`原理：
+
+```java
+/**
+ * Use this annotation to register MyBatis mapper interfaces when using Java Config. It performs when same work as
+ * {@link MapperScannerConfigurer} via {@link MapperScannerRegistrar}.
+ * <p>
+ * Either {@link #basePackageClasses} or {@link #basePackages} (or its alias {@link #value}) may be specified to define
+ * specific packages to scan. Since 2.0.4, If specific packages are not defined, scanning will occur from the package of
+ * the class that declares this annotation.
+ * <p>
+ * Configuration example:
+ * </p>
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;MapperScan("org.mybatis.spring.sample.mapper")
+ * public class AppConfig {
+ *
+ *   &#064;Bean
+ *   public DataSource dataSource() {
+ *     return new EmbeddedDatabaseBuilder().addScript("schema.sql").build();
+ *   }
+ *
+ *   &#064;Bean
+ *   public DataSourceTransactionManager transactionManager() {
+ *     return new DataSourceTransactionManager(dataSource());
+ *   }
+ *
+ *   &#064;Bean
+ *   public SqlSessionFactory sqlSessionFactory() throws Exception {
+ *     SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
+ *     sessionFactory.setDataSource(dataSource());
+ *     return sessionFactory.getObject();
+ *   }
+ * }
+ * </pre>
+ *
+ * @author Michael Lanyon
+ * @author Eduardo Macarron
+ * @author Qimiao Chen
+ *
+ * @since 1.2.0
+ *
+ * @see MapperScannerRegistrar
+ * @see MapperFactoryBean
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+@Import(MapperScannerRegistrar.class)
+@Repeatable(MapperScans.class)
+public @interface MapperScan {
+}
+```
+
+- `@Import(MapperScannerRegistrar.class)`：**批量给容器中注册组件。**解析指定的包路径里面的每一个类，为每一个 Mapper 接口类，创建 BeanDefinitions，并注册到容器中。
+
+  ```java
+  /**
+   * Register bean definitions as necessary based on the given annotation metadata of the importing @Configuration class.
+   * Note that BeanDefinitionRegistryPostProcessor types may not be registered here, due to lifecycle constraints related to @Configuration class processing.
+   * The default implementation is empty.
+   */
+  @Override
+  public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    AnnotationAttributes mapperScanAttrs = AnnotationAttributes
+        .fromMap(importingClassMetadata.getAnnotationAttributes(MapperScan.class.getName()));// 批量注册标注了@MapperScan注解的组件
+    if (mapperScanAttrs != null) {
+      registerBeanDefinitions(importingClassMetadata, mapperScanAttrs, registry,
+          generateBaseBeanName(importingClassMetadata, 0));
+    }
+  }
+  ```
+
+#### 扩展：整合其他数据源
+
+##### Druid 数据源
+
+如果想整合其他数据源，其流程如下：
+
+- 引入该数据源的场景启动器。
+- 分析自动配置了哪些东西，该怎么用。
+- 按照自动配置规范，做对应的属性配置。
+
+> Druid官网：https://github.com/alibaba/druid
+>
+> Spring Boot 2.0 对 Druid 的支持和使用：https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter
+>
+> Spring Boot 3.0 对 Druid 的支持和使用：https://github.com/alibaba/druid/tree/master/druid-spring-boot-3-starter
+>
+> - Druid 暂不明确是否支持 Spring Boot 3.0，有 ISSUE 说 1.2.20 版本已经支持，未验证。
+>
+>   ![image-20231011220540383](./spring-boot/image-20231011220540383.png)
+
+#### 场景自动配置分析过程
+
+如何分析哪个场景导入以后，开启了哪些自动配置类：
+
+- 找该场景`classpath:/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`文件中配置的所有值，就是要开启的自动配置类，但是每个类可能有条件注解，需要基于条件注解判断哪个自动配置类生效了。
+
+- 开启 DEBUG 模式：
+
+  ```properties
+  # 开启调试模式，服务启动时，详细打印开启了哪些自动配置，Positive（生效的自动配置）  Negative（不生效的自动配置）
+  debug=true
+  ```
+
+### 基础特性
+
+#### SpringApplication
+
+##### 自定义 banner
+
+在类路径添加`banner.txt`或设置`spring.banner.location`就可以定制 banner。
+
+默认 banner：
+
+![image-20231011225259229](./spring-boot/image-20231011225259229.png)
+
+banner 自定义网站：https://www.bootschool.net/ascii
+
+##### 自定义 SpringApplication
+
+```java
+import org.springframework.boot.Banner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(MyApplication.class);
+        // 可以自定义SpringApplication的一些属性
+        application.setBannerMode(Banner.Mode.OFF);
+        application.run(args);
+    }
+
+}
+```
+
+##### FluentBuilder API
+
+```java
+new SpringApplicationBuilder()
+        .sources(Parent.class)
+        .child(Application.class)
+        .bannerMode(Banner.Mode.OFF)
+        .run(args);
+```
+
+#### Profiles
+
+`Profiles`的作用是**环境隔离能力**，能够快速切换开发、测试、生产环境。
+
+步骤：
+
+1. **标识环境**：指定哪些组件、配置在哪个环境生效。
+2. **切换环境**：这个环境对应的所有组件和配置就应该生效。
+
+##### 基本使用
+
+###### 指定环境
+
+Spring Profiles 提供一种**隔离配置**的方式，使其仅在**特定环境**生效；任何@Component, @Configuration 或 @ConfigurationProperties 可以使用 @Profile 标记，来指定何时被加载。【**容器中的组件**都可以被 `@Profile`标记】
 
 ## 本文参考
+
+
 
 https://www.bilibili.com/video/BV19K4y1L7MT
 
 https://www.yuque.com/atguigu/springboot
+
+https://www.yuque.com/leifengyang/springboot3
+
+https://gitee.com/leifengyang/spring-boot-3
 
 ## 声明
 
