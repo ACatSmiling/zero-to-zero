@@ -2,6 +2,63 @@
 
 ## 常用命令
 
+### 固定 IP
+
+操作系统：
+
+```bash
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 23.04
+Release:        23.04
+Codename:       lunar
+```
+
+查看网卡信息：
+
+```bash
+$ ip link show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 00:15:5d:02:87:02 brd ff:ff:ff:ff:ff:ff
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default 
+    link/ether 02:42:cb:88:61:ea brd ff:ff:ff:ff:ff:ff
+4: br-04616b96f94b: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default 
+    link/ether 02:42:95:2a:f5:3f brd ff:ff:ff:ff:ff:ff
+```
+
+- `ip link show`命令， 会输出所有的网络接口名称，需要找到想设置固定 IP 的网卡名称。一般情况下，它会被标记为 "eth0" 或 "enpXsX"（X 为数字）等。`ip a`命令是详细版。
+
+打开并编辑 netplan 配置文件：
+
+```bash
+$ sudo vim /etc/netplan/00-installer-config.yaml
+# This is the network config written by 'subiquity'
+#network:
+# ethernets:
+#   eth0:
+#     dhcp4: true
+# version: 2
+
+network:
+  ethernets:
+    eth0:
+      dhcp4: no
+      addresses: [192.168.2.100/24]
+      gateway4: 192.168.2.1
+      nameservers:
+        addresses: [8.8.8.8,8.8.4.4]
+  version: 2
+```
+
+生效配置：
+
+```bash
+$ sudo netplan apply
+```
+
 ### 时区设置
 
 ```bash
@@ -429,15 +486,21 @@ services:
 **启动命令：**
 
 ```bash
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 - -d 是后台运行。
 
+**指定 compose 文件启动：**
+
+```bash
+$ docker compose -f docker-compose.yaml up -d
+```
+
 **停止命令：**
 
 ```bash
-$ docker-compose down
+$ docker compose down
 ```
 
 - 此命令将会停止`up`命令所启动的容器，并移除网络。
@@ -451,6 +514,142 @@ $ docker compose config
 - 验证 compose 文件格式是否正确，若正确则显示配置，若格式错误显示错误原因。
 
 > 更多用法和命令参考：https://yeasy.gitbook.io/docker_practice/compose
+
+>指定 compose 文件启动时，可能会出现 network 错误：
+>
+>```bash
+>$ docker compose -f docker-compose.yaml up
+>[+] Running 6/0
+> ✔ Network apps        Created                                                                                                       0.1s 
+> ✔ Container nginx     Created                                                                                                       0.0s 
+> ✔ Container rabbitmq  Created                                                                                                       0.0s 
+> ✔ Container mysql     Created                                                                                                       0.0s 
+> ✔ Container redis     Created                                                                                                       0.0s 
+> ✔ Container minio     Created                                                                                                       0.0s 
+>Attaching to minio, mysql, nginx, rabbitmq, redis
+>Error response from daemon: network f6ba421c0918bec0b093f7342f29f2e103989224a19395330874364782d7a99c not found
+>```
+>
+>查看当前所有的 network：
+>
+>```bash
+>$ docker network ls
+>NETWORK ID     NAME      DRIVER    SCOPE
+>4c3e1c2beb1f   apps      bridge    local
+>ab842eba8483   bridge    bridge    local
+>054499900bca   host      host      local
+>c6aab822c5a4   none      null      local
+>```
+>
+>查看指定 network 的详细信息：
+>
+>```bash
+>$ docker network inspect 4c3e1c2beb1f
+>[
+>    {
+>        "Name": "apps",
+>        "Id": "4c3e1c2beb1fb14990cc2bff7e0646d0c2449e7c2f49c5a567063e83ee908e66", // apps这个network当前的id
+>        "Created": "2023-10-12T19:56:42.603082507+08:00",
+>        "Scope": "local",
+>        "Driver": "bridge",
+>        "EnableIPv6": false,
+>        "IPAM": {
+>            "Driver": "default",
+>            "Options": null,
+>            "Config": [
+>                {
+>                    "Subnet": "172.18.0.0/16",
+>                    "Gateway": "172.18.0.1"
+>                }
+>            ]
+>        },
+>        "Internal": false,
+>        "Attachable": false,
+>        "Ingress": false,
+>        "ConfigFrom": {
+>            "Network": ""
+>        },
+>        "ConfigOnly": false,
+>        "Containers": {},
+>        "Options": {},
+>        "Labels": {
+>            "com.docker.compose.network": "apps",
+>            "com.docker.compose.project": "apps",
+>            "com.docker.compose.version": "2.20.2"
+>        }
+>    }
+>]
+>```
+>
+>查看容器绑定的 network：
+>
+>```bash
+>$ docker inspect redis
+>......
+>"NetworkSettings": {
+>            "Bridge": "",
+>            "SandboxID": "53ee53516b1035e683f3457cc7d72ddc351d2fe4c8172ca2304f7d5dcdd45444",
+>            "HairpinMode": false,
+>            "LinkLocalIPv6Address": "",
+>            "LinkLocalIPv6PrefixLen": 0,
+>            "Ports": {},
+>            "SandboxKey": "/var/run/docker/netns/53ee53516b10",
+>            "SecondaryIPAddresses": null,
+>            "SecondaryIPv6Addresses": null,
+>            "EndpointID": "",
+>            "Gateway": "",
+>            "GlobalIPv6Address": "",
+>            "GlobalIPv6PrefixLen": 0,
+>            "IPAddress": "",
+>            "IPPrefixLen": 0,
+>            "IPv6Gateway": "",
+>            "MacAddress": "",
+>            "Networks": {
+>                "apps": {
+>                    "IPAMConfig": null,
+>                    "Links": null,
+>                    "Aliases": [
+>                        "redis",
+>                        "redis",
+>                        "6565393956e3"
+>                    ],
+>                    "NetworkID": "f6ba421c0918bec0b093f7342f29f2e103989224a19395330874364782d7a99c", // 与apps这个network当前的id不对应
+>                    "EndpointID": "",
+>                    "Gateway": "",
+>                    "IPAddress": "",
+>                    "IPPrefixLen": 0,
+>                    "IPv6Gateway": "",
+>                    "GlobalIPv6Address": "",
+>                    "GlobalIPv6PrefixLen": 0,
+>                    "MacAddress": "",
+>                    "DriverOpts": null
+>                }
+>            }
+>        }
+>......
+>```
+>
+>可以看出，容器中绑定的 network，与当前该名称的 network id 不同，发生了变化，因此，需要重新绑定该 compose 文件中所有容器的 network：
+>
+>```bash
+>$ docker network connect 4c3e1c2beb1f nginx
+>$ docker network connect 4c3e1c2beb1f redis
+>$ docker network connect 4c3e1c2beb1f mysql
+>$ docker network connect 4c3e1c2beb1f minio
+>$ docker network connect 4c3e1c2beb1f rabbitmq
+>```
+>
+>然后，重新指定该 compose 文件，可以正常启动服务：
+>
+>```bash
+>$ docker compose -f docker-compose.yaml up -d
+>[+] Running 5/5
+> ✔ Container minio     Started                                                                                                       0.9s 
+> ✔ Container mysql     Started                                                                                                       0.9s 
+> ✔ Container redis     Started                                                                                                       0.9s 
+> ✔ Container rabbitmq  Started                                                                                                       0.8s 
+> ✔ Container nginx     Started                                                                                                       0.9s
+>```
 
 ## MySQL
 
@@ -703,7 +902,7 @@ aof-use-rdb-preamble yes
 
 - redis.conf 需要在本地目录预先创建。
 
-## minio
+## MinIO
 
 docker-compose.yaml：
 
