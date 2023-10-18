@@ -483,7 +483,7 @@ services:
     restart: on-failure:3
 ```
 
-**启动命令：**
+**构建并启动容器命令：**
 
 ```bash
 $ docker compose up -d
@@ -491,19 +491,39 @@ $ docker compose up -d
 
 - -d 是后台运行。
 
-**指定 compose 文件启动：**
+**停止容器命令：**
 
 ```bash
-$ docker compose -f docker-compose.yaml up -d
+$ docker compose stop
 ```
 
-**停止命令：**
+**启动容器命令：**
+
+```bash
+$ docker compose start
+```
+
+**重启容器服务：**
+
+```bash
+$ docker compose restart
+```
+
+**停止并删除容器命令：**
 
 ```bash
 $ docker compose down
 ```
 
-- 此命令将会停止`up`命令所启动的容器，并移除网络。
+- 此命令将会停止`up`命令所启动的容器（同时会删除容器），并移除网络。
+
+**指定 compose 文件启动：**
+
+```bash
+$ docker compose -f docker-compose-redis.yaml up -d
+```
+
+- 默认使用 docker-compose.yaml 文件。
 
 **检查配置：**
 
