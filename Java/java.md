@@ -2,8 +2,6 @@
 
 ## 概述
 
-<img src="java/1613031436.jpg" alt="1613031436" style="zoom: 50%;" />
-
 <img src="./java/1613031436.jpg" alt="1613031436" style="zoom:50%;" />
 
 ## bit 和 byte
