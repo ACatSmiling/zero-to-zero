@@ -18,6 +18,17 @@
     <p>未来像盛夏的大雨，在我们还来不及撑开伞时就扑面而来。</p>
 </div>
 <script>
+    // setTimeout
+    let fun = () => console.log('time out');
+    let sleep = function(fun,time){
+    setTimeout(()=>{
+        fun();
+    },time);
+    }
+
+    sleep(fun,2000);
+
+
     window.$docsify = {
         name: '往既如一青春',
         logo: 'guide/images/logo.jpg',
