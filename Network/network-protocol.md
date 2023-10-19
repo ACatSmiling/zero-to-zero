@@ -1,5 +1,9 @@
 *date: 2022-11-08 ~ 2023-08-26*
 
+
+
+[TOC]
+
 ## 概述
 
 ### 网络协议
@@ -56,7 +60,7 @@
 
 #### 同轴电缆（Coaxial）
 
-![image-20221115231214849](network-protocol/image-20221115231214849.png)
+<img src="network-protocol/image-20221115231214849.png" alt="image-20221115231214849" style="zoom: 40%;" />
 
 - 同轴电缆是最传统的方式。
 - 半双工通信：在同一时间，通道只允许一个方向的通信。
@@ -64,7 +68,7 @@
 
 #### 集线器（Hub）
 
-![image-20221115231923606](network-protocol/image-20221115231923606.png)
+<img src="network-protocol/image-20221115231923606.png" alt="image-20221115231923606" style="zoom:40%;" />
 
 - 集线器没有存储功能。
 - 设备越多，效率越低。因为某一台设备发送的数据，会被`广播 (ARP 协议传输)`给集线器上的所有设备，占用很多带宽。（发送 ARP 请求的目的，即是获取目标的 MAC 地址，当知道对方的 MAC 地址后，走`ICMP 协议传输`）
@@ -74,29 +78,29 @@
 
 #### 网桥（Bridge）
 
-![image-20230111001156126](network-protocol/image-20230111001156126.png)
+<img src="network-protocol/image-20230111001156126.png" alt="image-20230111001156126" style="zoom:40%;" />
 
 #### 交换机（Switch）
 
-![image-20230112000343150](network-protocol/image-20230112000343150.png)
+<img src="network-protocol/image-20230112000343150.png" alt="image-20230112000343150" style="zoom:40%;" />
 
 - `局域网`的最终方案。
 - 交换机连接的都是`相同网段`的设备。
 - 如果交换机上的设备太多，可能会出现 IP 不够的情况，另外，某一台设备发送广播时，其他设备都可以收到，如果同一时刻，其他设备也在发送广播，会导致网络混乱。
 - 交换机有`记忆功能`，会记录每一个端口对应设备的 MAC 地址。
 
-![image-20230113221746558](network-protocol/image-20230113221746558.png)
+<img src="network-protocol/image-20230113221746558.png" alt="image-20230113221746558" style="zoom: 55%;" />
 
 - 192.168.3.10 准备发送数据给 192.168.3.11，第一次时，需要发送广播，查找 192.168.3.11 的 MAC 地址。
 - OO90.2B11.8ECD 是 192.168.3.10 的 MAC 地址，第一次发送对象的 MAC 地址为`FFFF.FFFF.FFFF`，表明是广播。
 
-![image-20230113233837726](network-protocol/image-20230113233837726.png)
+<img src="network-protocol/image-20230113233837726.png" alt="image-20230113233837726" style="zoom:55%;" />
 
 - 192.168.3.11 接收到 192.168.3.10 的广播后，得知其寻找的目标 IP 为自己，便返回自己的 MAC 地址给 192.168.3.10，因为交换机具有记忆功能，此时，会直接将 192.168.3.11 的数据包发送给 192.168.3.10。
 
 #### 路由器（Router）
 
-![image-20230112000740757](network-protocol/image-20230112000740757.png)
+<img src="network-protocol/image-20230112000740757.png" alt="image-20230112000740757" style="zoom:40%;" />
 
 - 路由器的使用，强调`不同网段`。
 
@@ -106,24 +110,24 @@
 
 - 网关地址配置好后，对应广播域下的每一台设备，均需要设置`默认网关`，如果不设置，该设备无法跨网段通信。
 
-  ![image-20230113234627334](network-protocol/image-20230113234627334.png)
+  <img src="network-protocol/image-20230113234627334.png" alt="image-20230113234627334" style="zoom:55%;" />
 
 - 跨网段传输数据时，首先需要获取网关的 MAC 地址，也是通过 ARP 广播。
 
 - 通过路由器跨网段传输数据时，大致流程如下：
 
-  ![image-20230114135101075](network-protocol/image-20230114135101075.png)
+  <img src="network-protocol/image-20230114135101075.png" alt="image-20230114135101075" style="zoom: 50%;" />
 
-  ![image-20230114135654371](network-protocol/image-20230114135654371.png)
+  <img src="network-protocol/image-20230114135654371.png" alt="image-20230114135654371" style="zoom:50%;" />
 
-  ![image-20230114141820474](network-protocol/image-20230114141820474.png)
+  <img src="network-protocol/image-20230114141820474.png" alt="image-20230114141820474" style="zoom:50%;" />
 
   - 需求：192.168.3.10 发送数据给 192.168.4.11。
   - 第一步，192.168.3.10 发送 ARP 广播，以获取网关 192.168.3.1 的 MAC 地址；
   - 第二步，网关 192.168.3.1 接收到广播，回传 MAC 地址给 192.167.3.10；
   - 第三步，192.168.3.10 发送 ICMP 数据包，网关 192.168.3.1 获取，解析处理后，由网关 192.168.4.1 处理；
   - 第四步，网关 192.168.4.1 发送 ARP 广播，以获取 192.168.4.11 的 MAC 地址；
-  - 第五步，192.168.4.11 接收到广播，回传 MAC 地址给 网关 192.168.4.1；
+  - 第五步，192.168.4.11 接收到广播，回传 MAC 地址给网关 192.168.4.1；
   - 第六步，网关 192.168.5.11 发送 ICMP 数据包，192.168.4.11 获取；
   - 第七步，192.168.4.11 回传接收到数据包的信息，通过网关 192.168.4.1 >>> 网关 192.168.3.1 >>> 192.168.3.10，至此，通讯完成。
 
@@ -131,7 +135,7 @@
 
 ### 网络、互联网、因特网
 
-![image-20230128090142921](network-protocol/image-20230128090142921.png)
+<img src="network-protocol/image-20230128090142921.png" alt="image-20230128090142921" style="zoom:50%;" />
 
 - 网络：多台设备之间，通过不同方式连接，即形成网络。
 - 互联网：不同网段之间，通过路由器连接，即形成互联网。
@@ -142,7 +146,7 @@
 
 ### ISP
 
-Internet Service Provider，即 Internet 服务提供商，比如移动、电信、网通、铁通等。我们平时拉的宽带等，都是通过 ISP 连接到 Internet 的。
+Internet Service Provider，**即 Internet 服务提供商**，比如移动、电信、网通、铁通等。我们平时拉的宽带等，都是通过 ISP 连接到 Internet 的。
 
 <img src="network-protocol/image-20230128160531826.png" alt="image-20230128160531826" style="zoom:50%;" />
 
@@ -219,13 +223,13 @@ Wide Area Network，简称 **<font color = red>WAN</font>**。
 
 第一种路由器：
 
-<img src="network-protocol/image-20230129000400096.png" alt="image-20230129000400096" style="zoom:50%;" />
+<img src="network-protocol/image-20230129000400096.png" alt="image-20230129000400096" style="zoom:60%;" />
 
 - 此类型的路由器，两端必须是不同网段的设备，因为路由器的两个端口，需要设置不同网段的网关。
 
 - 不同网段的设备，在第一次通信时，会出现丢包的情况。（`第一个数据包丢失`）
 
-  <img src="network-protocol/image-20230129001144816.png" alt="image-20230129001144816" style="zoom: 40%;" />
+  <img src="network-protocol/image-20230129001144816.png" alt="image-20230129001144816" style="zoom: 50%;" />
 
   - 192.168.1.10/24 与 192.168.2.10/24 第一次通信时，会经历以下几个过程。
   - 第一步：因为 192.168.1.10/24 与 192.168.2.10/24 是不同网段，192.168.1.10/24 首先发送 ARP 请求，获取路由器 0 默认网关 192.168.1.1/24 的 MAC 地址，192.168.1.1/24 获得请求，然后返回自身的 MAC 地址。
@@ -235,7 +239,7 @@ Wide Area Network，简称 **<font color = red>WAN</font>**。
 
 第二种路由器：
 
-<img src="network-protocol/image-20230129000430968.png" alt="image-20230129000430968" style="zoom:50%;" />
+<img src="network-protocol/image-20230129000430968.png" alt="image-20230129000430968" style="zoom:60%;" />
 
 - 此类型的路由器，两端可以是相同网段的设备，每一端的设备，可以通过快速以太网接口直接相连。
 - 路由器两端的设备，在第一次通信时，也不会出现丢包的情况，两端的设备是同网段的。
@@ -244,14 +248,14 @@ Wide Area Network，简称 **<font color = red>WAN</font>**。
 
 `数字信号 (Digital Signal)`：
 
-<img src="network-protocol/image-20230129104151193.png" alt="image-20230129104151193" style="zoom:67%;" />
+<img src="network-protocol/image-20230129104151193.png" alt="image-20230129104151193" style="zoom: 50%;" />
 
 - 离散的信号，不适合长距离传输。
 - 抗干扰能力强，受到干扰时波形失真可以修复。
 
 `模拟信号 (Analog Signal)`：
 
-<img src="network-protocol/image-20230129103923128.png" alt="image-20230129103923128" style="zoom:67%;" />
+<img src="network-protocol/image-20230129103923128.png" alt="image-20230129103923128" style="zoom: 50%;" />
 
 - 连续的信号，适合长距离传输。
 - 抗干扰能力差，受到干扰时波形变形很难纠正。
@@ -541,7 +545,7 @@ IP 地址的组成：
 
 - 按照字节：IP 地址由 32 bit 组成，不方便记忆，因此拆分成 4 个部分，每个部分转换为十进制值，以此表示为 IP 地址。
 
-  <img src="network-protocol/image-20230116191813524.png" alt="image-20230116191813524" style="zoom:67%;" />
+  <img src="network-protocol/image-20230116191813524.png" alt="image-20230116191813524" style="zoom: 50%;" />
 
 - 按照功能：IP 地址由 2 部分组成，即`网络标识 (网络 ID)`和`主机标识 (主机 ID)`。
 
@@ -603,7 +607,7 @@ IP 地址可以分为五类：
 
 - `主机 ID 全为 1，表示主机所在网段的全部主机，即广播。`如上面的 192.168.1.255 和 130.168.255.255。
 
-  ![image-20230116201216147](network-protocol/image-20230116201216147.png)
+  <img src="network-protocol/image-20230116201216147.png" alt="image-20230116201216147" style="zoom:67%;" />
 
 - 区分 IP 地址的类型，只需要看`第一部分的值`即可，与其他因素如子网掩码等无关。
 
@@ -677,9 +681,9 @@ IP 地址，也可以分为公网 IP 和私网 IP。
   - ISP 需要向 Inter NIC 申请公网 IP。
 - 私网 IP（Private）
   - 主要用于局域网。下面是保留的私网网段：
-    - A 类：**10.0.0.0/8**，1 个 A 类网络。
-    - B 类：**172.16.0.0/16 ~ 172.31.0.0/16**，16 个 B 类网络。
-    - C 类：**192.168.0.0/24 ~ 192.168.255.0/24**，256 个 C 类网络。
+    - A 类地址：**10.0.0.0/8**，1 个 A 类网络。
+    - B 类地址：**172.16.0.0/16 ~ 172.31.0.0/16**，16 个 B 类网络。
+    - C 类地址：**192.168.0.0/24 ~ 192.168.255.0/24**，256 个 C 类网络。
     - 以上几类 IP 地址，都是私网 IP。
 
 #### NAT
@@ -986,7 +990,7 @@ $$
 
 ## 路由
 
-<img src="network-protocol/image-20230124200112262.png" alt="image-20230124200112262" style="zoom: 33%;" />
+<img src="network-protocol/image-20230124200112262.png" alt="image-20230124200112262" style="zoom: 45%;" />
 
 在不同网段之间转发数据，需要有路由器的支持。
 
@@ -1006,15 +1010,15 @@ $$
 
 - 要求两个路由器直连，并设置同网段的 IP 地址。路由器 0 和路由器 1 直连的网段，与两个路由器上其他设备的网段，不相同。
 
-  <img src="network-protocol/image-20230125230948884.png" alt="image-20230125230948884" style="zoom:33%;" />
+  <img src="network-protocol/image-20230125230948884.png" alt="image-20230125230948884" style="zoom: 50%;" />
 
 - 配置路由器 0 的静态路由。
 
-  <img src="network-protocol/image-20230126003144688.png" alt="image-20230126003144688" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126003144688.png" alt="image-20230126003144688" style="zoom: 50%;" />
 
 - 配置路由器 1 的静态路由。
 
-  <img src="network-protocol/image-20230126003552207.png" alt="image-20230126003552207" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126003552207.png" alt="image-20230126003552207" style="zoom: 50%;" />
 
 - 通过以上配置后，192.168.1.10/24 与 193.169.2.10/24 可以互通。
 
@@ -1022,27 +1026,27 @@ $$
 
 - 注意，虽然 192.168.1.10/24 与 193.169.2.10/24 可以互通，但 192.168.1.10/24 与 193.169.1.10/24 无法互通，如果需要互通，还需要配置路由器 0 对 193.169.1.10/24 的静态路由。（因为已经配置了路由器 1 对 192.168.1.0/24 网段的静态路由配置，此处配置路由器 0 的静态路由即可）
 
-  <img src="network-protocol/image-20230126004330686.png" alt="image-20230126004330686" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126004330686.png" alt="image-20230126004330686" style="zoom: 50%;" />
 
 - 说明：因为路由器 0 和路由器 1 的静态路由，配置的是相应的网段，此时，在某一个网段下新增一台设备，也是可以互通的。
 
-  <img src="network-protocol/image-20230126010316294.png" alt="image-20230126010316294" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126010316294.png" alt="image-20230126010316294" style="zoom: 50%;" />
 
 - 如果需要 192.168.2.10/24 也能彼此互相通信，需要在路由器 1 配置对应的静态路由。
 
-  <img src="network-protocol/image-20230126010629992.png" alt="image-20230126010629992" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126010629992.png" alt="image-20230126010629992" style="zoom: 50%;" />
 
 - 静态路由可以配置网段，也可以配置精确的 IP 地址，即针对具体设备的静态路由，需要将子网掩码修改为 255.255.255.255。如下图，路由器 0 只能对 193.169.1.0/24 网段的 193.169.1.11/24 设备通信，无法对该网段的 193.169.1.10/24 设备通信。
 
-  <img src="network-protocol/image-20230126011019746.png" alt="image-20230126011019746" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126011019746.png" alt="image-20230126011019746" style="zoom: 50%;" />
 
 - 前述路由器 0 的静态路由，单独配置了 193.169.1.0/24 网段和 193.169.2.0/24 网段，可以使用一个配置，使得路由器 0 都可以访问这两个网段。例如，以下三种方式，均可以。
 
-  <img src="network-protocol/image-20230126011717863.png" alt="image-20230126011717863" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126011717863.png" alt="image-20230126011717863" style="zoom: 50%;" />
 
-  <img src="network-protocol/image-20230126011936604.png" alt="image-20230126011936604" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126011936604.png" alt="image-20230126011936604" style="zoom: 50%;" />
 
-  <img src="network-protocol/image-20230126012117935.png" alt="image-20230126012117935" style="zoom:33%;" />
+  <img src="network-protocol/image-20230126012117935.png" alt="image-20230126012117935" style="zoom: 50%;" />
 
 >`路由之间存在优先级，配置的越明确的路由，优先级越高。`
 >
@@ -1100,15 +1104,15 @@ $$
 
 对于以下 4 台设备，让其可以互相通信：
 
-<img src="network-protocol/image-20230126170457735.png" alt="image-20230126170457735" style="zoom:50%;" />
+<img src="network-protocol/image-20230126170457735.png" alt="image-20230126170457735" style="zoom:60%;" />
 
 对应的路由表可以配置如下：
 
-<img src="network-protocol/image-20230127191028858.png" alt="image-20230127191028858" style="zoom: 33%;" />
+<img src="network-protocol/image-20230127191028858.png" alt="image-20230127191028858" style="zoom: 50%;" />
 
 - 路由器 0 和路由器 3 都是边缘路由器，可以直接配置默认路由。
 
-  <img src="network-protocol/image-20230127192449967.png" alt="image-20230127192449967" style="zoom:33%;" />
+  <img src="network-protocol/image-20230127192449967.png" alt="image-20230127192449967" style="zoom: 50%;" />
 
 - 路由器 1 左边有一个网段，可以配置网段 192.168.1.0/24，下一跳 200.0.0.1/24。右边有两个网段，可以配置默认路由 0.0.0.0/0，下一跳 200.0.1.2/24。
 
@@ -1123,7 +1127,7 @@ $$
 
 > 此处先简述数据包的传输过程，后续网络分层章节，会再次详解。
 
-![image-20230128085000125](network-protocol/image-20230128085000125.png)
+<img src="network-protocol/image-20230128085000125.png" alt="image-20230128085000125" style="zoom:50%;" />
 
 ## 网络分层
 
@@ -1133,7 +1137,7 @@ $$
 
 OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议`**，在高校研究中，则多采用 5 层结构。三者关系如下：
 
-<img src="network-protocol/image-20221110215338352.png" alt="image-20221110215338352" style="zoom: 33%;" />
+<img src="network-protocol/image-20221110215338352.png" alt="image-20221110215338352" style="zoom: 40%;" />
 
 > 集线器工作在物理层，可以当作就是网线。（一层设备）
 >
@@ -1143,11 +1147,11 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 ### 请求过程
 
-客户端发送数据时，从应用层到物理层，层层包装，传递给服务器后，服务器从物理层到应用层，层层解包，最终拿到数据。服务器返回数据给客户端时，遵循相同过程。同时，客户端的包装和服务器的解包，遵循相同的网络协议。
+**客户端发送数据时，从应用层到物理层，层层包装，传递给服务器后，服务器从物理层到应用层，层层解包，最终拿到数据。服务器返回数据给客户端时，遵循相同过程。同时，客户端的包装和服务器的解包，遵循相同的网络协议。**
 
-<img src="network-protocol/image-20221110220525799.png" alt="image-20221110220525799" style="zoom: 40%;" />
+<img src="network-protocol/image-20221110220525799.png" alt="image-20221110220525799" style="zoom: 50%;" />
 
-<img src="network-protocol/image-20230129102048719.png" alt="image-20230129102048719" style="zoom:45%;" />
+<img src="network-protocol/image-20230129102048719.png" alt="image-20230129102048719" style="zoom:50%;" />
 
 > 不同层的数据，对应不同的专业术语名称，也对应不同的网络协议。
 
@@ -1155,13 +1159,13 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 **`物理层`**：定义了接口标准、线缆标准、传输速率、传输方式等。
 
-![image-20230129102725923](network-protocol/image-20230129102725923.png)
+<img src="network-protocol/image-20230129102725923.png" alt="image-20230129102725923" style="zoom:50%;" />
 
 ### 数据链路层（Data Link）
 
 **`链路`**：从一个节点到相邻节点的一段物理线路（无论有线，还是无线），中间没有其他交换节点。
 
-![image-20230129113002382](network-protocol/image-20230129113002382.png)
+<img src="network-protocol/image-20230129113002382.png" alt="image-20230129113002382" style="zoom:75%;" />
 
 - 路由器、交换机都是中间的交换节点，但集线器不是。
 - 路由器、交换机之间构成相邻节点，中间的一段都是独立的链路。
@@ -1172,13 +1176,13 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
   - 广播信道：CSMA/CD 协议，比如同轴电缆、集线器等组成的网络。
   - 点对点信道：PPP 协议，比如两个路由器之间的信道。
 
-- 数据链路层的三个基本问题：`封装成帧`、`透明传输`、`差错检验`。这三个基本问题是共性的，不论是神了类型的数据链路，都会面对这三个基本问题。
+- 数据链路层的三个基本问题：`封装成帧`、`透明传输`、`差错检验`。这三个基本问题是共性的，不论是什么类型的数据链路，都会面对这三个基本问题。
 
 #### 封装成帧
 
 **`帧`**：Frame，数据链路层数据的专业术语。
 
-<img src="network-protocol/image-20230129135131614.png" alt="image-20230129135131614" style="zoom:70%;" />
+<img src="network-protocol/image-20230129135131614.png" alt="image-20230129135131614" style="zoom:60%;" />
 
 - 帧的数据部分：实际就是网络层传递下来的数据包，也叫 IP 数据包、Packet。
   - 数据包拿到之后，在首尾添加上帧开始符和帧结束符等，这个过程，即为**封装成帧**。
@@ -1196,7 +1200,7 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 - 如果数据部分出现了 SOH 或者 EOT，就需要进行转义，否则就会出现数据丢失。这个转义的过程，即为**透明传输**。
 
-  ![image-20230129145106170](network-protocol/image-20230129145106170.png)
+  <img src="network-protocol/image-20230129145106170.png" alt="image-20230129145106170" style="zoom:67%;" />
 
   - 帧中的数据，如果有 SOH 或者 EOT，就进行字节填充，添加一个转义字符 ESC。
   - 帧中的数据，如果也有 ESC，也同样进行字节填充，添加一个转义字符 ESC。
@@ -1223,7 +1227,7 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 ##### Ethernet V2 帧的格式
 
-![image-20230129163510016](network-protocol/image-20230129163510016.png)
+<img src="network-protocol/image-20230129163510016.png" alt="image-20230129163510016" style="zoom: 60%;" />
 
 - 以太网帧组成：首部 + 数据 + FCS。
   - 首部：目标 MAC 地址 + 源 MAC 地址 + 网络类型。
@@ -1245,7 +1249,7 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 `PPP`：Point to Point Protocol，点对点协议。
 
-<img src="network-protocol/image-20230129174014950.png" alt="image-20230129174014950" style="zoom:67%;" />
+<img src="network-protocol/image-20230129174014950.png" alt="image-20230129174014950" style="zoom:60%;" />
 
 - **PPP 帧首部组成：帧开始符 + Address 字段 + Control 字段 + Protocol 字段。PPP 帧尾部组成：FCS + 帧结束符。**
   - PPP 帧有帧开始符和帧结束符：图中的值是 0x7E。
@@ -1275,9 +1279,9 @@ OSI 参考模型具有 7 层结构，实际应用时，多使用**`TCP/IP 协议
 
 **`网络层数据包`**：也叫 IP 数据包、Packet，由**首部**和**数据**两部分组成。其中，数据很多时候是由传输层传递下来的数据段（Segment）。
 
-![image-20230129222542742](network-protocol/image-20230129222542742.png)
+<img src="network-protocol/image-20230129222542742.png" alt="image-20230129222542742" style="zoom:50%;" />
 
-![image-20230130000537849](network-protocol/image-20230130000537849.png)
+<img src="network-protocol/image-20230130000537849.png" alt="image-20230130000537849" style="zoom: 67%;" />
 
 - `版本 (Version)`
   
@@ -1559,7 +1563,7 @@ TCP 的几个要点：可靠传输、流量控制、拥塞控制、连接控制�
 
   - 伪首部：占用 12 字节，仅在计算校验和时起作用，并不会传递给网络层。
 
-    <img src="network-protocol/image-20230202181105830.png" alt="image-20230202181105830" style="zoom: 67%;" />
+    <img src="network-protocol/image-20230202181105830.png" alt="image-20230202181105830" style="zoom: 80%;" />
 
 - `标志位 (Flags)`
 
@@ -1858,7 +1862,7 @@ cwnd 随时间变化示意图：
 
 ###### 建立连接：3 次握手
 
-<img src="network-protocol/image-20230716155651995.png" alt="image-20230716155651995" style="zoom: 60%;" />
+<img src="network-protocol/image-20230716155651995.png" alt="image-20230716155651995" style="zoom: 50%;" />
 
 - `CLOSED`：一开始，Client 处于关闭状态。
 
@@ -1901,7 +1905,7 @@ cwnd 随时间变化示意图：
 
 ###### 释放连接：4 次挥手
 
-<img src="network-protocol/image-20230716195010715.png" alt="image-20230716195010715" style="zoom:60%;" />
+<img src="network-protocol/image-20230716195010715.png" alt="image-20230716195010715" style="zoom:50%;" />
 
 - `ESTABLISHED`：一开始，Client 和 Server 都处于 ESTABLISHED 状态。
 - `FIN-WAIT-1`：表示想主动关闭连接（主动方）。
@@ -1912,7 +1916,7 @@ cwnd 随时间变化示意图：
   - 在此状态下，被动方需要考虑自己是否还有数据要发送给主动方，如果没有，则发送 FIN 报文给主动方（之后被动方进入 LAST-ACK 状态）。
 - `FIN-WAIT-2`：只要被动方发送 ACK 报文确认后，主动方就会处于 FIN-WAIT-2 状态，然后等待被动方发送 FIN 报文。
 - `CLOSING`：一种比较罕见的例外状态。
-  - 表示一方发送 FIN 报文后，并没有收到对方的 ACK 报文，反而也受到了对方的 FIN 报文。
+  - 表示一方发送 FIN 报文后，并没有收到对方的 ACK 报文，反而也收到了对方的 FIN 报文。
   - 如果双方几乎在同时准备关闭连接的话，那么就出现了双方同时发送 FIN 报文的情况，即会出现 CLOSING 状态。
   - 表示双方都正在关闭连接。
 - `LAST-ACK`：被动方在发送 FIN 报文后，就进入 LAST-ACK 状态，等待主动方发送的 ACK 报文。
@@ -2070,7 +2074,7 @@ C:\Users\XiSun>netstat -n
 
 #### 域名系统（DNS）
 
-DNS，全名sDomain Name System，即`域名系统`。
+DNS，全名 Domain Name System，即`域名系统`。
 
 <img src="network-protocol/image-20230722124051915.png" alt="image-20230722124051915" style="zoom:67%;" />
 
@@ -2270,19 +2274,19 @@ RFC，全名 Request For Comments，即`请求意见稿`。
 
 ### 报文格式
 
-请求报文：
+#### 请求报文
 
 <img src="network-protocol/image-20230731125406375.png" alt="image-20230731125406375" style="zoom: 55%;" />
 
-响应报文：
+#### 响应报文
 
 <img src="network-protocol/image-20230731125427796.png" alt="image-20230731125427796" style="zoom:55%;" />
 
-> 以上报文格式，是一种具象化表示，严谨的报文格式看 ABNF 中的定义。
+> 以上两种报文格式，是一种具象化表示，严谨的报文格式看 ABNF 中的定义。
 
 ### ABNF
 
-ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的修改、增强版。在 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234) 中表名：ABNF 用作 Internet 中通信协议的定义语言。**ANNF 是最严谨的 HTTP 报文格式描述形式，脱离 ABNF 谈论 HTTP 报文格式，往往都是    片面、不严谨的。**
+ABNF，Augmented BNF，是 BNF（Backus-Naur Form，巴科斯-瑙尔范式）的修改、增强版。在 [RFC 5234](https://datatracker.ietf.org/doc/html/rfc5234) 中表明：ABNF 用作 Internet 中通信协议的定义语言。**ANNF 是最严谨的 HTTP 报文格式描述形式，脱离 ABNF 谈论 HTTP 报文格式，往往都是片面、不严谨的。**
 
 关于 HTTP 报文格式的定义：
 
@@ -2851,8 +2855,6 @@ ARP 欺骗的防护措施：
   C:\Users\XiSun>arp -x IP MAC
   ```
 
-  
-
 - DHCP Snooping。
 
   - 网络设备可借由 DHCP 保留网络上各电脑的 MAC 地址，在伪造的 ARP 数据包发出时即可侦测到。
@@ -2948,7 +2950,7 @@ DNS 劫持，又称为域名劫持：
 
 ### HTTP 协议的安全问题
 
-HTTP 协议默认是采用明文传输的，因此会有很大的安全隐患。常见的提高安全性的方法是：对同安更新内容进行加密后，再进行传输。
+HTTP 协议默认是采用明文传输的，因此会有很大的安全隐患。常见的提高安全性的方法是：对通信内容进行加密后，再进行传输。
 
 常见的英文：
 
@@ -3042,7 +3044,7 @@ HTTP 协议默认是采用明文传输的，因此会有很大的安全隐患。
 
 单向散列函数，另一个用法就是**密码加密**：
 
-<img src="network-protocol/image-20230811130016566.png" alt="image-20230811130016566" style="zoom:50%;" />
+<img src="network-protocol/image-20230811130016566.png" alt="image-20230811130016566" style="zoom:40%;" />
 
 #### 对称加密和非对称加密
 
@@ -3056,7 +3058,7 @@ HTTP 协议默认是采用明文传输的，因此会有很大的安全隐患。
 
 **对称加密，Symmetric Cryptography，也叫对称密码：**
 
-<img src="network-protocol/image-20230815003929504.png" alt="image-20230815003929504" style="zoom:67%;" />
+<img src="network-protocol/image-20230815003929504.png" alt="image-20230815003929504" style="zoom:60%;" />
 
 - 在对称加密中，加密和解密使用的是同一个**密钥**。
 
@@ -3334,7 +3336,7 @@ Windows 上查看已经信任的证书：
 
 HTTPS，HyperText Transfer Protocol Secure，即`超文本传输安全协议`。常称为 HTTP over TLS、HTTP over SSL、HTTP Secure，由网景公司于 1994 年首次提出。
 
-> `HTTPS 的默认端口号是 443，HTTP 的默认端口是 80。`
+> `HTTPS 的默认端口是 443，HTTP 的默认端口是 80。`
 
 ### SSL/TLS
 
@@ -3362,7 +3364,7 @@ SSL/TLS 历史版本信息：
 
 SSL/TLS 工作在哪一层：
 
-<img src="network-protocol/image-20230818225502864.png" alt="image-20230818225502864" style="zoom:67%;" />
+<img src="network-protocol/image-20230818225502864.png" alt="image-20230818225502864" style="zoom: 60%;" />
 
 ### OpenSSL
 
@@ -4374,7 +4376,7 @@ MQTT 流程示意图：
 
 ## 本文参考
 
-【2021网络协议入门到精通】https://www.bilibili.com/video/BV1Fy4y1Y7n6?vd_source=abe35c34385e7b56d2e426c30e25e646
+https://www.bilibili.com/video/BV1Fy4y1Y7n6
 
 ## 声明
 
