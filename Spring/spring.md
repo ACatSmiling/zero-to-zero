@@ -1,5 +1,9 @@
 *date: 2021-04-13*
 
+
+
+[TOC]
+
 ## Spring 框架概述
 
 Spring 官网：https://spring.io/
@@ -605,7 +609,7 @@ Spring IoC 容器可以管理 Bean 的生命周期，Spring 允许在 Bean 生�
    </bean>
    ```
 
-   ```java\
+   ```java
    public class SpringTest {
        public static void main(String[] args) {
            // 1.加载Spring配置文件，创建IoC容器对象
@@ -660,94 +664,94 @@ Spring 中可以设置`Bean 后置处理器`：
 
 8. 代码演示：
 
-  ```java
-  /**
-   * 自定义bean后置处理器
-   */
-  public class MyBeanPostProcessor implements BeanPostProcessor {
-      @Override
-      public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-          System.out.println("第三步：执行初始化方法之前，执行postProcessBeforeInitialization方法");
-          return bean;
-      }
-  
-      @Override
-      public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-          System.out.println("第五步：执行初始化方法之后，执行postProcessAfterInitialization方法");
-          return bean;
-      }
-  }
-  ```
+   ```java
+   /**
+    * 自定义bean后置处理器
+    */
+   public class MyBeanPostProcessor implements BeanPostProcessor {
+       @Override
+       public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+           System.out.println("第三步：执行初始化方法之前，执行postProcessBeforeInitialization方法");
+           return bean;
+       }
+   
+       @Override
+       public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+           System.out.println("第五步：执行初始化方法之后，执行postProcessAfterInitialization方法");
+           return bean;
+       }
+   }
+   ```
 
-  ```java
-  public class Book {
-      private String name;
-  
-      public Book() {
-          System.out.println("第一步：执行无参数构造方法创建bean实例");
-      }
-  
-      public void setName(String name) {
-          System.out.println("第二步：调用setter方法设置属性值");
-          this.name = name;
-      }
-  
-      // 创建执行的初始化的方法
-      public void initMethod(){
-          System.out.println("第四步：执行初始化的方法");
-      }
-  
-      // 创建执行的销毁的方法
-      public void destroyMethod(){
-          System.out.println("第七步：执行销毁的方法");
-      }
-  
-      @Override
-      public String toString() {
-          return "Book{" +
-                  "name='" + name + '\'' +
-                  '}';
-      }
-  }
-  ```
+   ```java
+   public class Book {
+       private String name;
+   
+       public Book() {
+           System.out.println("第一步：执行无参数构造方法创建bean实例");
+       }
+   
+       public void setName(String name) {
+           System.out.println("第二步：调用setter方法设置属性值");
+           this.name = name;
+       }
+   
+       // 创建执行的初始化的方法
+       public void initMethod(){
+           System.out.println("第四步：执行初始化的方法");
+       }
+   
+       // 创建执行的销毁的方法
+       public void destroyMethod(){
+           System.out.println("第七步：执行销毁的方法");
+       }
+   
+       @Override
+       public String toString() {
+           return "Book{" +
+                   "name='" + name + '\'' +
+                   '}';
+       }
+   }
+   ```
 
-  ```xml
-  <!-- 配置后置处理器，适用于配置的所有的bean -->
-  <bean id="myBeanPostProcessor" class="cn.xisun.spring.processor.MyBeanPostProcessor"/>
-  
-  <bean id="book" class="cn.xisun.spring.bean.Book" init-method="initMethod" destroy-method="destroyMethod">
-      <property name="name" value="平凡的世界"/>
-  </bean>
-  ```
+   ```xml
+   <!-- 配置后置处理器，适用于配置的所有的bean -->
+   <bean id="myBeanPostProcessor" class="cn.xisun.spring.processor.MyBeanPostProcessor"/>
+   
+   <bean id="book" class="cn.xisun.spring.bean.Book" init-method="initMethod" destroy-method="destroyMethod">
+       <property name="name" value="平凡的世界"/>
+   </bean>
+   ```
 
-  ```java
-  public class SpringTest {
-      public static void main(String[] args) {
-          // 1.加载Spring配置文件，创建IoC容器对象
-          ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
-  
-          // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
-          System.out.println("第六步：获取创建的bean实例对象");
-          Book book = iocContainer.getBean("book", Book.class);
-  
-          // 3.打印bean
-          System.out.println(book);
-  
-          // 手动销毁bean的实例，会调用Book中定义的destroyMethod()，前提：在Spring配置文件中bean标签配置了destroy-method
-          // ApplicationContext接口没有close()，需要它的子接口或实现类才能调用
-          ((ClassPathXmlApplicationContext)iocContainer).close();
-      }
-  }
-  输出结果：
-  第一步：执行无参数构造方法创建bean实例
-  第二步：调用setter方法设置属性值
-  第三步：执行初始化方法之前，执行postProcessBeforeInitialization方法
-  第四步：执行初始化的方法
-  第五步：执行初始化方法之后，执行postProcessAfterInitialization方法
-  第六步：获取创建的bean实例对象
-  Book{name='平凡的世界'}
-  第七步：执行销毁的方法
-  ```
+   ```java
+   public class SpringTest {
+       public static void main(String[] args) {
+           // 1.加载Spring配置文件，创建IoC容器对象
+           ApplicationContext iocContainer = new ClassPathXmlApplicationContext("spring.xml");
+   
+           // 2.根据id值获取配置文件中的bean实例对象，要求使用返回的bean的类型
+           System.out.println("第六步：获取创建的bean实例对象");
+           Book book = iocContainer.getBean("book", Book.class);
+   
+           // 3.打印bean
+           System.out.println(book);
+   
+           // 手动销毁bean的实例，会调用Book中定义的destroyMethod()，前提：在Spring配置文件中bean标签配置了destroy-method
+           // ApplicationContext接口没有close()，需要它的子接口或实现类才能调用
+           ((ClassPathXmlApplicationContext)iocContainer).close();
+       }
+   }
+   输出结果：
+   第一步：执行无参数构造方法创建bean实例
+   第二步：调用setter方法设置属性值
+   第三步：执行初始化方法之前，执行postProcessBeforeInitialization方法
+   第四步：执行初始化的方法
+   第五步：执行初始化方法之后，执行postProcessAfterInitialization方法
+   第六步：获取创建的bean实例对象
+   Book{name='平凡的世界'}
+   第七步：执行销毁的方法
+   ```
 
 ### Spring 中 Bean 的自动装配
 
@@ -1167,7 +1171,7 @@ DI 依赖注入：Dependency Injection，可以将 DI 看作是 IoC 的一种实
 Spring 的 IoC 容器就是 IoC 思想的一个落地的产品实现。IoC 容器中管理的组件也叫做 bean。在创建 bean 之前，首先需要创建 IoC 容器。Spring 提供了IoC 容器的两种实现方式，即两个接口：
 
 - `BeanFactory`。
-- ``ApplicationContext`。
+- `ApplicationContext`。
 
 #### BeanFactory 接口
 
@@ -1183,7 +1187,7 @@ BeanFactory 接口的实现类：
 
 **BeanFactory 的子接口 ，`面向 Spring 的使用者`，提供了更多功能，一般由开发人员进行使用。几乎所有场合都使用 ApplicationContext 而不是底层的 BeanFactory。**
 
-**`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**（在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭。)
+**`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**（在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 Web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭)
 
 ApplicationContext 接口的重要子接口和实现类：
 
