@@ -1,6 +1,10 @@
 *date: 2023-10-05*
 
-# Spring MVC简介
+
+
+[TOC]
+
+## Spring MVC简介
 
 ### 什么是 MVC
 
@@ -37,7 +41,7 @@ Spring MVC 是 Spring 的一个后续产品，是 Spring 的一个子项目。Sp
 - 内部组件化程度高，可插拔式组件**即插即用**，想要什么功能配置相应组件即可。
 - **性能卓著**，尤其适合现代大型、超大型互联网项目要求。
 
-# HelloWorld
+## HelloWorld
 
 ### Maven 引入依赖
 
@@ -249,7 +253,7 @@ public String HelloWorld() {
 
 **浏览器发送请求，若请求地址符合前端控制器的 url-pattern，该请求就会被前端控制器 DispatcherServlet 处理。前端控制器会读取 Spring MVC 的核心配置文件，通过扫描组件找到控制器，将请求地址和控制器中 @RequestMapping 注解的 value 属性值进行匹配，若匹配成功，该注解所标识的控制器方法就是处理请求的方法。处理请求的方法需要返回一个字符串类型的视图名称，该视图名称会被视图解析器解析，加上前缀和后缀组成视图的路径，通过 Thymeleaf 对视图进行渲染，最终转发到视图所对应页面。**
 
-# @RequestMapping
+## @RequestMapping
 
 ### @RequestMapping 的功能
 
@@ -261,7 +265,7 @@ Spring MVC 接收到指定的请求，就会来找到在映射关系中对应的
 
 @RequestMapping 注解标识一个类：设置映射请求的请求路径的`初始信息`。
 
-@RequestMapping 注解标识一个方法：设置映射请求请求路径的`具体信息`。
+@RequestMapping 注解标识一个方法：设置映射请求的请求路径的`具体信息`。
 
 ```java
 @Controller
@@ -409,7 +413,7 @@ public String testRest(@PathVariable("id") String id, @PathVariable("username") 
 // 最终输出的内容为 ---> id: 1, username: admin
 ```
 
-# Spring MVC 获取请求参数
+## Spring MVC 获取请求参数
 
 ### 通过 ServletAPI 获取
 
@@ -467,7 +471,7 @@ public String testParam(String username, String password){
 
 @RequestHeader 注解是将`请求头信息`和控制器方法的形参创建映射关系。
 
-@RequestHeader  注解一共有三个属性：value、required、defaultValue，用法同 @RequestParam。
+@RequestHeader 注解一共有三个属性：value、required、defaultValue，用法同 @RequestParam。
 
 ### @CookieValue
 
@@ -526,7 +530,7 @@ public String testPOJO(User user){
 > Spring MVC 中**处理编码的过滤器一定要配置到其他过滤器之前**，否则无效。
 >
 
-# 域对象共享数据
+## 域对象共享数据
 
 ### 使用 ServletAPI 向 Request 域对象共享数据
 
@@ -622,7 +626,7 @@ public String testApplication(HttpSession session){
 }
 ```
 
-# Spring MVC 的视图
+## Spring MVC 的视图
 
 Spring MVC 中的视图是 View 接口，视图的作用渲染数据，将模型 Model 中的数据展示给用户。
 
@@ -691,7 +695,7 @@ public String testRedirect(){
 > 当 Spring MVC 中设置任何一个 view-controller 时，其他控制器中的请求映射将全部失效，此时需要在 Spring MVC 的核心配置文件中设置开启 mvc 注解驱动的标签：`<mvc:annotation-driven />`。
 >
 
-# RESTful
+## RESTful
 
 ### RESTful 简介
 
@@ -767,9 +771,7 @@ HiddenHttpMethodFilter 处理 PUT 和 DELETE 请求的条件：
 >    String paramValue = request.getParameter(this.methodParam);
 >   ```
 
-
-
-# RESTful 案例
+## RESTful 案例
 
 ### 准备工作
 
@@ -1134,7 +1136,7 @@ public String updateEmployee(Employee employee){
 }
 ```
 
-# HttpMessageConverter
+## HttpMessageConverter
 
 `HttpMessageConverter`，报文信息转换器，将请求报文转换为 Java 对象，或将 Java 对象转换为响应报文。
 
@@ -1298,7 +1300,7 @@ public String testAjax(String username, String password){
 }
 ```
 
-# 文件上传和下载
+## 文件上传和下载
 
 ### 文件下载
 
@@ -1379,7 +1381,7 @@ public String testUp(MultipartFile photo, HttpSession session) throws IOExceptio
 }
 ```
 
-# 拦截器
+## 拦截器
 
 ### 拦截器的配置
 
@@ -1421,7 +1423,7 @@ Spring MVC 中的拦截器有三个抽象方法：
 - 若某个拦截器的 preHandle() 返回了 false：
   - `preHandle() 返回 false 和它之前的拦截器的 preHandle() 都会执行，postHandle() 都不执行，返回 false 的拦截器之前的拦截器的 afterComplation() 会执行。`
 
-# 异常处理器
+## 异常处理器
 
 ### 基于配置的异常处理
 
@@ -1467,7 +1469,7 @@ public class ExceptionController {
 }
 ```
 
-# 注解配置 Spring MVC
+## 注解配置 Spring MVC
 
 使用配置类和注解代替 web.xml 和 Spring MVC 配置文件的功能。
 
@@ -1622,7 +1624,7 @@ public String index(){
 }
 ```
 
-# Spring MVC 执行流程
+## Spring MVC 执行流程
 
 ### Spring MVC 常用组件
 
@@ -1630,26 +1632,21 @@ public String index(){
 
 - 作用：统一处理请求和响应，整个流程控制的中心，由它调用其它组件处理用户的请求。
 
-
 `HandlerMapping`：**处理器映射器**，不需要工程师开发，由框架提供。
 
 - 作用：根据请求的 url、method 等信息查找 Handler，即控制器方法。
-
 
 `Handler`：**处理器**，需要工程师开发。
 
 - 作用：在 DispatcherServlet 的控制下 Handler 对具体的用户请求进行处理。
 
-
 `HandlerAdapter`：**处理器适配器**，不需要工程师开发，由框架提供。
 
 - 作用：通过 HandlerAdapter 对处理器（控制器方法）进行执行。
 
-
 `ViewResolver`：**视图解析器**，不需要工程师开发，由框架提供。
 
 - 作用：进行视图解析，得到相应的视图，例如：ThymeleafView、InternalResourceView、RedirectView。
-
 
 `View`：**视图**。
 
@@ -2034,7 +2031,9 @@ private void processDispatchResult(HttpServletRequest request, HttpServletRespon
 
 ### Spring MVC 的执行流程
 
-1. 用户向服务器发送请求，请求被 Spring MVC 前端控制器 DispatcherServlet 捕获。
+![1697864470893](./../../../AppData/Local/Programs/Tencent/WeChat Files/WeChat Files/wxid_4nl44tzzfl5n22/FileStorage/Temp/1697864470893.jpg)
+
+1. 用户向服务器发送请求，请求被 Spring MVC 的前端控制器 DispatcherServlet 捕获。
 
 2. DispatcherServlet 对请求 URL 进行解析，得到请求资源标识符（URI），然后判断请求 URI 对应的映射。
 
@@ -2054,7 +2053,7 @@ private void processDispatchResult(HttpServletRequest request, HttpServletRespon
 
 4. 如果映射存在，则执行下面的流程。
 
-5. 根据该 URI，调用 HandlerMapping 获得该 Handler 配置的所有相关的对象（包括 Handler 对象以及 Handler 对象对应的拦截器），最后以 HandlerExecutionChain 执行链对象的形式返回。
+5. 根据该 URI，调用 HandlerMapping 获得其对应的 Handler 配置的所有相关的对象（包括 Handler 对象以及 Handler 对象对应的拦截器），最后以 HandlerExecutionChain 执行链对象的形式返回。
 
 6. DispatcherServlet 根据获得的 Handler，选择一个合适的 HandlerAdapter。
 
@@ -2063,15 +2062,15 @@ private void processDispatchResult(HttpServletRequest request, HttpServletRespon
 8. 提取 Request 中的模型数据，填充 Handler 入参，开始执行 Handler（Controller）方法，处理请求。在填充 Handler 的入参过程中，根据你的配置，Spring 将帮你做一些额外的工作：
 
    - HttpMessageConveter： 将请求消息（如 Json、xml 等数据）转换成一个对象，将对象转换为指定的响应信息。
-   - 数据转换：对请求消息进行数据转换。如 String 转换成 Integer、Double 等。
-   - 数据格式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等。
+   - 数据转换：对请求消息进行数据转换，如 String 转换成 Integer、Double 等。
+   - 数据格式化：对请求消息进行数据格式化，如将字符串转换成格式化数字或格式化日期等。
    - 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到 BindingResult 或 Error 中。
 
 9. Handler 执行完成后，向 DispatcherServlet 返回一个 ModelAndView 对象。
 
 10. 此时将开始执行拦截器的 postHandle()方法【逆向逐一执行】。
 
-11. 根据返回的 ModelAndView（此时会判断是否存在异常：如果存在异常，则执行 HandlerExceptionResolver 进行异常处理）选择一个适合的 ViewResolver 进行视图解析，根据 Model 和 View，来渲染视图。
+11. 根据返回的 ModelAndView（此时会判断是否存在异常：如果存在异常，则执行 HandlerExceptionResolver 进行异常处理），选择一个适合的 ViewResolver 进行视图解析，根据 Model 和 View，来渲染视图。
 
 12. 渲染视图完毕执行拦截器的 afterCompletion() 方法【逆向逐一执行】。
 
@@ -2079,7 +2078,7 @@ private void processDispatchResult(HttpServletRequest request, HttpServletRespon
 
 ## 本文参考
 
-https://www.bilibili.com/video/BV1Ry4y1574R?vd_source=abe35c34385e7b56d2e426c30e25e646
+https://www.bilibili.com/video/BV1Ry4y1574R
 
 ## 声明
 
