@@ -1,5 +1,9 @@
 *date: 2022-05-13*
 
+
+
+[TOC]
+
 ## 概述
 
 Redis 官网：https://redis.io/
@@ -4009,8 +4013,6 @@ OK
 ## Redis 哨兵（Sentinel）
 
 官网：https://redis.io/docs/management/sentinel/
-
-
 
 ## Redis 集群（Cluster）
 
