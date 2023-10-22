@@ -1,5 +1,9 @@
 *date: 2022-07-04*
 
+
+
+[TOC]
+
 ## 简介
 
 官网：https://baomidou.com/
@@ -133,7 +137,7 @@ INSERT INTO mybatisplus.`user` (name, sex, age) VALUES ("郑八", "男", 29);
 
 ### 创建 Spring Boot 项目
 
-![image-20220727103730428](mybatis-plus/image-20220727103730428.png)
+<img src="mybatis-plus/image-20220727103730428.png" alt="image-20220727103730428" style="zoom:67%;" />
 
 ### 引入依赖
 
@@ -679,9 +683,15 @@ public interface BaseMapper<T> extends Mapper<T> {
 
 ### 插入
 
+略
+
 ### 删除
 
+略
+
 ### 修改
+
+略
 
 ## 通用 Service
 
@@ -1668,7 +1678,7 @@ MyBatis-Plus 在实现 CRUD 时，会`默认将 id 作为主键列`，并在插�
 
 单表数据拆分有两种方式：`垂直分表`和`水平分表`。示意图如下：
 
-<img src="mybatis-plus/image-20220820202242459.png" alt="image-20220820202242459" style="zoom:80%;" />
+<img src="mybatis-plus/image-20220820202242459.png" alt="image-20220820202242459" style="zoom: 67%;" />
 
 - 垂直分表适合将表中某些`不常用且占了大量空间的列`拆分出去。例如，上面示意图中的 nickname 和 description 字段，假设我们是一个婚恋网站，用户在筛选其他用户的时候，主要是用 age 和 sex 两个字段进行查询，而 nickname 和 description 两个字段主要用于展示，一般不会在业务查询中用到。description 本身又比较长，因此我们可以将这两个字段独立到另外一张表中，这样在查询 age 和 sex 时，就能带来一定的性能提升。
 
@@ -1696,7 +1706,7 @@ MyBatis-Plus 在实现 CRUD 时，会`默认将 id 作为主键列`，并在插�
 
     - 核心思想：ID 长度共 64 bit（一个 long 型）。
       
-      <img src="mybatis-plus/image-20220820222604214.png" alt="image-20220820222604214" style="zoom:80%;" />
+      <img src="mybatis-plus/image-20220820222604214.png" alt="image-20220820222604214" style="zoom: 67%;" />
       
       - 第一位是一个符号位，1 bit 标识，由于 long 基本类型在 Java 中是带符号的，最高位是符号位，正数是 0，负数是 1，而 ID 一般是正数，最高位是 0。
       
@@ -1716,7 +1726,7 @@ MyBatis-Plus 在执行 SQL 语句时，要保证实体类中的属性名和表�
 
 `物理删除`：真实删除，将对应数据从数据库中删除，之后查询不到此条被删除的数据。
 
-`逻辑删除`：假删除，将对应数据中代表是否被删除字段的状态修改为“被删除状态”，之后在数据库中仍旧能看到此条数据记录。逻辑删除可以进行数据恢复。实现逻辑删除的方式：
+`逻辑删除`：假删除，将对应数据中代表是否被删除字段的状态修改为 "被删除状态"，之后在数据库中仍旧能看到此条数据记录。逻辑删除可以进行数据恢复。实现逻辑删除的方式：
 
 - Step1：数据库中创建逻辑删除状态列，设置默认值为 0。
 
@@ -3270,7 +3280,7 @@ MyBatisX 是一款基于 IDEA 的快速开发插件，为效率而生，用法�
 
 ## 本文参考
 
-https://www.bilibili.com/video/BV12R4y157Be?spm_id_from=333.337.search-card.all.click
+https://www.bilibili.com/video/BV12R4y157Be
 
 ## 声明
 
