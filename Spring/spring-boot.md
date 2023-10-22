@@ -7395,11 +7395,11 @@ Spring Profiles 提供一种**隔离配置**的方式，使其仅在**特定环�
 
 ## 本文参考
 
-
-
 https://www.bilibili.com/video/BV19K4y1L7MT
 
 https://www.yuque.com/atguigu/springboot
+
+https://www.bilibili.com/video/BV1Es4y1q7Bf
 
 https://www.yuque.com/leifengyang/springboot3
 
