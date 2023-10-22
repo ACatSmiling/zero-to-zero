@@ -1,36 +1,40 @@
 *date: 2022-07-27*
 
+
+
+[TOC]
+
 ## 解压
 
-![image-20220727201049500](oracle/image-20220727201049500.png)
+<img src="oracle/image-20220727201049500.png" alt="image-20220727201049500" style="zoom: 50%;" />
 
-![image-20220727201157009](oracle/image-20220727201157009.png)
+<img src="oracle/image-20220727201157009.png" alt="image-20220727201157009" style="zoom:50%;" />
 
 ## 安装过程
 
-![image-20220727185623319](oracle/image-20220727185623319.png)
+<img src="oracle/image-20220727185623319.png" alt="image-20220727185623319" style="zoom:80%;" />
 
-![image-20220727190427232](oracle/image-20220727190427232.png)
+<img src="oracle/image-20220727190427232.png" alt="image-20220727190427232" style="zoom:80%;" />
 
-![image-20220727190614709](oracle/image-20220727190614709.png)
+<img src="oracle/image-20220727190614709.png" alt="image-20220727190614709" style="zoom:80%;" />
 
-![image-20220727194923419](oracle/image-20220727194923419.png)
+<img src="oracle/image-20220727194923419.png" alt="image-20220727194923419" style="zoom:80%;" />
 
 > 管理口令：Oracle11g
 
-![image-20220727195056397](oracle/image-20220727195056397.png)
+<img src="oracle/image-20220727195056397.png" alt="image-20220727195056397" style="zoom:80%;" />
 
-![image-20220727195133790](oracle/image-20220727195133790.png)
+<img src="oracle/image-20220727195133790.png" alt="image-20220727195133790" style="zoom:80%;" />
 
-![image-20220727200125961](oracle/image-20220727200125961.png)
+<img src="oracle/image-20220727200125961.png" alt="image-20220727200125961" style="zoom:80%;" />
 
-![image-20220727200353335](oracle/image-20220727200353335.png)
+<img src="oracle/image-20220727200353335.png" alt="image-20220727200353335" style="zoom:80%;" />
 
 > SYS：普通管理员
 >
 > SYSTEM：超级管理员
 
-![image-20220727200500074](oracle/image-20220727200500074.png)
+<img src="oracle/image-20220727200500074.png" alt="image-20220727200500074" style="zoom:80%;" />
 
 ## 添加 PATH
 
@@ -42,7 +46,7 @@
 
 ## 服务启动
 
-![image-20220727202121881](oracle/image-20220727202121881.png)
+<img src="oracle/image-20220727202121881.png" alt="image-20220727202121881" style="zoom: 50%;" />
 
 Oracle 安装成功后，会在系统中进行服务的注册，在注册的这些服务中有以下两个服务必须启动，否则 Oracle 将无法正常使用：
 
@@ -53,7 +57,7 @@ Oracle 安装成功后，会在系统中进行服务的注册，在注册的这�
 
 ## 连接
 
-<img src="oracle/image-20220727202909360.png" alt="image-20220727202909360" style="zoom:50%;" />
+<img src="oracle/image-20220727202909360.png" alt="image-20220727202909360" style="zoom:45%;" />
 
 ## 导入数据
 
