@@ -1,5 +1,9 @@
 *date: 2022-06-22*
 
+
+
+[TOC]
+
 ## 简介
 
 **`MyBatis`**最初是 Apache 的一个开源项目`iBatis`，2010 年 6 月这个项目由 Apache Software Foundation 迁移到了 Google Code。随着开发团队转投 Google Code 旗下，iBatis 3.x 正式更名为 MyBatis，代码于 2013 年 11 月迁移到 Github。
@@ -15,15 +19,15 @@ MyBatis 的特性：
 
 GitHub 地址：https://github.com/mybatis/mybatis-3
 
-![image-20220710144154585](mybatis/image-20220710144154585.png)
+<img src="mybatis/image-20220710144154585.png" alt="image-20220710144154585" style="zoom:80%;" />
 
 点击 Download Latest，进入下载界面：
 
-![image-20220710154133790](mybatis/image-20220710154133790.png)
+<img src="mybatis/image-20220710154133790.png" alt="image-20220710154133790" style="zoom:80%;" />
 
 点击下载后，解压，可以得到 MyBatis 的官方文档（jar 包通过 Maven 管理，不需要使用）：
 
-![image-20220710154313877](mybatis/image-20220710154313877.png)
+<img src="mybatis/image-20220710154313877.png" alt="image-20220710154313877" style="zoom:80%;" />
 
 不同持久化层技术的对比：
 
@@ -46,7 +50,7 @@ GitHub 地址：https://github.com/mybatis/mybatis-3
 
 ### 创建 Maven 工程
 
-![image-20220714205220230](mybatis/image-20220714205220230.png)
+<img src="mybatis/image-20220714205220230.png" alt="image-20220714205220230" style="zoom: 67%;" />
 
 ### 引入依赖
 
@@ -488,8 +492,8 @@ MyBatis 获取参数值的两种方式：`${}`和`#{}`。
 
 - ${} 使用字符串拼接的方式拼接 SQL，若为字符串类型或日期类型的字段进行赋值时，需要`手动添加单引号`。
 - #{} 使用占位符赋值的方式拼接 SQL，若为字符串类型或日期类型的字段进行赋值时，可以`自动添加单引号`。
-- MyBatis 在处理 ${} 时，就是把 ${} 替换成变量的值。
-- MyBatis 在处理 #{} 时，会将 SQL 中的 #{} 替换为 ? 号，使用 PreparedStatement 的 set 方法来赋值。
+- MyBatis 在处理 \${} 时，会将 SQL 中的 ${} 替换成变量的值。
+- MyBatis 在处理 #{} 时，会将 SQL 中的 #{} 替换为 ? ，使用 PreparedStatement 的 set 方法来赋值。
 - ${} 不能防止 SQL 注入，`#{} 可以防止 SQL 注入`。
 
 ### 单个字面量类型的参数
@@ -618,7 +622,7 @@ User(id=3, name=张三, sex=男, age=27, status=1, create_time=Thu Jul 14 14:54:
 
 ### Map 集合类型的参数
 
-若 Mapper 接口中的方法需要的参数为多个时，此时，可以`自定义 Map 集合`，将这些参数放在 Map 中，然后通过 ${} 或 #{} 访问 Map 集合的键，获取对应的参数值，注意 ${} 需要手动加单引号。
+若 Mapper 接口中的方法需要的参数为多个时，此时，可以`自定义 Map 集合`，将这些参数放在 Map 中，然后通过 \${} 或 #{} 访问 Map 集合的键，获取对应的参数值，注意 ${} 需要手动加单引号。
 
 ```java
 public interface UserMapper {
@@ -672,7 +676,7 @@ User(id=3, name=张三, sex=男, age=27, status=1, create_time=Thu Jul 14 14:54:
 
 ### 实体类类型的参数
 
-若 Mapper 接口中的方法参数为实体类对象时，此时，可以使用 ${} 或 #{}，通过`访问实体类对象中的属性名`的方式，获取对应的属性值，注意 ${} 需要手动加单引号。
+若 Mapper 接口中的方法参数为实体类对象时，此时，可以使用 \${} 或 #{}，通过`访问实体类对象中的属性名`的方式，获取对应的属性值，注意 ${} 需要手动加单引号。
 
 ```java
 public interface UserMapper {
@@ -737,7 +741,7 @@ User(id=null, name=王五, sex=男, age=28, status=1, create_time=Sun Jul 17 01:
 
 - 以`@Param 注解的 value 属性值`为键，以参数为值；
 - 以`param1，param2...`为键，以参数为值；
-- 此时，可以通过 ${} 或 #{} 访问 Map 集合的键的方式来获取对应的值，注意 ${} 需要手动加单引号。
+- 此时，可以通过 \${} 或 #{} 访问 Map 集合的键的方式来获取对应的值，注意 ${} 需要手动加单引号。
 
 ```java
 public interface UserMapper {
@@ -3055,9 +3059,9 @@ Employee(id=2, empName=李四, sex=男, age=28, depId=1)
 
 - 同一个 SqlSession，但是`查询条件不同`。
 
-- 同一个SqlSession，两次查询期间`执行了任意的增删改操作`。
+- 同一个 SqlSession，两次查询期间`执行了任意的增删改操作`。
 
-- 同一个SqlSession，两次查询期间`手动清空了缓存`。
+- 同一个 SqlSession，两次查询期间`手动清空了缓存`。
 
   ```java
   // 手动清缓存，也可以使一级缓存失效
@@ -3290,7 +3294,7 @@ Employee(id=2, empName=李四, sex=男, age=28, depId=1)
 
 使二级缓存失效的情况：
 
-- `两次查询之间执行了任意的增删改操作`，会使一级缓存和二级缓存同时失效。
+- `两次查询期间执行了任意的增删改操作`，会使一级缓存和二级缓存同时失效。
 
 测试一：
 
@@ -3538,7 +3542,7 @@ Employee(id=2, empName=李四, sex=男, age=28, depId=1)
 
 同时，在磁盘上，可以看到缓存的数据：
 
-![image-20220726114737747](mybatis/image-20220726114737747.png)
+<img src="mybatis/image-20220726114737747.png" alt="image-20220726114737747" style="zoom: 55%;" />
 
 ## MyBatis 的逆向工程
 
@@ -3552,7 +3556,7 @@ Employee(id=2, empName=李四, sex=男, age=28, depId=1)
 
 ### 新建项目
 
-![image-20220726125928076](mybatis/image-20220726125928076.png)
+<img src="mybatis/image-20220726125928076.png" alt="image-20220726125928076" style="zoom: 67%;" />
 
 ### 添加依赖和插件
 
@@ -4423,7 +4427,7 @@ PageInfo{pageNum=1, pageSize=2, size=2, startRow=1, endRow=2, total=8, pages=4, 
 
 ## 本文参考
 
-https://www.bilibili.com/video/BV1VP4y1c7j7?spm_id_from=333.337.search-card.all.click
+https://www.bilibili.com/video/BV1VP4y1c7j7
 
 
 ## 声明
