@@ -1,5 +1,9 @@
 *date: 2021-03-20*
 
+
+
+[TOC]
+
 ## Java 集合框架概述
 
 面向对象语言是以对象的形式来对事物进行体现，为了方便对多个对象的操作，就需要对对象进行存储。
@@ -30,11 +34,11 @@ Java 集合框架可分为`Collection`和`Map`两种体系：
 
 Collection 接口继承树：
 
-<img src="java-collectionandmap/image-20210320195328879.png" alt="image-20210320195328879" style="zoom:80%;" />
+<img src="java-collectionandmap/image-20210320195328879.png" alt="image-20210320195328879" style="zoom: 50%;" />
 
 Map 接口继承树：
 
-<img src="java-collectionandmap/image-20210320195601373.png" alt="image-20210320195601373" style="zoom:80%;" />
+<img src="java-collectionandmap/image-20210320195601373.png" alt="image-20210320195601373" style="zoom: 50%;" />
 
 ## Collection 接口
 
@@ -262,11 +266,11 @@ Collection 接口继承了`java.lang.Iterable`接口，该接口有一个`iterat
 
 Iterator 接口的方法：
 
-![image-20210321212722823](java-collectionandmap/image-20210321212722823.png)
+<img src="java-collectionandmap/image-20210321212722823.png" alt="image-20210321212722823" style="zoom: 67%;" />
 
 `迭代器的执行原理`：
 
-<img src="java-collectionandmap/image-20210321214632545.png" alt="image-20210321214632545" style="zoom:67%;" />
+<img src="java-collectionandmap/image-20210321214632545.png" alt="image-20210321214632545" style="zoom:60%;" />
 
 <img src="java-collectionandmap/image-20210321214757983.png" alt="image-20210321214757983" style="zoom:67%;" />
 
@@ -379,7 +383,7 @@ public class Test {
 
 **JDK 5.0 提供了 foreach 循环迭代访问 Collection 和数组。**格式如下：
 
-<img src="java-collectionandmap/image-20210322102449941.png" alt="image-20210322102449941" style="zoom:67%;" />
+<img src="java-collectionandmap/image-20210322102449941.png" alt="image-20210322102449941" style="zoom: 50%;" />
 
 - **foreach 对 Collection 或数组的遍历操作，不需获取 Collection 和数组的长度，无需使用索引访问元素。**
 
@@ -1041,11 +1045,11 @@ HashSet 具有以下特点：
 
 - `不保证元素的排列顺序。`
 - `不是线程安全的。`
-- `集合元素可以是 null。`
+- `集合元素可以是 null，但是只能有一个。`
 
 向 HashSet 中添加元素的过程：
 
-- **当向 HashSet 集合中存入一个元素 a 时，首先会调用元素 a 所在类的`hashCode()`，计算元素 a 的 hashCode 值，然后根据 hashCode 值，通过某种散列函数，计算出元素 a 在 HashSet 底层数组中的存储位置（即为：索引位置，这个索引位置不是像 List 那样有顺序的，而是无序的）。**
+- **当向 HashSet 集合中存入一个元素 a 时，首先会调用元素 a 所在类的`hashCode()`，计算元素 a 的 hashCode 值，然后根据 hashCode 值，通过某种散列函数，计算出元素 a 在 HashSet 底层`数组`中的存储位置（即为：索引位置，这个索引位置不是像 List 那样有顺序的，而是无序的）。**
   - **说明：这个散列函数会根据元素的 hashCode 值和底层数组的长度相计算，得到该元素在数组中的下标（存储位置），并且这种散列函数计算还尽可能保证能均匀存储元素，越是散列分布，该散列函数设计的越好。**
   - 向 List 中添加元素时，会按照索引位置的顺序在数组中逐个添加，这是一种有序性。而向 HashSet 中添加元素时，可能第一个元素的索引位置在数组的中间，第二个元素的索引位置在数组的头，第三个元素的索引位置在数组的尾，是按照一种无序的状态添加的，是为无序性。
 - **计算出元素 a 的存储位置后，首先判断数组此位置上是否已经有元素：**
@@ -1055,7 +1059,7 @@ HashSet 具有以下特点：
     - **如果 hashCode 值相同，进而需要调用元素 a 所在类的`equals()`：**
       - **`equals()`返回 true，则元素 a 添加失败。**
       - **`equals()`返回 false，则元素 a 添加成功。---> 情况3**
--   **对于添加成功的情况 2 和情况 3 而言：元素 a 与已经存在指定索引位置上的元素以链表的方式存储。**
+-   **对于添加成功的情况 2 和情况 3 而言：元素 a 与已经存在指定索引位置上的元素以`链表`的方式存储。**
   - **JDK 7.0：元素 a 存放到底层数组中，指向原来的元素。**
   - **JDK 8.0：原来的元素存放到数组中，指向元素 a。**
   - **总结：七上八下。**
@@ -1064,7 +1068,7 @@ HashSet 具有以下特点：
 
 HashSet 底层结构：
 
-<img src="java-collectionandmap/image-20210323105311451.png" alt="image-20210323105311451" style="zoom:67%;" />
+<img src="java-collectionandmap/image-20210323105311451.png" alt="image-20210323105311451" style="zoom: 50%;" />
 
 HashSet 集合判断两个元素相等的标准：两个对象通过`hashCode()`比较相等，并且两个对象的`equals()`返回值也相等。
 
@@ -1128,7 +1132,7 @@ LinkedHashSet 插入性能略低于 HashSet，但在迭代访问 Set 里的全�
 
 LinkedHashSet 底层结构：
 
-<img src="java-collectionandmap/image-20210323113040684.png" alt="image-20210323113040684" style="zoom:67%;" />
+<img src="java-collectionandmap/image-20210323113040684.png" alt="image-20210323113040684" style="zoom: 50%;" />
 
 实例：
 
@@ -1165,7 +1169,7 @@ public class Test {
         System.out.println(set);// 位置3和7处对应的2个User
         p1.name = "CC";// 更改p1指向的User对象的name为CC
         set.remove(p1);// 以新的p1在HashSet底层数组查找，没有相同的对象(hashCode值以1001和CC计算出来)
-        System.out.println(set);// 位置3和7处对应的2个User，但位置7指向的User对象的name为C，不是AA，位置3指向的User对象的name为BB
+        System.out.println(set);// 位置3和7处对应的2个User，但位置7指向的User对象的name为CC，不是AA，位置3指向的User对象的name为BB
         set.add(new User(1001, "CC"));// 新new出来的User，hashCode值以1001和CC计算出来，不同于最初的p1，其位置不会在7处，也不会在3处，假设在11处
         System.out.println(set);// 位置3、7和11处对应的3个User，其中，位置7和11对应的User的id和name都是1001和CC，但不是堆中的同一个对象
         set.add(new User(1001, "AA"));// 新new出来的User，hashCode值以1001和AA计算出来，等于最初的p1，位置在7处，但因为现在7处User对象的name为CC，所以equals()不相同，这个User对象链接到7位置
@@ -1229,7 +1233,7 @@ TreeSet 特点：有序，查询速度比 List 快。
 
 TreeSet 与 TreeMap 一样，底层使用`红黑树结构`存储数据。
 
-<img src="java-collectionandmap/image-20210323113817724.png" alt="image-20210323113817724" style="zoom:67%;" />
+<img src="java-collectionandmap/image-20210323113817724.png" alt="image-20210323113817724" style="zoom: 50%;" />
 
 > 红黑树参考：http://www.cnblogs.com/yangecnu/p/Introduce-Red-Black-Tree.html
 
@@ -1544,7 +1548,7 @@ Map结构的理解：
 
 - Map 中的`entry`：无序的、不可重复的，使用 Set 存储所有的 entry。
 
-  <img src="java-collectionandmap/image-20210324111932115.png" alt="image-20210324111932115" style="zoom:67%;" />
+  <img src="java-collectionandmap/image-20210324111932115.png" alt="image-20210324111932115" style="zoom: 50%;" />
 
 - Map 中的 key 和 value 都可以是任何引用类型的数据。
 
@@ -1807,7 +1811,7 @@ HashMap 源码中的重要常量：
 
 - modCount：HashMap 扩容和结构改变的次数。
 
-- **threshold：扩容的临界值，其值一般等于容量 \* 加载因子，`(int) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);`。扩容的操作不是当底层数组全部被填满后再扩容，而是达到临界值后的下一次添加操作进行扩容。**
+- **threshold：扩容的临界值，其值一般等于（容量 \* 加载因子），`(int) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);`。扩容的操作不是当底层数组全部被填满后再扩容，而是达到临界值后的下一次添加操作进行扩容。**
 
 - loadFactor：加载因子。
 
@@ -2007,7 +2011,7 @@ HashMap 源码中的重要常量：
     - 扩容过程：
     
       - 当 HashMap 中的元素越来越多的时候，hash 冲突的几率也就越来越高，因为底层数组的长度是固定的。所以为了提高查询的效率，就要对 HashMap 的底层数组进行扩容，而在 HashMap 数组扩容之后，最消耗性能的点就出现了：原数组中的数据必须重新计算其在新数组中的位置，并放进去，这就是`resize()`。
-      - 当 HashMap 中的元素个数超过 "数组大小（数组总大小 length，不是数组中存储的元素个数 size） \* loadFactor" 时 ， 就 会 进 行 数 组 扩 容 。其中，loadFactor 的 默 认 值为 0.75，这是一个折中的取值，默认情况下，数组大小为 16，那么当 HashMap 中元素个数 ≥ 16 \* 0.75 = 12 （这个值就是代码中的 threshold 值，也叫做临界值）且要存放的位置非空的时候，就把数组的大小扩展为 2 \* 16 = 32，即扩大一倍，然后重新计算每个元素在数组中的位置，把原有的数据复制到新数组中。
+      - 当 HashMap 中的元素个数超过 "数组大小（数组总大小 length，不是数组中存储的元素个数 size） \* loadFactor" 时 ， 就会进行数组扩容 。其中，loadFactor 的 默认值为 0.75，这是一个折中的取值，默认情况下，数组大小为 16，那么当 HashMap 中元素个数 ≥ 16 \* 0.75 = 12 （这个值就是代码中的 threshold 值，也叫做临界值）且要存放的位置非空的时候，就把数组的大小扩展为 2 \* 16 = 32，即扩大一倍，然后重新计算每个元素在数组中的位置，把原有的数据复制到新数组中。
       - **扩容是一个非常消耗性能的操作，如果已经预知 HashMap 中元素的个数，那么预设元素的个数能够有效的提高 HashMap 的性能。**
     
   - **JDK 8.0**
@@ -2778,7 +2782,7 @@ Collections 中提供了一系列静态的方法对集合元素进行排序、�
 
 ## 本文参考
 
-https://www.gulixueyuan.com/goods/show/203?targetId=309&preview=0
+https://www.bilibili.com/video/BV1Kb411W75N
 
 ## 声明
 
