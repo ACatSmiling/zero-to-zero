@@ -162,6 +162,17 @@ Java 是`强类型语言`，对于每一种数据都定义了明确的具体数�
 
 #### 基本数据类型
 
+| 类型    | 占有存储空间                       |
+| ------- | ---------------------------------- |
+| byte    | 1字节，8位                         |
+| short   | 2字节，16位                        |
+| int     | 4字节，32位                        |
+| long    | 8字节，64位                        |
+| float   | 4字节，32位                        |
+| double  | 8字节，64位                        |
+| char    | 2字节，16位                        |
+| boolean | 未明确指定，取决于虚拟机的实现方式 |
+
 ##### 整数类型
 
 <img src="java/image-20210212144204390.png" alt="image-20210212144204390" style="zoom: 50%;" />
@@ -5518,14 +5529,14 @@ class Person {
 ```java
 public class Test {
     public static void main(String[] args) {
-        String s1 = "javaEE";
-        String s2 = "hadoop";
-        String s3 = "javaEEhadoop";
-        String s4 = "javaEE" + "hadoop";
-        String s5 = s1 + "hadoop";
-        String s6 = "javaEE" + s2;
-        String s7 = s1 + s2;
-        String s8 = (s1 + s2).intern();
+        String s1 = "javaEE";// 常量池
+        String s2 = "hadoop";// 常量池
+        String s3 = "javaEEhadoop";// 常量池
+        String s4 = "javaEE" + "hadoop";// 常量池
+        String s5 = s1 + "hadoop";// 堆空间
+        String s6 = "javaEE" + s2;// 堆空间
+        String s7 = s1 + s2;// 堆空间
+        String s8 = (s1 + s2).intern();// 常量池
 
         System.out.println(s3 == s4);// true
         System.out.println(s3 == s5);// false
@@ -5577,7 +5588,7 @@ public class StringTest {
     - **字符串常量存储在字符串常量池，目的是共享。**
     - **字符串非常量对象存储在堆中。**
 
-    <img src="./java/image-20210311194809127.png" alt="image-20210311194809127" style="zoom: 50%;" />
+    <img src="./java/image-20210311194809127.png" alt="image-20210311194809127" style="zoom: 40%;" />
 
   - 下面程序的运行结果是：
 
@@ -10129,9 +10140,9 @@ class TicketRunnable implements Runnable {
 
 局限性：操作同步代码时，只能有一个线程参与，其他线程等待，相当于是一个单线程的过程，效率低。
 
-**需要被同步的代码：操作共享数据的代码。**
-
 **共享数据：多个线程共同操作的变量。**
+
+**需要被同步的代码：操作共享数据的代码。**
 
 **`同步监视器，俗称：锁。`任何一个类的对象，都可以充当锁。**
 
@@ -10144,8 +10155,8 @@ class TicketRunnable implements Runnable {
 **synchronized 的锁是什么：**
 
 - **任意对象都可以作为同步锁，所有对象都自动含有单一的锁（监视器）。**
-- **同步代码块的锁：自己指定，很多时候也是指定为`this`或`类名.class`。**
-- **同步方法的锁：`静态方法 ---> 类名.class、非静态方法 ---> this`。**
+- **同步代码块的锁：自己指定，很多时候是指定为`this`或`类名.class`。**
+- **同步方法的锁：`静态方法 ---> 类名.class，非静态方法 ---> this`。**
 
 - 注意：
   - **必须确保使用同一个资源的多个线程共用的是同一把锁，这个非常重要，否则就无法保证共享资源的安全。**
@@ -10169,7 +10180,7 @@ class TicketRunnable implements Runnable {
 格式：
 
 ```java
-synchronized (同步监视器){
+synchronized (同步监视器) {
     // 需要被同步的代码
 }
 ```
@@ -10207,7 +10218,7 @@ class TicketThread extends Thread {
     @Override
     public void run() {
         while (true) {
-            synchronized (obj) {// 可以使用：synchronized (TicketThread.class)，不能建议使用：synchronized (this)
+            synchronized (obj) {// 可以使用：synchronized (TicketThread.class)，不能使用：synchronized (this)
                 if (ticketNum > 0) {
                     try {
                         Thread.sleep(100);
@@ -10653,19 +10664,17 @@ class Customer extends Thread {
 #### 线程的通信
 
 - `wait()`与`notify()`和`notifyAll()`
-
   - `wait()`：**一旦执行此方法，当前线程就进入阻塞状态，并释放同步监视器。**
     - 当前线程排队等候其他线程调用`notify()`或`notifyAll()`方法唤醒，唤醒后等待重新获得对监视器的所有权后才能继续执行。
     - 被唤醒的线程从断点处继续代码的执行。
   - `notify()`：一旦执行此方法，就会唤醒被`wait()`的一个线程。如果有多个线程被`wait()`，则唤醒优先级高的。
   - `notifyAll()`：一旦执行此方法，就会唤醒所有被`wait()`的线程。
-
+  
 - **`wait()`与`notify()`和`notifyAll()`这三个方法必须使用在同步代码块或同步方法中。**
 
 - **`wait()`与`notify()`和`notifyAll()`这三个方法的调用者必须是同步代码块或同步方法中的同步监视器。**
-
   - 否则会出现`java.lang.IllegalMonitorStateException`异常。
-
+  
 - **`wait()`与`notify()`和`notifyAll()`这三个方法是定义在`java.lang.Object`类中的。**
 
   - 因为这三个方法必须由同步监视器调用，而任意对象都可以作为同步监视器，因此这三个方法只能在 Object 类中声明。
@@ -10906,15 +10915,13 @@ public class DeadLock {
 ```java
 class A {
     public synchronized void foo(B b) {// 同步监视器：A的对象
-        System.out.println("当前线程名: " + Thread.currentThread().getName()
-                + ", 进入了A实例的foo方法"); // ①
+        System.out.println("当前线程名: " + Thread.currentThread().getName() + ", 进入了A实例的foo方法"); // ①
         try {
             Thread.sleep(200);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-        System.out.println("当前线程名: " + Thread.currentThread().getName()
-                + ", 企图调用B实例的last方法"); // ③
+        System.out.println("当前线程名: " + Thread.currentThread().getName() + ", 企图调用B实例的last方法"); // ③
         b.last();
     }
 
@@ -10925,15 +10932,13 @@ class A {
 
 class B {
     public synchronized void bar(A a) {// 同步监视器：B的对象
-        System.out.println("当前线程名: " + Thread.currentThread().getName()
-                + ", 进入了B实例的bar方法"); // ②
+        System.out.println("当前线程名: " + Thread.currentThread().getName() + ", 进入了B实例的bar方法"); // ②
         try {
             Thread.sleep(200);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-        System.out.println("当前线程名: " + Thread.currentThread().getName()
-                + ", 企图调用A实例的last方法"); // ④
+        System.out.println("当前线程名: " + Thread.currentThread().getName() + ", 企图调用A实例的last方法"); // ④
         a.last();
     }
 
@@ -11068,11 +11073,11 @@ public ThreadPoolExecutor(int corePoolSize,
 
 **unit：**时间单位。
 
-**workQueue：**保存任务的阻塞队列。
+**workQueue：**`保存任务的阻塞队列`。
 
 **threadFactory：**创建线程的工厂。
 
-**handler：**拒绝策略。
+**handler：**`拒绝策略`。
 
 ##### 任务执行顺序
 
@@ -11084,7 +11089,7 @@ public ThreadPoolExecutor(int corePoolSize,
 
 - **当线程总数等于 maximumPoolSize，并且 workQueue 满时，执行 handler 的 rejectedExecution，也就是拒绝策略。**
 
-![img](./java/20200709102721415.png)
+![1698120774628](./java/1698120774628.jpg)
 
 ##### 阻塞队列
 
@@ -11125,13 +11130,9 @@ JDK 7 提供了 7 个阻塞队列，如下：
 
 5. **SynchronousQueue：**不存储元素的阻塞队列，每一个 put 必须等待一个 take 操作，否则不能继续添加元素。并且支持公平访问队列。
 6. **LinkedTransferQueue：**由链表结构组成的无界阻塞 TransferQueue 队列。
-
    - 相对于其他阻塞队列，多了 transfer 和 tryTransfer 方法：
-
-
-   - **transfer 方法：**如果当前有消费者正在等待接收元素（take 或者待时间限制的 poll 方法），transfer 可以把生产者传入的元素立刻传给消费者。如果没有消费者等待接收元素，则将元素放在队列的 tail 节点，并等到该元素被消费者消费了才返回。
-
-   - **tryTransfer 方法：**用来试探生产者传入的元素能否直接传给消费者。如果没有消费者在等待，则返回 false。和上述方法的区别是该方法无论消费者是否接收，方法立即返回，而 transfer 方法是必须等到消费者消费了才返回。
+     - **transfer 方法：**如果当前有消费者正在等待接收元素（take 或者待时间限制的 poll 方法），transfer 可以把生产者传入的元素立刻传给消费者。如果没有消费者等待接收元素，则将元素放在队列的 tail 节点，并等到该元素被消费者消费了才返回。
+     - **tryTransfer 方法：**用来试探生产者传入的元素能否直接传给消费者。如果没有消费者在等待，则返回 false。和上述方法的区别是该方法无论消费者是否接收，方法立即返回，而 transfer 方法是必须等到消费者消费了才返回。
 
 7. **LinkedBlockingDeque：**链表结构的双向阻塞队列，优势在于多线程入队时，减少一半的竞争。
 
@@ -11141,11 +11142,11 @@ JDK 7 提供了 7 个阻塞队列，如下：
 
 - `ThreadPoolExecutor.AbortPolicy()`：默认策略，直接抛出异常 RejectedExecutionException。
 
->**java.util.concurrent.RejectedExecutionException：**
->
->当线程池  ThreadPoolExecutor 执行方法`shutdown()`之后，再向线程池提交任务的时候，如果配置的拒绝策略是 AbortPolicy ，这个异常就会抛出来。
->
->当设置的任务缓存队列过小的时候，或者说，线程池里面所有的线程都在干活（线程数等于 maxPoolSize)，并且任务缓存队列也已经充满了等待的队列， 这个时候，再向它提交任务，也会抛出这个异常。
+  >**java.util.concurrent.RejectedExecutionException：**
+  >
+  >当线程池  ThreadPoolExecutor 执行方法`shutdown()`之后，再向线程池提交任务的时候，如果配置的拒绝策略是 AbortPolicy ，这个异常就会抛出来。
+  >
+  >当设置的任务缓存队列过小的时候，或者说，线程池里面所有的线程都在干活（线程数等于 maxPoolSize)，并且任务缓存队列也已经充满了等待的队列， 这个时候，再向它提交任务，也会抛出这个异常。
 
 - `ThreadPoolExecutor.CallerRunsPolicy()`：直接使用当前线程（一般是 main 线程）调用`run()`方法并且阻塞执行。
 
@@ -11161,7 +11162,7 @@ JDK 7 提供了 7 个阻塞队列，如下：
 
 `I/O 密集型`：CPU 数量 * CPU 利用率 *（1 + 线程等待时间 / 线程 CPU 时间）。
 
-混合型：将任务分为 CPU 密集型和 IO 密集型，然后分别使用不同的线程池去处理，从而使每个线程池可以根据各自的工作负载来调整。
+混合型：将任务分为 CPU 密集型和 I/O 密集型，然后分别使用不同的线程池去处理，从而使每个线程池可以根据各自的工作负载来调整。
 
 阻塞队列：推荐使用有界队列，有界队列有助于避免资源耗尽的情况发生。
 
@@ -11228,9 +11229,7 @@ public class TestThreadPoolExecutor {
         long startTimeMillis = System.currentTimeMillis();
 
         // 构造一个线程池
-        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(5, 6, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3)
-        );
+        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(5, 6, 3, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3));
 
         for (int i = 1; i <= 10; i++) {
             try {
@@ -11681,7 +11680,7 @@ Java 采用的异常处理机制，是将异常处理的程序代码集中在一
 
 "throws + 异常类型"，写在方法的声明处。指明此方法执行时，可能会抛出的异常类型。一旦当方法体执行时出现异常，仍会在异常代码处生成一个异常类的对象，此对象满足 throws 后的异常类型时，就会被抛出。**异常代码后续的代码，就不再被执行。**
 
-<img src="./java/image-20210304142227672.png" alt="image-20210304142227672" style="zoom:80%;" />
+<img src="./java/image-20210304142227672.png" alt="image-20210304142227672" style="zoom: 67%;" />
 
 重写方法声明抛出异常的原则：`子类重写的方法不能抛出比父类被重写的方法范围更大的异常类型`。
 
@@ -11939,7 +11938,7 @@ public class ReturnExceptionDemo {
 
 ## 日期和时间
 
-### JDK 8 之前的日期和时间 API
+### JDK 8.0 之前的日期和时间 API
 
 #### java.lang.System 类
 
@@ -12179,7 +12178,7 @@ public class Test {
 }
 ```
 
-### JDK 8 之后的日期和时间 API
+### JDK 8.0 之后的日期和时间 API
 
 如果我们可以跟别人说：“我们在 1502643933071 见面，别晚了！”那么就再简单不过了。但是我们希望时间与昼夜和四季有关，于是事情就变复杂了。JDK 1.0 中包含了一个`java.util.Date`类，但是它的大多数方法已经在 JDK 1.1 引入`Calendar`类之后被弃用了，但 Calendar 并不比 Date 好多少。它们面临的问题是：
 
@@ -12517,7 +12516,7 @@ Java 实现对象排序的方式有两种：
 
 Comparable 接口强行对实现它的每个类的对象进行整体排序，这种排序被称为类的自然排序。
 
-实现 Comparable 接口的类必须实现`compareTo(Object obj)`，两个对象通过`compareTo(Object obj)`的返回值来比较大小。
+实现 Comparable 接口的类必须重写`compareTo(Object obj)`，两个对象通过`compareTo(Object obj)`的返回值来比较大小。
 
 - **重写`compareTo(Object obj)`的规则：如果当前对象 this 大于形参对象 obj，则返回正整数，如果当前对象 this 小于形参对象 obj，则返回负整数，如果当前对象 this 等于形参对象 obj，则返回零。**
 
@@ -13234,7 +13233,7 @@ Enum 类中的常用方法：
       }
       ```
 
-      <img src="./java/1616158959(1).jpg" alt="1616158959(1)" style="zoom: 80%;" />
+      <img src="./java/1616158959(1).jpg" alt="1616158959(1)" style="zoom: 70%;" />
 
   - `@Target`：用于修饰 Annotation 定义，用于指定被修饰的 Annotation 能用于修饰哪些程序元素。 @Target 也包含一个名为 value 的成员变量。
 
@@ -13297,7 +13296,7 @@ Enum 类中的常用方法：
 
     - 各取值含义如下：
 
-      <img src="./java/image-20210319212832068.png" alt="image-20210319212832068" style="zoom:80%;" />
+      <img src="./java/image-20210319212832068.png" alt="image-20210319212832068" style="zoom: 50%;" />
 
     - 实例：
 
@@ -13533,7 +13532,7 @@ JDK 1.5 改写了集合框架中的全部接口和类，为这些接口、类增
 
 - 使用泛型的主要优点是能够在编译时而不是在运行时检测错误：
 
-  <img src="./java/image-20210326211451309.png" alt="image-20210326211451309" style="zoom:67%;" />
+  <img src="./java/image-20210326211451309.png" alt="image-20210326211451309" style="zoom: 50%;" />
 
   在集合中使用泛型之前的情况：
 
@@ -13797,7 +13796,7 @@ JDK 1.5 改写了集合框架中的全部接口和类，为这些接口、类增
 
 - 泛型方法的格式：
 
-  <img src="./java/image-20210327214134787.png" alt="image-20210327214134787" style="zoom: 67%;" />
+  <img src="./java/image-20210327214134787.png" alt="image-20210327214134787" style="zoom: 45%;" />
 
 - **泛型方法的参数与类的泛型参数没有任何关系， 换句话说，泛型方法所属的类是不是泛型类都没有关系。泛型方法，可以声明为静态的。原因：泛型参数是在调用方法时确定的，并非在实例化类时确定。**
 
@@ -13918,7 +13917,7 @@ JDK 1.5 改写了集合框架中的全部接口和类，为这些接口、类增
 
 如果 B 是 A 的一个子类型（子类或者子接口），而 G 是具有泛型声明的类或接口，则 G\<B> 并不是 G\<A> 的子类型，二者是并列关系。如果类 A 是类 B 的父类，则 A\<G> 是 B\<G> 的父类。
 
-<img src="./java/image-20210329132249069.png" alt="image-20210329132249069" style="zoom:67%;" />
+<img src="./java/image-20210329132249069.png" alt="image-20210329132249069" style="zoom: 50%;" />
 
 ```java
 public class Test {
@@ -13967,7 +13966,7 @@ public class Test {
 
 `通配符：?`。
 
-**`如果类 A 是类 B 的父类，G\<A> 和 G\<B> 是没有关系的，二者共同的父类是：G<?>`**。比如：List\<?>，Map\<?, ?>。其中，List\<?> 是 List\<String>、List\<Object> 等各种泛型 List 的父类，Map\<?, ?> 是各种泛型 Map 的父类。
+**`如果类 A 是类 B 的父类，G<A> 和 G<B> 是没有关系的，二者共同的父类是：G<?>`**。比如：List\<?>，Map\<?, ?>。其中，List\<?> 是 List\<String>、List\<Object> 等各种泛型 List 的父类，Map\<?, ?> 是各种泛型 Map 的父类。
 
 ```java
 public class Test {
@@ -14028,7 +14027,7 @@ public class Test {
 
 通配符使用的注意事项：
 
-  <img src="./java/image-20210329173205547.png" alt="image-20210329173205547" style="zoom:67%;" />
+<img src="./java/image-20210329173205547.png" alt="image-20210329173205547" style="zoom: 50%;" />
 
 有限制的通配符：
 
@@ -14042,7 +14041,7 @@ public class Test {
 
 - 实例：
 
-  <img src="./java/image-20210329170250730.png" alt="image-20210329170250730" style="zoom:67%;" />
+  <img src="./java/image-20210329170250730.png" alt="image-20210329170250730" style="zoom: 50%;" />
 
   ```java
   public class Test {
@@ -14870,7 +14869,7 @@ Java 程序中，对于数据的输入/输出操作以`流 (stream)`的方式进
 
 `输出 output`：将程序（内存）数据输出到磁盘、光盘等外部存储设备中。
 
-<img src="./java/image-20210330203154529.png" alt="image-20210330203154529" style="zoom:67%;" />
+<img src="./java/image-20210330203154529.png" alt="image-20210330203154529" style="zoom:60%;" />
 
 ### I/O 流的分类
 
@@ -14896,11 +14895,11 @@ Java 程序中，对于数据的输入/输出操作以`流 (stream)`的方式进
 
   <img src="./java/image-20210330220211998.png" alt="image-20210330220211998" style="zoom: 67%;" />
 
-Java 的 IO 流共涉及 40 多个类，实际上非常规则，都是从如下`四个抽象基类`派生的。同时，由这四个类派生出来的子类名称都是以其父类名作为子类名后缀：
+Java 的 I/O 流共涉及 40 多个类，实际上非常规则，都是从如下`四个抽象基类`派生的。同时，由这四个类派生出来的子类名称都是以其父类名作为子类名后缀：
 
 <img src="./java/image-20210330213507408.png" alt="image-20210330213507408" style="zoom:67%;" />
 
-IO 流体系：
+I/O 流体系：
 
 <img src="./java/image-20210330214731163.png" alt="image-20210330214731163" style="zoom: 80%;" />
 
@@ -14917,7 +14916,7 @@ IO 流体系：
   - `int read()`
   - `int read(char [] c)`
   - `int read(char [] c, int off, int len)`
-- `程序中打开的文件 IO 资源不属于内存里的资源，垃圾回收机制无法回收该资源，所以应该显式关闭文件 IO 资源。`
+- `程序中打开的文件 I/O 资源不属于内存里的资源，垃圾回收机制无法回收该资源，所以应该显式关闭文件 I/O 资源。`
 - FileInputStream 从文件系统中的某个文件中获得输入字节。FileInputStream 用于读取非文本数据之类的原始字节流。如果要读取文本数据的字符流，需要使用 FileReader。
 
 **InputStream：**
@@ -16657,7 +16656,7 @@ public class RandomAccessFileTest {
 
 ### NIO.2 中 Path 、Paths 、Files
 
-`Java NIO (New IO 或 Non-Blocking IO)`是从 Java 1.4 版本开始引入的一套新的 IO API，可以替代标准的 Java IO API。NIO 与原来的 IO 有同样的作用和目的，但是使用的方式完全不同，NIO 支持面向缓冲区的（IO是面向流的）、基于通道的 IO 操作，NIO 也会以更加高效的方式进行文件的读写操作。
+`Java NIO (New IO 或 Non-Blocking IO)`是从 Java 1.4 版本开始引入的一套新的 I/O API，可以替代标准的 Java I/O API。NIO 与原来的 I/O 有同样的作用和目的，但是使用的方式完全不同，NIO 支持面向缓冲区的（I/O是面向流的）、基于通道的 I/O 操作，NIO 也会以更加高效的方式进行文件的读写操作。
 
 Java API 中提供了两套 NIO，一套是针对标准输入输出 NIO，另一套就是网络编程 NIO。
 
@@ -16673,7 +16672,7 @@ Java API 中提供了两套 NIO，一套是针对标准输入输出 NIO，另一
 
 NIO. 2 为了弥补这种不足，引入了 Path 接口，代表一个平台无关的平台路径，描述了目录结构中文件的位置。Path 可以看成是 File 类的升级版本，实际引用的资源也可以不存在。
 
-在以前 IO 操作是类似如下写法的：
+在以前 I/O 操作是类似如下写法的：
 
 ```java
 import java.io.File;
@@ -17330,11 +17329,11 @@ Java 提供的网络类库，可以实现无痛的网络连接，联网的底层
 
   - `TCP/IP 参考模型 (或叫 TCP/IP 协议)`：事实上的国际标准。
 
-    <img src="./java/image-20210405204926090.png" alt="image-20210405204926090" style="zoom:67%;" />
+    <img src="./java/image-20210405204926090.png" alt="image-20210405204926090" style="zoom: 50%;" />
 
 网络中数据传输过程：
 
-<img src="./java/image-20210405205407834.png" alt="image-20210405205407834" style="zoom:67%;" />
+<img src="./java/image-20210405205407834.png" alt="image-20210405205407834" style="zoom:60%;" />
 
 #### 通信要素 1：IP 和端口号
 
@@ -17477,7 +17476,7 @@ TCP/IP 协议簇：
 
   - 传输前，采用**`三次握手`**方式，点对点通信，**`是可靠的`**。
 
-    <img src="./java/image-20210406150220705.png" alt="image-20210406150220705" style="zoom:67%;" />
+    <img src="./java/image-20210406150220705.png" alt="image-20210406150220705" style="zoom: 55%;" />
 
   - TCP 协议进行通信的两个应用进程：客户端、服务端。
 
@@ -17485,7 +17484,7 @@ TCP/IP 协议簇：
 
   - 传输完毕，采用**`四次挥手`**方式，**`释放已建立的连接`，效率相对低**。
 
-    <img src="./java/image-20210406150310805.png" alt="image-20210406150310805" style="zoom:67%;" />
+    <img src="./java/image-20210406150310805.png" alt="image-20210406150310805" style="zoom: 55%;" />
 
 - **`UDP 协议`**
 
@@ -17503,7 +17502,7 @@ TCP/IP 协议簇：
 - **`网络上具有唯一标识的 IP 地址和端口号组合在一起，才能构成唯一能识别的标识符套接字。`**
 - 通信的两端都要有 Socket，是两台机器间通信的端点。
 - 网络通信其实就是 Socket 间的通信。
-- Socket 允许程序把网络连接当成一个流，数据在两个 Socket 间通过 IO 传输。
+- Socket 允许程序把网络连接当成一个流，数据在两个 Socket 间通过 I/O 传输。
 - 一般主动发起通信的应用程序属客户端，等待通信请求的为服务端。
 - Socket 类：
   - **`流套接字 (stream socket)`：使用 TCP 提供可依赖的字节流服务。**
@@ -18085,7 +18084,7 @@ URLConnectonn u = netchinaren.openConnection();
 
 URI 、URL 和URN的区别：
 
-<img src="./java/image-20210407115543616.png" alt="image-20210407115543616" style="zoom:80%;" />
+<img src="./java/image-20210407115543616.png" alt="image-20210407115543616" style="zoom: 50%;" />
 
 - URI，是 uniform resource identifier，统一资源标识符，用来唯一的标识一个资源。而 URL 是 uniform resource locator，统一资源定位符，它是一种具体的 URI，即 URL 可以用来标识一个资源，而且还指明了如何 locate 这个资源。而 URN，是 uniform resource name，统一资源命名，是通过名字来标识资源，比如 mailto:java-net@java.sun.com。也就是说，URI 是以一种抽象的，高层次概念定义统一资源标识，而 URL 和 URN 则是具体的资源标识的方式。URL 和 URN 本身也都是一种 URI。
 - 在 Java 的 URI 中，一个 URI 实例可以代表绝对的，也可以是相对的，只要它符合 URI 的语法规则。而 URL 类则不仅符合语义，还包含了定位该资源的信息，因此它不能是相对的。
@@ -18110,7 +18109,7 @@ URI 、URL 和URN的区别：
 
 加载完类之后，在堆内存的方法区中就产生了一个 Class 类型的对象（`一个类只有一个 Class 对象`），这个对象就包含了完整的类的结构信息。我们可以通过这个对象看到类的结构。这个对象就像一面镜子，透过这个镜子看到类的结构，所以，我们形象的称之为： 反射。
 
-<img src="./java/image-20210407141402649.png" alt="image-20210407141402649" style="zoom:67%;" />
+<img src="./java/image-20210407141402649.png" alt="image-20210407141402649" style="zoom:60%;" />
 
 Java 反射机制提供的功能：
 
@@ -18152,7 +18151,7 @@ Java 反射机制提供的功能：
 
 - Class 类是 Reflection 的根源，针对任何你想动态加载、运行的类，都需要先获得相应的 Class 对象。
 
-  <img src="./java/image-20210407154647357.png" alt="image-20210407154647357" style="zoom:67%;" />
+  <img src="./java/image-20210407154647357.png" alt="image-20210407154647357" style="zoom: 60%;" />
 
 Class 类的常用方法：
 
@@ -18316,16 +18315,13 @@ public class ReflectionTest {
       /*
       关于java.lang.Class类的理解
       1.类的加载过程：
-      程序经过javac.exe命令以后，会生成一个或多个字节码文件(.class结尾)。
-      接着我们使用java.exe命令对某个字节码文件进行解释运行。相当于将某个字节码文件
-      加载到内存中。这个过程就称为类的加载。加载到内存中的类，我们称为运行时类，此
-      运行时类，就作为Class的一个实例。
-      (万事万物皆对象：一方面，通过对象.xxx的方式调用方法、属性等；另一方面，在反射机制中，类本身也是Class的对象)
-  												·																																									
+      程序经过javac.exe命令以后，会生成一个或多个字节码文件(.class结尾)。接着我们使用java.exe命令对某个字节码文件进行解释运行。相当于将某个字节码文件
+      加载到内存中。这个过程就称为类的加载。加载到内存中的类，我们称为运行时类，此运行时类，就作为Class的一个实例。
+      （万事万物皆对象：一方面，通过对象.xxx的方式调用方法、属性等；另一方面，在反射机制中，类本身也是Class的对象）
+  
       2.换句话说，Class的实例就对应着一个运行时类。
   
-      3.加载到内存中的运行时类，会缓存一定的时间。在此时间之内，我们可以通过不同的方式
-      来获取此运行时类。
+      3.加载到内存中的运行时类，会缓存一定的时间。在此时间之内，我们可以通过不同的方式来获取此运行时类。
        */
   
       /*
@@ -18411,7 +18407,7 @@ public class ReflectionTest {
 
 <img src="./java/image-20210407161703502.png" alt="image-20210407161703502" style="zoom: 50%;" />
 
-- `加载`：将 class 文件字节码内容加载到内存中，并将这些静态数据转换成方法区的运行时数据结构，然后生成一个代表这个类的`java.lang.Class`对象，作为方法区中类数据的访问入口（即引用地址）。所有需要访问和使用类数据的地方，只能通过这个 Class 对象。这个加载的过程需要类加载器参与。
+- `加载`：将 class 文件字节码内容加载到内存中，并将这些静态数据转换成方法区的运行时数据结构，然后生成一个代表这个类的`java.lang.Class`对象，作为方法区中类数据的访问入口（即引用地址）。所有需要访问和使用类数据的地方，只能通过这个 Class 对象。这个加载的过程需要**类加载器**参与。
 
 - `链接`：将 Java 类的二进制代码合并到 JVM 的运行状态之中的过程。
 
@@ -19324,7 +19320,7 @@ Java 动态代理相关的 API：
 
   - 提供用于创建动态代理类和动态代理对象的静态方法：
 
-    <img src="./java/image-20210409113606076.png" alt="image-20210409113606076" style="zoom:67%;" />
+    <img src="./java/image-20210409113606076.png" alt="image-20210409113606076" style="zoom:55%;" />
 
     - `static Class<?> getProxyClass(ClassLoader loader, Class<?>... interfaces)`：创建一个动态代理类所对应的Class对象
     - `static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)`：直接创建一个动态代理对象
@@ -19333,7 +19329,7 @@ Java 动态代理相关的 API：
 
   - 创建一个实现接口 InvocationHandler 的类，它必须实现`invoke()`，以完成代理的具体操作：
 
-    <img src="./java/image-20210409131314915.png" alt="image-20210409131314915" style="zoom:67%;" />
+    <img src="./java/image-20210409131314915.png" alt="image-20210409131314915" style="zoom:55%;" />
 
   - 创建被代理的类以及接口：
 
@@ -19491,9 +19487,9 @@ public class ProxyTest {
 
 - 改进前：
 
-  <img src="./java/image-20210409145506270.png" alt="image-20210409145506270" style="zoom:67%;" />
+  <img src="./java/image-20210409145506270.png" alt="image-20210409145506270" style="zoom: 50%;" />
 
-  <img src="./java/image-20210409145742238.png" alt="image-20210409145742238" style="zoom: 67%;" />
+  <img src="./java/image-20210409145742238.png" alt="image-20210409145742238" style="zoom: 50%;" />
 
 - 改进后的说明：代码段 1、代码段 2、代码段 3 和深色代码段分离开了，但代码段 1、2、3 又和一个特定的方法 A 耦合了！最理想的效果是：代码块 1、2、3 既可以执行方法 A ，又无须在程序中以硬编码的方式直接调用深色代码的方法。
 
@@ -19647,11 +19643,11 @@ Lambda 表达式：在 Java 8 语言中引入的一种新的语法元素和操�
 
 语法格式：
 
-<img src="./java/image-20210409215450100.png" alt="image-20210409215450100" style="zoom:67%;" />
+<img src="./java/image-20210409215450100.png" alt="image-20210409215450100" style="zoom: 55%;" />
 
 `类型推断`：上述 Lambda 表达式中的参数类型都是由编译器推断得出的。Lambda 表达式中无需指定类型，程序依然可以编译，这是因为 javac 根据程序的上下文，在后台推断出了参数的类型。Lambda 表达式的类型依赖于上下文环境，是由编译器推断出来的。这就是所谓的 类型推断。
 
-<img src="./java/image-20210409215935816.png" alt="image-20210409215935816" style="zoom:67%;" />
+<img src="./java/image-20210409215935816.png" alt="image-20210409215935816" style="zoom: 50%;" />
 
 ```java
 public class LambdaTest {
@@ -19852,23 +19848,23 @@ public class LambdaTest {
 
 - 函数式接口中不使用泛型：
 
-  <img src="./java/image-20210410173951736.png" alt="image-20210410173951736" style="zoom:67%;" />
+  <img src="./java/image-20210410173951736.png" alt="image-20210410173951736" style="zoom:55%;" />
 
 - 函数式接口中使用泛型：
 
-  <img src="./java/image-20210410174041073.png" alt="image-20210410174041073" style="zoom:67%;" />
+  <img src="./java/image-20210410174041073.png" alt="image-20210410174041073" style="zoom:55%;" />
 
 `作为参数传递 Lambda 表达式`：
 
-<img src="./java/image-20210410174532960.png" alt="image-20210410174532960" style="zoom:67%;" />
+<img src="./java/image-20210410174532960.png" alt="image-20210410174532960" style="zoom:55%;" />
 
 Java 内置四大核心函数式接口：
 
-<img src="./java/image-20210410193809887.png" alt="image-20210410193809887" style="zoom:67%;" />
+<img src="./java/image-20210410193809887.png" alt="image-20210410193809887" style="zoom: 55%;" />
 
 其他接口：
 
-<img src="./java/image-20210410193935197.png" alt="image-20210410193935197" style="zoom:67%;" />
+<img src="./java/image-20210410193935197.png" alt="image-20210410193935197" style="zoom:55%;" />
 
 实例：
 
@@ -19947,14 +19943,14 @@ public class LambdaTest {
 
 方法引用有如下三种主要使用情况：
 
-- **`对象 :: 实例方法名`**
-- **`类 :: 静态方法名`**
-- **`类 :: 实例方法`**
+- **`对象::实例方法名`**
+- **`类::静态方法名`**
+- **`类::实例方法`**
 
 要求：
 
 - 针对情况一和情况二：**实现接口的抽象方法的参数列表和返回值类型，必须与方法引用的方法的参数列表和返回值类型保持一致！**
-- 针对情况三：**`ClassName :: methodName`**，当函数式接口方法的第一个参数是方法引用的方法的调用者，并且第二个参数是方法引用的方法的参数（或无参数/返回值类型）时使用。
+- 针对情况三：**`ClassName::methodName`**，当函数式接口方法的第一个参数是方法引用的方法的调用者，并且第二个参数是方法引用的方法的参数（或无参数/返回值类型）时使用。
 
 实例：
 
@@ -20062,22 +20058,20 @@ public class Employee {
  *
  * 1.使用情境：当要传递给Lambda体的操作，已经有实现的方法了，可以使用方法引用！
  *
- * 2.方法引用，本质上就是Lambda表达式，而Lambda表达式作为函数式接口的实例。所以
- *   方法引用，也是函数式接口的实例。
+ * 2.方法引用，本质上就是Lambda表达式，而Lambda表达式作为函数式接口的实例。所以方法引用，也是函数式接口的实例。
  *
- * 3. 使用格式：  类(或对象) :: 方法名
+ * 3. 使用格式：  类(或对象)::方法名
  *
  * 4. 具体分为如下的三种情况：
- *    情况1     对象 :: 非静态方法
- *    情况2     类 :: 静态方法
+ *    情况1     对象::非静态方法
+ *    情况2     类::静态方法
  *
- *    情况3     类 :: 非静态方法
+ *    情况3     类::非静态方法
  *
- * 5. 方法引用使用的要求：要求接口中的抽象方法的形参列表和返回值类型与方法引用的方法的
- *    形参列表和返回值类型相同！（针对于情况1和情况2）
+ * 5. 方法引用使用的要求：要求接口中的抽象方法的形参列表和返回值类型与方法引用的方法的形参列表和返回值类型相同！（针对于情况1和情况2）
  */
 public class MethodRefTest {
-    // 情况一：对象 :: 实例方法
+    // 情况一：对象::实例方法
     // Consumer中的void accept(T t)
     // PrintStream中的void println(T t)
     @Test
@@ -20109,7 +20103,7 @@ public class MethodRefTest {
         System.out.println(sup2.get());
     }
 
-    // 情况二：类 :: 静态方法
+    // 情况二：类::静态方法
     // Comparator中的int compare(T t1,T t2)
     // Integer中的int compare(T t1,T t2)
     @Test
@@ -20145,7 +20139,7 @@ public class MethodRefTest {
         System.out.println(func2.apply(12.6));
     }
 
-    // 情况三：类 :: 实例方法  (有难度)
+    // 情况三：类::实例方法  (有难度)
     // Comparator中的int comapre(T t1,T t2)
     // String中的int t1.compareTo(t2)
     @Test
@@ -20216,7 +20210,7 @@ public class MethodRefTest {
 
 ### 构造器引用
 
-格式：**`ClassName :: new`**
+格式：**`ClassName::new`**
 
 与函数式接口相结合，自动与函数式接口中方法兼容。可以把构造器引用赋值给定义的方法，**要求构造器参数列表要与接口中抽象方法的参数列表一致，且方法的返回值即为构造器对应类的对象。**
 
@@ -20313,7 +20307,7 @@ public class ConstructorRefTest {
 
 ### 数组引用
 
-格式：**`type[] :: new`**
+格式：**`type[]::new`**
 
 可以把数组看做是一个特殊的类，则写法与构造器引用一致。
 
@@ -20520,15 +20514,15 @@ Stream 操作的三个步骤：
 
 - 操作 1 -` 筛选与切片`：
 
-  <img src="./java/image-20210411190429319.png" alt="image-20210411190429319" style="zoom:67%;" />
+  <img src="./java/image-20210411190429319.png" alt="image-20210411190429319" style="zoom:55%;" />
 
 - 操作 2 - `映射`：
 
-  <img src="./java/image-20210411190552117.png" alt="image-20210411190552117" style="zoom: 67%;" />
+  <img src="./java/image-20210411190552117.png" alt="image-20210411190552117" style="zoom: 55%;" />
 
 - 操作 3 - `排序`：
 
-  <img src="./java/image-20210411190808235.png" alt="image-20210411190808235" style="zoom:67%;" />
+  <img src="./java/image-20210411190808235.png" alt="image-20210411190808235" style="zoom: 55%;" />
 
 - 实例：
 
