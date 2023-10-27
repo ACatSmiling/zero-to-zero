@@ -1935,23 +1935,23 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### GEO
 
-// TODO
+`// TODO`
 
 #### HyperLogLog
 
-// TODO
+`// TODO`
 
 #### Bitmap
 
-// TODO
+`// TODO`
 
 #### Bitfield
 
-// TODO
+`// TODO`
 
 #### Stream
 
-// TODO
+`// TODO`
 
 ## Redis 持久化（Persistence）
 
@@ -2139,7 +2139,7 @@ root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb
 - **可以按照业务定时备份。**
 - **适合大规模的数据恢复。**
 - **对数据完整性和一致性要求不高。**
-- **RDB 文件再内存中的加载速度要比 AOF 快很多。**
+- **RDB 文件在内存中的加载速度要比 AOF 快很多。**
 
 #### 劣势
 
@@ -2156,7 +2156,7 @@ root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb
 总结：
 
 - **RDB 在一定间隔时间做一次备份，如果在此期间 Redis 服务意外停止，就会丢失从当前至最近一次快照期间的数据。**
-- **内存数据的全量同步，如果数据量太大，会导致 I/O严重，影响服务器性能。**
+- **内存数据的全量同步，如果数据量太大，会导致 I/O 严重，影响服务器性能。**
 - **RDB 依赖于主进程的 fork()，在更大的数据集中，这可能会导致服务请求的瞬间延迟。**
 - **fork() 的时候，内存中的数据被克隆了一份，大致 2 倍的膨胀性，也需要考虑硬件上的需求。**
 
@@ -2242,7 +2242,7 @@ Since Redis 7.0.0, Redis uses a multi part AOF mechanism. That is, the original 
 - ① Client 作为命令的来源，会有多个源头以及源源不断的请求命令。
 - ② 在这些命令到达 Redis Server 以后，并不是直接写入 AOF 文件，会将其这些命令先放入`AOF 缓存区`中进行保存。这里的 AOF 缓存区，实际上是内存中的一片区域，存在的目的是当这些命令达到一定量以后再写入磁盘，避免频繁的磁盘 I/O 操作。
 - ③ AOF 缓存会根据AOF缓存区`同步文件的三种写回策略`，将命令写入磁盘上的 AOF 文件。
-- ④ 随着写入 AOF 文件内容的增加，为避免文件膨胀，会根据规则进行命令的合并，又称`AOF重写`，从而起到 AOF 文件压缩的目的。
+- ④ 随着写入 AOF 文件内容的增加，为避免文件膨胀，会根据规则进行命令的合并，又称`AOF 重写`，从而起到 AOF 文件压缩的目的。
 - ⑤ 当 Redis Server 服务器重启的时候，会从 AOF 文件载入数据。
 
 #### 写回策略
@@ -2265,7 +2265,7 @@ The suggested (and default) policy is to `fsync` every second. It is both fast a
 
 | 配置项   | 写回时机           | 优点                     | 缺点                             |
 | -------- | ------------------ | ------------------------ | -------------------------------- |
-| always   | 同步写回           | 可靠性高，数据基本不丢失 | 每个写命令都要罗盘，性能影响较大 |
+| always   | 同步写回           | 可靠性高，数据基本不丢失 | 每个写命令都要落盘，性能影响较大 |
 | everysec | 每秒写回           | 性能适中                 | 宕机时丢失 1 秒内的数据          |
 | no       | 操作系统控制的写回 | 性能好                   | 宕机时丢失数据较多               |
 
@@ -2281,7 +2281,7 @@ Since Redis 7.0.0, when an AOF rewrite is scheduled, the Redis parent process op
 
 由于 AOF 持久化是 Redis 不断将写命令记录到 AOF 文件中，随着 Redis 不断的进行，AOF 的文件会越来越大，文件越大，占用服务器内存越大以及 AOF 恢复要求的时间越长。
 
-为了解决这个问题，Redis 新增了`重写机制`，当 AOF 文件的大小超过所设定的峰值时，Redis就会自动启动 AOF 文件的内容压缩，只保留可以恢复数据的最小指令集，或者也可以手动使用命令 bgrewriteaof 来重写。
+为了解决这个问题，Redis 新增了`重写机制`，当 AOF 文件的大小超过所设定的峰值时，Redis 就会自动启动 AOF 文件的内容压缩，只保留可以恢复数据的最小指令集，或者也可以手动使用命令 bgrewriteaof 来重写。
 
 ##### 触发条件
 
@@ -2431,7 +2431,7 @@ AOF /data/appendonlydir/appendonly.aof.1.incr.aof is valid
 ```
 
 - redis-check-aof 命令只修复 incr 增量文件，--fix 参数也必须添加。
-- --fix 参数不加的时候，可以查看 AOF 文件异常的位置，在使用 redis-check-aof 命令修复之前，可以尝试手动修复。以防 AOF 文件损坏的位置在文件开头，redis-check-aof 命令可能会将损坏的位置到文件末尾的内容全部删除，导致大量数据丢失。
+- --fix 参数不加的时候，可以查看 AOF 文件异常的位置，在使用 redis-check-aof 命令修复之前，可以尝试手动修复。**以防 AOF 文件损坏的位置在文件开头，redis-check-aof 命令可能会将损坏的位置到文件末尾的内容全部删除，导致大量数据丢失。**
 
 修复完成后，重启 Redis 服务。
 
@@ -2724,7 +2724,7 @@ This time due to the syntax error the bad [`INCR`](https://redis.io/commands/inc
 
 ##### 全体连坐
 
-事务中的所有命令，如果存在一个命令语法错误，会导致编译失败，事务中的所有命令都不会执行。示例：
+**事务中的所有命令，如果存在一个命令语法错误，会导致编译失败，事务中的所有命令都不会执行**。示例：
 
 ```bash
 127.0.0.1:6379[2]> MULTI
@@ -2750,7 +2750,7 @@ QUEUED
 
 ##### 冤头债主
 
-事务中的所有命令，如果语法规则上都正确，不会导致编译失败，运行期间，如果某个命令出错，只会影响该命令，事务中的其他命令会正常执行。示例：
+**事务中的所有命令，如果语法规则上都正确，不会导致编译失败，运行期间，如果某个命令出错，只会影响该命令，事务中的其他命令会正常执行。**示例：
 
 ```bash
 127.0.0.1:6379[2]> MULTI
@@ -3778,7 +3778,7 @@ You can try it yourself via telnet. Connect to the Redis port while the server i
 
 As already said, replicas are able to automatically reconnect when the master-replica link goes down for some reason. If the master receives multiple concurrent replica synchronization requests, it performs a single background save in to serve all of them.
 
-- Master 会保存一个 Replication ID 和 offset，这两个数据标识了 Master 数据集的精确版本。
+- **Master 会保存一个`Replication ID`和`offset`，这两个数据标识了 Master 数据集的精确版本。**
 
 - 当 Slave 连接到 Master 时，会使用`PSYNC`命令，发送自身数据对应的 Replication ID 和 offset。
 
@@ -4017,4 +4017,1037 @@ OK
 ## Redis 集群（Cluster）
 
 官网：https://redis.io/docs/management/scaling/
+
+## Spring Boot 集成 Redis
+
+### Jedis
+
+官网：https://redis.io/docs/connect/clients/java/
+
+Github：https://github.com/redis/jedis
+
+Maven 引入依赖：
+
+```xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>4.3.1</version>
+</dependency>
+```
+
+JedisDemo.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/25 20:04
+ */
+@Slf4j
+public class JedisDemo {
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("192.168.2.100", 6379);
+
+        jedis.auth("123456");
+
+        log.info("redis connection status: {}", "连接成功");
+        log.info("redis ping value: {}", jedis.ping());
+
+        jedis.set("k1", "jedis");
+        log.info("k1 value: {}", jedis.get("k1"));
+    }
+}
+```
+
+### Lettuce
+
+官网：https://lettuce.io/
+
+Github：https://github.com/lettuce-io/lettuce-core
+
+Maven 引入依赖：
+
+```xml
+<dependency>
+    <groupId>io.lettuce</groupId>
+    <artifactId>lettuce-core</artifactId>
+    <version>6.2.1.RELEASE</version>
+</dependency>
+```
+
+LettuceDemo.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/25 20:16
+ */
+@Slf4j
+public class LettuceDemo {
+    public static void main(String[] args) {
+        // 使用构建器 RedisURI.Builder
+        RedisURI uri = RedisURI.Builder
+                .redis("192.168.2.100")
+                .withPort(6379)
+                .withAuthentication("default", "123456")
+                .build();
+
+        // 创建连接客户端
+        RedisClient client = RedisClient.create(uri);
+
+        StatefulRedisConnection conn = client.connect();
+
+        // 操作命令api
+        RedisCommands<String, String> commands = conn.sync();
+
+        // keys
+        List<String> list = commands.keys("*");
+        for (String s : list) {
+            log.info("key: {}", s);
+        }
+
+        // String
+        commands.set("k1", "1111");
+        String s1 = commands.get("k1");
+        log.info("String, s1: {}", s1);
+
+        // list
+        commands.lpush("myList2", "v1", "v2", "v3");
+        List<String> list2 = commands.lrange("myList2", 0, -1);
+        for (String s : list2) {
+            log.info("list s: {}", s);
+        }
+
+        // set
+        commands.sadd("mySet2", "v1", "v2", "v3");
+        Set<String> set = commands.smembers("mySet2");
+        for (String s : set) {
+            log.info("set s: {}", s);
+        }
+
+        // hash
+        Map<String, String> map = new HashMap<>();
+        map.put("k1", "138xxxxxxxx");
+        map.put("k2", "atguigu");
+        map.put("k3", "zzyybs@126.com");
+
+        commands.hmset("myHash2", map);
+        Map<String, String> retMap = commands.hgetall("myHash2");
+        for (String k : retMap.keySet()) {
+            log.info("hash, key: {}, value: {}", k, retMap.get(k));
+        }
+
+        // zset
+        commands.zadd("myZset2", 100.0, "s1", 110.0, "s2", 90.0, "s3");
+        List<String> list3 = commands.zrange("myZset2", 0, 10);
+        for (String s : list3) {
+            log.info("zset, s: {}", s);
+        }
+
+        // sort
+        SortArgs sortArgs = new SortArgs();
+        sortArgs.alpha();
+        sortArgs.desc();
+
+        List<String> list4 = commands.sort("myList2", sortArgs);
+        for (String s : list4) {
+            log.info("sort, s: {}", s);
+        }
+
+        // 关闭
+        conn.close();
+        client.shutdown();
+    }
+}
+```
+
+### Jedis VS Lettuce
+
+Jedis 和 Lettuce 都是 Redis 的客户端，二者都可以连接 Redis 服务器。Spring Boot 2.0 之后，默认使用 Lettuce 连接 Redis 服务器。
+
+- 使用 Jedis 连接 Redis 服务器的时候，每个线程都会拿自己创建的 Jedis 实例去连接 Redis 服务器，如果有很多线程，不仅开销大需要反复的创建并关闭一个 Jedis 连接，而且也是线程不安全的，一个线程通过 Jedis 实例更改 Redis 服务器中的数据之后，会影响另一个线程。
+- 使用 Lettuce 连接 Redis 服务器，不会出现 Jedis 一样的情况。Lettuce 底层使用的是 Netty，当有很多线程都需要连接 Redis 服务器的时候，可以保证只创建一个 Lettuce 连接，使所有的线程共享这一个 Lettuce 连接，这样可以减少创建关闭一个 Lettuce 连接时候的开销。而且这种方式也是线程安全的，不会出现一个线程通过 Lettuce 更改 Redis 服务器中的数据之后影响另一个线程的情况。
+
+### RedisTemplate
+
+#### 连接单机
+
+Maven 添加 Redis 启动器：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+RedisConfig.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/25 21:30
+ * <p>
+ * Redis配置类
+ */
+@Configuration
+public class RedisConfig {
+    /**
+     * redis序列化的工具配置类，下面这个请一定开启配置
+     * 127.0.0.1:6379> keys *
+     * 1) "ord:102"  序列化过
+     * 2) "\xac\xed\x00\x05t\x00\aord:102"   野生，没有序列化过
+     * this.redisTemplate.opsForValue(); // 提供了操作string类型的所有方法
+     * this.redisTemplate.opsForList(); // 提供了操作list类型的所有方法
+     * this.redisTemplate.opsForSet(); // 提供了操作set的所有方法
+     * this.redisTemplate.opsForHash(); // 提供了操作hash表的所有方法
+     * this.redisTemplate.opsForZSet(); // 提供了操作zset的所有方法
+     *
+     * @param lettuceConnectionFactory
+     * @return
+     */
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+
+        // 设置key序列化方式String
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        // 设置value的序列化方式JSON，使用GenericJackson2JsonRedisSerializer替换默认序列化
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
+    }
+}
+```
+
+OrderController.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/25 22:00
+ */
+@Slf4j
+@RestController
+public class OrderController {
+    @Resource
+    private OrderService orderService;
+
+    @RequestMapping(value = "/order/add", method = RequestMethod.POST)
+    public void addOrder() {
+        orderService.addOrder();
+    }
+
+    @RequestMapping(value = "/order/{id}", method = RequestMethod.GET)
+    public String findUserById(@PathVariable Integer id) {
+        return orderService.getOrderById(id);
+    }
+}
+```
+
+OrderService.java：
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/25 22:01
+ */
+@Slf4j
+@Service
+public class OrderService {
+
+    public static final String ORDER_KEY = "order:";
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public void addOrder() {
+        int keyId = ThreadLocalRandom.current().nextInt(1000) + 1;
+        String orderNo = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(ORDER_KEY + keyId, "京东订单" + orderNo);
+        log.info("编号{}的订单流水生成：{}", keyId, orderNo);
+    }
+
+    public String getOrderById(Integer id) {
+        return (String) redisTemplate.opsForValue().get(ORDER_KEY + id);
+    }
+}
+```
+
+#### 连接集群
+
+`// TODO`
+
+## Redis 的单线程和多线程
+
+
+
+### Redis 的单线程指什么
+
+![image-20231025225715061](./redis/image-20231025225715061.png)
+
+
+
+Redis 的版本很多，不同版本的架构也是不同的，如果不限定版本问 Redis 是不是单线程，其实是不太严谨的。
+
+- 3.0 版本，最早版本，也就是口口相传的 Redis 是单线程。
+- 4.0 版本，严格意义来说也不是单线程，而是负责处理客户端请求的线程是单线程，但是开始加了点多线程的内容，比如异步删除等。
+- 2020 年 5 月发布的 6.0 版本，以及 2022 年发布的 7.0 版本，告别了大家印象中的单线程，而是采用一种全新的多线程来解决问题。
+
+**Redis 的`单线程`，主要是指 Redis 的`网络 I/O 和键值对读写`是由一个线程来完成的，Redis 在处理客户端的请求时，包括获取（Socket 读）、解析、执行、内容返回（socket 写）等，都由一个顺序串行的主线程处理，这就是所谓的 "单线程"。这也是 Redis 对外提供键值存储服务的主要流程。**
+
+<img src="./redis/image-20231025230522112.png" alt="image-20231025230522112" style="zoom:80%;" />
+
+但 Redis 的其他功能，比如持久化 RDB、AOF、异步删除、集群数据同步等等，其实是由额外的线程执行的。
+
+总的来说，Redis 命令的工作线程是单线程，但是，对于整个 Redis，其实是多线程的。
+
+### Redis 为什么那么快
+
+Redis 3.0 版本，虽然是单线程时代，但性能依旧很快的主要原因：
+
+- `基于内存操作`：Redis 的所有数据都存在内存中，因此所有的运算都是内存级别的，所以性能比较高。
+- `数据结构简单`：Redis 的数据结构是专门设计的，而这些简单的数据结构的查找和操作，其时间复杂度大多都是 O(1)，因此性能比较高。
+- `多路复用和非阻塞 I/O`：Redis 使用 I/O 多路复用功能来监听多个 Socket 连接客户端，这样就可以使用一个线程连接来处理多个请求，减少线程切换带来的开销，同时也避免了 I/O 阻塞操作。
+- `避免上下文切换`：Redis 是单线程模型，因此也就避免了不必要的上下文切换和多线程竞争，这就省去了多线程切换带来的时间和性能上的消耗，而且单线程不会导致死锁问题的发生。
+
+### Redis 为什么加入多线程特性
+
+> https://redis.io/docs/get-started/faq/：How can Redis use multiple CPUs or cores?
+
+It's not very frequent that CPU becomes your bottleneck with Redis, as usually Redis is either memory or network bound. For instance, when using pipelining a Redis instance running on an average Linux system can deliver 1 million requests per second, so if your application mainly uses O(N) or O(log(N)) commands, it is hardly going to use too much CPU.
+
+However, to maximize CPU usage you can start multiple instances of Redis in the same box and treat them as different servers. At some point a single box may not be enough anyway, so if you want to use multiple CPUs you can start thinking of some way to shard earlier.
+
+You can find more information about using multiple Redis instances in the [Partitioning page](https://redis.io/topics/partitioning).
+
+As of version 4.0, Redis has started implementing threaded actions. For now this is limited to deleting objects in the background and blocking commands implemented via Redis modules. For subsequent releases, the plan is to make Redis more and more threaded.
+
+虽然 Redis 使用单线程性能就已经很快，而且对于 Redis 系统来说，**主要的性能瓶颈是内存或者网络带宽而并非 CPU**。但是，随着硬件系统的发展，如果 Redis 一直使用单线程，也是对多核操作系统性能上的浪费。同时，Redis 的单线程，也会存在一些操作上的弊端。
+
+比如，正常情况下使用 del 指令可以很快的删除数据，但是如果有一个非常大的对象需要删除（例如包含了成千上万个元素的 hash 集合），那么 del 指令就会造成 Redis 主线程卡顿。这就是 Redis 3.0 单线程时代最经典的故障，`大 key 删除的问题`，这种问题，对于高并发操作，是不可接受的。
+
+为了解决删除数据效率比较低的问题，Redis 4.0 版本新增了多线程的模块。使用`UNLINK <key name>`，`FLUSHDB ASYNC`和`FLUSHALL ASYNC`这种惰性删除的命令，可以有效的避免 Redis 卡顿的问题。惰性删除的本质，就是把某些耗时（主要时间复制度，占用主线程 CPU 时间片）较高的删除操作，从 Redis 主线程剥离让子线程来处理，因此极大地减少主线程阻塞时间，从而减少删除导致的性能和稳定性问题。
+
+>Redis 4.0 版本引入了多个线程来实现数据的异步惰性删除等功能，但是其处理读写请求的仍然只有一个线程，所以仍然算是狭义上的单线程。
+
+### Redis 6.0/7.0 的多线程特性和 I/O 多路复用入门篇
+
+<img src="./redis/1698248673871.jpg" alt="1698248673871" style="zoom:50%;" />
+
+从上节已知，对于 Redis 系统，主要的性能瓶颈是内存或者网络带宽而并非 CPU，而内存是可以根据需求自主增加的，因此，对 Redis 来说，影响因素最大的地方是`网络 I/O`。
+
+在 Redis 6.0/7.0 中，非常受关注的第一个新特性就是多线程。这是因为，Redis 一直被大家熟知的就是它的单线程架构，虽然有些命令操作可以用后台线程或子进程执行（比如数据删除、快照生成、AOF重写）。但是，从网络 I/O 处理到实际的读写命令处理，都是由单个线程完成的。
+
+随着网络硬件的性能提升，Redis 的性能瓶颈有时会出现在网络 I/O 的处理上，也就是说，**单个主线程处理网络请求的速度跟不上底层网络硬件的速度**。为了应对这个问题：**Redis 6.0/7.0 中，采用多个 I/O 线程来处理网络请求，提高网络请求处理的并行度。**
+
+需要注意的是，**`Redis 的多个 I/O 线程只是用来处理网络请求的，对于读写操作命令，Redis 仍然使用单线程来处理。`**这是因为，Redis 处理请求时，网络 I/O 处理经常是瓶颈，通过多个 I/O 线程并行处理网络操作，可以提升实例的整体处理性能。与此同时，继续使用单线程执行命令操作，就不用为了保证 Lua 脚本、事务的原子性等，去额外开发多线程互斥加锁机制了（不需要关心加锁操作处理），这样一来，Redis 线程模型实现就简单了。
+
+#### Unix 网络编程中的五种 I/O 模型
+
+参考：https://cloud.tencent.com/developer/article/1684951
+
+##### Blocking IO
+
+阻塞 I/O。
+
+##### Non-Blocking IO
+
+非阻塞 I/O。
+
+##### IO Multiplexing
+
+I/O 多路复用。
+
+##### Signal Driven IO
+
+信号驱动 I/O。
+
+##### Asynchronous IO
+
+异步 I/O。
+
+#### 主线程和 I/O 线程协作完成请求处理的过程
+
+![1698298941588](./redis/1698298941588.jpg)
+
+- **阶段一：服务器与客户端建立 Socket 连接，并分配处理线程。**
+  - 首先，主线程负责接收建立连接请求。当有客户端请求和实例建立 Socket 连接时，主线程会创建和客户端的连接，并把 Socket 放入到`全局等待队列`中。
+  - 然后，主线程通过`轮询方法`把 Socket 连接分配给 I/O 线程。
+- **阶段二：I/O 线程读取并解析请求。**
+  - 主线程一旦把 Socket 连接分配给 I/O 线程，就会`进入阻塞状态`，等待 I/O 线程完成客户端请求的读取和解析。此过程是有多个 I/O 线程在`并行处理`，所以，这个过程很快就可以完成。
+- **阶段三：主线程执行请求操作。**
+  - 等到 I/O 线程解析完请求，主线程还是以`单线程`的方式去执行这些命令操作。
+- **阶段四：I/O 线程回写 Socket 和主线程清空全局队列。**
+  - 当主线程执行完请求操作后，会把需要返回的结果写入`缓冲区`。然后，主线程会阻塞等待 I/O 线程，把这些结果回写到 Socket 中，并返回给客户端。
+  - 和 I/O 线程读取和解析请求一样，I/O 线程回写 Socket 时，也是有多个线程在并发执行，所以回写 Socket 的速度也很快。
+  - 等到 I/O 线程回写 Socket 完成，主线程会清空全局队列，并等待客户端的后续请求。
+
+#### 总结
+
+在 Redis 6.0 之前，I/O 的读和写本身是堵塞的，比如当 Socket 中有数据时，Redis 会通过调用先将数据从内核态空间拷贝到用户态空间，再交给 Redis 调用，而这个拷贝的过程就是阻塞的，当数据量越大时拷贝所需要的时间就越多，而这些操作都是基于单线程完成的。
+
+<img src="./redis/image-20231026144924275.png" alt="image-20231026144924275" style="zoom: 75%;" />
+
+从 Redis 6.0 开始，新增了多线程的功能来提高 I/O 的读写性能，它的主要实现思路是**将主线程的 I/O 读写任务拆分给一组独立的线程去执行**，这样就可以使多个 Socket 的读写并行化了，采用多路 I/O 复用技术可以让单个线程高效的处理多个连接请求（尽量减少网络 I/O 的时间消耗），将最耗时的 Socket 的读取和请求解析、回写结果单独外包出去，剩下的命令执行仍然由主线程串行执行并和内存的数据交互。
+
+<img src="./redis/image-20231026145135646.png" alt="image-20231026145135646" style="zoom:75%;" />
+
+### Redis 开启多线程机制
+
+如果在实际应用中，发现 Redis 实例的 CPU 开销不大但吞吐量却没有提升，此时，就可以考虑使用 Redis 7.0 的多线程机制，加速网络处理，进而提升实例的吞吐量。
+
+Redis 7.0 将所有数据放在内存中，内存的响应时长大约为 100 纳秒，对于小数据包，Redis 服务器可以处理 8W 到 10W 的 QPS，这也是 Redis 处理的极限了，对于 80% 的公司来说，单线程的 Redis已经足够使用了。
+
+在 Redis 6.0/7.0 后，`多线程机制默认是关闭的`，如果需要使用多线程功能，需要在 redis.conf 中完成两个设置：
+
+```conf
+################################ THREADED I/O #################################
+
+# Redis is mostly single threaded, however there are certain threaded
+# operations such as UNLINK, slow I/O accesses and other things that are
+# performed on side threads.
+#
+# Now it is also possible to handle Redis clients socket reads and writes
+# in different I/O threads. Since especially writing is so slow, normally
+# Redis users use pipelining in order to speed up the Redis performances per
+# core, and spawn multiple instances in order to scale more. Using I/O
+# threads it is possible to easily speedup two times Redis without resorting
+# to pipelining nor sharding of the instance.
+#
+# By default threading is disabled, we suggest enabling it only in machines
+# that have at least 4 or more cores, leaving at least one spare core.
+# Using more than 8 threads is unlikely to help much. We also recommend using
+# threaded I/O only if you actually have performance problems, with Redis
+# instances being able to use a quite big percentage of CPU time, otherwise
+# there is no point in using this feature.
+#
+# So for instance if you have a four cores boxes, try to use 2 or 3 I/O
+# threads, if you have a 8 cores, try to use 6 threads. In order to
+# enable I/O threads use the following configuration directive:
+#
+# io-threads 4
+#
+# Setting io-threads to 1 will just use the main thread as usual.
+# When I/O threads are enabled, we only use threads for writes, that is
+# to thread the write(2) syscall and transfer the client buffers to the
+# socket. However it is also possible to enable threading of reads and
+# protocol parsing using the following configuration directive, by setting
+# it to yes:
+#
+# io-threads-do-reads no
+#
+# Usually threading reads doesn't help much.
+#
+# NOTE 1: This configuration directive cannot be changed at runtime via
+# CONFIG SET. Also, this feature currently does not work when SSL is
+# enabled.
+#
+# NOTE 2: If you want to test the Redis speedup using redis-benchmark, make
+# sure you also run the benchmark itself in threaded mode, using the
+# --threads option to match the number of Redis threads, otherwise you'll not
+# be able to notice the improvements.
+```
+
+- 设置`io-threads-do-reads`配置项为 yes，表示启动多线程。
+- 设置`io-threads`配置线程个数。关于线程数的设置，官方的建议是：如果为 4 核 CPU，建议线程数设置为 2 或 3，如果为 8 核 CPU，建议线程数设置为 6，线程数一定要小于机器核数，线程数并不是越大越好。
+
+## Redis 的 BigKey
+
+### MoreKey 案例
+
+生成 100W 条 Redis 批量设置 key-value 的语句（key=kn，value=vn），写入到 /tmp 目录下的 redisTest.txt 文件中：
+
+```bash
+$ for((i=1;i<=100*10000;i++)); do echo "set k$i v$i" >> /tmp/redisTest.txt; done;
+
+# more命令查看文件
+$ more /tmp/redisTest.txt
+```
+
+通过管道 --pipe 命令，插入 100W 条数据到 Redis 中：
+
+```bash
+$ cat /tmp/redisTest.txt | redis-cli -h 127.0.0.1 -p 6379 -a 123456 --pipe
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+All data transferred. Waiting for the last reply...
+Last reply received from server.
+errors: 0, replies: 1000000
+```
+
+此时，Redis 中有了 100W 条数据，在大数据量的情况下，类似 KEYS * 这种命令，就不能使用，否则会导致 Redis 锁住以及 CPU 飙升，因此，**在生产环境下，KEYS * 命令就需要被禁用。**
+
+> KEYS * 这个命令，没有 offset、limit 参数，会一次性吐出所有满足条件的 key。由于 Redis 是单线程的，其所有的操作是原子的，而 KEYS * 的算法是遍历算法，复杂度是 O(n)，如果 Redis 中有千万级以上的 key，这个指令就会导致 Redis 服务卡顿，所有读写 Redis 的其它指令，都会被延后甚至导致超时报错，可能会引起缓存雪崩，严重者直接导致 Redis 服务宕机。
+
+#### 禁用危险命令
+
+针对`KEYS *，FLUSHDB，FLISUALL`这种命令，如果需要禁用，需要在 redis.conf 中设置 SECURITY 配置项：
+
+```conf
+# rename-command CONFIG ""
+  rename-command KEYS ""
+  rename-command FLUSHDB ""
+  rename-command FLUSHALL ""
+```
+
+> 注意：如果 RDB 或者 AOF 中包含了被禁用的命令，需要删除对应的文件，否则 Redis 服务无法重启。
+
+配置完成后，重启服务，可以发现，这几个命令都不能再使用：
+
+```bash
+127.0.0.1:6379> KEYS *
+(error) ERR unknown command 'KEYS', with args beginning with: '*' 
+127.0.0.1:6379> FLUSHDB
+(error) ERR unknown command 'FLUSHDB', with args beginning with: 
+127.0.0.1:6379> FLUSHALL
+(error) ERR unknown command 'FLUSHALL', with args beginning with:
+```
+
+#### SACN 命令
+
+官网：https://redis.io/commands/scan/
+
+语法：`SCAN cursor [MATCH pattern] [COUNT count] [TYPE type]`。
+
+- cursor：游标。
+- pattern：匹配的模式。
+- count：指定从数据集里返回多少元素，默认值为 10 。
+- SCAN 命令是一个基于游标的迭代器，每次被调用之后， 都会向用户返回一个新的游标， 用户在下次迭代时需要使用这个新游标作为 SCAN 命令的游标参数， 以此来延续之前的迭代过程。
+- 以 0 作为游标开始一次新的迭代，直到命令返回游标 0 完成一次遍历。不保证每次执行都返回某个给定数量的元素，支持模糊查询。一次返回的数量不可控，只能是大概率符合 count 参数。
+- SCAN 返回一个`包含两个元素的数组`， 第一个元素是用于进行下一次迭代的新游标， 第二个元素则是一个数组， 这个数组中包含了所有被迭代的元素。如果`新游标返回零表示迭代已结束`。
+- SCAN 的遍历顺序：非常特别，它不是从第一维数组的第 0 位一直遍历到末尾，而是采用了`高位进位加法`来遍历。之所以使用这样特殊的方式进行遍历，是考虑到字典的扩容和缩容时避免槽位的遍历重复和遗漏。
+
+示例：
+
+```bash
+127.0.0.1:6379> SCAN 0 MATCH k* COUNT 15
+1) "458752"
+2)  1) "k590789"
+    2) "k306539"
+    3) "k442853"
+    4) "k26839"
+    5) "k624610"
+    6) "k334043"
+    7) "k423460"
+    8) "k438367"
+    9) "k655242"
+   10) "k160311"
+   11) "k221023"
+   12) "k186702"
+   13) "k140258"
+   14) "k504924"
+   15) "k185203"
+127.0.0.1:6379> SCAN 458753 MATCH k* COUNT 15
+1) "884737"
+2)  1) "k131923"
+    2) "k874069"
+    3) "k844327"
+    4) "k886445"
+    5) "k584050"
+    6) "k941496"
+    7) "k666900"
+    8) "k969853"
+    9) "k206819"
+   10) "k549795"
+   11) "k386997"
+   12) "k603976"
+   13) "k842523"
+   14) "k592918"
+   15) "k237893"
+   16) "k544500"
+```
+
+>The `SCAN` command and the closely related commands [`SSCAN`](https://redis.io/commands/sscan), [`HSCAN`](https://redis.io/commands/hscan) and [`ZSCAN`](https://redis.io/commands/zscan) are used in order to incrementally iterate over a collection of elements.
+>
+>- `SCAN` iterates the set of keys in the currently selected Redis database.
+>- [`SSCAN`](https://redis.io/commands/sscan) iterates elements of Sets types.
+>- [`HSCAN`](https://redis.io/commands/hscan) iterates fields of Hash types and their associated values.
+>- [`ZSCAN`](https://redis.io/commands/zscan) iterates elements of Sorted Set types and their associated scores.
+
+### BigKey 案例
+
+首先，BigKey 指的不是 key 很大，而且 value 很大。[《阿里云 Redis 开发规范》](https://developer.aliyun.com/article/531067)中，定义了 BigKey 的标准：
+
+![image-20231026202233999](./redis/image-20231026202233999.png)
+
+- **对于 String 类型，其存储上限是 512 MB，但`大于等于 10 KB`，就属于 BigKey。**
+- **对于 List，Hash，Set 和 ZSet，`元素个数超过 5000`，就属于 BigKey。**
+
+**BigKey 的危害：**
+
+- 内存不均，集群迁移困难。
+- 删除困难，容易超时。
+- 网络传输时，可能造成流量阻塞。
+
+**BigKey 如何发现：**
+
+- `redis-cli --bigkeys`命令。
+
+  - 常规使用：`redis-cli -h 127.0.0.1 -p 6379 -a 123456 --bigkeys`。
+
+    ```bash
+    $ redis-cli -h 127.0.0.1 -p 6379 -a 123456 --bigkeys
+    Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+    
+    # Scanning the entire keyspace to find biggest keys as well as
+    # average sizes per key type.  You can use -i 0.1 to sleep 0.1 sec
+    # per 100 SCAN commands (not usually needed).
+    
+    [00.00%] Biggest string found so far '"k590789"' with 7 bytes
+    [63.81%] Biggest string found so far '"k1000000"' with 8 bytes
+    [100.00%] Sampled 1000000 keys so far
+    
+    -------- summary -------
+    
+    Sampled 1000000 keys in the keyspace!
+    Total key length in bytes is 6888896 (avg len 6.89)
+    
+    Biggest string found '"k1000000"' has 8 bytes
+    
+    0 lists with 0 items (00.00% of keys, avg size 0.00)
+    0 hashs with 0 fields (00.00% of keys, avg size 0.00)
+    1000000 strings with 6888896 bytes (100.00% of keys, avg size 6.89)
+    0 streams with 0 entries (00.00% of keys, avg size 0.00)
+    0 sets with 0 members (00.00% of keys, avg size 0.00)
+    0 zsets with 0 members (00.00% of keys, avg size 0.00)
+    ```
+
+  - 间隔扫描：`redis-cli -h 127.0.0.1 -p 6379 -a 123456 --bigkeys -i 0.1`，表示每隔 100 条 SCAN 指令就会休眠 0.1 s，ops 不会剧烈抬升，但是扫描的时间会变长，不常用。
+
+  - 优点：给出每种数据结构 Top 1 的 BigKey，同时给出每种数据类型的键值个数和平均大小。
+
+  - 缺点：无法做到查询大于 10 KB 的所有 key。
+
+- `MEMORY USAGE`命令。
+
+  - 格式：`MEMORY USAGE key [SAMPLES count]`。
+
+    ```bash
+    127.0.0.1:6379> MEMORY USAGE k1000000
+    (integer) 72
+    ```
+
+  - 给出一个 key 和它的值在 RAM 中所占用的字节数。对于嵌套数据类型，可以使用选项 SAMPLES，其中 count 表示抽样的元素个数，默认值为 5。当需要抽样所有元素时，使用 SAMPLE 0。
+
+
+**BigKey 如何删除：**
+
+- String 类型：
+
+  - 一般用`DEL`命令，如果过于庞大使用`UNLINK`命令。
+
+- List 类型：
+
+  - 使用`LTRIM `渐进式逐步删除，直到全部删除完成。
+
+  - 格式：`LTRIM key start stop`。
+
+  - [《阿里云 Redis 开发规范》](https://developer.aliyun.com/article/531067)示例代码：
+
+    ```java
+    /**
+     * List删除操作：LTRIM
+     *
+     * @param host
+     * @param port
+     * @param password
+     * @param bigListKey
+     */
+    public void delBigList(String host, int port, String password, String bigListKey) {
+        Jedis jedis = new Jedis(host, port);
+        if (password != null && !"".equals(password)) {
+            jedis.auth(password);
+        }
+        long llen = jedis.llen(bigListKey);
+        int counter = 0;
+        int left = 100;
+        while (counter < llen) {
+            // 每次从左侧截掉100个
+            jedis.ltrim(bigListKey, left, llen);
+            counter += left;
+        }
+        // 最终删除key
+        jedis.del(bigListKey);
+    }
+    ```
+
+- Hash 类型：
+
+  - 使用`HSCAN`命令每次获取少量 field-value，再使用`HDEL`命令删除每个 field。
+
+  - [《阿里云 Redis 开发规范》](https://developer.aliyun.com/article/531067)示例代码：
+
+    ```java
+    /**
+     * Hash删除操作：HSCAN + HDEL
+     *
+     * @param host
+     * @param port
+     * @param password
+     * @param bigHashKey
+     */
+    public void delBigHash(String host, int port, String password, String bigHashKey) {
+        Jedis jedis = new Jedis(host, port);
+        if (password != null && !"".equals(password)) {
+            jedis.auth(password);
+        }
+        ScanParams scanParams = new ScanParams().count(100);
+        String cursor = "0";
+        do {
+            ScanResult<Map.Entry<String, String>> scanResult = jedis.hscan(bigHashKey, cursor, scanParams);
+            List<Map.Entry<String, String>> entryList = scanResult.getResult();
+            if (entryList != null && !entryList.isEmpty()) {
+                for (Map.Entry<String, String> entry : entryList) {
+                    jedis.hdel(bigHashKey, entry.getKey());
+                }
+            }
+            cursor = scanResult.getCursor();
+        } while (!"0".equals(cursor));
+    
+        // 删除bigkey
+        jedis.del(bigHashKey);
+    }
+    ```
+
+- Set 类型：
+
+  - 使用`SSCAN`每次获取部分元素，再使用`SREM`命令删除每个元素。
+
+  - [《阿里云 Redis 开发规范》](https://developer.aliyun.com/article/531067)示例代码：
+
+    ```java
+    /**
+     * Set删除操作：SSCAN + SREM
+     *
+     * @param host
+     * @param port
+     * @param password
+     * @param bigSetKey
+     */
+    public void delBigSet(String host, int port, String password, String bigSetKey) {
+        Jedis jedis = new Jedis(host, port);
+        if (password != null && !"".equals(password)) {
+            jedis.auth(password);
+        }
+        ScanParams scanParams = new ScanParams().count(100);
+        String cursor = "0";
+        do {
+            ScanResult<String> scanResult = jedis.sscan(bigSetKey, cursor, scanParams);
+            List<String> memberList = scanResult.getResult();
+            if (memberList != null && !memberList.isEmpty()) {
+                for (String member : memberList) {
+                    jedis.srem(bigSetKey, member);
+                }
+            }
+            cursor = scanResult.getCursor();
+        } while (!"0".equals(cursor));
+    
+        // 删除bigkey
+        jedis.del(bigSetKey);
+    }
+    ```
+
+- ZSet 类型：
+
+  - 使用`ZSCAN`每次获取部分元素，再使用`ZREMRANGEBYRANK`命令删除每个元素。
+
+  - [《阿里云 Redis 开发规范》](https://developer.aliyun.com/article/531067)示例代码：
+
+    ```java
+    /**
+     * ZSet删除操作：ZSCAN + ZREMRANGEBYRANK
+     *
+     * @param host
+     * @param port
+     * @param password
+     * @param bigZsetKey
+     */
+    public void delBigZset(String host, int port, String password, String bigZsetKey) {
+        Jedis jedis = new Jedis(host, port);
+        if (password != null && !"".equals(password)) {
+            jedis.auth(password);
+        }
+        ScanParams scanParams = new ScanParams().count(100);
+        String cursor = "0";
+        do {
+            ScanResult<Tuple> scanResult = jedis.zscan(bigZsetKey, cursor, scanParams);
+            List<Tuple> tupleList = scanResult.getResult();
+            if (tupleList != null && !tupleList.isEmpty()) {
+                for (Tuple tuple : tupleList) {
+                    jedis.zrem(bigZsetKey, tuple.getElement());
+                }
+            }
+            cursor = scanResult.getCursor();
+        } while (!"0".equals(cursor));
+    
+        // 删除bigkey
+        jedis.del(bigZsetKey);
+    }
+    ```
+
+### BigKey 生产调优
+
+在 redis.conf 的 LAZY FREEING 篇，说明了 BigKey 生产调优该如何删除：
+
+```conf
+############################# LAZY FREEING ####################################
+
+# Redis has two primitives to delete keys. One is called DEL and is a blocking
+# deletion of the object. It means that the server stops processing new commands
+# in order to reclaim all the memory associated with an object in a synchronous
+# way. If the key deleted is associated with a small object, the time needed
+# in order to execute the DEL command is very small and comparable to most other
+# O(1) or O(log_N) commands in Redis. However if the key is associated with an
+# aggregated value containing millions of elements, the server can block for
+# a long time (even seconds) in order to complete the operation.
+#
+# For the above reasons Redis also offers non blocking deletion primitives
+# such as UNLINK (non blocking DEL) and the ASYNC option of FLUSHALL and
+# FLUSHDB commands, in order to reclaim memory in background. Those commands
+# are executed in constant time. Another thread will incrementally free the
+# object in the background as fast as possible.
+#
+# DEL, UNLINK and ASYNC option of FLUSHALL and FLUSHDB are user-controlled.
+# It's up to the design of the application to understand when it is a good
+# idea to use one or the other. However the Redis server sometimes has to
+# delete keys or flush the whole database as a side effect of other operations.
+# Specifically Redis deletes objects independently of a user call in the
+# following scenarios:
+#
+# 1) On eviction, because of the maxmemory and maxmemory policy configurations,
+#    in order to make room for new data, without going over the specified
+#    memory limit.
+# 2) Because of expire: when a key with an associated time to live (see the
+#    EXPIRE command) must be deleted from memory.
+# 3) Because of a side effect of a command that stores data on a key that may
+#    already exist. For example the RENAME command may delete the old key
+#    content when it is replaced with another one. Similarly SUNIONSTORE
+#    or SORT with STORE option may delete existing keys. The SET command
+#    itself removes any old content of the specified key in order to replace
+#    it with the specified string.
+# 4) During replication, when a replica performs a full resynchronization with
+#    its master, the content of the whole database is removed in order to
+#    load the RDB file just transferred.
+#
+# In all the above cases the default is to delete objects in a blocking way,
+# like if DEL was called. However you can configure each case specifically
+# in order to instead release memory in a non-blocking way like if UNLINK
+# was called, using the following configuration directives.
+
+lazyfree-lazy-eviction no
+lazyfree-lazy-expire no
+lazyfree-lazy-server-del no
+replica-lazy-flush no
+
+# It is also possible, for the case when to replace the user code DEL calls
+# with UNLINK calls is not easy, to modify the default behavior of the DEL
+# command to act exactly like UNLINK, using the following configuration
+# directive:
+
+lazyfree-lazy-user-del no
+
+# FLUSHDB, FLUSHALL, SCRIPT FLUSH and FUNCTION FLUSH support both asynchronous and synchronous
+# deletion, which can be controlled by passing the [SYNC|ASYNC] flags into the
+# commands. When neither flag is passed, this directive will be used to determine
+# if the data should be deleted asynchronously.
+
+lazyfree-lazy-user-flush no
+```
+
+- Redis 命令存在阻塞删除（`DEL`）和非阻塞删除（`UNLINK`、`FLUSHDB`和`FLUSHALL`的 async 参数）。
+- 对于 BigKey 的优化，修改`lazyfree-lazy-server-del no`、`replica-lazy-flush no`和`lazyfree-lazy-user-del no`三个参数为`yes`。
+
+## Redis 缓存与 MySQL 数据库双写一致性
+
+<img src="./redis/image-20231027162313040.png" alt="image-20231027162313040" style="zoom:67%;" />
+
+如上图所示，Java 程序、Redis 缓存和 MySQL 数据之间，存在三种查询情况：
+
+- 情况 1：Redis 缓存有数据，则直接获取并返回到 Java 程序。
+- 情况 2：Redis 缓存没有数据，MySQL 有数据，则从 MySQL 查询并返回 Java 程序。
+- 情况 3：Redis 缓存没有数据，MySQL 有数据，将 MySQL 查询的数据，回写 Redis，再返回 Java 程序，以达到 Redis 缓存与 MySQL 数据的双写一致性。
+
+在实际工作中，如果使用 Redis 缓存，就可能会涉及到与数据库的双存储双写，而只要是双写，就一定会有`数据一致性的问题`。
+
+这个时候，问题就会出现：
+
+- 双写一致性的问题，该如何解决？
+- 双写一致性处理时，是先动 Redis 缓存还是 MySQL 数据库？
+- 微服务查询 Redis 缓存没有数据而 MySQL 有数据，为保证数据双写一致性，回写 Redis 需要注意什么？双检加锁策略是什么？如何尽量避免缓存击穿？
+- 延时双删怎么实现，存在什么问题？
+- 双写做不到强一致性，如何保证最终一致性？
+
+### 双写一致性基本要求
+
+- 如果 Redis 缓存中有数据，需要和 MySQL 数据库中的值相同。
+- 如果 Redis 缓存中没有数据，需要 MySQL 数据库中的值是最新值，而且准备回写 Redis。
+
+### 缓存类型和回写策略
+
+缓存按照操作方式，可以分为两类：
+
+- `只读缓存`：Redis 中的数据只作为缓存使用，由脚本或其他方式输入，不存在和 MySQL 数据库的回写交互。
+- `读写缓存`：Redis 中的缓存，和 MySQL 数据库存在数据回写交互。其回写策略，有两种：
+  - `同步直写策略`
+    - 写 MySQL 数据库后，也同步写 Redis 缓存，**缓存和数据库中的数据严格保持一致，适用于及时性要求很高的场景。**
+  - `异步缓写策略`
+    - 正常业务运行中，MySQL 数据变动后，在业务上容许出现一定时间后才作用于 Redis 缓存的场景，比如仓库、物流系统。
+    - 如果出现异常情况，需要将失败的动作重新修补，有可能需要借助 Kafka 或者 RabbitMQ 等消息中间件，实现重试重写。
+
+### 双检加锁策略
+
+多线程的情况下，如果 Redis 缓存中没有数据，那么可能会出现多个线程同时查询 MySQL 数据库的这条数据的情况，这个时候，可以在第一个查询数据的请求上使用一个`互斥锁`来锁住它。其他的线程走到这一步拿不到锁就等着，等第一个线程查询到了数据，然后做 Redis 缓存。后面的线程进来发现已经有 Redis 缓存了，就直接走缓存，不再查询 MySQL 数据库。
+
+```java
+/**
+ * @author XiSun
+ * @since 2023/10/27 20:42
+ */
+@Slf4j
+@Service
+public class UserService {
+
+    public static final String CACHE_KEY_USER = "user:";
+
+    @Resource
+    private UserMapper userMapper;
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+    /**
+     * 此方法中，业务逻辑没有写错，对于小厂中厂(QPS ≤ 1000)可以使用，但是大厂不行
+     *
+     * @param id
+     * @return
+     */
+    public User findUserById(Integer id) {
+        User user = null;
+        String key = CACHE_KEY_USER + id;
+
+        // 1 先从Redis里面查询，如果有直接返回结果，如果没有再去查询MySQL
+        user = (User) redisTemplate.opsForValue().get(key);
+
+        if (user == null) {
+            // 2 Redis里面无数据，继续查询MySQL
+            user = userMapper.selectByPrimaryKey(id);
+            if (user == null) {
+                // 3.1 Redis和MySQL都无数据
+                // 可以具体细化，防止多次穿透，比如业务规定，记录下导致穿透的这个key回写Redis
+                return user;
+            } else {
+                // 3.2 MySQL有，将数据写回Redis，保证下一次的缓存命中率
+                redisTemplate.opsForValue().set(key, user);
+            }
+        }
+        return user;
+    }
+
+
+    /**
+     * 双检加锁策略：
+     * 加强补充，避免突然key失效了，打爆MySQL，做一下预防，尽量不出现击穿的情况
+     *
+     * @param id
+     * @return
+     */
+    public User findUserById2(Integer id) {
+        User user = null;
+        String key = CACHE_KEY_USER + id;
+
+        // 1 先从Redis里面查询，如果有直接返回结果，如果没有再去查询MySQL
+        // 第1次查询Redis，加锁前
+        user = (User) redisTemplate.opsForValue().get(key);
+
+        if (user == null) {
+            // 2 大厂用，对于高QPS的优化，进来就先加锁，保证一个请求操作，让外面的Redis等待一下，避免击穿MySQL
+            synchronized (UserService.class) {
+                // 第2次查询Redis，加锁后
+                user = (User) redisTemplate.opsForValue().get(key);
+                // 3 二次查Redis还是null，可以去查MySQL了(MySQL默认有数据)
+                if (user == null) {
+                    // 4 查询MySQL拿数据
+                    user = userMapper.selectByPrimaryKey(id);
+                    if (user == null) {
+                        return null;
+                    } else {
+                        // 5 MySQL里面有数据的，需要回写Redis，完成数据一致性的同步工作
+                        redisTemplate.opsForValue().setIfAbsent(key, user, 7L, TimeUnit.DAYS);
+                    }
+                }
+            }
+        }
+        return user;
+    }
+}
+```
+
+### 双写一致性的更新策略
+
+#### 可以停机的情况
+
+- 挂牌报错，凌晨升级，温馨提示，服务降级。
+- 单线程操作，涉及重量级的数据操作最好不要多线程。
+
+#### 不可以停机的情况
+
+##### 先更新数据库，再更新缓存
+
+**异常情况 1：**
+
+- 假设当前商品的库存是 100 个，需要更新为 80 个。
+- 首先，更新 MySQL 数据库，修改为 80 个成功。
+- 然后，更新 Redis 缓存，如果此时发生异常，导致 Redis 缓存更新失败。
+- 最终结果：MySQL 里面的库存是 80 个，Redis 缓存里面的库存还是 100 个。MySQL 数据库和 Redis 缓存里面数据不一致，后续查询操作会读到 Redis 里面的脏数据。
+
+**异常情况 2：**
+
+- 假设有 A、B 两个线程发起调用，进行查询操作。
+- 【正常逻辑】：
+  1. A update mysql 100；
+  2. A update redis 100；
+  3. B update mysql 80；
+  4. B update redis 80。
+- 【异常逻辑】：
+  1. A update mysql 100；
+  2. B update mysql 80；
+  3. B update redis 80；
+  4. A update redis 100。
+- 最终结果：MySQL 里面的库存是 80 个，Redis 缓存里面的库存还是 100 个。MySQL 数据库和 Redis 缓存里面数据不一致，后续查询操作会读到 Redis 里面的脏数据。
+
+##### 先更新缓存，再更新数据库
+
+> 业务上，一般把数据库操作作为保底操作，因此，这种方式不推荐。
+
+**异常情况：**
+
+- 假设有 A、B 两个线程发起调用，进行查询操作。
+- 【正常逻辑】：
+  1. A update redis 100；
+  2. A update mysql 100；
+  3. B update redis 80；
+  4. B update mysql 80。
+- 【异常逻辑】：
+  1. A update redis 100；
+  2. B update redis 80；
+  3. B update mysql 80；
+  4. A update mysql 100。
+
+- 最终结果：MySQL 里面的库存是 100 个，Redis 缓存里面的库存还是 80个。MySQL 数据库和 Redis 缓存里面数据不一致，后续查询操作会读到 Redis 里面的脏数据。
+
+##### 先删除缓存，再更新数据库
+
+**异常情况：**
+
+
+
+### 最终一致性
+
+
 
