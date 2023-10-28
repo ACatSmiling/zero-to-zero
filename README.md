@@ -1,4 +1,4 @@
-- [思维导图总结](./You fools, R ~ U ~ N!.emmx)
+[思维导图总结](R~U~N.emmx)
 
 - 网络篇
   - [网络协议](Network/network-protocol.md)
