@@ -4883,14 +4883,9 @@ lazyfree-lazy-user-flush no
 - 延时双删怎么实现，存在什么问题？
 - 双写做不到强一致性，如何保证最终一致性？
 
-### 双写一致性基本要求
-
-- 如果 Redis 缓存中有数据，需要和 MySQL 数据库中的值相同。
-- 如果 Redis 缓存中没有数据，需要 MySQL 数据库中的值是最新值，而且准备回写 Redis。
-
 ### 缓存类型和回写策略
 
-缓存按照操作方式，可以分为两类：
+Redis 缓存按照操作方式，可以分为两类：
 
 - `只读缓存`：Redis 中的数据只作为缓存使用，由脚本或其他方式输入，不存在和 MySQL 数据库的回写交互。
 - `读写缓存`：Redis 中的缓存，和 MySQL 数据库存在数据回写交互。其回写策略，有两种：
@@ -4899,6 +4894,13 @@ lazyfree-lazy-user-flush no
   - `异步缓写策略`
     - 正常业务运行中，MySQL 数据变动后，在业务上容许出现一定时间后才作用于 Redis 缓存的场景，比如仓库、物流系统。
     - 如果出现异常情况，需要将失败的动作重新修补，有可能需要借助 Kafka 或者 RabbitMQ 等消息中间件，实现重试重写。
+
+### 双写一致性基本要求
+
+- 如果 Redis 缓存中有数据，需要和 MySQL 数据库中的值相同。
+- 如果 Redis 缓存中没有数据，需要 MySQL 数据库中的值是最新值，而且准备回写 Redis。
+
+- - - 
 
 ### 双检加锁策略
 
@@ -5001,7 +5003,8 @@ public class UserService {
 
 **异常情况 1：**
 
-- 假设当前商品的库存是 100 个，需要更新为 80 个。
+![1698471973500](./redis/1698471973500.jpg)
+
 - 首先，更新 MySQL 数据库，修改为 80 个成功。
 - 然后，更新 Redis 缓存，如果此时发生异常，导致 Redis 缓存更新失败。
 - 最终结果：MySQL 里面的库存是 80 个，Redis 缓存里面的库存还是 100 个。MySQL 数据库和 Redis 缓存里面数据不一致，后续查询操作会读到 Redis 里面的脏数据。
@@ -5045,9 +5048,94 @@ public class UserService {
 
 **异常情况：**
 
+![1698477011637](./redis/1698477011637.jpg)
+
+- 首先，应用删除 Redis 缓存的数据，并成功。
+- 然后，应用更新 MySQL 数据库，但因为一些原因，导致耗时较久。
+- 由于删除 Redis 缓存和更新 MySQL 数据库这两个操作并不是原子的，如果此时有其他线程访问，发现 Redis 缓存没有数据，则去查询 MySQL 数据库，并将查询到的数据更新到 Redis 缓存中。
+- 当线程更新完 Redis 缓存，应用可能还没更新完 MySQL 数据库，最后，应用完成 MySQL 数据库更新时，仍然存在数据不一致性的问题。
+
+>从上面分析也可以看出，**如果先删除缓存，再更新数据库，有可能导致请求因缓存缺失而访问数据库，给数据库带来较大压力。**
+
+###### 延迟双删策略
+
+```java
+/**
+ * 延迟双删
+ *
+ * @param order
+ */
+public void deleteOrderData(Order order) {
+    // 1. 更新MySQL数据库之前，删除Redis缓存
+    redisTemplate.delete(ORDER_KEY + order.getId());
+
+    // 2. 更新MySQL数据库
+    orderDao.update(order);
+
+    // 延迟一段时间，等待其他业务可能出现的访问请求完成
+    try {
+        TimeUnit.SECONDS.sleep(2);
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+
+    // 3. 更新MySQL数据库之后，再删除Redis缓存
+    redisTemplate.delete(ORDER_KEY + order.getId());
+}
+```
+
+- 线程 A 休眠的时间，需要大于线程 B 读取数据再写入缓存的时间。
+- `休眠时间`可以按如下方法确定：在业务程序运行的时候，统计下线程读数据和写缓存的操作时间，并评估项目的读数据业务逻辑的耗时，以此为基础来进行估算。然后写数据的休眠时间则在读数据业务逻辑的耗时基础上加百毫秒即可。
+- 也可以新启动一个后台监控程序，比如 WatchDog 监控程序。
+
+延迟双删的策略，会导致吞吐量降低，可以做如下改进：
+
+```java
+/**
+ * 延迟双删，优化加大吞吐量
+ *
+ * @param order
+ */
+public void deleteOrderData2(Order order) {
+    // 1. 更新MySQL数据库之前，删除Redis缓存
+    redisTemplate.delete(ORDER_KEY + order.getId());
+
+    // 2. 更新MySQL数据库
+    orderDao.update(order);
+
+    // 延迟一段时间，等待其他业务可能出现的访问请求完成
+    try {
+        TimeUnit.SECONDS.sleep(2);
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+
+    CompletableFuture.supplyAsync(() -> {
+        // 3. 更新MySQL数据库之后，再删除Redis缓存。使用异步删除，加大吞吐量
+        return redisTemplate.delete(ORDER_KEY + order.getId());
+    }).whenComplete((t, u) -> {
+        System.out.println("t：" + t);
+        System.out.println("u：" + u);
+    }).exceptionally(e -> {
+        System.out.println("e：" + e.getMessage());
+        return 44L;
+    }).get();
+}
+```
+
+##### 先更新数据库，再删除缓存
+
+**异常情况：**
+
+- 首先，线程 A 更新 MySQL 数据库中的值。
+- 此时，线程 B 访问查询数据，读取到 Redis 缓存的值并返回。
+- 然后，线程 A 更新 Redis 缓存的值。
+- 最终造成：线程 A 还没有来得及删除 Redis 缓存的值，线程 B 就命中 Redis 缓存中的旧值
+
 
 
 ### 最终一致性
 
 
 
+## 布隆过滤器 BloomFilter
