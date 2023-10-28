@@ -1,53 +1,43 @@
-* 文档指南
-  * [快速部署](guide/quick-deploy.md)
-  * [使用技巧](guide/use-tips.md)
-* Java
-  * [Java](Java/java.md)
-* Python
-  * [Python 入门](Python/python.md)
-* Linux 和虚拟机
-  * [Linux 虚拟机安装方法](Linux/linux-virtualmachine.md)
-  * [Linux 常见的命令](Linux/linux-command.md)
-  * [Linux 常见异常的处理](Linux/linux-error.md)
-  * [Shell 脚本中的一些方法](Linux/shell.md)
-* Spring 全家桶
-  * [Spring 是什么](Spring/spring.md)
-  * [Spring Boot 入门](Spring/spring-boot.md)
-  * [Spring Webflux 的使用](Spring/spring-webflux.md)
-* 大数据
-  * [开始学习 Flink 吧](BigData/flink.md)
-  * [记录一次 Flink 与 Kafka 结合的项目经验](BigData/flink-kafka.md)
-  * [Hadoop 入门](BigData/hadoop.md)
-* 消息队列
-  * [Kafka 简介](MessageQueue/kafka-introduce.md)
-  * [Kafka 的核心配置参数](MessageQueue/kafka-properties.md)
-  * [Kafka 命令行工具](MessageQueue/kafka-command.md)
-  * [Kafka Producer 部分源码解析](MessageQueue/kafka-producer.md)
-  * [Kafka Consumer 消费消息的基本流程](MessageQueue/kafka-consumer.md)
-  * [Kafka Consumer 源码之 consumer 的两种订阅模式](MessageQueue/kafka-consumer-subscribeandassign.md)
-  * [Kafka Consumer 源码之 consumer 如何加入 consumer group](MessageQueue/kafka-consumer-group.md)
-  * [Kafka Consumer 源码之 consumer 如何拉取 offset 和数据](MessageQueue/kafka-consumer-offsetandfetcher.md)
-  * [Kafka Consumer 源码之 consumer 的 offset commit 机制和 partition 分配机制](MessageQueue/kafka-consumer-commitandpartition.md)
-  * [emqx 的安装和使用](MessageQueue/emqx.md)
-* Data Base
-  * [Java 如何操作数据库之 JDBC](DataBase/db-jdbc.md)
-* 时序数据
-  * [时序数据初识以及 InfluxDB 的探究](TimeSeriesData/time-series-data-first-meeting.md)
-* 常用工具
-  * [IDEA 的常规设置和快捷操作](Tools/idea.md)
-  * [优雅的使用 Git](Tools/git.md)
-  * [Maven 是什么](Tools/maven.md)
-  * [Maven 配置文件详解](Tools/maven-configfiles.md)
-  * [Maven 如何配置仓库以及依赖的下载过程](Tools/maven-repository.md)
-  * [Maven 怎么样构建模块项目](Tools/maven-modules.md)
-  * [Docker 是什么](Tools/docker.md)
-  * [如何优雅的关闭资源](Tools/shutdownhook.md)
-  * [hutool 工具类的使用](Tools/hutool.md)
-  * [ceph 的部署和搭建](Tools/ceph.md)
-  * [如何使用 Ice](Tools/ice.md)
-* 
+章北海轻轻推开父亲病房的门，病床上的父亲看上去比想象的要好，他靠着枕头半躺半坐着，窗外透进的夕阳的金辉给他脸上映上了些许血色，不像是已经走到生命尽头的人。章北海把军帽挂到门边的衣帽架上，走到父亲的床边坐下，他没有问病情，因为父亲会以一个军人的诚实回答他，而他不想听到那真实的回答。
 
+“爸，我加入太空军了。”
 
+父亲点点头，没有说话。他们父子之间的沉默要比语言传递更多的信息，从小到大，父亲是用沉默而不是语言教育他的，语言只是沉默的标点符号，正是这种父亲的沉默造就了今日的章北海。
 
+“就像您想的那样，他们要以海军为基础组建太空舰队，他们认为海军的作战模式和理论与太空战争最接近。”
 
+“这是对的。”父亲又点点头。
 
+“那我该怎么办？”
+
+爸，我终于问出这句话了，这句我整夜未眠才最后下决心问出来的话，刚才见到您时我又犹豫了，我知道这是最让您失望的一句话。记得研究生毕业后，我作为一名上尉见习官进入舰队时，您说：“北海啊，你还差得远，这么说是因为我现在还能轻易地理解你。能让我理解，说明你的思想还简单，还不够深，等到我看不透搞不懂你，而你能轻易理解我的那一天，你才算真正长大了。”后来，我照您说的长大了，您再也不可能那样轻易地理解自己的儿子了，说您丝毫没有对此感到悲哀我不信，但儿子确实正在成为您能寄予希望的那种人，那种虽不可爱，但在海军这个复杂艰险的领域有可能成功的人。现在，儿子问出了这句话，无疑标志着您对我这三十多年的培育，在最关键的时候失败了。可是爸，您还是告诉我吧，儿子还没有您想的那样强大，反正就这一次了，求求您告诉我吧。
+
+“要多想。”父亲说。
+
+好的，爸，您已经回答了我，说了很多很多的话，真的很多，这三个字的内容用三万字都说不完，请相信儿子，我用自己的心听到了这些话，但求您再说清楚一些吧，因为这太重要了。
+
+“想了以后呢？”章北海问，他的双手紧紧攥着床单，手心和额头都潮湿了。
+
+爸，原谅我，如果说前次发问让您失望，那这一次我变回孩子了。
+
+“北海，我只能告诉你那以前要多想。”父亲回答。
+
+爸，谢谢您，您说得很清楚了，我的心都听懂了。
+
+章北海松开攥着床单的手，握住父亲一只瘦削的手说：“爸，以后不出海了，我会常来看您。”
+
+父亲微笑着摇摇头，“我这儿没什么了，忙工作去吧。”
+
+他们又聊了一会儿，先是说了些家里的事，后来又谈到太空军的建设，父亲说了自己的很多想法，以及对章北海以后工作的建议。他们共同想象未来太空战舰的外形和体积，兴致盎然地讨论太空战的武器，甚至还谈到了马汉的制海权理论是否适用于太空战场……
+
+但他们之间的这些话语已经没有太多意义，只不过是章北海陪着父亲用语言散步而已，真正有意义的，是父子间心对心交流的那三句：
+
+“要多想。”
+
+“想了以后呢？”
+
+“北海，我只能告诉你那以前要多想。”
+
+章北海告别父亲后走出病房，透过门上的小窗又凝视了父亲一会儿。这时，夕阳的光缕已离开了父亲，把他遗弃在一片朦胧中，但他的目光穿透这朦胧，看着投在对面墙上的最后一小片余晖。虽然即将消逝，但这时的夕阳是最美的。这夕阳最后的光辉也曾照在怒海的万顷波涛上，那是几道穿透西方乱云的光柱，在黑云下的海面上投下几片巨大的金色光斑，像自天国飘落的花瓣，花瓣之外是黑云下暗夜般的世界，暴雨像众神的帷幔悬挂在天海之间，只有闪电不时照亮那巨浪吐出的千堆雪。处于一块金色光斑中的驱逐舰艰难地把舰首从深深的浪谷中抬起来，在一声轰然的巨响中，舰首撞穿一道浪墙，腾起的漫天浪沫贪婪地吸收着夕阳的金光，像一只大鹏展开了金光四射的巨翅……
+
+章北海戴上军帽，帽檐上有中国太空军的军徽。他在心里说：爸爸，我们想的一样，这是我的幸运，我不会带给您荣耀，但会让您安息。
