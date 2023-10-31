@@ -160,6 +160,8 @@ nohup /home/qirui/apps/jdk/jdk-17.0.8/bin/java -Duser.timezone=Asia/Shanghai -Df
 $ curl -H "Content-Type: application/json" -X POST -d '{"tenant": "2000000015", "startTime": "2022-06-01 00:00:00", "endTime": "2023-07-29 23:59:59"}' http://127.0.0.1:39091/jz_report/extract_data/risk_analysis_object
 ```
 
+>https://blog.csdn.net/u012340794/article/details/71440604
+
 ### 压缩和解压
 
 ```bash
