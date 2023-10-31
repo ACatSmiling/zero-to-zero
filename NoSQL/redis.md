@@ -4900,7 +4900,7 @@ Redis 缓存按照操作方式，可以分为两类：
 - 如果 Redis 缓存中有数据，需要和 MySQL 数据库中的值相同。
 - 如果 Redis 缓存中没有数据，需要 MySQL 数据库中的值是最新值，而且准备回写 Redis。
 
-- - - 
+- - -
 
 ### 双检加锁策略
 
@@ -5139,3 +5139,13 @@ public void deleteOrderData2(Order order) {
 
 
 ## 布隆过滤器 BloomFilter
+
+
+
+## 本文参考
+
+https://www.bilibili.com/video/BV13R4y1v7sP
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
