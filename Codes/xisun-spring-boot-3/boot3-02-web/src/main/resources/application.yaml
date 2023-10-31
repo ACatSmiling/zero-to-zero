@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  error:
+    path: /error # 默认错误的请求路径
+
+# spring.web：
+# 1.配置国际化的区域信息
+# 2.静态资源策略：开启、处理链、缓存等
+
+spring:
+  web:
+    resources:
+      add-mappings: true # 开启静态资源映射规则，默认true
+#      static-locations: # 自定义静态资源文件夹位置，默认是四个路径
+#        - classpath:/a/
+#        - classpath:/b/
+#        - classpath:/static/
+      cache:
+        period: 3600 # 缓存周期，默认0秒
+        cachecontrol:
+          max-age: 7200 # 缓存详细合并项控制，会覆盖period配置，浏览器第一次请求服务器，服务器告诉浏览器此资源缓存7200秒，7200秒以内的所有此资源访问不用发给服务器请求，7200秒以后发请求给服务器
+          cache-public: true # 共享缓存
+        use-last-modified: true # 开启使用资源last-modified时间，来对比服务器和浏览器的资源是否相同没有变化，相同返回304，默认true
+  mvc:
+    static-path-pattern: /static/** # 静态资源访问路径前缀，默认/**
+    webjars-path-pattern: /wj/** # 自定义webjars访问路径前缀，默认/webjars/**
+    pathmatch:
+      matching-strategy: ant_path_matcher # ant_path_matcher是老版策略，path_pattern_parser是新版策略
+    contentnegotiation:
+      favor-parameter: true # 开启基于请求参数的内容协商功能，默认此功能不开启
+      parameter-name: type # 默认参数名format
+      media-types:
+        yaml: text/yaml # 新增一种媒体类型
+    format:
+      date: yyyy-MM-dd # 自定义日期格式
+      time: HH:mm:ss
+    problemdetails:
+      enabled: true # 默认关闭
