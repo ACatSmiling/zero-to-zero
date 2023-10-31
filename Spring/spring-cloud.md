@@ -1,5 +1,9 @@
 *date: 2022-06-22*
 
+
+
+[TOC]
+
 ## 微服务架构概述
 
 >In short, the microservice architectural style is an approach to developing a single application as a suite of small services, each running in its own process and communicating with lightweight mechanisms, often an HTTP resource API.
@@ -21,7 +25,7 @@
 
 > **Spring Cloud = 分布式微服务架构的一站式解决方案，是多种微服务架构落地技术的集合体，俗称`微服务全家桶`。**
 
-Spring Cloud 集成的技术体系:
+Spring Cloud 集成的技术体系：
 
 ![image-20230209143225040](spring-cloud/image-20230209143225040.png)
 
@@ -183,19 +187,19 @@ UNLOCK TABLES;
 
 第一步，创建父工程 Project：
 
-![image-20230211103629067](spring-cloud/image-20230211103629067.png)
+<img src="spring-cloud/image-20230211103629067.png" alt="image-20230211103629067" style="zoom: 50%;" />
 
 第二步，字符编码设置：
 
-![image-20230211104257243](spring-cloud/image-20230211104257243.png)
+<img src="spring-cloud/image-20230211104257243.png" alt="image-20230211104257243" style="zoom: 50%;" />
 
 第三步，注解激活生效：
 
-![image-20230211105635044](spring-cloud/image-20230211105635044.png)
+<img src="spring-cloud/image-20230211105635044.png" alt="image-20230211105635044" style="zoom: 50%;" />
 
 第四步，选择 Java 版本：
 
-![image-20230211105738430](spring-cloud/image-20230211105738430.png)
+<img src="spring-cloud/image-20230211105738430.png" alt="image-20230211105738430" style="zoom: 50%;" />
 
 第五步，保留 pom.xml 文件，删除 src 目录。
 
@@ -326,11 +330,11 @@ UNLOCK TABLES;
 
 第七步，Maven 跳过单元测试：
 
-<img src="spring-cloud/image-20230211120444318.png" alt="image-20230211120444318" style="zoom: 40%;" />
+<img src="spring-cloud/image-20230211120444318.png" alt="image-20230211120444318" style="zoom: 50%;" />
 
 第八步，父工程创建完成后，执行`mvn:clean install`，将父工程发布到仓库以便子工程继承。
 
-<img src="spring-cloud/image-20230211122741471.png" alt="image-20230211122741471" style="zoom: 33%;" />
+<img src="spring-cloud/image-20230211122741471.png" alt="image-20230211122741471" style="zoom: 40%;" />
 
 ### 构建子模块
 
@@ -338,11 +342,11 @@ UNLOCK TABLES;
 
 新建 module：
 
-![image-20230211215416334](spring-cloud/image-20230211215416334.png)
+<img src="spring-cloud/image-20230211215416334.png" alt="image-20230211215416334" style="zoom: 50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230212001352248.png" alt="image-20230212001352248" style="zoom:40%;" />
+<img src="spring-cloud/image-20230212001352248.png" alt="image-20230212001352248" style="zoom:50%;" />
 
 pom.xml：
 
@@ -504,11 +508,11 @@ public class PaymentController {
 
 新建 module：
 
-![image-20230211220113861](spring-cloud/image-20230211220113861.png)
+<img src="spring-cloud/image-20230211220113861.png" alt="image-20230211220113861" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230212003320305.png" alt="image-20230212003320305" style="zoom:40%;" />
+<img src="spring-cloud/image-20230212003320305.png" alt="image-20230212003320305" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -655,11 +659,11 @@ public class OrderController {
 
 新建 module：
 
-![image-20230211235714100](spring-cloud/image-20230211235714100.png)
+<img src="spring-cloud/image-20230211235714100.png" alt="image-20230211235714100" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230212003506655.png" alt="image-20230212003506655" style="zoom:40%;" />
+<img src="spring-cloud/image-20230212003506655.png" alt="image-20230212003506655" style="zoom: 50%;" />
 
 - 删除支付服务提供者和支付服务消费者两个 module 中的实体类，并添加对公共模块的依赖，重新构建项目。
 
@@ -1814,6 +1818,8 @@ eureka:
 
 ## Zookeeper 服务注册与发现
 
+>略。
+
 ## Consul 服务注册与发现
 
 ### 简介
@@ -2302,7 +2308,7 @@ Github：https://github.com/Netflix/ribbon
 
 Ribbon 目前处于维护模式：
 
-<img src="spring-cloud/image-20230214205532510.png" alt="image-20230214205532510" style="zoom:40%;" />
+<img src="spring-cloud/image-20230214205532510.png" alt="image-20230214205532510" style="zoom: 50%;" />
 
 #### LB 负载均衡
 
@@ -2464,11 +2470,11 @@ Feign 是一个声明式 Web Service 客户端，使用 Feign 能让编写 Web S
 
 新建 module：
 
-![image-20230312010343337](spring-cloud/image-20230312010343337.png)
+<img src="spring-cloud/image-20230312010343337.png" alt="image-20230312010343337" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230315091209776.png" alt="image-20230315091209776" style="zoom:40%;" />
+<img src="spring-cloud/image-20230315091209776.png" alt="image-20230315091209776" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -2700,19 +2706,19 @@ public CommonResult<String> paymentFeignTimeOut() {
 
 启动 cloud-eureka-server-7001，cloud-eureka-server-7002，cloud-provider-payment-8001，cloud-provider-payment-8002 和 cloud-consumer-order-feign-80，浏览器访问 http://localhost/consumer/payment/feign/timeout，等待 61 秒后，访问异常，服务报错：
 
-![image-20230317232141569](spring-cloud/image-20230317232141569.png)
+<img src="spring-cloud/image-20230317232141569.png" alt="image-20230317232141569" style="zoom:50%;" />
 
-![image-20230317232225358](spring-cloud/image-20230317232225358.png)
+<img src="spring-cloud/image-20230317232225358.png" alt="image-20230317232225358" style="zoom:50%;" />
 
-![image-20230317232258970](spring-cloud/image-20230317232258970.png)
+<img src="spring-cloud/image-20230317232258970.png" alt="image-20230317232258970" style="zoom:50%;" />
 
 重新设置接口超时时间为 60 秒，重启服务，浏览器访问 http://localhost/consumer/payment/feign/timeout，等待 60 秒后，可以正常访问，后台不会报错。
 
 ![image-20230317231032645](spring-cloud/image-20230317231032645.png)
 
-![image-20230317231213577](spring-cloud/image-20230317231213577.png)
+<img src="spring-cloud/image-20230317231213577.png" alt="image-20230317231213577" style="zoom:50%;" />
 
-![image-20230317231104628](spring-cloud/image-20230317231104628.png)
+<img src="spring-cloud/image-20230317231104628.png" alt="image-20230317231104628" style="zoom:50%;" />
 
 查看 Feign 源码，可以看到，**Feign 设置访问默认连接超时时间为 10 秒，读超时时间为 60 秒**：
 
@@ -3310,7 +3316,7 @@ time: Fri Feb 17 16:09:53 CST 2023, 执行了自定义的全局过滤器: MyLogG
 
 Spring Cloud Netflix 项目进入维护模式：
 
-![image-20230217161604376](spring-cloud/image-20230217161604376.png)
+<img src="spring-cloud/image-20230217161604376.png" alt="image-20230217161604376" style="zoom:40%;" />
 
 >Placing a module in maintenance mode means that the Spring Cloud team will no longer be adding new features to the module. We will fix blocker bugs and security issues, and we will also consider and review small pull requests from the community.
 
@@ -4211,3 +4217,13 @@ D:\XiSunProjects>java -Dserver.port=8080 -Dcsp.sentinel.dashboard.server=localho
 
 
 ## Seata 处理分布式事务
+
+
+
+## 本文参考
+
+https://www.bilibili.com/video/BV18E411x7eT
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
