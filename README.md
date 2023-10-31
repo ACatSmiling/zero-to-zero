@@ -1,9 +1,10 @@
-<img src="README/image-20231029202411062.png" alt="image-20231029202411062" style="zoom: 67%;" />
+<img src="README/image-20231031141938516.png" alt="image-20231031141938516" style="zoom:67%;" />
 
 [思维导图总结](R~U~N.emmx)
 
 - 网络篇
-  - [网络协议](Network/network-protocol.md)
+  - [Network Protocol](Network/network-protocol.md)
+  - [Nginx](Network/nginx.md)
 - 前端篇
   - [Vue](Vue/vue.md)
 - 后端篇
@@ -22,13 +23,14 @@
   - [MySQL](RelationalDatabase/mysql.md)
   - [Redis](NoSQL/redis.md)
 - 运维篇
-  - [运维日常操作](Deploy/deploy.md)
+  - [deploy](Deploy/deploy.md)
   - [Docker](Tools/docker.md)
 - 微服务篇
   - [Spring Cloud](Spring/spring-cloud.md)
 - 大数据篇
   - [Hadoop](BigData/hadoop.md)
   - [Flink](BigData/flink.md)
+  - [kafka](MessageQueue/kafka.md)
 
 
 
