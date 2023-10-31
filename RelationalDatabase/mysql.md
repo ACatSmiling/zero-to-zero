@@ -10519,7 +10519,7 @@ Query OK, 1 row affected (0.01 sec)
 
 不论是存放普通的用户记录的数据页，还是存放目录项记录的数据页，现在都把它们存放到 B+Tree 这个数据结构中了，所以也称这些数据页为`节点`。从图中可以看出，实际的普通的用户记录其实都存放在 B+Tree 的最底层的节点上，这些节点也称为`叶子节点`，其余用来存放目录项记录的节点称为`非叶子节点`或者`内节点`，其中 B+Tree 最上边的那个节点也成为`根节点`。
 
-一个 B+Tree的节点其实可以分成好多层，规定最下边的那层，也就是存放普通的用户记录的那层为`第 0 层`，之后依次往上加。之前做了一个非常极端的假设：存放普通的用户记录的页最多存放 3 条记录，存放目录项记录的页最多存放 4 条记录。其实**真实环境中一个页存放的记录数量是非常大的**，假设所有存放用户记录的叶子节点代表的数据页可以存放 100 条普通的用户记录，所有存放目录项记录的内节点代表的数据页可以存放 1000 条目录项记录，那么：
+一个 B+Tree 的节点其实可以分成好多层，规定最下边的那层，也就是存放普通的用户记录的那层为`第 0 层`，之后依次往上加。之前做了一个非常极端的假设：存放普通的用户记录的页最多存放 3 条记录，存放目录项记录的页最多存放 4 条记录。其实**真实环境中一个页存放的记录数量是非常大的**，假设所有存放用户记录的叶子节点代表的数据页可以存放 100 条普通的用户记录，所有存放目录项记录的内节点代表的数据页可以存放 1000 条目录项记录，那么：
 
 - 如果 B+Tree只有 1 层，也就是只有 1 个用于存放普通的用户记录的节点，则最多能存放 100 条普通的用户记录。
 - 如果 B+Tree有 2 层，则最多能存放 1000 × 100 = 10,0000 条普通的用户记录。
@@ -10545,14 +10545,14 @@ Query OK, 1 row affected (0.01 sec)
   - 各个存放`普通的用户记录的页`，也是根据页中用户记录的主键大小顺序排成一个`双向链表`。
   - 存放`目录项记录的页`分为不同的层次，在同一层次中的页也是根据页中目录项记录的主键大小顺序排成一个`双向链表`。
 
-- B+Tree的`叶子节点`存储的是完整的用户记录。
+- B+Tree 的`叶子节点`存储的是完整的用户记录。
   - 所谓完整的用户记录，就是指这个记录中存储了所有列的值（包括隐藏列）。
 
-我们把具有这两种特性的 B+Tree称为`聚簇索引`，所有完整的普通的用户记录都存放在这个聚簇索引的叶子节点上。这种聚簇索引并不需要在 MySQL 语句中显式的使用 INDEX 语句去创建，InnoDB 存储引擎会`自动`的创建聚簇索引。
+我们把具有这两种特性的 B+Tree 称为`聚簇索引`，所有完整的普通的用户记录都存放在这个聚簇索引的叶子节点上。这种聚簇索引并不需要在 MySQL 语句中显式的使用 INDEX 语句去创建，InnoDB 存储引擎会`自动`的创建聚簇索引。
 
 **优点：**
 
-- `数据访问更快`，因为聚簇索引将索引和数据保存在同一个 B+Tree中，因此从聚簇索引中获取数据比非聚簇索引更快。
+- `数据访问更快`，因为聚簇索引将索引和数据保存在同一个 B+Tree 中，因此从聚簇索引中获取数据比非聚簇索引更快。
 - 聚簇索引对于主键的`排序查找`和`范围查找`速度非常快。
 - 按照聚簇索引排列顺序，查询显示一定范围数据的时候，由于数据都是紧密相连，数据库不用从多个数据块中提取数据，所以`节省了大量的 I/O 操作`。
 
@@ -10572,13 +10572,13 @@ Query OK, 1 row affected (0.01 sec)
 
 ##### 非聚簇索引（二级索引、辅助索引）
 
-上边介绍的聚簇索引，只能在搜索条件是`主键值`时才能发挥作用，因为 B+Tree中的数据都是按照主键进行排序的。那如果需要以其他的列作为搜索条件该怎么办呢？肯定不能是从头到尾沿着链表依次遍历用户记录一遍。
+上边介绍的聚簇索引，只能在搜索条件是`主键值`时才能发挥作用，因为 B+Tree 中的数据都是按照主键进行排序的。那如果需要以其他的列作为搜索条件该怎么办呢？肯定不能是从头到尾沿着链表依次遍历用户记录一遍。
 
-答案：可以多建几颗 B+Tree，不同的 B+Tree中的数据采用不同的排序规则。比方说用 c2 列的大小作为数据页、页中记录的排序规则，再建一颗 B+Tree，效果如下图所示：
+答案：**可以多建几颗 B+Tree，不同的 B+Tree 中的数据采用不同的排序规则。**比方说用 c2 列的大小作为数据页、页中记录的排序规则，再建一颗 B+Tree，效果如下图所示：
 
 <img src="mysql/image-20230608084834004.png" alt="image-20230608084834004" style="zoom:67%;" />
 
-这个 B+Tree与上边介绍的聚簇索引有几处不同：
+这个 B+Tree 与上边介绍的聚簇索引有几处不同：
 
 - 使用记录 c2 列的大小进行记录和页的排序，这包括三个方面的含义：
   - 页内的记录是按照 c2 列的大小顺序排成一个`单向链表`。
@@ -10587,7 +10587,7 @@ Query OK, 1 row affected (0.01 sec)
 - B+Tree的叶子节点存储的并不是完整的用户记录，而只是`c2 列 + 主键`这两个列的值。
 - 目录项记录中不再是`主键 + 页号`的搭配，而是`c2 列 + 页号`的搭配。
 
-所以，如果现在想通过 c2 列的值查找某些记录的话，就可以使用刚刚建好的这个 B+Tree了。以查找 c2 列的值为 4 的用用户记录为例，查找过程如下：
+所以，如果现在想通过 c2 列的值查找某些记录的话，就可以使用刚刚建好的这个 B+Tree 了。以查找 c2 列的值为 4 的用用户记录为例，查找过程如下：
 
 - 确定目录项记录。
   - 根据根页面，也就是页 44，可以快速定位到目录项记录所在的页为页 42（因为 2 < 4 < 9）。
@@ -10595,17 +10595,17 @@ Query OK, 1 row affected (0.01 sec)
   - 在页 42 中，可以快速定位到实际存储用户记录的页，但是由于 c2 列并没有唯一性约束，所以 c2 列的值为 4 的记录可能分布在多个数据页中，又因为 2 < 4 ≤ 4，所以确定实际存储用户记录的页在页 34 和页 35 中。
 - 在真实存储用户记录的页中定位到具体的记录。
   - 到页 34 和页 35 中定位到具体的记录。
-- 因为这个 B+Tree的叶子节点中的记录只存储了 c2 和 c1（即主键）这两个列，所以必须再根据主键值去聚簇索引中再查找一边完整的用户记录。
+- 因为这个 B+Tree 的叶子节点中的记录只存储了 c2 和 c1（即主键）这两个列，所以必须再根据主键值去聚簇索引中再查找一边完整的用户记录。
 
 **`概念：回表。`**
 
-根据这个以 c2 列大小排序的 B+Tree只能确定要查找记录的主键值，所以如果想根据 c2 列的值查找到完整的用户记录的话，仍然需要到聚簇索引中再查一遍，这个过程称为`回表`。也就是根据 c2 列的值查询一条完整的用户记录需要使用到 2 棵 B+Tree！
+根据这个以 c2 列大小排序的 B+Tree 只能确定要查找记录的主键值，所以如果想根据 c2 列的值查找到完整的用户记录的话，仍然需要到聚簇索引中再查一遍，这个过程称为`回表`。也就是根据 c2 列的值查询一条完整的用户记录需要使用到 2 棵 B+Tree！
 
 问题：为什么还需要一次回表操作呢？直接把完整的用户记录放到叶子节点不行吗？
 
-回答：如果把完整的用户记录放到叶子节点确实可以不用回表，但是这样会占据大量存储空间，相当于每建立一颗 B+Tree都需要把所有的用户记录再拷贝一份，有点太浪费存储空间。
+回答：如果把完整的用户记录放到叶子节点确实可以不用回表，但是这样会占据大量存储空间，相当于每建立一颗 B+Tree 都需要把所有的用户记录再拷贝一份，有点太浪费存储空间。
 
-因为这种按照`非主键列`建立的 B+Tree需要一次回表操作才可以定位到完整的用户记录，所以这种 B+Tree也被称为`二级索引`（Secondary Index），或者`辅助索引`。由于使用的是 c2 列的大小作为 B+Tree的排序规则，所以也称这个 B+Tree是为 c2 列建立的索引。
+因为这种按照`非主键列`建立的 B+Tree 需要一次回表操作才可以定位到完整的用户记录，所以这种 B+Tree 也被称为`二级索引`（Secondary Index），或者`辅助索引`。由于使用的是 c2 列的大小作为 B+Tree 的排序规则，所以也称这个 B+Tree 是为 c2 列建立的索引。
 
 **非聚簇索引的存在不影响数据在聚簇索引中的组织，所以一张表可以有多个非聚簇索引。**
 
@@ -10621,7 +10621,7 @@ Query OK, 1 row affected (0.01 sec)
 
 ##### 联合索引
 
-我们也可以同时以多个列的大小作为排序规则，也就是同时为多个列建立索引，比如想让 B+Tree按照 c2 和 c3 列的大小进行排序，这个包含两层含义：
+我们也可以同时以多个列的大小作为排序规则，也就是同时为多个列建立索引，比如想让 B+Tree 按照 c2 和 c3 列的大小进行排序，这个包含两层含义：
 
 - 先把各个记录和页按照 c2 列进行排序。
 - 在记录的 c2 列相同的情况下，采用 c3 列进行排序。
@@ -10640,21 +10640,21 @@ Query OK, 1 row affected (0.01 sec)
 - 建立联合索引只会建立如上图一样的 1 棵 B+Tree。
 - 为 c2 和 c3 列分别建立索引，会分别以 c2 和 c3 列的大小为排序规则建立 2 棵 B+Tree。
 
-#### InnoDB 的 B+Tree索引的注意事项
+#### InnoDB 的 B+Tree 索引的注意事项
 
 ##### 根页面位置万年不动
 
-上面介绍 B+Tree 索引的时候，为了理解上的方便，先把存储用户记录的叶子节点画出来，然后接着画存储目录项记录的内节点，实际上 B+Tree的形成过程是这样的：
+上面介绍 B+Tree 索引的时候，为了理解上的方便，先把存储用户记录的叶子节点画出来，然后接着画存储目录项记录的内节点，实际上 B+Tree 的形成过程是这样的：
 
-- 每当为每个表创建一个 B+Tree索引（聚簇索引不是人为创建的，默认就有）的时候，都会为这个索引创建一个`根节点`页面。最开始表中没有数据的时候，每个 B+Tree索引对应的根节点中既没有用户记录，也没有目录项记录。
+- 每当为每个表创建一个 B+Tree 索引（聚簇索引不是人为创建的，默认就有）的时候，都会为这个索引创建一个`根节点`页面。最开始表中没有数据的时候，每个 B+Tree 索引对应的根节点中既没有用户记录，也没有目录项记录。
 - 随后向表中插入用户记录时，先把用户记录存储到这个根节点中。
 - 当`根节点中的可用空间用完`并继续插入记录时，此时会将根节点中的所有记录复制到一个新分配的页，比如页 a 中，然后对这个新页进行页分裂操作，得到另一个新页，比如页 b。这时，新插入的记录根据键值（也就是聚簇索引中的主键值，二级索引中对应的索引列的值）的大小就会被分配到页 a 或者页 b 中，而根节点便升级为存储目录项记录的页。
 
-这个过程特别注意的是：**一个 B+Tree索引的根节点自诞生之日起，便不会再移动。这样只要对某个表建立一个索引，那么它的根节点的页号便会被记录到某个地方，然后凡是 InnoDB 存储引擎需要用到这个索引的时候，都会从那个固定的地方取出根节点的页号，从而来访问这个索引。**
+这个过程特别注意的是：**一个 B+Tree 索引的根节点自诞生之日起，便不会再移动。这样只要对某个表建立一个索引，那么它的根节点的页号便会被记录到某个地方，然后凡是 InnoDB 存储引擎需要用到这个索引的时候，都会从那个固定的地方取出根节点的页号，从而来访问这个索引。**
 
 ##### 内节点中目录项记录的唯一性
 
-我们知道 B+Tree索引的内节点中目录项记录的内容是`索引列 + 页号`的搭配，但是这个搭配对于二级索引来说有点不严谨。以 index_demo 表为例，假设这个表中的数据是这样的：
+我们知道 B+Tree 索引的内节点中目录项记录的内容是`索引列 + 页号`的搭配，但是这个搭配对于二级索引来说有点不严谨。以 index_demo 表为例，假设这个表中的数据是这样的：
 
 | c1   | c2   | c3   |
 | ---- | ---- | ---- |
@@ -10663,27 +10663,27 @@ Query OK, 1 row affected (0.01 sec)
 | 5    | 1    | 'y'  |
 | 7    | 1    | 'a'  |
 
-如果二级索引中目录项记录的内容只是索引列 + 页号的搭配的话，那么为 c2 列建立索引后的 B+Tree应该长这样：
+如果二级索引中目录项记录的内容只是索引列 + 页号的搭配的话，那么为 c2 列建立索引后的 B+Tree 应该长这样：
 
 <img src="mysql/image-20230608183334269.png" alt="image-20230608183334269" style="zoom:67%;" />
 
-如果想新插入一行记录，其中 c1、c2 和 c3 的值分别是：9、1、'c'，那么在修改这个为 c2 列建立的二级索引对应的 B+Tree时便碰到了大问题：由于页 3 中存储的目录项记录是由 c2 列 + 页号的值构成的，页 3 中的两条目录项记录对应的 c2 列的值都是 1，而新插入的这条记录的 c2 列的值也是 1，那这条新插入的记录到底应该放到页 4 中，还是应该放到页 5 中呢？
+如果想新插入一行记录，其中 c1、c2 和 c3 的值分别是：9、1、'c'，那么在修改这个为 c2 列建立的二级索引对应的 B+Tree 时便碰到了大问题：由于页 3 中存储的目录项记录是由 c2 列 + 页号的值构成的，页 3 中的两条目录项记录对应的 c2 列的值都是 1，而新插入的这条记录的 c2 列的值也是 1，那这条新插入的记录到底应该放到页 4 中，还是应该放到页 5 中呢？
 
-为了让新插入的记录能找到自己在哪个页里，需要**保证在 B+Tree的同一层内节点的目录项记录除页号这个字段以外是唯一的**。所以对于二级索引的内节点的目录项记录的内容，实际上是由三个部分构成的：
+为了让新插入的记录能找到自己在哪个页里，需要**保证在 B+Tree 的同一层内节点的目录项记录除页号这个字段以外是唯一的**。所以对于二级索引的内节点的目录项记录的内容，实际上是由三个部分构成的：
 
 - 索引列的值。
 - 主键值。
 - 页号。
 
-也就是把主键值也添加到二级索引内节点中的目录项记录了，这样就能保证 B+Tree每一层节点中各条目录项记录除页号这个字段外是唯一的，所以为 c2 列建立二级索引后的示意图实际上应该是这样子的：
+也就是把主键值也添加到二级索引内节点中的目录项记录了，这样就能保证 B+Tree 每一层节点中各条目录项记录除页号这个字段外是唯一的，所以为 c2 列建立二级索引后的示意图实际上应该是这样子的：
 
 <img src="mysql/image-20230608184249919.png" alt="image-20230608184249919" style="zoom:67%;" />
 
-这样再插入 (9, 1, 'c') 时，由于页 3 中存储的目录项记录是由 c2 列 + 主键 + 页号的值构成的，可以先把新纪录的 c2 列的值和页 3 中各目录项记录的 c2 列的值作比较，如果 c2 列的值相同的话，可以接着比较主键值，因为 B+Tree同一层中不同目录项记录的 c2 列 + 主键的值肯定是不一样的，所以最后肯定能定位唯一的一条目录项记录。在本例中，最后确定新纪录应该被插入到页 5 中。
+这样再插入 (9, 1, 'c') 时，由于页 3 中存储的目录项记录是由 c2 列 + 主键 + 页号的值构成的，可以先把新纪录的 c2 列的值和页 3 中各目录项记录的 c2 列的值作比较，如果 c2 列的值相同的话，可以接着比较主键值，因为 B+Tree 同一层中不同目录项记录的 c2 列 + 主键的值肯定是不一样的，所以最后肯定能定位唯一的一条目录项记录。在本例中，最后确定新纪录应该被插入到页 5 中。
 
 ##### 一个页面最少存储两条记录
 
-一个 B+Tree只需要很少的层级就可以轻松存储数亿条记录，查询效率也高。这是因为 B+Tree本质上是一个大的多层级目录，没经过一个目录时都会过滤掉许多无效的子目录，直到最后访问到存储真实数据的目录。那如果一个大的目录中只存放一个子目录是什么效果呢？那就是目录层级变的非常多，而且最后的那个存放真实数据的目录中只能存放一条记录。因此，InnoDB 的一个数据页至少应存储两条记录。
+一个 B+Tree 只需要很少的层级就可以轻松存储数亿条记录，查询效率也高。这是因为 B+Tree 本质上是一个大的多层级目录，没经过一个目录时都会过滤掉许多无效的子目录，直到最后访问到存储真实数据的目录。那如果一个大的目录中只存放一个子目录是什么效果呢？那就是目录层级变的非常多，而且最后的那个存放真实数据的目录中只能存放一条记录。因此，InnoDB 的一个数据页至少应存储两条记录。
 
 ### MyISAM 中的索引方案
 
@@ -10697,7 +10697,7 @@ Query OK, 1 row affected (0.01 sec)
 
 实际上，即使多个存储引擎都支持同一种类型的索引，但它们的实现原理也是不同的。InnoDB 和 MyISAM 默认的索引是 B-Tree 索引，而 Memory 默认的索引是 Hash 索引。
 
-**MyISAM 存储引擎使用 B+Tree作为索引结构，叶子节点的 data 域存放的是`数据记录的地址`。**
+**MyISAM 存储引擎使用 B+Tree 作为索引结构，叶子节点的 data 域存放的是`数据记录的地址`。**
 
 #### MyISAM 索引的原理
 
@@ -10712,7 +10712,7 @@ Query OK, 1 row affected (0.01 sec)
 
 <img src="mysql/image-20230608192657521.png" alt="image-20230608192657521" style="zoom:50%;" />
 
-同样也是一棵 B+Tree，data 域保存数据记录的地址。因此，MyISAM 中索引检索的算法为：首先按照 B+Tree搜索算法搜索索引，如果指定的 Key 存在，则取出其 data 域的值，然后以 data 域的值为地址，读取相应数据记录。
+同样也是一棵 B+Tree，data 域保存数据记录的地址。因此，MyISAM 中索引检索的算法为：首先按照 B+Tree 搜索算法搜索索引，如果指定的 Key 存在，则取出其 data 域的值，然后以 data 域的值为地址，读取相应数据记录。
 
 #### MyISAM VS InnoDB
 
@@ -10736,7 +10736,7 @@ MyISAM 的索引方式都是 "非聚簇" 的，与 InnoDB 包含 1 个聚簇索�
 索引是个好东西，可不能乱建，因为它在空间和时间上都会有消耗：
 
 - `空间上的代价`：**每建立一个索引都要为它建立一棵 B+Tree**，每一棵 B+Tree 的每一个节点都是一个数据页，`一个页默认会占用 16 KB 的存储空间`，一棵很大的 B+Tree 由许多数据页组成，那就是很大的一片存储空间。
-- `时间上的代价`：**每次对表中的数据进行 增、删、改 操作时，都需要去修改各个 B+Tree 索引。**而且 B+Tree 每层节点都是`按照索引列的值从小到大的顺序排序组成双向链表`。不论是叶子节点中的记录，还是内节点中的记录（也就是不论是用户记录还是目录项记录）都是按照索引列的值从小到大的顺序而形成了一个单向链表。而增、删、改操作可能会对节点和记录的排序造成破坏，所以存储引擎需要额外的时间进行一些`记录移位`，`页面分裂`、`页面回收`等操作来维护好节点和记录的排序。如果建了许多索引，每个索引对应的 B+Tree 都要进行相关的维护操作，会给性能拖后腿。
+- `时间上的代价`：**每次对表中的数据进行 增、删、改 操作时，都需要去修改各个 B+Tree 索引。**而且 B+Tree 每层节点都是`按照索引列的值从小到大的顺序排序组成双向链表`。不论是叶子节点中的记录，还是内节点中的记录（也就是不论是用户记录还是目录项记录），都是按照索引列的值从小到大的顺序而形成了一个单向链表。而增、删、改操作可能会对节点和记录的排序造成破坏，所以存储引擎需要额外的时间进行一些`记录移位`，`页面分裂`、`页面回收`等操作来维护好节点和记录的排序。如果建了许多索引，每个索引对应的 B+Tree 都要进行相关的维护操作，会给性能拖后腿。
 
 > 一个表上索引建的越多，就会占用越多的存储空间，在增删改记录的时候性能就越差，为了能建立又好又少的索引，需要了解这些索引在什么条件下起作用。
 
@@ -10915,7 +10915,7 @@ B-Tree 的结构如下图所示：
 
 B-Tree 作为多路平衡查找树，它的每一个节点最多可以包括 M 个子节点，`M 称为 B-Tree 的阶 `（上图 B-Tree 的阶是 3，左边小，右边大，中间的是二者之间）。B-Tree 的每个磁盘块中包括了`关键字`和`子节点的指针`。如果一个磁盘块中包括了 x 个关键字，那么指针数就是 x + 1。对于一个 100 阶的 B-Tree 来说，如果有 3 层的话，最多可以存储约 100 万的索引数据。对于大量的索引数据来说，采用 B-Tree 的结构是非常适合的，因为树的高度要远小于二叉树的高度。
 
-**一个 M 阶的 B 树（M > 2）有以下的特性：**
+**一个 M 阶的 B-Tree（M > 2）有以下的特性：**
 
 - 根节点的儿子数的范围是 [2, M]。
 - 每个中间节点包含 k - 1 个关键字和 k 个孩子，孩子的数量 = 关键字的数量 + 1，k 的取值范围为 [ceil(M/2), M]。
@@ -12792,7 +12792,7 @@ FROM shop
 >
 >【 强制 】在 varchar 字段上建立索引时，必须指定索引长度，没必要对全字段建立索引，根据实际文本区分度决定索引长度。
 >
->说明：索引的长度与区分度是一对矛盾体，一般对字符串类型数据，长度为 20 的索引，区分度会高达 90% 以上 ，可以使用`COUNT(DISTINCT LEFT(列名, 索引长度)) / COUNT(*)`计算的区分度来确定。
+>说明：索引的长度与区分度是一对矛盾体，一般对字符串类型数据，长度为 20 的索引，区分度会高达 90% 以上，可以使用`COUNT(DISTINCT LEFT(列名, 索引长度)) / COUNT(*)`计算的区分度来确定。
 
 **引申：索引列前缀对排序的影响。**
 
@@ -12828,7 +12828,7 @@ SELECT * FROM shop ORDER BY address LIMIT 12
 
 在实际工作中，也需要注意平衡，`索引的数目不是越多越好`。我们需要限制每张表上的索引数量，`建议单张表索引数量不超过 6 个`。原因：
 
-- 每个索索引都需要占用磁盘空间，索引越多，需要的磁盘空间就越大。
+- 每个索引都需要占用磁盘空间，索引越多，需要的磁盘空间就越大。
 
 
 - 索引会影响 INSERT、DELETE、 UPDATE 等语句的性能，因为表中的数据更改的同时，索引也会进行调整和更新，会造成负担。
@@ -13067,12 +13067,12 @@ MySQL 的慢查询日志，用来记录在 MySQL 中`响应时间超过阈值`�
 查看慢查询日志是否开启，以及日志的位置：
 
 ```mysql
-mysql> SHOW VARIABLES LIKE '%low_query_log%';
+mysql> SHOW VARIABLES LIKE '%slow_query_log%';
 +---------------------+--------------------------------------+
 | Variable_name       | Value                                |
 +---------------------+--------------------------------------+
 | slow_query_log      | OFF                                  |
-| slow_query_log_file | /var/lib/mysql/1468c123e28b-slow.log |
+| slow_query_log_file | /var/lib/mysql/de5e82a9b92d-slow.log |
 +---------------------+--------------------------------------+
 2 rows in set (0.00 sec)
 ```
@@ -13080,32 +13080,480 @@ mysql> SHOW VARIABLES LIKE '%low_query_log%';
 修改慢查询日志状态为开启，注意这里要加 `global`，因为它是全局系统变量，否则会报错：
 
 ```mysql
+mysql> SET GLOBAL slow_query_log='ON';
+Query OK, 0 rows affected (0.00 sec)
 ```
 
+再次查看：
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-导出文件：
-
-```sql
-mysql -h127.0.0.1 -uhap -pshsh@MyCatHAydEn -P28000 -e "use mycat_pc; select * from sy_user where identity_card is null and sex is null;" > 202208101.sql
+```mysql
+mysql> SHOW VARIABLES LIKE '%slow_query_log%';
++---------------------+--------------------------------------+
+| Variable_name       | Value                                |
++---------------------+--------------------------------------+
+| slow_query_log      | ON                                   |
+| slow_query_log_file | /var/lib/mysql/de5e82a9b92d-slow.log |
++---------------------+--------------------------------------+
+2 rows in set (0.00 sec)
 ```
 
-https://developer.aliyun.com/article/521437
+##### 修改 long_query_time 阈值
 
-docker cp /opt/a.sql bteye-mysql:/home/tmp/
+查看慢查询的时间阈值设置：
 
-https://blog.csdn.net/u012340794/article/details/71440604
+```mysql
+mysql> SHOW VARIABLES LIKE '%long_query_time%';
++-----------------+-----------+
+| Variable_name   | Value     |
++-----------------+-----------+
+| long_query_time | 10.000000 |
++-----------------+-----------+
+1 row in set (0.00 sec)
+```
+
+按需重新设置，例如设置为 1 秒：
+
+```mysql
+# 测试发现设置global的方式对当前session的long_query_time失效，只对新连接的客户端有效，所以可以一并执行下列语句
+mysql> SET GLOBAL long_query_time = 1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SET long_query_time = 1;
+Query OK, 0 rows affected (0.00 sec)
+```
+
+##### 补充：配置文件中设置参数
+
+如下的方式相较于前面的命令行方式，可以看作是永久设置。
+
+修改`my.cnf`文件，在 [mysqld] 下增加或修改参数`slow_query_log`，`slow_query_log_file`和`long_query_time`后，然后重启 MySQL 服务器。
+
+```cnf
+[mysqld]
+slow_query_log=ON # 开启慢查询日志的开关
+slow_query_log_file=/var/lib/mysql/slow.log # 慢查询日志的目录和文件名信息
+long_query_time=3 # 设置慢查询的阈值为3秒，超出此设定值的SQL即被记录到慢查询日志
+log_output=FILE
+```
+
+如果不指定存储路径，慢查询日志将默认存储到 MySQL 数据库的数据文件夹下，如果不指定文件名，默认文件名为 hostname-slow.log。
+
+#### 案例演示
+
+第一步，建表：
+
+```mysql
+mysql> CREATE TABLE `student` (
+    ->     `id` INT(11) NOT NULL AUTO_INCREMENT,
+    ->     `stuno` INT NOT NULL ,
+    ->     `name` VARCHAR(20) DEFAULT NULL,
+    ->     `age` INT(3) DEFAULT NULL,
+    ->     `classId` INT(11) DEFAULT NULL,
+    ->     PRIMARY KEY (`id`)
+    -> ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+Query OK, 0 rows affected, 4 warnings (0.03 sec)
+```
+
+第二步，开启允许创建函数：
+
+```mysql
+mysql> SHOW GLOBAL VARIABLES LIKE '%log_bin_trust_function_creators%';
++---------------------------------+-------+
+| Variable_name                   | Value |
++---------------------------------+-------+
+| log_bin_trust_function_creators | OFF   |
++---------------------------------+-------+
+1 row in set (0.01 sec)
+
+mysql> SET GLOBAL log_bin_trust_function_creators='ON';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SHOW GLOBAL VARIABLES LIKE '%log_bin_trust_function_creators%';
++---------------------------------+-------+
+| Variable_name                   | Value |
++---------------------------------+-------+
+| log_bin_trust_function_creators | ON    |
++---------------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+第三步，创建函数：
+
+```mysql
+# 随机产生字符串函数rand_string，同上章
+
+# 随机数函数rand_num，同上章
+```
+
+第四步，创建存储过程：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE insert_stu1(  START INT , max_num INT )
+    -> BEGIN 
+    -> DECLARE i INT DEFAULT 0; 
+    -> SET autocommit = 0; # 设置手动提交事务
+    -> REPEAT # 循环
+    -> SET i = i + 1; # 赋值
+    -> INSERT INTO student (stuno, NAME ,age ,classId ) VALUES
+    -> ((START+i),rand_string(6),rand_num(10,100),rand_num(10,1000)); 
+    -> UNTIL i = max_num 
+    -> END REPEAT; 
+    -> COMMIT; # 提交事务
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+第五步，调用存储过程：
+
+```mysql
+mysql> CALL insert_stu1(100001,4000000);
+Query OK, 0 rows affected (4 min 8.07 sec)
+```
+
+第六步，验证是否成功：
+
+```mysql
+mysql> SELECT COUNT(*) FROM student;
++----------+
+| COUNT(*) |
++----------+
+|  4000000 |
++----------+
+1 row in set (0.21 sec)
+```
+
+#### 慢查询演示
+
+执行下面的查询操作，进行慢查询语句的测试：
+
+```mysql
+mysql> SELECT * FROM student WHERE stuno = 3455655;
++---------+---------+--------+------+---------+
+| id      | stuno   | name   | age  | classId |
++---------+---------+--------+------+---------+
+| 3355654 | 3455655 | WOcWyE |   60 |     968 |
++---------+---------+--------+------+---------+
+1 row in set (1.21 sec)
+
+mysql> SELECT * FROM student WHERE name = 'ZfCwDz';
++---------+---------+--------+------+---------+
+| id      | stuno   | name   | age  | classId |
++---------+---------+--------+------+---------+
+|  427220 |  527221 | zfcWDZ |   33 |     311 |
+|  781361 |  881362 | ZFcwdZ |   80 |     898 |
+|  812704 |  912705 | ZFcwdZ |   81 |     965 |
+| 2138264 | 2238265 | zFCWdz |   31 |     727 |
+| 2602748 | 2702749 | zFCWdz |   35 |     938 |
+| 2763745 | 2863746 | zfcWDZ |   31 |     239 |
+| 2978248 | 3078249 | zFCWdz |   30 |     708 |
++---------+---------+--------+------+---------+
+7 rows in set (1.26 sec)
+```
+
+因为此时慢日志的时间阈值为 1 秒，上面的两条 SQL，都属于慢日志。查看下慢查询的记录：
+
+```mysql
+mysql> SHOW STATUS LIKE 'slow_queries';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| Slow_queries  | 3     |
++---------------+-------+
+1 row in set (0.00 sec)
+```
+
+>在 MySQL 中，除了上述`slow_queries`变量，控制慢查询日志的还有另外一个变量`min_examined_row_limit`。这个变量的意思是，查询扫描过的最少记录数。这个变量和查询执行时间，共同组成了判别一个查询是否慢查询的条件。**如果查询扫描过的记录数大于等于这个变量的值，并且查询执行时间超过 long_query_time 的值，那么这个查询就被记录到慢查询日志中。**反之，则不被记录到慢查询日志中。另外，min_examined_row_limit 默认是 0，我们也一般不会去修改它。
+>```mysql
+>mysql> SHOW VARIABLES LIKE 'min%';
+>+------------------------+-------+
+>| Variable_name          | Value |
+>+------------------------+-------+
+>| min_examined_row_limit | 0     |
+>+------------------------+-------+
+>1 row in set (0.00 sec)
+>```
+>
+>当这个值为默认值 0 时，与 long_query_time=10 合在一起，表示只要查询的执行时间超过 10 秒钟，哪怕一个记录也没有扫描过，都要被记录到慢查询日志中。你也可以根据需要，通过修改 "my.ini" 文件，来修改查询时长，或者通过 SET 指令，用 SQL 语句修改 min_examined_row_limit 的值。
+
+#### 慢查询日志分析工具
+
+在生产环境中，如果要手工分析日志，查找、分析 SQL，显然是个体力活，MySQL 提供了日志分析工具`mysqldumpslow`。
+
+>说明：
+>
+>1. 该工具并不是 MySQL 内置的，不要在 MySQL 下执行，可以直接在根目录或者其他位置执行。
+>2. 该工具只有 Linux 下才是开箱可用的，实际上生产中 MySQL 数据库一般也是部署在 Linux 环境中的。如果是 Windows 环境，可以参考 https://www.cnblogs.com/-mrl/p/15770811.html。
+
+通过 mysqldumpslow 可以查看慢查询日志帮助：
+
+```bash
+# 创建软连接
+xisun@xisun-develop:~/mysql/mysql-8.0.33-linux-glibc2.17-x86_64-minimal/bin$ sudo ln -sf /home/xisun/mysql/mysql-8.0.33-linux-glibc2.17-x86_64-minimal/bin/mysqldumpslow /usr/bin/
+
+# 分析慢日志
+xisun@xisun-develop:~/apps$ sudo mysqldumpslow -s t -t 5 mysql/data/de5e82a9b92d-slow.log 
+
+Reading mysql slow query log from mysql/data/de5e82a9b92d-slow.log
+Count: 1  Time=248.07s (248s)  Lock=0.00s (0s)  Rows=0.0 (0), root[root]@[127.0.0.1]
+  CALL insert_stu1(N,N)
+
+Count: 1  Time=1.26s (1s)  Lock=0.00s (0s)  Rows=7.0 (7), root[root]@[127.0.0.1]
+  SELECT * FROM student WHERE name = 'S'
+
+Count: 1  Time=1.21s (1s)  Lock=0.00s (0s)  Rows=1.0 (1), root[root]@[127.0.0.1]
+  SELECT * FROM student WHERE stuno = N
+
+Died at /usr/bin/mysqldumpslow line 162, <> chunk 3.
+
+# 添加-a参数，显示SQL中的真实数据，不将具体的数值被N代替，字符串被S代替
+xisun@xisun-develop:~/apps$ sudo mysqldumpslow -s t -t 5 -a mysql/data/de5e82a9b92d-slow.log 
+
+Reading mysql slow query log from mysql/data/de5e82a9b92d-slow.log
+Count: 1  Time=248.07s (248s)  Lock=0.00s (0s)  Rows=0.0 (0), root[root]@[127.0.0.1]
+  CALL insert_stu1(100001,4000000)
+
+Count: 1  Time=1.26s (1s)  Lock=0.00s (0s)  Rows=7.0 (7), root[root]@[127.0.0.1]
+  SELECT * FROM student WHERE name = 'ZfCwDz'
+
+Count: 1  Time=1.21s (1s)  Lock=0.00s (0s)  Rows=1.0 (1), root[root]@[127.0.0.1]
+  SELECT * FROM student WHERE stuno = 3455655
+
+Died at /usr/bin/mysqldumpslow line 162, <> chunk 3.
+```
+
+> Docker 容器中可能没有 mysqldumpslow 命令，此时，可以下载 MySQL 源码，上传到宿主机。MySQL 慢日志路径为 /var/lib/mysql，此路径在启动 Docker 容器时，已经被挂载到宿主机，可以在宿主机上，使用下载的 MySQL 源码中的 mysqldumpslow 命令分析慢日志。
+>
+> 查看 mysqldumpslow 帮助：
+>
+> ```bash
+> $ mysqldumpslow --help
+> Usage: mysqldumpslow [ OPTS... ] [ LOGS... ]
+> 
+> Parse and summarize the MySQL slow query log. Options are
+> 
+> --verbose    verbose
+> --debug      debug
+> --help       write this text to standard output
+> 
+> -v           verbose
+> -d           debug
+> -s ORDER     what to sort by (al, at, ar, c, l, r, t), 'at' is default
+>           al: average lock time
+>           ar: average rows sent
+>           at: average query time
+>            c: count
+>            l: lock time
+>            r: rows sent
+>            t: query time  
+> -r           reverse the sort order (largest last instead of first)
+> -t NUM       just show the top n queries
+> -a           don't abstract all numbers to N and strings to 'S'
+> -n NUM       abstract numbers with at least n digits within names
+> -g PATTERN   grep: only consider stmts that include this string
+> -h HOSTNAME  hostname of db server for *-slow.log filename (can be wildcard),
+>          default is '*', i.e. match all
+> -i NAME      name of server instance (if using mysql.server startup script)
+> -l           don't subtract lock time from total time
+> ```
+>
+> mysqldumpslow 命令的具体参数如下：
+>
+> - `-a`：不将数字抽象成 N，字符串抽象成 S。
+>
+> - `-s`：是表示按照何种方式排序：
+>   - c：访问次数
+>   - l：锁定时间
+>   - r：返回记录
+>   - t：查询时间
+>   - al：平均锁定时间
+>   - ar：平均返回记录数
+>   - at：平均查询时间 （默认方式）
+>   - ac：平均查询次数
+>
+> - `-t`：即为返回前面多少条的数据。
+>
+> - `-g`：后边搭配一个正则匹配模式，大小写不敏感的；
+>
+> mysqldumpslow 常用查询：
+>
+> ```bash
+> # 得到返回记录集最多的10个SQL
+> $ mysqldumpslow -s r -t 10 /var/lib/mysql/xisun-slow.log
+> 
+> #  得到访问次数最多的10个SQL
+> $ mysqldumpslow -s c -t 10 /var/lib/mysql/xisun-slow.log
+> 
+> # 得到按照时间排序的前10条里面含有左连接的查询语句
+> $ mysqldumpslow -s t -t 10 -g "left join" /var/lib/mysql/xisun-slow.log
+> 
+> # 另外建议在使用这些命令时结合|和more使用，否则有可能出现爆屏情况
+> $ mysqldumpslow -s r -t 10 /var/lib/mysql/xisun-slow.log | more
+> ```
+
+#### 关闭慢查询日志
+
+##### 临时关闭
+
+```mysql
+mysql> SET GLOBAL slow_query_log='OFF';
+```
+
+##### 永久关闭
+
+修改 my.cnf 或 my.ini 文件，把 mysqld 组下的 slow_query_log 值设置为 OFF，修改保存后，再重启 MySQL 服务，即可生效。
+
+#### 删除慢查询日志
+
+慢查询日志都是使用`mysqladmin -uroot -p flush-logs slow` 命令来删除重建的。使用时一定要注意，一旦执行了这个命令，慢查询日志都只存在于新的日志文件中，如果需要旧的查询日志，就必须事先备份。或者也可以直接手动删除慢查询日志。
+
+### 查看 SQL 执行成本：SHOW PROFILE
+
+`// TODO`
+
+## 索引优化与查询优化
+
+数据库调优的维度：
+
+- 索引失效、没有充分利用所以 —— **`索引建立`**。
+- 关联查询太多 JOIN（设计缺陷或不得已的需求）—— **`SQL 优化`**。
+- 服务器调优及各个参数设置（缓冲、 线程数）—— **`调整 my.cnf`**。
+- 数据过多 —— **`分库分表`**。
+
+关于数据库调优的知识点非常分散，不同 DBMS，不同的公司，不同的职位，不同的项目遇到的问题都不尽相同。
+
+虽然 SQL 查询优化的技术很多，但是大体方向上完全可以分为`物理查询优化`和`逻辑查询优化`两大块。
+
+- 物理查询优化：通过`索引`和`表连接方式`等技术来进行优化，这里重点需要掌握索引的使用。
+- 逻辑查询优化：通过`SQL 等价变换`提升查询效率，直白一点来讲就是，换一种执行效率更高的查询写法。
+
+### 数据准备
+
+创建存储过程：
+
+```mysql
+# 创建往stu表中插入数据的存储过程
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE insert_stu(  START INT , max_num INT )
+    -> BEGIN 
+    -> DECLARE i INT DEFAULT 0; 
+    -> SET autocommit = 0; # 设置手动提交事务
+    -> REPEAT # 循环
+    -> SET i = i + 1; # 赋值
+    -> INSERT INTO student (stuno, name ,age ,classId ) VALUES
+    -> ((START+i),rand_string(6),rand_num(1,50),rand_num(1,1000)); 
+    -> UNTIL i = max_num 
+    -> END REPEAT; 
+    -> COMMIT; # 提交事务
+    -> END //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+
+# 创建往class表中插入数据的存储过程
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE `insert_class`( max_num INT )
+    -> BEGIN 
+    -> DECLARE i INT DEFAULT 0; 
+    -> SET autocommit = 0;  
+    -> REPEAT 
+    -> SET i = i + 1; 
+    -> INSERT INTO class ( classname,address,monitor ) VALUES
+    -> (rand_string(8),rand_string(10),rand_num(1,100000)); 
+    -> UNTIL i = max_num 
+    -> END REPEAT; 
+    -> COMMIT;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+调用存储过程：
+
+```mysql
+# 往class表添加1万条数据
+mysql> CALL insert_class(10000);
+Query OK, 0 rows affected (6.75 sec)
+
+# 往stu表添加80万条数据
+mysql> CALL insert_stu(100000, 800000);
+Query OK, 0 rows affected (4 min 30.96 sec)
+```
+
+查看数据是否添加成功：
+
+```mysql
+mysql> SELECT COUNT(*) FROM class;
++----------+
+| COUNT(*) |
++----------+
+|    10000 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT COUNT(*) FROM student;
++----------+
+| COUNT(*) |
++----------+
+|   800000 |
++----------+
+1 row in set (0.02 sec)
+```
+
+创建删除某个表的索引的存储过程，避免手动删除索引：
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE  PROCEDURE `proc_drop_index`(dbname VARCHAR(200),tablename VARCHAR(200))
+    -> BEGIN
+    ->    DECLARE done INT DEFAULT 0;
+    ->    DECLARE ct INT DEFAULT 0;
+    ->    DECLARE _index VARCHAR(200) DEFAULT '';
+    ->    DECLARE _cur CURSOR FOR  SELECT  index_name  FROM
+    -> information_schema.STATISTICS  WHERE table_schema=dbname AND table_name=tablename AND
+    -> seq_in_index=1 AND  index_name <>'PRIMARY' ;
+    -> # declare continue handler for not found set done=1
+    ->    DECLARE  CONTINUE HANDLER FOR NOT FOUND set done=2 ;   
+    -> # , , done2
+    ->     OPEN _cur;
+    ->     FETCH _cur INTO _index;
+    ->     WHILE _index<>'' DO
+    ->        SET @str = CONCAT("drop index ", _index , " on " , tablename );
+    ->        PREPARE sql_str FROM @str ;
+    ->        EXECUTE sql_str;
+    ->        DEALLOCATE PREPARE sql_str;
+    ->        SET _index='';
+    ->        FETCH _cur INTO _index;
+    ->     END WHILE;
+    ->  CLOSE _cur;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+>调用方法：`CALL proc_drop_index("dbname", "tablename");`。
+
+### 索引失效案例
+
+
+
+
+
+## 本文参考
+
+https://www.bilibili.com/video/BV1iq4y1u7vj
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
+
+
+
+
+
+
+
