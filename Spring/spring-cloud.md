@@ -338,7 +338,7 @@ UNLOCK TABLES;
 
 ### 构建子模块
 
-#### 支付服务提供者
+#### 支付服务提供者：cloud-payment-service
 
 新建 module：
 
@@ -468,7 +468,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:31
  * @description
@@ -504,7 +504,7 @@ public class PaymentController {
 }
 ```
 
-#### 支付服务消费者
+#### 支付服务消费者：cloud-order-service
 
 新建 module：
 
@@ -603,7 +603,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:48
  * @description
@@ -630,7 +630,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:31
  * @description
@@ -735,11 +735,27 @@ pom.xml：
 
 - 查询：
 
-  <img src="spring-cloud/image-20230212004027456.png" alt="image-20230212004027456" style="zoom:50%;" />
+  <img src="spring-cloud/image-20230212004027456.png" alt="image-20230212004027456" style="zoom:60%;" />
 
 - 新增：
 
-  <img src="spring-cloud/image-20230212004107289.png" alt="image-20230212004107289" style="zoom:50%;" />
+  <img src="spring-cloud/image-20230212004107289.png" alt="image-20230212004107289" style="zoom:60%;" />
+
+#### 扩展：RestTemplate
+
+官网：https://docs.spring.io/spring-framework/docs/5.2.2.RELEASE/javadoc-api/org/springframework/web/client/RestTemplate.html
+
+- `getForObject()`：返回对象为响应体中数据转化成的对象，基本上可以理解为 Json。
+
+  <img src="spring-cloud/image-20230214220420349.png" alt="image-20230214220420349" style="zoom: 80%;" />
+
+- `getForEntity()`：返回对象为 ResponseEntity 对象，包含了响应中的一些重要信息，比如响应头、响应状态码、响应体等。
+
+  <img src="spring-cloud/image-20230214220425875.png" alt="image-20230214220425875" style="zoom: 80%;" />
+
+- `postForObject()`和`postForEntity()`：
+
+  <img src="spring-cloud/image-20230214220648502.png" alt="image-20230214220648502" style="zoom: 80%;" />
 
 ## Eureka 服务注册与发现
 
@@ -755,7 +771,7 @@ pom.xml：
 
 下左图是 Eureka 系统架构，右图是 Dubbo 系统架构：
 
-![image-20230212110044617](spring-cloud/image-20230212110044617.png)
+<img src="spring-cloud/image-20230212110044617.png" alt="image-20230212110044617" style="zoom:80%;" />
 
 
 
@@ -781,11 +797,11 @@ Eureka 采用了 CS 的设计架构，Eureka Server 作为服务注册功能的�
 
 新建 module：
 
-![image-20230212182009324](spring-cloud/image-20230212182009324.png)
+<img src="spring-cloud/image-20230212182009324.png" alt="image-20230212182009324" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230212190840487.png" alt="image-20230212190840487" style="zoom:40%;" />
+<img src="spring-cloud/image-20230212190840487.png" alt="image-20230212190840487" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -882,7 +898,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/12 18:28
  * @description
@@ -898,11 +914,11 @@ public class EurekaApplication7001 {
 
 - `@EnableEurekaServer`注解启动 Eureka 的过程，如下图所示：
 
-  <img src="spring-cloud/webp.webp" alt="img" style="zoom:70%;" />
+  <img src="spring-cloud/webp.webp" alt="img"  />
 
 启动服务，浏览器输入`localhost:7001`：
 
-![image-20230212190736697](spring-cloud/image-20230212190736697.png)
+<img src="spring-cloud/image-20230212190736697.png" alt="image-20230212190736697" style="zoom: 40%;" />
 
 - 可以看到，此时还没有服务注册。
 
@@ -944,7 +960,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 21:54
  * @description
@@ -961,7 +977,7 @@ public class PaymentApplication8001 {
 
 重新启动服务，在 Eureka 注册中心，即可看到 cloud-payment-service 服务注册成功：
 
-![image-20230212210701391](spring-cloud/image-20230212210701391.png)
+<img src="spring-cloud/image-20230212210701391.png" alt="image-20230212210701391" style="zoom:40%;" />
 
 ##### cloud-order-service 服务
 
@@ -998,7 +1014,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 22:01
  * @description
@@ -1014,7 +1030,7 @@ public class OrderApplication80 {
 
 重新启动服务，在 Eureka 注册中心，即可看到 cloud-order-service 服务也注册成功：
 
-![image-20230212213443483](spring-cloud/image-20230212213443483.png)
+<img src="spring-cloud/image-20230212213443483.png" alt="image-20230212213443483" style="zoom:40%;" />
 
 ### 集群 Eureka 构建
 
@@ -1022,7 +1038,7 @@ public class OrderApplication80 {
 
 `Eureka 注册中心工作原理`：
 
-<img src="spring-cloud/image-20230212221545150.png" alt="image-20230212221545150" style="zoom:60%;" />
+<img src="spring-cloud/image-20230212221545150.png" alt="image-20230212221545150" style="zoom:80%;" />
 
 **微服务 RPC 远程服务调用最核心的是高可用**，如果注册中心只有一个，假如它出故障了，那就会导致整个微服务环境不可用，解决办法：**搭建 Eureka 注册中心集群 ，实现负载均衡和故障容错。**
 
@@ -1034,7 +1050,7 @@ public class OrderApplication80 {
 
 新建 module：
 
-![image-20230212222529828](spring-cloud/image-20230212222529828.png)
+<img src="spring-cloud/image-20230212222529828.png" alt="image-20230212222529828" style="zoom:50%;" />
 
 pom.xml：
 
@@ -1137,7 +1153,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/12 22:27
  * @description
@@ -1181,9 +1197,9 @@ eureka:
 
 分别启动两个 Eureka 服务，浏览器查看：
 
-![image-20230212230153733](spring-cloud/image-20230212230153733.png)
+<img src="spring-cloud/image-20230212230153733.png" alt="image-20230212230153733" style="zoom:40%;" />
 
-![image-20230212230238381](spring-cloud/image-20230212230238381.png)
+<img src="spring-cloud/image-20230212230238381.png" alt="image-20230212230238381" style="zoom:40%;" />
 
 > 可以看到，cloud-eureka-server-7001 的 Eureka 服务，注册了 cloud-eureka-server-7002 的 Eureka 服务，相同的，cloud-eureka-server-7002 的 Eureka 服务，注册了 cloud-eureka-server-7001 的 Eureka 服务，二者形成了一个 Eureka 集群。
 
@@ -1234,9 +1250,9 @@ eureka:
 
 重新启动服务，分别在两个 Eureka 注册中心，即可看到 cloud-payment-service 服务均注册成功：
 
-![image-20230212231541667](spring-cloud/image-20230212231541667.png)
+<img src="spring-cloud/image-20230212231541667.png" alt="image-20230212231541667" style="zoom:40%;" />
 
-![image-20230212231627801](spring-cloud/image-20230212231627801.png)
+<img src="spring-cloud/image-20230212231627801.png" alt="image-20230212231627801" style="zoom:40%;" />
 
 ##### cloud-order-service 服务
 
@@ -1265,9 +1281,9 @@ eureka:
 
 重新启动服务，分别在两个 Eureka 注册中心，即可看到 cloud-order-service 服务均注册成功：
 
-![image-20230212231812096](spring-cloud/image-20230212231812096.png)
+<img src="spring-cloud/image-20230212231812096.png" alt="image-20230212231812096" style="zoom:40%;" />
 
-![image-20230212231908921](spring-cloud/image-20230212231908921.png)
+<img src="spring-cloud/image-20230212231908921.png" alt="image-20230212231908921" style="zoom:40%;" />
 
 #### 支付服务提供者集群搭建
 
@@ -1275,7 +1291,7 @@ eureka:
 
 新建 module：
 
-![image-20230212232440285](spring-cloud/image-20230212232440285.png)
+<img src="spring-cloud/image-20230212232440285.png" alt="image-20230212232440285" style="zoom:50%;" />
 
 pom.xml：
 
@@ -1418,7 +1434,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:31
  * @description
@@ -1470,7 +1486,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:31
  * @description
@@ -1509,7 +1525,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:48
  * @description
@@ -1528,13 +1544,13 @@ public class RestTemplateConfig {
 
 重启全部服务：
 
-![image-20230212235359891](spring-cloud/image-20230212235359891.png)
+<img src="spring-cloud/image-20230212235359891.png" alt="image-20230212235359891" style="zoom:40%;" />
 
-![image-20230212235506581](spring-cloud/image-20230212235506581.png)
+<img src="spring-cloud/image-20230212235506581.png" alt="image-20230212235506581" style="zoom:40%;" />
 
-<img src="spring-cloud/image-20230213000327723.png" alt="image-20230213000327723" style="zoom:50%;" />
+<img src="spring-cloud/image-20230213000327723.png" alt="image-20230213000327723" style="zoom:60%;" />
 
-<img src="spring-cloud/image-20230213000412579.png" alt="image-20230213000412579" style="zoom:50%;" />
+<img src="spring-cloud/image-20230213000412579.png" alt="image-20230213000412579" style="zoom:60%;" />
 
 >通过测试，可以看到，8001 和 8002 端口交替出现，负载均衡效果达到。
 >
@@ -1630,9 +1646,9 @@ eureka:
 
 查看 Eureka 注册中心：
 
-![image-20230213112900567](spring-cloud/image-20230213112900567.png)
+<img src="spring-cloud/image-20230213112900567.png" alt="image-20230213112900567" style="zoom:50%;" />
 
-![image-20230213113013252](spring-cloud/image-20230213113013252.png)
+<img src="spring-cloud/image-20230213113013252.png" alt="image-20230213113013252" style="zoom:50%;" />
 
 #### 服务发现 Discovery
 
@@ -1650,7 +1666,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 21:54
  * @description
@@ -1690,9 +1706,9 @@ public Object discovery() {
 
 重启服务，即可发现 Eureka 上注册的服务信息：
 
-![image-20230213123926511](spring-cloud/image-20230213123926511.png)
+<img src="spring-cloud/image-20230213123926511.png" alt="image-20230213123926511" style="zoom: 60%;" />
 
-![image-20230213124012073](spring-cloud/image-20230213124012073.png)
+<img src="spring-cloud/image-20230213124012073.png" alt="image-20230213124012073" style="zoom: 50%;" />
 
 >cloud-provider-payment-8002 和 cloud-order-service-80 两个微服务，做相同的更改。
 
@@ -1706,7 +1722,7 @@ public Object discovery() {
 
 什么是`自我保护模式`：
 
-<img src="spring-cloud/image-20230213182555614.png" alt="image-20230213182555614" style="zoom:50%;" />
+<img src="spring-cloud/image-20230213182555614.png" alt="image-20230213182555614" style="zoom: 67%;" />
 
 - 默认情况下，如果 Eureka Server 在一定时间内没有接收到某个微服务实例的心跳，Eureka Server 将会注销该实例（**默认 90 秒**）。但是当网络分区故障发生（延时、卡顿、拥挤）时，微服务与 Eureka Server 之间无法正常通信，以上行为可能变得非常危险了——因为微服务本身其实是健康的，此时 Eureka Server 也不应该注销这个微服务。Eureka 通过自我保护模式来解决这个问题——**当 Eureka Server 节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么这个节点就会进入自我保护模式。**
 - 在自我保护模式中，Eureka Server 会保护服务注册表中的信息，不再注销任何服务实例。**它的设计哲学就是宁可保留错误的服务注册信息，也不盲目注销任何可能健康的服务实例。**
@@ -1716,7 +1732,7 @@ public Object discovery() {
 
 如果在 Eureka Server 的首页看到以下这段提示，则说明 Eureka 进入了保护模式：
 
-![image-20230213140303327](spring-cloud/image-20230213140303327.png)
+<img src="spring-cloud/image-20230213140303327.png" alt="image-20230213140303327" style="zoom: 40%;" />
 
 **保护模式主要用于一组客户端和 Eureka Server 之间存在网络分区场景下的保护。一旦进入保护模式，Eureka Server 将会尝试保护其服务注册表中的信息，不再删除服务注册表中的数据，也就是不会注销任何微服务。**
 
@@ -1758,7 +1774,7 @@ eureka:
 
 重启服务，可以看到自我保护机制已关闭：
 
-![image-20230213211739303](spring-cloud/image-20230213211739303.png)
+<img src="spring-cloud/image-20230213211739303.png" alt="image-20230213211739303" style="zoom:40%;" />
 
 修改 cloud-provider-payment-8001 的 application.yml，减小 Eureka 剔除服务的默认时间：
 
@@ -1812,7 +1828,7 @@ eureka:
 
 ### 停更说明
 
-![image-20230213212658569](spring-cloud/image-20230213212658569.png)
+<img src="spring-cloud/image-20230213212658569.png" alt="image-20230213212658569" style="zoom: 50%;" />
 
 - Eureka 2.0 已停更，1.0 还可以继续使用。
 
@@ -1846,7 +1862,7 @@ Consul 的功能：
 
 ### 安装
 
-![image-20230213215349157](spring-cloud/image-20230213215349157.png)
+<img src="spring-cloud/image-20230213215349157.png" alt="image-20230213215349157" style="zoom:50%;" />
 
 ```bash
 # 此命令执行完成后，控制台会乱码
@@ -1907,17 +1923,17 @@ $ consul agent -data-dir=/tmp/consul -node=xisun-consul -bind=192.168.10.10
 
 访问：
 
-![image-20230213232338627](spring-cloud/image-20230213232338627.png)
+<img src="spring-cloud/image-20230213232338627.png" alt="image-20230213232338627" style="zoom:50%;" />
 
 ### 服务提供者
 
 新建 module：
 
-![image-20230213232913889](spring-cloud/image-20230213232913889.png)
+<img src="spring-cloud/image-20230213232913889.png" alt="image-20230213232913889" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230214122810039.png" alt="image-20230214122810039" style="zoom:40%;" />
+<img src="spring-cloud/image-20230214122810039.png" alt="image-20230214122810039" style="zoom:50%;" />
 
 pom.xml：
 
@@ -2025,7 +2041,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/13 23:37
  * @description
@@ -2053,7 +2069,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/13 23:36
  * @description
@@ -2069,23 +2085,23 @@ public class PaymentApplication8006 {
 
 启动服务，可以发现，consul-provider-payment 服务已注册到 consul 上：
 
-![image-20230214113245952](spring-cloud/image-20230214113245952.png)
+<img src="spring-cloud/image-20230214113245952.png" alt="image-20230214113245952" style="zoom:50%;" />
 
-![image-20230214115358488](spring-cloud/image-20230214115358488.png)
+<img src="spring-cloud/image-20230214115358488.png" alt="image-20230214115358488" style="zoom:50%;" />
 
 访问：
 
-![image-20230214142824240](spring-cloud/image-20230214142824240.png)
+<img src="spring-cloud/image-20230214142824240.png" alt="image-20230214142824240" style="zoom:45%;" />
 
 ### 服务消费者
 
 新建 module：
 
-![image-20230214121146963](spring-cloud/image-20230214121146963.png)
+<img src="spring-cloud/image-20230214121146963.png" alt="image-20230214121146963" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230214122912315.png" alt="image-20230214122912315" style="zoom:40%;" />
+<img src="spring-cloud/image-20230214122912315.png" alt="image-20230214122912315" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -2199,7 +2215,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/11 23:31
  * @description
@@ -2229,7 +2245,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/14 12:16
  * @description
@@ -2245,13 +2261,13 @@ public class OrderConsulApplication80 {
 
 启动服务，可以发现，cloud-consumer-order 服务已注册到 consul 上：
 
-![image-20230214122523982](spring-cloud/image-20230214122523982.png)
+<img src="spring-cloud/image-20230214122523982.png" alt="image-20230214122523982" style="zoom:50%;" />
 
-![image-20230214122559967](spring-cloud/image-20230214122559967.png)
+<img src="spring-cloud/image-20230214122559967.png" alt="image-20230214122559967" style="zoom:50%;" />
 
 访问：
 
-![image-20230214142727701](spring-cloud/image-20230214142727701.png)
+<img src="spring-cloud/image-20230214142727701.png" alt="image-20230214142727701" style="zoom:45%;" />
 
 ## Eureka、Zookeeper 和 Consul 的异同
 
@@ -2263,7 +2279,7 @@ public class OrderConsulApplication80 {
 
 ### CAP 理论
 
-<img src="spring-cloud/image-20230214132521180.png" alt="image-20230214132521180" style="zoom:50%;" />
+<img src="spring-cloud/image-20230214132521180.png" alt="image-20230214132521180" style="zoom: 67%;" />
 
 **CAP 理论关注粒度是数据，而不是整体系统设计的策略。**
 
@@ -2274,13 +2290,13 @@ public class OrderConsulApplication80 {
 CAP 理论的核心是：一个分布式系统不可能同时很好的满足一致性，可用性和分区容错性这三个需求，因此，根据 CAP 原理将 NoSQL 数据库分成了满足 CA 原则、满足 CP 原则和满足 AP 原则三大类：
 
 - `CA`：单点集群，满足一致性，可用性的系统，通常在可扩展性上不太强大。
-- `CP`：满足一致性，分区容忍必的系统，通常性能不是特别高。Zookeeper 和 Consul 即为 CP 架构。
-- `AP`：满足可用性，分区容忍性的系统，通常可能对一致性要求低一些。Eureka 即为 AP 架构。
+- `CP`：满足一致性，分区容错性的系统，通常性能不是特别高。Zookeeper 和 Consul 即为 CP 架构。
+- `AP`：满足可用性，分区容错性的系统，通常可能对一致性要求低一些。Eureka 即为 AP 架构。
 - 最多只能同时较好的满足两个。
 
 #### CP 架构
 
-<img src="spring-cloud/image-20230214135906792.png" alt="image-20230214135906792" style="zoom:60%;" />
+<img src="spring-cloud/image-20230214135906792.png" alt="image-20230214135906792" style="zoom: 80%;" />
 
 - 当网络分区出现后，为了保证一致性，就必须拒接请求，否则无法保证一致性。
 
@@ -2288,7 +2304,7 @@ CAP 理论的核心是：一个分布式系统不可能同时很好的满足一�
 
 #### AP 架构
 
-<img src="spring-cloud/image-20230214140044860.png" alt="image-20230214140044860" style="zoom:60%;" />
+<img src="spring-cloud/image-20230214140044860.png" alt="image-20230214140044860" style="zoom: 80%;" />
 
 - 当网络分区出现后，为了保证可用性，系统 B 可以返回旧值，保证系统的可用性。
 
@@ -2333,27 +2349,11 @@ Ribbon 本地负载均衡客户端与 Nginx 服务端负载均衡区别：
 
 > 简而言之，Ribbon 相当于：负载均衡 + RestTemplate 调用。
 
-##### RestTemplate
-
-官网：https://docs.spring.io/spring-framework/docs/5.2.2.RELEASE/javadoc-api/org/springframework/web/client/RestTemplate.html
-
-`getForObject()`：返回对象为响应体中数据转化成的对象，基本上可以理解为 Json。
-
-<img src="spring-cloud/image-20230214220420349.png" alt="image-20230214220420349" style="zoom:60%;" />
-
-`getForEntity()`：返回对象为 ResponseEntity 对象，包含了响应中的一些重要信息，比如响应头、响应状态码、响应体等。
-
-<img src="spring-cloud/image-20230214220425875.png" alt="image-20230214220425875" style="zoom:60%;" />
-
-`postForObject()`和`postForEntity()`：
-
-<img src="spring-cloud/image-20230214220648502.png" alt="image-20230214220648502" style="zoom:60%;" />
-
 ### Ribbon 与 Eureka 结合
 
 Ribbon 实际上是一个软负载均衡的客户端组件，它可以和其他所需请求的客户端结合使用，和 Eureka 结合只是其中的一个实例。
 
-<img src="spring-cloud/image-20230214211734821.png" alt="image-20230214211734821" style="zoom: 50%;" />
+<img src="spring-cloud/image-20230214211734821.png" alt="image-20230214211734821" style="zoom: 67%;" />
 
 Ribbon 在工作时分成两步：
 
@@ -2363,7 +2363,7 @@ Ribbon 在工作时分成两步：
 
 Ribbon 的依赖，在 spring-cloud-starter-netflix-eureka-client 中有引入：
 
-<img src="spring-cloud/image-20230214215437088.png" alt="image-20230214215437088" style="zoom: 67%;" />
+<img src="spring-cloud/image-20230214215437088.png" alt="image-20230214215437088" style="zoom:90%;" />
 
 - 高版本的 spring-cloud-starter-netflix-eureka-client 中，引入的是 spring-cloud-starter-loadbalancer：
 
@@ -2373,7 +2373,7 @@ Ribbon 的依赖，在 spring-cloud-starter-netflix-eureka-client 中有引入�
 
 IRule：根据特定算法，从服务列表中选取一个要访问的服务。
 
-<img src="spring-cloud/image-20230214221540249.png" alt="image-20230214221540249" style="zoom: 67%;" />
+<img src="spring-cloud/image-20230214221540249.png" alt="image-20230214221540249" style="zoom: 90%;" />
 
 - com.netflix.loadbalancer.RoundRobinRule：轮询。
 - com.netflix.loadbalancer.RandomRule：随机。
@@ -2388,7 +2388,7 @@ IRule：根据特定算法，从服务列表中选取一个要访问的服务。
 自定义规则配置类：
 
 ```java
-package com.xisun.ribbon.rule;
+package com.xisun.ribbon.rule;// 放在非Spring Boot主启动类所在的包及其子包所在的路径下
 
 import com.netflix.loadbalancer.IRule;
 import com.netflix.loadbalancer.RandomRule;
@@ -2453,6 +2453,14 @@ List [1] instances = 127.0.0.1:8001
 - 当总请求数位 3 时： 3 % 2 = 1，对应下标位置为 1 ，则获得服务地址为 127.0.0.1:8001。
 - 当总请求数位 4 时： 4 % 2 = 0，对应下标位置为 0 ，则获得服务地址为 127.0.0.1:8002。
 - 以此类推...
+
+### RoundRobinRule 源码分析
+
+> 略。
+
+### 手写本地负载均衡器
+
+> 略。
 
 ## OpenFeign 服务接口调用
 
@@ -2594,7 +2602,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/3/12 1:11
  * @description
@@ -2624,7 +2632,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/3/12 1:12
  * @description
@@ -2648,7 +2656,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/3/12 1:09
  * @description
@@ -2664,9 +2672,9 @@ public class OrderFeignApplication80 {
 
 启动 cloud-eureka-server-7001，cloud-eureka-server-7002，cloud-provider-payment-8001，cloud-provider-payment-8002 和 cloud-consumer-order-feign-80，浏览器访问 http://localhost/consumer/payment/feign/get/1：
 
-![image-20230315231356104](spring-cloud/image-20230315231356104.png)
+<img src="spring-cloud/image-20230315231356104.png" alt="image-20230315231356104" style="zoom:60%;" />
 
-![image-20230315231421706](spring-cloud/image-20230315231421706.png)
+<img src="spring-cloud/image-20230315231421706.png" alt="image-20230315231421706" style="zoom:60%;" />
 
 > Open Feign 自带负载均衡配置项。
 
@@ -2714,7 +2722,7 @@ public CommonResult<String> paymentFeignTimeOut() {
 
 重新设置接口超时时间为 60 秒，重启服务，浏览器访问 http://localhost/consumer/payment/feign/timeout，等待 60 秒后，可以正常访问，后台不会报错。
 
-![image-20230317231032645](spring-cloud/image-20230317231032645.png)
+<img src="spring-cloud/image-20230317231032645.png" alt="image-20230317231032645" style="zoom:50%;" />
 
 <img src="spring-cloud/image-20230317231213577.png" alt="image-20230317231213577" style="zoom:50%;" />
 
@@ -2843,7 +2851,7 @@ logging:
 
 > 略。
 
-## Gatway 新一代网关
+## Gateway 新一代网关
 
 ### 简介
 
@@ -2865,7 +2873,7 @@ Spring Cloud Gateway 的目标是提供统一的路由方式，且基于 Filter 
 >
 >微服务中的网关所处的位置：
 >
-><img src="spring-cloud/image-20230215214751974.png" alt="image-20230215214751974" style="zoom:70%;" />
+><img src="spring-cloud/image-20230215214751974.png" alt="image-20230215214751974" style="zoom: 80%;" />
 
 #### Gateway 的特性
 
@@ -2881,50 +2889,50 @@ Spring Cloud Gateway 的目标是提供统一的路由方式，且基于 Filter 
 #### Gateway 与 Zuul 的区别
 
 - Zuul 1.x，是一个基于阻塞 I/O 的 API Gateway。
-- Zuul 1.x 基于Servlet 2. 5使用阻塞架构它不支持任何长连接(如 WebSocket) Zuul 的设计模式和Nginx较像，每次 I/O 操作都是从工作线程中选择一个执行，请求线程被阻塞到工作线程完成，但是差别是 Nginx 用 C++ 实现，Zuul 用 Java 实现，而 JVM 本身会有第一次加载较慢的情况，使得 Zuul 的性能相对较差。
+- Zuul 1.x 基于 Servlet 2. 5，使用阻塞架构，它不支持任何长连接（如 WebSocket），Zuul 的设计模式和 Nginx 较像，每次 I/O 操作都是从工作线程中选择一个执行，请求线程被阻塞到工作线程完成，但是差别是 Nginx 用 C++ 实现，Zuul 用 Java 实现，而 JVM 本身会有第一次加载较慢的情况，使得 Zuul 的性能相对较差。
 - Zuul 2.x 理念更先进，想基于 Netty 非阻塞和支持长连接，但 Spring Cloud 目前还没有整合。 Zuul 2.x 的性能较 Zuul 1.x 有较大提升。在性能方面，根据官方提供的基准测试， Spring Cloud Gateway 的 RPS（每秒请求数）是 Zuul 的 1. 6 倍。
-- Spring Cloud Gateway 建立 在 Spring Framework 5、 Project Reactor 和 Spring Boot 2 之上， 使用非阻塞 API。
-- Spring Cloud Gateway 还支持 WebSocket， 并且与 Spring 紧密集成拥有更好的开发体验。
+- Spring Cloud Gateway 建立在 Spring Framework 5、 Project Reactor 和 Spring Boot 2 之上，使用非阻塞 API。
+- Spring Cloud Gateway 还支持 WebSocket，并且与 Spring 紧密集成拥有更好的开发体验。
 
 ### Gateway 的三大核心概念
 
 模型：
 
-![image-20230216103839963](spring-cloud/image-20230216103839963.png)
+<img src="spring-cloud/image-20230216103839963.png" alt="image-20230216103839963" style="zoom:80%;" />
 
 Web 请求，通过一些匹配条件，定位到真正的服务节点。并在这个转发过程的前后，进行一些精细化控制。Predicate 就是匹配条件，Filter 可以理解为一个无所不能的拦截器，有了这两个元素，再加上目标 URI，就可以实现一个具体的路由了。
 
 #### Route（路由）
 
-路由是构建网关的基本模块，它由 ID、目标 URI、一系列的断言和过滤器组成，如果断言为 true 则匹配该路由。
+路由是构建网关的基本模块，它`由 ID、目标 URI、一系列的断言和过滤器组成`，如果`断言为 true 则匹配该路由`。
 
 #### Predicate（断言）
 
-参考的是 Java 8 的 java.util.function.Predicate，开发人员可以匹配 HTTP 请求中的所有内容（例如请求头或请求参数），如果请求与断言相匹配则进行路由。
+参考的是 Java 8 的 java.util.function.Predicate，开发人员`可以匹配 HTTP 请求中的所有内容`（例如请求头或请求参数），如果`请求与断言相匹配则进行路由`。
 
 #### Filter（过滤）
 
-指的是 Spring 框架中 GatewayFilter 的实例，使用过滤器，可以在请求被路由前或者之后对请求进行修改。
+指的是 Spring 框架中 GatewayFilter 的实例，使用过滤器，可以`在请求被路由前或者之后对请求进行修改`。
 
 ### Gateway 的工作流程
 
 核心逻辑：**`路由转发 + 执行过滤器链`**。
 
-<img src="spring-cloud/image-20230215220910731.png" alt="image-20230215220910731" style="zoom:67%;" />
+<img src="spring-cloud/image-20230215220910731.png" alt="image-20230215220910731" style="zoom: 80%;" />
 
-- 客户端向 Spring Cloud Gateway 发出请求。然后在 Gateway Handler Mapping 中找到与请求相匹配的路由，将其发送到 Gateway Web Handler。
-- Gateway Web Handler 再通过指定的过滤器链，将请求发送到实际的服务执行业务逻辑，然后返回。过滤器之间用虚线分开是因为过滤器可能会在发送代理请求之前（pre）或之后（post）执行业务逻辑。
-- Filter 在 pre 类型的过滤器中可以做参数校验、权限校验、流量监控、日志输出、协议转换等，在 post 类型的过滤器中可以做响应内容、响应头的修改，日志的输出，流量监控等有着非常重要的作用。
+- 客户端向 Spring Cloud Gateway 发出请求，然后`在 Gateway Handler Mapping 中找到与请求相匹配的路由`，将其发送到 Gateway Web Handler。
+- Gateway Web Handler 再通过指定的`过滤器链`，将请求发送到实际的服务执行业务逻辑，然后返回。过滤器之间用虚线分开是因为过滤器可能会`在发送代理请求之前（pre）或之后（post）`执行业务逻辑。
+- Filter 在 pre 类型的过滤器中可以做参数校验、权限校验、流量监控、日志输出、协议转换等，在 post 类型的过滤器中可以做响应内容、响应头的修改，日志的输出，流量监控等，有着非常重要的作用。
 
 ### Gateway 的入门配置
 
 新建 module：
 
-![image-20230215223441630](spring-cloud/image-20230215223441630.png)
+<img src="spring-cloud/image-20230215223441630.png" alt="image-20230215223441630" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230215230334386.png" alt="image-20230215230334386" style="zoom:40%;" />
+<img src="spring-cloud/image-20230215230334386.png" alt="image-20230215230334386" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -2990,9 +2998,9 @@ pom.xml：
 </project>
 ```
 
-> Gateway 不需要 spring-boot-starter-web 和 spring-boot-starter-actuator 这两个依赖，否则启动报错：
+> **Gateway 不需要 spring-boot-starter-web 和 spring-boot-starter-actuator 这两个依赖，否则启动报错：**
 >
-> ![image-20230215232136127](spring-cloud/image-20230215232136127.png)
+> <img src="spring-cloud/image-20230215232136127.png" alt="image-20230215232136127" style="zoom:40%;" />
 
 application.yml：
 
@@ -3024,7 +3032,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/15 22:48
  * @description
@@ -3062,25 +3070,25 @@ spring:
 
 启动 cloud-eureka-server-7001、cloud-eureka-server-7002、cloud-provider-payment-8001 和 cloud-gateway-9527 四个微服务。
 
-![image-20230215235540561](spring-cloud/image-20230215235540561.png)
+<img src="spring-cloud/image-20230215235540561.png" alt="image-20230215235540561" style="zoom:40%;" />
 
-![image-20230215235611518](spring-cloud/image-20230215235611518.png)
+<img src="spring-cloud/image-20230215235611518.png" alt="image-20230215235611518" style="zoom:40%;" />
 
 通常情况下，直接通过 8001 端口，访问 cloud-provider-payment-8001 的服务：
 
-![image-20230215235745459](spring-cloud/image-20230215235745459.png)
+<img src="spring-cloud/image-20230215235745459.png" alt="image-20230215235745459" style="zoom:50%;" />
 
 添加了 Gateway 之后，可以在不暴露 8001 端口的情况下，访问  cloud-provider-payment-8001 的服务：
 
-![image-20230215235932771](spring-cloud/image-20230215235932771.png)
+<img src="spring-cloud/image-20230215235932771.png" alt="image-20230215235932771" style="zoom:50%;" />
 
 #### Gateway 网关路由的两种配置方式
 
-配置方式一，通过 application.yml 的方式配置。
+配置方式一，**通过 application.yml 的方式配置**。
 
-配置方式二，代码中注入 RouteLocator 的 Bean。
+配置方式二，**代码中注入 RouteLocator 的 Bean**。
 
-<img src="spring-cloud/image-20230216000354126.png" alt="image-20230216000354126" style="zoom: 67%;" />
+<img src="spring-cloud/image-20230216000354126.png" alt="image-20230216000354126" style="zoom: 80%;" />
 
 cloud-gateway-9527 添加配置类：
 
@@ -3093,7 +3101,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/16 0:08
  * @description
@@ -3121,7 +3129,7 @@ public class GatewayConfig {
 
 ### Gateway 实现动态路由
 
-默认情况下，Gateway 会根据注册中心注册的服务列表，以注册中心上微服务名为路径创建动态路由进行转发，从而实现动态路由的功能。
+默认情况下，Gateway 会根据注册中心注册的服务列表，以注册中心上微服务名为路径创建动态路由进行转发，从而实现`动态路由`的功能。
 
 修改 cloud-gateway-9527 的 application.yml：
 
@@ -3148,7 +3156,7 @@ spring:
             - Path=/payment/lb/** # 断言，路径相匹配的进行路由
 ```
 
-> 需要注意的是 uri 的协议为 lb，表示启用 Gateway 的负载均衡功能。
+> 需要注意的是 uri 的`协议为 lb`，表示启用 Gateway 的负载均衡功能。
 >
 > `lb://serviceName`是 Spring Cloud Gateway 在微服务中自动创建的负载均衡 uri。
 
@@ -3156,9 +3164,9 @@ spring:
 
 浏览器访问`localhost:9526/payment/get/1`，可以发现调用的服务端口在 8001 和 8002 之间轮询切换：
 
-![image-20230216165002494](spring-cloud/image-20230216165002494.png)
+<img src="spring-cloud/image-20230216165002494.png" alt="image-20230216165002494" style="zoom:50%;" />
 
-![image-20230216165039913](spring-cloud/image-20230216165039913.png)
+<img src="spring-cloud/image-20230216165039913.png" alt="image-20230216165039913" style="zoom:50%;" />
 
 ### Gateway 中 Predicate 的使用
 
@@ -3198,7 +3206,7 @@ cloud-gateway-9527 服务在启动时，控制台的日志可以看到：
   import java.time.ZonedDateTime;
   
   /**
-   * @author WangDesong
+   * @author XiSun
    * @version 1.0
    * @date 2023/2/17 15:19
    * @description
@@ -3255,6 +3263,11 @@ Filter 的生命周期有两种：
 
 #### 自定义过滤器
 
+作用：
+
+- 全局日志记录。
+- 统一网关鉴权等。
+
 Filter：
 
 ```java
@@ -3271,7 +3284,7 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/17 15:56
  * @description
@@ -3299,9 +3312,9 @@ public class MyLogGateWayFilter implements GlobalFilter, Ordered {
 
 访问：
 
-![image-20230217160947814](spring-cloud/image-20230217160947814.png)
+<img src="spring-cloud/image-20230217160947814.png" alt="image-20230217160947814" style="zoom:50%;" />
 
-![image-20230217161038134](spring-cloud/image-20230217161038134.png)
+<img src="spring-cloud/image-20230217161038134.png" alt="image-20230217161038134" style="zoom:50%;" />
 
 控制台日志：
 
@@ -3425,7 +3438,7 @@ GitHub：https://github.com/alibaba/nacos/
 >
 >一般来说，如果不需要存储服务级别的信息，且服务实例是通过 Nacos Client 注册，并能够保持心跳上报，那么就可以选择 AP 模式。当前主流的服务如 Spring Cloud 和 Dubbo 服务，都适用于 AP 模式，AP 模式为了服务的可能性而减弱了一致性，因此 AP 模式下只支持注册临时实例。
 >
->如果需要在服务级别编辑或者存储配置信息，那么 CP 是必须，K8s 服务和 DNS 服务则适用于CP模式。CP 模式下则支持注册持久化实例，此时则是以 Raft 协议为集群运行模式，该模式下注册实例之前必须先注册服务，如果服务不存在，则会返回错误。
+>如果需要在服务级别编辑或者存储配置信息，那么 CP 是必须，K8s 服务和 DNS 服务则适用于 CP 模式。CP 模式下则支持注册持久化实例，此时则是以 Raft 协议为集群运行模式，该模式下注册实例之前必须先注册服务，如果服务不存在，则会返回错误。
 
 ### 安装
 
@@ -3444,9 +3457,9 @@ $ docker-compose -f example/standalone-derby.yaml up
 
 浏览器输入地址：http://192.168.10.100:8848/nacos/index.html
 
-![image-20230219210813471](spring-cloud/image-20230219210813471.png)
+<img src="spring-cloud/image-20230219210813471.png" alt="image-20230219210813471" style="zoom:50%;" />
 
-![image-20230219210959901](spring-cloud/image-20230219210959901.png)
+<img src="spring-cloud/image-20230219210959901.png" alt="image-20230219210959901" style="zoom:50%;" />
 
 > 默认账号：nacos/nacos。
 
@@ -3456,11 +3469,11 @@ $ docker-compose -f example/standalone-derby.yaml up
 
 新建 module：
 
-![image-20230226131857743](spring-cloud/image-20230226131857743.png)
+<img src="spring-cloud/image-20230226131857743.png" alt="image-20230226131857743" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230226142841573.png" alt="image-20230226142841573" style="zoom:40%;" />
+<img src="spring-cloud/image-20230226142841573.png" alt="image-20230226142841573" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -3536,6 +3549,27 @@ pom.xml：
 </project>
 ```
 
+application.yml：
+
+```yaml
+server:
+  port: 9001
+
+spring:
+  application:
+    name: nacos-payment-provider
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.10.100:8848 # 配置Nacos地址
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+```
+
 PaymentController.java：
 
 ```java
@@ -3548,7 +3582,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/26 14:22
  * @description
@@ -3576,7 +3610,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/26 14:20
  * @description
@@ -3592,11 +3626,11 @@ public class NacosPaymentApplication9001 {
 
 启动服务，Nacos 控制台可以看到服务已注册：
 
-![image-20230226171400727](spring-cloud/image-20230226171400727.png)
+<img src="spring-cloud/image-20230226171400727.png" alt="image-20230226171400727" style="zoom:50%;" />
 
 访问服务：
 
-![image-20230226171444366](spring-cloud/image-20230226171444366.png)
+<img src="spring-cloud/image-20230226171444366.png" alt="image-20230226171444366" style="zoom:50%;" />
 
 > 依照 cloud-alibaba-provider-payment-nacos-9001，新建 cloud-alibaba-provider-payment-nacos-9002。
 
@@ -3604,7 +3638,7 @@ public class NacosPaymentApplication9001 {
 
 新建 module：
 
-![image-20230226205508439](spring-cloud/image-20230226205508439.png)
+<img src="spring-cloud/image-20230226205508439.png" alt="image-20230226205508439" style="zoom:50%;" />
 
 pom.xml：
 
@@ -3720,7 +3754,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/26 21:01
  * @description
@@ -3751,7 +3785,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/2/26 21:00
  * @description
@@ -3767,13 +3801,13 @@ public class NacosOrderApplication83 {
 
 启动 cloud-alibaba-provider-payment-nacos-9001，cloud-alibaba-provider-payment-nacos-9002 和 cloud-alibaba-consumer-order-nacos-83：
 
-![image-20230227174230193](spring-cloud/image-20230227174230193.png)
+<img src="spring-cloud/image-20230227174230193.png" alt="image-20230227174230193" style="zoom:50%;" />
 
 访问：
 
-![image-20230227174417000](spring-cloud/image-20230227174417000.png)
+<img src="spring-cloud/image-20230227174417000.png" alt="image-20230227174417000" style="zoom:50%;" />
 
-![image-20230227174438962](spring-cloud/image-20230227174438962.png)
+<img src="spring-cloud/image-20230227174438962.png" alt="image-20230227174438962" style="zoom:50%;" />
 
 > 9001 和 9002 服务轮询调用。
 
@@ -3783,11 +3817,11 @@ public class NacosOrderApplication83 {
 
 新建 module：
 
-![image-20230302222203802](spring-cloud/image-20230302222203802.png)
+<img src="spring-cloud/image-20230302222203802.png" alt="image-20230302222203802" style="zoom:50%;" />
 
 项目结构：
 
-<img src="spring-cloud/image-20230302230614951.png" alt="image-20230302230614951" style="zoom:40%;" />
+<img src="spring-cloud/image-20230302230614951.png" alt="image-20230302230614951" style="zoom: 50%;" />
 
 pom.xml：
 
@@ -3921,7 +3955,7 @@ spring:
 >**`${prefix}-${spring.profiles.active}.${file-extension}`**
 >
 >- prefix 默认为 spring.application.name 的值，也可以通过配置项 spring.cloud.nacos.config.prefix 来配置。
->- spring.profiles.active 即为当前环境对应的 profile，详情可以参考 [Spring Boot文档](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-profiles.html#boot-features-profiles)。 注意：当 spring.profiles.active 为空时，对应的连接符 - 也将不存在，DataId 的拼接格式变成 ${prefix}.${file-extension}。（一般不建议 spring.profiles.active 配置为空）
+>- spring.profiles.active 即为当前环境对应的 profile，详情可以参考 [Spring Boot文档](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-profiles.html#boot-features-profiles)。 注意：当 spring.profiles.active 为空时，对应的连接符 - 也将不存在，DataId 的拼接格式变成 \${prefix}.${file-extension}。（一般不建议 spring.profiles.active 配置为空）
 >- file-exetension 为配置内容的数据格式，可以通过配置项 spring.cloud.nacos.config.file-extension 来配置，目前只支持 `properties` 和 `yaml` 类型。
 
 ConfigClientController.java：
@@ -3935,7 +3969,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/3/2 22:32
  * @description
@@ -3964,7 +3998,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * @author WangDesong
+ * @author XiSun
  * @version 1.0
  * @date 2023/3/2 22:31
  * @description
@@ -3980,11 +4014,11 @@ public class NacosConfigClientApplication3377 {
 
 Nacos 配置：
 
-![image-20230302233015132](spring-cloud/image-20230302233015132.png)
+<img src="spring-cloud/image-20230302233015132.png" alt="image-20230302233015132" style="zoom:50%;" />
 
 启动服务，浏览器访问`localhost:3377/config/info`：
 
-![image-20230302233333032](spring-cloud/image-20230302233333032.png)
+<img src="spring-cloud/image-20230302233333032.png" alt="image-20230302233333032" style="zoom:50%;" />
 
 > 改变 config.info 的值，不重启服务，直接刷新浏览器，可以看到页面的值发生改变，此即为 @RefreshScope 注解的作用。
 
@@ -4033,7 +4067,7 @@ Nacos 配置：
 
 问题2：
 
-- 一个大型分布式微服务系统会有很多微服务子项目，每个微服务项目又都会有相应的开发环境、测试环境、预发环境、正式环境......
+- 一个大型分布式微服务系统会有很多微服务子项目，每个微服务项目又都会有相应的开发环境、测试环境、预发布环境、正式环境......
 
 ##### Namespace + Group + Data ID三者关系
 
@@ -4059,9 +4093,9 @@ Nacos 配置：
 
 新建 Nacos 配置：
 
-![image-20230305204853183](spring-cloud/image-20230305204853183.png)
+<img src="spring-cloud/image-20230305204853183.png" alt="image-20230305204853183" style="zoom:50%;" />
 
-![image-20230305210500699](spring-cloud/image-20230305210500699.png)
+<img src="spring-cloud/image-20230305210500699.png" alt="image-20230305210500699" style="zoom:50%;" />
 
 修改 cloud-alibaba-config-nacos-client-3377 服务的 application.yml：
 
@@ -4074,7 +4108,7 @@ spring:
 
 重启服务，浏览器访问`localhost:3377/config/info`：
 
-![image-20230305210416643](spring-cloud/image-20230305210416643.png)
+<img src="spring-cloud/image-20230305210416643.png" alt="image-20230305210416643" style="zoom:50%;" />
 
 ##### Group 方案加载配置
 
@@ -4082,9 +4116,9 @@ spring:
 
 新建 Nacos 配置：
 
-![image-20230305211153660](spring-cloud/image-20230305211153660.png)
+<img src="spring-cloud/image-20230305211153660.png" alt="image-20230305211153660" style="zoom:50%;" />
 
-![image-20230305211310626](spring-cloud/image-20230305211310626.png)
+<img src="spring-cloud/image-20230305211310626.png" alt="image-20230305211310626" style="zoom:50%;" />
 
 修改 cloud-alibaba-config-nacos-client-3377 服务的 bootstrap.yml，增加 Group 的配置：
 
@@ -4116,7 +4150,7 @@ spring:
 
 重启服务，浏览器访问`localhost:3377/config/info`：
 
-![image-20230305211811938](spring-cloud/image-20230305211811938.png)
+<img src="spring-cloud/image-20230305211811938.png" alt="image-20230305211811938" style="zoom:50%;" />
 
 ##### NameSpace 方案加载配置
 
@@ -4126,15 +4160,15 @@ spring:
 
 <img src="spring-cloud/image-20230305220514218.png" alt="image-20230305220514218" style="zoom:40%;" />
 
-![image-20230305220621197](spring-cloud/image-20230305220621197.png)
+<img src="spring-cloud/image-20230305220621197.png" alt="image-20230305220621197" style="zoom:50%;" />
 
-![image-20230305220718018](spring-cloud/image-20230305220718018.png)
+<img src="spring-cloud/image-20230305220718018.png" alt="image-20230305220718018" style="zoom:50%;" />
 
-![image-20230305220748089](spring-cloud/image-20230305220748089.png)
+<img src="spring-cloud/image-20230305220748089.png" alt="image-20230305220748089" style="zoom:50%;" />
 
 新建 Nacos 配置：
 
-![image-20230305221255489](spring-cloud/image-20230305221255489.png)
+<img src="spring-cloud/image-20230305221255489.png" alt="image-20230305221255489" style="zoom:50%;" />
 
 修改 cloud-alibaba-config-nacos-client-3377 服务的 bootstrap.yml，增加 NameSpace 的配置：
 
@@ -4158,11 +4192,11 @@ spring:
 
 重启服务，浏览器访问`localhost:3377/config/info`：
 
-![image-20230305221448779](spring-cloud/image-20230305221448779.png)
+<img src="spring-cloud/image-20230305221448779.png" alt="image-20230305221448779" style="zoom:50%;" />
 
 ##### 配置的查找顺序
 
-![image-20230305221833941](spring-cloud/image-20230305221833941.png)
+<img src="spring-cloud/image-20230305221833941.png" alt="image-20230305221833941" style="zoom:50%;" />
 
 ### Nacos 的持久化和集群
 
@@ -4196,7 +4230,7 @@ Github：https://github.com/alibaba/Sentinel/
 
 下载 jar 包：https://github.com/alibaba/Sentinel/releases
 
-![image-20230320084216187](spring-cloud/image-20230320084216187.png)
+<img src="spring-cloud/image-20230320084216187.png" alt="image-20230320084216187" style="zoom: 80%;" />
 
 到 jar 包下载目录下，启动控制台：
 
@@ -4208,9 +4242,9 @@ D:\XiSunProjects>java -Dserver.port=8080 -Dcsp.sentinel.dashboard.server=localho
 
 浏览器访问 http://localhost:8080：
 
-![image-20230320085051315](spring-cloud/image-20230320085051315.png)
+<img src="spring-cloud/image-20230320085051315.png" alt="image-20230320085051315" style="zoom:50%;" />
 
-![image-20230320085302182](spring-cloud/image-20230320085302182.png)
+<img src="spring-cloud/image-20230320085302182.png" alt="image-20230320085302182" style="zoom:50%;" />
 
 > 默认登陆账号密码：sentinel/sentinel。
 
