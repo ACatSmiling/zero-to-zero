@@ -13513,11 +13513,9 @@ mysql> CREATE  PROCEDURE `proc_drop_index`(dbname VARCHAR(200),tablename VARCHAR
     ->    DECLARE ct INT DEFAULT 0;
     ->    DECLARE _index VARCHAR(200) DEFAULT '';
     ->    DECLARE _cur CURSOR FOR  SELECT  index_name  FROM
-    -> information_schema.STATISTICS  WHERE table_schema=dbname AND table_name=tablename AND
-    -> seq_in_index=1 AND  index_name <>'PRIMARY' ;
-    -> # declare continue handler for not found set done=1
-    ->    DECLARE  CONTINUE HANDLER FOR NOT FOUND set done=2 ;   
-    -> # , , done2
+    -> 		information_schema.STATISTICS  WHERE table_schema=dbname AND table_name=tablename AND
+    -> 		seq_in_index=1 AND  index_name <>'PRIMARY'; # 每个游标必须使用不同的declare continue handler for not found set done=1来控制游标的结束
+    ->    DECLARE  CONTINUE HANDLER FOR NOT FOUND set done=2; # 若没有数据返回，程序继续，并将变量done设为2
     ->     OPEN _cur;
     ->     FETCH _cur INTO _index;
     ->     WHILE _index<>'' DO
@@ -13539,7 +13537,1007 @@ mysql> DELIMITER ;
 
 ### 索引失效案例
 
+MySQL 中提高性能的一个最有效的方式是对数据表设计合理的索引。索引提供了高校访问数据的方法，并且加快了查询的速度，因此索引对查询的速度有着至关重要的影响。
 
+- 使用索引可以快速的定位表中的某条记录，从而提高数据库查询的速度，提高数据库的性能。
+- 如果查询时没有使用索引，查询语句就会扫描表中的所有记录。在数据量大的情况下，这样查询的速度会很慢。
+
+大多数情况下都（默认）采用 B+Tree 来构建索引。只是空间列类型的索引使用 R-Tree，并且 Memory 表还支持 Hash 索引。
+
+其实，用不用索引，最终都是优化器说了算。优化器时基于`cost 开销 (CostBaseOptimizer)`，它不是基于规则（Rule-BasedOptimizer），也不是基于语义。因此，优化器总是选择开销最小的。另外，SQL 语句是否使用索引，跟数据库版本、数据量、数据选择度都有关系。
+
+> cost 开销的单位不是时间。
+
+#### 全值匹配
+
+**`全值匹配时，可以充分的利用组合索引，会匹配符合字段最多的组合索引。`**
+
+如下所示，系统中经常出现的 SQL 语句，当没有建立索引时，`possible_keys`和`key`都为 NULL：
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |    10.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND classId = 4;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |     1.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND classId = 4 AND NAME = 'abcd';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |     0.10 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+>`SQL_NO_CACHE`表示不使用查询缓存。
+
+此时执行 SQL，数据查询速度会比较慢：
+
+```mysql
+mysql> SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND classId = 4 AND NAME = 'abcd';
+Empty set, 1 warning (0.22 sec)
+```
+
+接下来建立索引：
+
+```mysql
+mysql> CREATE INDEX idx_age ON student(age);
+Query OK, 0 rows affected (3.44 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX idx_age_classid ON student(age, classId);
+Query OK, 0 rows affected (3.60 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX idx_age_classid_name ON student(age, classId, NAME);
+Query OK, 0 rows affected (4.10 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+>上面建立索引是与三条 SQL 的使用场景对应的，遵守了`全值匹配`的规则，就是说建立几个复合索引字段，最好的就是用上这几个字段，且按照顺序来用。
+
+建立索引后执行，发现使用到了联合索引（组合索引字段最多的），且耗时明显减少：
+
+```mysql
+# 全值匹配，使用的是组合字段最多的索引idx_age_classid_name
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND classId = 4 AND NAME = 'abcd';
++----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys                                | key                  | key_len | ref               | rows | filtered | Extra |
++----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_age,idx_age_classid,idx_age_classid_name | idx_age_classid_name | 73      | const,const,const |    1 |   100.00 | NULL  |
++----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+1 row in set, 2 warnings (0.01 sec)
+
+mysql> SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND classId = 4 AND NAME = 'abcd';
+Empty set, 1 warning (0.00 sec)
+```
+
+>注意：上面的索引可能不生效，在数据量较大的情况下，进行全值匹配`SELECT *`，优化器可能经过计算发现，我们使用索引查询所有的数据后，还需要对查找到的数据进行回表操作，性能还不如全表扫描。此处因为没有造这么多数据，所以不演示效果。
+
+#### 最左匹配原则
+
+在 MySQL 建立联合索引时会遵守**`最佳左前缀匹配原则`**，即最左优先，在检索数据时从组合索引的最左边开始匹配，如果第一个字段匹配不上，则整个组合索引都不会生效。
+
+- 下面的 SQL 将使用索引 idx_age：
+
+  ```mysql
+  mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.name = 'abcd';
+  +----+-------------+---------+------------+------+----------------------------------------------+---------+---------+-------+-------+----------+-------------+
+  | id | select_type | table   | partitions | type | possible_keys                                | key     | key_len | ref   | rows  | filtered | Extra       |
+  +----+-------------+---------+------------+------+----------------------------------------------+---------+---------+-------+-------+----------+-------------+
+  |  1 | SIMPLE      | student | NULL       | ref  | idx_age,idx_age_classid,idx_age_classid_name | idx_age | 5       | const | 30518 |    10.00 | Using where |
+  +----+-------------+---------+------------+------+----------------------------------------------+---------+---------+-------+-------+----------+-------------+
+  1 row in set, 2 warnings (0.00 sec)
+  ```
+
+- 下面的 SQL 不会使用索引，因为没有创建 classId 或者 name 的索引：
+
+  ```mysql
+  mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.classId = 4 AND student.name = 'abcd';
+  +----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+  | id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
+  +----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+  |  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |     1.00 | Using where |
+  +----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+  1 row in set, 2 warnings (0.00 sec)
+  ```
+
+- 下面的 SQL 查询就是遵守这一原则的正确打开方式：
+
+  ```mysql
+  mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.classId = 4 AND student.name = 'abcd';
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  | id | select_type | table   | partitions | type | possible_keys                                | key                  | key_len | ref               | rows | filtered | Extra |
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  |  1 | SIMPLE      | student | NULL       | ref  | idx_age,idx_age_classid,idx_age_classid_name | idx_age_classid_name | 73      | const,const,const |    1 |   100.00 | NULL  |
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  1 row in set, 2 warnings (0.01 sec)
+  ```
+
+- 下面的 SQL 也会使用索引，因为**优化器会执行优化，调整查询条件的顺序**，但开发中应保持良好的开发习惯，保持条件中字段的顺序匹配索引的组合顺序： 
+
+  ```mysql
+  mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.classId = 4 AND student.age = 30 AND student.name = 'abcd';
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  | id | select_type | table   | partitions | type | possible_keys                                | key                  | key_len | ref               | rows | filtered | Extra |
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  |  1 | SIMPLE      | student | NULL       | ref  | idx_age,idx_age_classid,idx_age_classid_name | idx_age_classid_name | 73      | const,const,const |    1 |   100.00 | NULL  |
+  +----+-------------+---------+------------+------+----------------------------------------------+----------------------+---------+-------------------+------+----------+-------+
+  1 row in set, 2 warnings (0.00 sec)
+  ```
+
+- 如果删去索引 idx_age 和 idx_age_classid，只保留 idx_age_classid_name，执行如下 SQL，也会使用索引。
+
+  ```mysql
+  mysql> DROP INDEX idx_age ON student;
+  Query OK, 0 rows affected (0.02 sec)
+  Records: 0  Duplicates: 0  Warnings: 0
+  
+  mysql> DROP INDEX idx_age_classid ON student;
+  Query OK, 0 rows affected (0.02 sec)
+  Records: 0  Duplicates: 0  Warnings: 0
+  
+  # 使用了idx_age_classid_name索引，但是key_len是5，也就是说只使用了age部分的排序，因为age是int类型，4个字节加上null值列表一共5个字节。仔细想想，B+Tree是先按照age排序，再按照classid排序，最后按照name排序，因此不能跳过classId的排序直接就使用name的排序，所以只使用了age的索引
+  mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.name = 'abcd';
+  +----+-------------+---------+------------+------+----------------------+----------------------+---------+-------+-------+----------+-----------------------+
+  | id | select_type | table   | partitions | type | possible_keys        | key                  | key_len | ref   | rows  | filtered | Extra                 |
+  +----+-------------+---------+------------+------+----------------------+----------------------+---------+-------+-------+----------+-----------------------+
+  |  1 | SIMPLE      | student | NULL       | ref  | idx_age_classid_name | idx_age_classid_name | 5       | const | 31982 |    10.00 | Using index condition |
+  +----+-------------+---------+------------+------+----------------------+----------------------+---------+-------+-------+----------+-----------------------+
+  1 row in set, 2 warnings (0.00 sec)
+  
+  ```
+
+综上，MySQL 可以为多个字段创建索引，一个索引可以包括 16 个字段，`对于多列字段，过滤条件要使用索引必须按照索引建立时的顺序，依次满足，一旦跳过某个字段，索引后面的字段都无法使用，如果查询条件中没有使用这些字段中的第一个字段时，多列索引不会被使用。`
+
+#### 主键插入顺序
+
+对于一个使用 InnoDB 存储引擎的表来说，在没有显式的创建索引时，表中的数据实际上都是存储在聚簇索引的叶子节点上的。而记录又是存储在数据页中，数据页和记录又是按照记录主键值从小到大的顺序进行排序，所以如果我们插入的记录的主键是依次增大的话，那我们每插满一个数据页就换到下一个数据页继续插入，而如果我们插入的主键值忽大忽小的话，就比较麻烦。假设某个数据页存储的记录已经满了，它存储的主键值在 1 ~ 100 之间：
+
+<img src="mysql/image-20231101225500158.png" alt="image-20231101225500158" style="zoom:67%;" />
+
+如果此时再插入一条主键值为 9 的记录，那它插入的位置就如下图：
+
+<img src="mysql/image-20231101225555374.png" alt="image-20231101225555374" style="zoom:67%;" />
+
+可这个数据页已经满了，再插进来咋办呢？我们需要把`当前页面分裂成两个页面`，把本页中的一些`记录移动`到新创建的这个页中。页面分裂和记录移位意味着什么？意味着：`性能损耗`！所以如果想尽量避免这样无谓的性能损耗，最好让插入的记录的`主键值依次递增`，这样就不会发生这样的性能损耗了。 所以我们建议：`让主键具有 AUTO_INCREMENT，让存储引擎自己为表生成主键，而不是手动插入。`比如 person_info 表：
+
+```mysql
+CREATE TABLE person_info(
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    birthday DATE NOT NULL,
+    phone_number CHAR(11) NOT NULL,
+    country varchar(100) NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_name_birthday_phone_number (name(10), birthday, phone_number)
+);
+```
+
+自定义的主键列 id 拥有 AUTO_INCREMENT 属性，在插入记录时存储引擎会自动填入自增的主键值。这样的主键占用空间小，顺序写入，可以减少页分裂。
+
+#### 计算导致索引失效
+
+在 student 表的字段 stuno 上创建索引：
+
+```mysql
+mysql> CREATE INDEX idx_sno ON student(stuno);
+Query OK, 0 rows affected (2.73 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+**`当有条件计算时，索引失效。`**示例如下：
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE id, stuno, NAME FROM student WHERE stuno = 900001;
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys | key     | key_len | ref   | rows | filtered | Extra |
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_sno       | idx_sno | 4       | const |    1 |   100.00 | NULL  |
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+-------+
+1 row in set, 2 warnings (0.00 sec)
+
+# 有计算条件，索引失效
+mysql> EXPLAIN SELECT SQL_NO_CACHE id, stuno, NAME FROM student WHERE stuno + 1 = 900001; 
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+可以看到如果对索引进行了表达式计算，索引就失效了。这是因为我们需要把索引字段的值都取出来，然后一次进行表达式的计算来进行条件判断，因此采用的就是`全表扫描`的方式，运行时间也会慢很多：
+
+```mysql
+mysql> SELECT SQL_NO_CACHE id, stuno, NAME FROM student WHERE stuno = 900001;
+Empty set, 1 warning (0.00 sec)
+
+mysql> SELECT SQL_NO_CACHE id, stuno, NAME FROM student WHERE stuno + 1 = 900001; 
++--------+--------+--------+
+| id     | stuno  | NAME   |
++--------+--------+--------+
+| 800000 | 900000 | skWeFP |
++--------+--------+--------+
+1 row in set, 1 warning (0.18 sec)
+```
+
+#### 函数导致索引失效
+
+在 student 表的字段 name 上创建索引：
+
+```mysql
+mysql> CREATE INDEX idx_name ON student(NAME); 
+Query OK, 0 rows affected (3.58 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+**`当有函数时，索引失效。`**示例如下
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.name LIKE 'abc%';
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+| id | select_type | table   | partitions | type  | possible_keys | key      | key_len | ref  | rows | filtered | Extra                 |
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_name      | idx_name | 63      | NULL |   40 |   100.00 | Using index condition |
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+
+# 有函数，索引失效
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE LEFT(student.name, 3) = 'abc';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+查询效率也慢很多：
+
+```mysql
+mysql> SELECT SQL_NO_CACHE * FROM student WHERE student.name LIKE 'abc%';
++--------+--------+--------+------+---------+
+| id     | stuno  | name   | age  | classId |
++--------+--------+--------+------+---------+
+| 580020 | 680020 | ABcHeA |   14 |     850 |
+| 519840 | 619840 | ABcHgL |    9 |     671 |
+| 626755 | 726755 | ABcHhL |   11 |     915 |
+| 311719 | 411719 | AbCHJl |    9 |     177 |
+|  97823 | 197823 | aBCihn |   44 |     540 |
+| 385679 | 485679 | AbCIJw |    7 |     364 |
+| 160879 | 260879 | ABcIjX |   12 |     256 |
+| 371703 | 471703 | aBCijy |   38 |     355 |
+| 201505 | 301505 | ABcIkb |   25 |     386 |
+| 371290 | 471290 | aBCiky |   39 |     446 |
+| 463195 | 563195 | AbCILD |   33 |     608 |
+| 472221 | 572221 | AbCJMI |    6 |     586 |
+| 605967 | 705967 | AbCJNL |   16 |     430 |
+| 289583 | 389583 | abcjNn |   50 |     184 |
+| 621037 | 721037 | ABcJor |   42 |     166 |
+| 164750 | 264750 | ABcJpw |   13 |     993 |
+| 763434 | 863434 | ABcKqB |   33 |     683 |
+| 477662 | 577662 | aBCkqY |   48 |     821 |
+| 351310 | 451310 | abckQz |    3 |     740 |
+| 469852 | 569852 | aBCksi |   37 |     219 |
+| 300036 | 400036 | abckSJ |   41 |      64 |
+| 277597 | 377597 | aBCktm |    6 |     833 |
+| 120380 | 220380 | abckTN |    9 |     565 |
+| 336922 | 436922 | AbCKTn |   35 |     649 |
+| 625396 | 725396 | AbCKUq |   46 |     578 |
+|  10062 | 110062 | ABcLuR |   50 |     431 |
+| 340986 | 440986 | aBClus |   28 |     698 |
+| 600606 | 700606 | ABcLuT |    9 |     208 |
+| 275797 | 375797 | ABcLvT |   10 |     283 |
+| 377409 | 477409 | AbCLVu |   12 |      19 |
+| 440071 | 540071 | abclVU |   36 |     882 |
+|  87638 | 187638 | ABcLvV |   18 |     969 |
+| 175531 | 275531 | abclVV |   42 |     372 |
+| 321836 | 421836 | ABcLvV |   19 |      90 |
+|   2012 | 102012 | AbCLWB |   43 |     618 |
+| 400060 | 500060 | abclWY |    4 |     431 |
+| 528467 | 628467 | aBClxC |   22 |     528 |
+| 622236 | 722236 | abclXc |   22 |      21 |
+|  37117 | 137117 | AbCLXF |    9 |      28 |
+|  89616 | 189616 | abclXf |   35 |     118 |
++--------+--------+--------+------+---------+
+40 rows in set, 1 warning (0.00 sec)
+
+mysql> SELECT SQL_NO_CACHE * FROM student WHERE LEFT(student.name, 3) = 'abc';
++--------+--------+--------+------+---------+
+| id     | stuno  | name   | age  | classId |
++--------+--------+--------+------+---------+
+|   2012 | 102012 | AbCLWB |   43 |     618 |
+|  10062 | 110062 | ABcLuR |   50 |     431 |
+|  37117 | 137117 | AbCLXF |    9 |      28 |
+|  87638 | 187638 | ABcLvV |   18 |     969 |
+|  89616 | 189616 | abclXf |   35 |     118 |
+|  97823 | 197823 | aBCihn |   44 |     540 |
+| 120380 | 220380 | abckTN |    9 |     565 |
+| 160879 | 260879 | ABcIjX |   12 |     256 |
+| 164750 | 264750 | ABcJpw |   13 |     993 |
+| 175531 | 275531 | abclVV |   42 |     372 |
+| 201505 | 301505 | ABcIkb |   25 |     386 |
+| 275797 | 375797 | ABcLvT |   10 |     283 |
+| 277597 | 377597 | aBCktm |    6 |     833 |
+| 289583 | 389583 | abcjNn |   50 |     184 |
+| 300036 | 400036 | abckSJ |   41 |      64 |
+| 311719 | 411719 | AbCHJl |    9 |     177 |
+| 321836 | 421836 | ABcLvV |   19 |      90 |
+| 336922 | 436922 | AbCKTn |   35 |     649 |
+| 340986 | 440986 | aBClus |   28 |     698 |
+| 351310 | 451310 | abckQz |    3 |     740 |
+| 371290 | 471290 | aBCiky |   39 |     446 |
+| 371703 | 471703 | aBCijy |   38 |     355 |
+| 377409 | 477409 | AbCLVu |   12 |      19 |
+| 385679 | 485679 | AbCIJw |    7 |     364 |
+| 400060 | 500060 | abclWY |    4 |     431 |
+| 440071 | 540071 | abclVU |   36 |     882 |
+| 463195 | 563195 | AbCILD |   33 |     608 |
+| 469852 | 569852 | aBCksi |   37 |     219 |
+| 472221 | 572221 | AbCJMI |    6 |     586 |
+| 477662 | 577662 | aBCkqY |   48 |     821 |
+| 519840 | 619840 | ABcHgL |    9 |     671 |
+| 528467 | 628467 | aBClxC |   22 |     528 |
+| 580020 | 680020 | ABcHeA |   14 |     850 |
+| 600606 | 700606 | ABcLuT |    9 |     208 |
+| 605967 | 705967 | AbCJNL |   16 |     430 |
+| 621037 | 721037 | ABcJor |   42 |     166 |
+| 622236 | 722236 | abclXc |   22 |      21 |
+| 625396 | 725396 | AbCKUq |   46 |     578 |
+| 626755 | 726755 | ABcHhL |   11 |     915 |
+| 763434 | 863434 | ABcKqB |   33 |     683 |
++--------+--------+--------+------+---------+
+40 rows in set, 1 warning (0.23 sec)
+```
+
+#### 类型转换（自动或手动）导致索引失效
+
+**`当有类型转换时 (自动或手动)，索引失效。`**示例如下：
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE name = '123';
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys | key      | key_len | ref   | rows | filtered | Extra |
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_name      | idx_name | 63      | const |    1 |   100.00 | NULL  |
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-------+
+1 row in set, 2 warnings (0.00 sec)
+
+# 有类型转换，索引失效
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE name = 123;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_name      | NULL | NULL    | NULL | 742203 |    10.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 5 warnings (0.00 sec)
+```
+
+> `name = 123`发生了类型转换，相当于使用了隐形函数，索引失效。
+>
+> **设计实体类属性时，一定要与数据库字段类型相对应。否则，就会出现类型转换的情况，进而导致索引失效。**
+
+#### 范围条件右边的列索引失效
+
+先删除 student 表上的所有索引，再重新创建索引：
+
+```mysql
+# 调用存储过程删除所有索引
+mysql> CALL proc_drop_index('atguigudb1','student');
+Query OK, 0 rows affected (0.06 sec)
+
+# 验证是否删除成功
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY' ;
+Empty set (0.00 sec)
+
+# 重新创建组合索引
+mysql> CREATE INDEX idx_age_classId_name ON student(age, classId, name);
+Query OK, 0 rows affected (4.67 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 验证是否创建成功
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY' ;
++----------------------+
+| INDEX_NAME           |
++----------------------+
+| idx_age_classId_name |
++----------------------+
+1 row in set (0.01 sec)
+```
+
+**`对于有范围条件的，如 <、<=、>、>= 和 between 等，范围右边的列不能使用索引。`**示例如下：
+
+```mysql
+#  key_len为10，只用到了组合索引的前两个字段
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.classId > 20 AND student.name = 'abc';
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+| id | select_type | table   | partitions | type  | possible_keys        | key                  | key_len | ref  | rows  | filtered | Extra                 |
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_age_classId_name | idx_age_classId_name | 10      | NULL | 32002 |    10.00 | Using index condition |
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+即使是改变查询条件的顺序，依然不能使用全部索引。因为优化器会自动满足最左前缀原则 ，即优化器会`先根据组合索引进行排序`，组合索引的顺序决定了哪些列不能正常使用索引。
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.name ='abc' AND student.classId > 20;
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+| id | select_type | table   | partitions | type  | possible_keys        | key                  | key_len | ref  | rows  | filtered | Extra                 |
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_age_classId_name | idx_age_classId_name | 10      | NULL | 32002 |    10.00 | Using index condition |
++----+-------------+---------+------------+-------+----------------------+----------------------+---------+------+-------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+> 扩展：为什么范围查询会导致索引失效？
+>
+> **因为根据范围查找筛选后的数据，无法保证范围查找后面的字段是有序的。**例如：a_b_c 这个索引，根据 b 范围查找 > 2 的，在满足 b > 2 的情况下，如 b 为 "3, 4"，c 可能是 "5, 3"，因为 c 是无序的，那么 c 的索引也便失效了。
+
+针对上述情况，可以建立如下索引（范围字段放在最后）进行改进：
+
+```mysql
+# 将classId放到组合索引最后
+mysql> CREATE INDEX idx_age_name_classId ON student(age, name, classId);
+Query OK, 0 rows affected (4.84 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 同一个查询，使用到了全部的组合索引字段
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.age = 30 AND student.name ='abc' AND student.classId > 20;
++----+-------------+---------+------------+-------+-------------------------------------------+----------------------+---------+------+------+----------+-----------------------+
+| id | select_type | table   | partitions | type  | possible_keys                             | key                  | key_len | ref  | rows | filtered | Extra                 |
++----+-------------+---------+------------+-------+-------------------------------------------+----------------------+---------+------+------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_age_classId_name,idx_age_name_classId | idx_age_name_classId | 73      | NULL |    1 |   100.00 | Using index condition |
++----+-------------+---------+------------+-------+-------------------------------------------+----------------------+---------+------+------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+在应用开发中范围查询，例如：金额查询，日期查询往往都是范围查询。此时，**应将查询条件放置 WHERE 语句最后，在创建的组合索引中，也需要把范围涉及到的字段写在最后。**
+
+#### 不等于（!= 或者 <>）索引失效
+
+**`对于有不等于 (!= 或者 <>) 判断的，索引失效。`**示例如下：
+
+```mysql
+mysql> CREATE INDEX idx_name ON student(NAME);
+Query OK, 0 rows affected (3.80 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.name <> 'abc';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_name      | NULL | NULL    | NULL | 742203 |    50.16 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.name != 'abc';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_name      | NULL | NULL    | NULL | 742203 |    50.16 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+#### IS NULL 可以使用索引，IS NOT NULL 无法使用索引
+
+示例如下：
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE name IS NULL;
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-----------------------+
+| id | select_type | table   | partitions | type | possible_keys | key      | key_len | ref   | rows | filtered | Extra                 |
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_name      | idx_name | 63      | const |    1 |   100.00 | Using index condition |
++----+-------------+---------+------------+------+---------------+----------+---------+-------+------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+
+# IS NOT NULL，索引失效
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE name IS NOT NULL;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_name      | NULL | NULL    | NULL | 742203 |    50.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+因此，最好在设计数据库的时候就将 `字段设置 NOT NULL 约束`。比如可以将 INT 类型的字段，默认设置为 0，将字符串类型的字段，默认设置为空字符串（""）。
+
+> 扩展：同理，在查询中使用`NOT LIKE`也无法使用索引，会导致全表扫描。
+
+#### LIKE 以通配符 % 开头索引失效
+
+**`在使用 LIKE 关键字时，如果匹配字符串的第一个字符为 "%"，索引失效。`**只有 "%" 不在第一个位置，索引才会起作用。
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE NAME LIKE 'ab%';
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+| id | select_type | table   | partitions | type  | possible_keys | key      | key_len | ref  | rows | filtered | Extra                 |
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_name      | idx_name | 63      | NULL | 1201 |   100.00 | Using index condition |
++----+-------------+---------+------------+-------+---------------+----------+---------+------+------+----------+-----------------------+
+1 row in set, 2 warnings (0.00 sec)
+
+# %放在首位，索引失效
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE NAME LIKE '%ab%';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |    11.11 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+>拓展：Alibaba Java 开发手册。
+>
+>**【强制】页面搜索严禁左模糊或者全模糊，如果需要请走搜索引擎来解决。**
+
+#### OR 前后存在非索引的列，索引失效
+
+在 WHERE 子句中，如果在 OR 前的条件列进行了索引，而在 OR 后的条件列没有进行索引，那么索引会失效。也就是说，**`OR 前后的两个条件中的列都是索引时，查询中才使用索引。`**因为 OR 的含义就是两个只要满足一个即可，因此只有一个条件列进行了索引是没有意义的，只要有条件列没有进行索引，就会进行全表扫描，因此索引的条件列也会失效。（OR 前后一个使用索引，一个进行全表扫描，合起来还没有直接进行全表扫描更快。）
+
+示例如下：
+
+```mysql
+#  创建索引，此时只有OR前面的字段有索引
+mysql> CREATE INDEX idx_age ON student(age);
+Query OK, 0 rows affected (3.28 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 未使用索引
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 10 OR classid = 100;
++----+-------------+---------+------------+------+---------------------------------------------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys                                     | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------------------------------------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_age_classId_name,idx_age_name_classId,idx_age | NULL | NULL    | NULL | 742203 |    11.88 | Using where |
++----+-------------+---------+------------+------+---------------------------------------------------+------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+
+# 再为OR后面的字段创建一个索引
+mysql> CREATE INDEX idx_cid ON student(classid);
+Query OK, 0 rows affected (3.09 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 使用了索引
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 10 OR classid = 100;
++----+-------------+---------+------------+-------------+-----------------------------------------------------------+-----------------+---------+------+-------+----------+-------------------------------------------+
+| id | select_type | table   | partitions | type        | possible_keys                                             | key             | key_len | ref  | rows  | filtered | Extra                                     |
++----+-------------+---------+------------+-------------+-----------------------------------------------------------+-----------------+---------+------+-------+----------+-------------------------------------------+
+|  1 | SIMPLE      | student | NULL       | index_merge | idx_age_classId_name,idx_age_name_classId,idx_age,idx_cid | idx_age,idx_cid | 5,5     | NULL | 30807 |   100.00 | Using union(idx_age,idx_cid); Using where |
++----+-------------+---------+------------+-------------+-----------------------------------------------------------+-----------------+---------+------+-------+----------+-------------------------------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+#### 数据库和表的字符集统一使用 utf8mb4/utf8mb3
+
+统一使用 utf8mb4（5.5.3 版本以上支持）兼容性更好，统一字符集可以避免由于字符集转换产生的乱码。**`不同的字符集进行比较前，需要进行 转换，会造成索引失效。`**
+
+#### 总结
+
+一般性建议：
+
+- 对于单列索引，尽量选择针对当前 QUERY 过滤性更好的索引。
+- 在选择组合索引的时候，当前 QUERY 中过滤性最好的字段在索引字段顺序中，位置越靠前越好。
+- 在选择组合索引的时候，尽量选择能够包含当前 QUERY 中的 WHERE 子句中更多字段的索引。
+- 在选择组合索引的时候，如果某个字段可能出现范围查询时，尽量把这个字段放在索引次序的最后面。
+
+总之，书写 SQL 语句时，尽量避免造成索引失效的情况。
+
+### 关联查询优化
+
+#### 数据准备
+
+创建 Type 表：
+
+```mysql
+mysql> CREATE TABLE IF NOT EXISTS `type` (
+    -> `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    -> `card` INT(10) UNSIGNED NOT NULL,
+    -> PRIMARY KEY (`id`)
+    -> );
+Query OK, 0 rows affected, 2 warnings (0.02 sec)
+```
+
+创建 Book 表：
+
+```mysql
+mysql> CREATE TABLE IF NOT EXISTS `book` (
+    -> `bookid` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    -> `card` INT(10) UNSIGNED NOT NULL,
+    -> PRIMARY KEY (`bookid`)
+    -> );
+Query OK, 0 rows affected, 2 warnings (0.05 sec)
+```
+
+插入数据：
+
+```mysql
+# type表插入20条数据，以下SQL执行20次
+mysql> INSERT INTO type(card) VALUES(FLOOR(1 + RAND() * 20));
+Query OK, 1 row affected (0.01 sec)
+
+# book表插入20条数据，以下SQL执行20次
+mysql> INSERT INTO book(card) VALUES(FLOOR(1 + RAND() * 20));
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT COUNT(*) FROM type;
++----------+
+| COUNT(*) |
++----------+
+|       20 |
++----------+
+1 row in set (0.01 sec)
+
+mysql> SELECT COUNT(*) FROM book;
++----------+
+| COUNT(*) |
++----------+
+|       20 |
++----------+
+1 row in set (0.01 sec)
+```
+
+#### 采用左外连接
+
+多表查询分为外连接和内连接，而外连接又分为左外连接，右外连接和满外连接。其中外连接中，左外连接与右外连接可以通过交换表来相互改造，其原理也是类似的，而满外连接无非是二者的一个综合，因此外连接只介绍左外连接的优化即可。
+
+首先，当没有使用索引时，进行 EXPLAIN 分析，可以看到是全表扫描：
+
+```mysql
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type LEFT JOIN book ON type.card = book.card;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                      |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+|  1 | SIMPLE      | type  | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   20 |   100.00 | NULL                                       |
+|  1 | SIMPLE      | book  | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   20 |   100.00 | Using where; Using join buffer (hash join) |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+- 在上面的查询 SQL 中，type 表是驱动表，book 表是被驱动表。在执行查询时，会先查找驱动表中符合条件的数据，再根据驱动表查询到的数据，在被驱动表中根据匹配条件查找对应的数据。因此被驱动表嵌套查询的次数是 20 * 20 = 400 次。实际上，由于总是需要在被驱动表中进行查询，优化器帮我们已经做了优化，上面的查询结果中可以看到，使用了`join buffer`，将数据缓存起来，提高检索的速度。
+
+然后，为了提高外连接的性能，添加以下索引：
+
+```mysql
+# book表card字段添加索引
+mysql> CREATE INDEX Y ON book(card);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type LEFT JOIN book ON type.card = book.card;
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref                  | rows | filtered | Extra       |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+|  1 | SIMPLE      | type  | NULL       | ALL  | NULL          | NULL | NULL    | NULL                 |   20 |   100.00 | NULL        |
+|  1 | SIMPLE      | book  | NULL       | ref  | Y             | Y    | 4       | atguigudb1.type.card |    1 |   100.00 | Using index |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+- 对于外层表来说，虽然其查询仍然是全表扫描，但是因为是左外连接，LEFT JOIN 左边的表的数据无论是否满足条件都会保留，因此全表扫描也是可以的。另外可以看到第二行的 type 变为了 ref，rows 也变成了 1，优化比较明显。这是由左连接特性决定的。**`LEFT JOIN 条件用于确定如何从右表搜索行，左边一定都有，所以右边是关键点，一定需要建立索引。`**
+
+当然也可以给 type 表建立索引：
+
+```mysql
+# type表card字段添加索引
+mysql> CREATE INDEX X ON type(card);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 虽然type表card字段建立了索引，但是无法避免全表扫描
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type LEFT JOIN book ON type.card = book.card;
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+| id | select_type | table | partitions | type  | possible_keys | key  | key_len | ref                  | rows | filtered | Extra       |
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+|  1 | SIMPLE      | type  | NULL       | index | NULL          | X    | 4       | NULL                 |   20 |   100.00 | Using index |
+|  1 | SIMPLE      | book  | NULL       | ref   | Y             | Y    | 4       | atguigudb1.type.card |    1 |   100.00 | Using index |
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+> 注意：**`外连接的关联条件中，两个关联字段的类型、字符集一定要保持一致，否则索引会失效。`**
+
+删除索引 Y，继续查询：
+
+```mysql
+# 删除索引
+mysql> DROP INDEX Y ON book;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type LEFT JOIN book ON type.card = book.card;
++----+-------------+-------+------------+-------+---------------+------+---------+------+------+----------+--------------------------------------------+
+| id | select_type | table | partitions | type  | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                      |
++----+-------------+-------+------------+-------+---------------+------+---------+------+------+----------+--------------------------------------------+
+|  1 | SIMPLE      | type  | NULL       | index | NULL          | X    | 4       | NULL |   20 |   100.00 | Using index                                |
+|  1 | SIMPLE      | book  | NULL       | ALL   | NULL          | NULL | NULL    | NULL |   20 |   100.00 | Using where; Using join buffer (hash join) |
++----+-------------+-------+------------+-------+---------------+------+---------+------+------+----------+--------------------------------------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+- book 表使用了 join buffer，再次验证了左外连接左边的表是驱动表，右边的表是被驱动表，后面将与内连接在这一点进行对比。
+
+>**左外链接左表是驱动表右表是被驱动表，右外链接和此相反，内链接则是按照数据量的大小，数据量少的是驱动表，多的是被驱动表。**
+
+#### 采用内连接
+
+删除现有的索引，换成 INNER JOIN（MySQL 会自动选择驱动表）：
+
+```mysql
+mysql> DROP INDEX X ON type;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DROP INDEX Y ON book;
+ERROR 1091 (42000): Can't DROP 'Y'; check that column/key exists
+
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type INNER JOIN book ON type.card = book.card;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                      |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+|  1 | SIMPLE      | type  | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   20 |   100.00 | NULL                                       |
+|  1 | SIMPLE      | book  | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   20 |    10.00 | Using where; Using join buffer (hash join) |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+为 book 表添加索引：
+
+```mysql
+mysql> ALTER TABLE book ADD INDEX Y (card);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 此时，book表使用了索引，type表没有索引，type表为驱动表，book表为被驱动表
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type INNER JOIN book ON type.card = book.card;
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref                  | rows | filtered | Extra       |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+|  1 | SIMPLE      | type  | NULL       | ALL  | NULL          | NULL | NULL    | NULL                 |   20 |   100.00 | NULL        |
+|  1 | SIMPLE      | book  | NULL       | ref  | Y             | Y    | 4       | atguigudb1.type.card |    1 |   100.00 | Using index |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+向 type 表中再增加 20 条数据，观察情况：
+
+```mysql
+mysql> INSERT INTO type(card) VALUES(FLOOR(1 + RAND() * 20));
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT COUNT(*) FROM type;
++----------+
+| COUNT(*) |
++----------+
+|       40 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT COUNT(*) FROM book;
++----------+
+| COUNT(*) |
++----------+
+|       20 |
++----------+
+1 row in set (0.00 sec)
+
+# 此时，虽然book表数据少于type表，但是因为type表有索引，type表为驱动表，book表仍然为被驱动表
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type INNER JOIN book ON type.card = book.card;
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref                  | rows | filtered | Extra       |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+|  1 | SIMPLE      | type  | NULL       | ALL  | NULL          | NULL | NULL    | NULL                 |   40 |   100.00 | NULL        |
+|  1 | SIMPLE      | book  | NULL       | ref  | Y             | Y    | 4       | atguigudb1.type.card |    1 |   100.00 | Using index |
++----+-------------+-------+------------+------+---------------+------+---------+----------------------+------+----------+-------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+为 type 表增加索引：
+
+```mysql
+mysql> ALTER TABLE type ADD INDEX X (card);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 此时，type表和book表都有索引，因为book表的数据少于type表，所以book表为驱动表，type表为被驱动表
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM type INNER JOIN book ON type.card = book.card;
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+| id | select_type | table | partitions | type  | possible_keys | key  | key_len | ref                  | rows | filtered | Extra       |
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+|  1 | SIMPLE      | book  | NULL       | index | Y             | Y    | 4       | NULL                 |   20 |   100.00 | Using index |
+|  1 | SIMPLE      | type  | NULL       | ref   | X             | X    | 4       | atguigudb1.book.card |    2 |   100.00 | Using index |
++----+-------------+-------+------------+-------+---------------+------+---------+----------------------+------+----------+-------------+
+2 rows in set, 2 warnings (0.00 sec)
+```
+
+**对于内连接，查询优化器可以决定谁作为驱动表，谁作为被驱动表。`当都没有索引时，表数据量少的是驱动表，多的是被驱动表；当只有一方有索引时，没有索引的表是驱动表，有索引的表是被驱动表 (因为被驱动表查询次数更多)；当都有索引时，则是表数据量少的是驱动表，多的是被驱动表 (小表驱动大表)。`**
+
+>上面的规律不是一成不变的，如果一个表有索引，但是数据量很小，一个表没有索引，但是数据量很大，情况会是怎样的呢？我们要明白`优化器的优化原理：对于内连接，MySQL 会选择扫描次数比较少的作为驱动表，因此实际生产中最好使用 EXPLAIN 测试验证。`
+
+#### JOIN 语句原理
+
+JOIN 方式连接多表，本质就是各个表之间数据的循环匹配。MySQL 5.5 版本之前，MySQL 只支持一种表间关联方式，就是`嵌套循环 (Nested Loop)`。如果关联表的数据量很大，则 JOIN 关联的执行时间会非常漫长。在 MySQL 5.5 以后的版本中，MySQL 通过引入 BNLJ 算法来优化嵌套执行。
+
+##### 驱动表和被驱动表
+
+`驱动表就是主表，被驱动表就是从表、非驱动表。`
+
+对于内连接：
+
+```mysql
+SELECT * FROM A JOIN B ON ...
+```
+
+- A 不一定是驱动表，优化器会根据查询语句做优化，决定先查哪张表。**先查询的哪张表就是驱动表，反之就是被驱动表。**通过 EXPLAIN 关键字可以查看。
+
+对于外连接：
+
+```mysql
+SELECT * FROM A LEFT JOIN B ON ...
+# 或
+SELECT * FROM B RIGHT JOIN A ON ...
+```
+
+- 通常，大家会认为 A 就是驱动表，B 就是被驱动表，但也未必。测试如下：
+
+  ```mysql
+  mysql> CREATE TABLE a(f1 INT,f2 INT,INDEX(f1)) ENGINE=INNODB;
+  Query OK, 0 rows affected (0.05 sec)
+  
+  mysql> CREATE TABLE b(f1 INT,f2 INT) ENGINE=INNODB;
+  Query OK, 0 rows affected (0.06 sec)
+  
+  mysql> INSERT INTO a values(1,1),(2,2),(3,3),(4,4),(5,5),(6,6);
+  Query OK, 6 rows affected (0.01 sec)
+  Records: 6  Duplicates: 0  Warnings: 0
+  
+  mysql> INSERT INTO b values(3,3),(4,4),(5,5),(6,6),(7,7),(8,8);
+  Query OK, 6 rows affected (0.00 sec)
+  Records: 6  Duplicates: 0  Warnings: 0
+  
+  # 测试
+  mysql> EXPLAIN SELECT * FROM a LEFT JOIN b ON a.f1 = b.f1 WHERE a.f2 = b.f2;
+  +----+-------------+-------+------------+------+---------------+------+---------+-----------------+------+----------+-------------+
+  | id | select_type | table | partitions | type | possible_keys | key  | key_len | ref             | rows | filtered | Extra       |
+  +----+-------------+-------+------------+------+---------------+------+---------+-----------------+------+----------+-------------+
+  |  1 | SIMPLE      | b     | NULL       | ALL  | NULL          | NULL | NULL    | NULL            |    6 |   100.00 | Using where |
+  |  1 | SIMPLE      | a     | NULL       | ref  | f1            | f1   | 5       | atguigudb1.b.f1 |    1 |    16.67 | Using where |
+  +----+-------------+-------+------------+------+---------------+------+---------+-----------------+------+----------+-------------+
+  2 rows in set, 1 warning (0.00 sec)
+  ```
+
+- 虽然 SQL 语句是 a LEFT JOIN b，但实际执行时，b 是驱动表，a 是被驱动表。这是因为`查询优化器会把外连接改造为内连接，然后根据其优化策略选择驱动表与被驱动表。`
+
+##### Simple Nested-Loop Join（简单嵌套循环连接）
+
+算法相当简单，从表 A 取出一条数据 1，然后遍历表 B，将匹配到的数据放到 result。以此类推，驱动表 A 中的每一条记录，都会与被动驱动表 B 的全部记录进行判断：
+
+<img src="mysql/image-20231102153903260.png" alt="image-20231102153903260" style="zoom:80%;" />
+
+可以看到这种方式效率是非常低的，假设以上述表 A 数据 100 条，表 B 数据 1000 条，则 A * B = 10 万次。开销统计如下：
+
+| 开销统计         | SNLJ                      |
+| ---------------- | ------------------------- |
+| 外表扫描次数     | 1                         |
+| 内表扫描次数     | A                         |
+| 读取记录数       | A + B * A                 |
+| JOIN 比较次数    | B * A                     |
+| 回表读取记录次数 | 0（没有索引，不涉及回表） |
+
+当然，MySQL 肯定不会这么粗暴的进行表的连接，所以就出现了后面的两种优化算法。另外，从读取记录数来看：A + B * A中，驱动表 A 对性能的影响权重更大，因此，优化器会选择小表驱动大表。
+
+##### Index Nested-Loop Join（索引嵌套循环连接）
+
+Index Nested-Loop Join，其优化的思路主要是为了`减少内层表数据的匹配次数`，所以`要求被驱动表上必须有索引`才行。**通过外层表匹配条件直接与内层索引进行匹配，避免和内层表的每条记录进行比较，这样极大地减少了对内层表的匹配次数。**
+
+<img src="mysql/image-20231102155458108.png" alt="image-20231102155458108" style="zoom: 67%;" />
+
+驱动表中的每条记录通过被驱动表的索引进行访问，因为索引查询的成本是比较固定的，故 MySQL 优化器都倾向于使用记录数少的表作为驱动表（外表）。
+
+| 开销统计         | SNLJ      | INLJ                    |
+| ---------------- | --------- | ----------------------- |
+| 外表扫描次数     | 1         | 1                       |
+| 内表扫描次数     | A         | 0                       |
+| 读取记录数       | A + B * A | A + B(match)            |
+| JOIN 比较次数    | B * A     | A * Index(Height)       |
+| 回表读取记录次数 | 0         | B(match)（if possible） |
+
+如果被驱动表加索引，效率是非常高的，如果索引不是主键索引，还需要进行一次回表查询。相比之下，如果被驱动表的索引是主键索引，效率会更高。
+
+##### Block Nested-Loop Join（快嵌套循环连接）
+
+如果存在索引，那么会使用 INDEX 的方式进行 JOIN，如果 JOIN 的列没有索引，则被驱动表要扫描的次数太多了。因为每次访问被驱动表，其表中的记录都会被加载到内存中，然后再从驱动表中取一条与其匹配，匹配结束后清除内存，然后再从驱动表中加载一条记录，然后把驱动表的记录再加载到内存匹配，这样周而复始，大大增加了 I/O 次数。为了减少被驱动表的 I/O 次数，就出现了`Block Nested-Loop Join`的方式。
+
+<img src="mysql/image-20231102224359471.png" alt="image-20231102224359471" style="zoom:67%;" />
+
+**BNLJ 不再是逐条获取驱动表的数据，而是一块一块的获取，并引入了 join buffer 缓冲区，将驱动表 JOIN 相关的部分数据列（每一批次的大小受 join buffer 的限制）缓存到 join buffer 中，然后全表扫描被驱动表，被驱动表的每一条记录一次性和 join buffer 中的所有驱动表记录进行匹配（内存中操作），将简单嵌套循环中的多次比较合并成一次，降低了被驱动表的访问频率。**
+
+> 注意：**这里缓存的不只是关联表的列，SELECT 后面的列也会缓存起来，在一个有 N 个JOIN 关联的 SQL 中会分配 N - 1 个 join buffer。所以查询的时候尽量减少不必要的字段，这样可以让 join buffer 中存放更多的列。**
+
+| 开销统计         | SNLJ      | INLJ                    | BNLJ                                              |
+| ---------------- | --------- | ----------------------- | ------------------------------------------------- |
+| 外表扫描次数     | 1         | 1                       | 1                                                 |
+| 内表扫描次数     | A         | 0                       | A * used_column_size / join_buffer_size + 1       |
+| 读取记录数       | A + B * A | A + B(match)            | A + B * (A * used_column_size / join_buffer_size) |
+| JOIN 比较次数    | B * A     | A * Index(Height)       | B * A                                             |
+| 回表读取记录次数 | 0         | B(match)（if possible） | 0                                                 |
+
+参数设置：
+
+- `block_nested_loop`：通过`SHOW VARIABLES LIKE '%optimizer_switch%'`查看 block_nested_loop 状态，默认是开启的。
+
+  ```mysql
+  mysql> SHOW VARIABLES LIKE '%optimizer_switch%';
+  +------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  | Variable_name    | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+  +------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  | optimizer_switch | index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,duplicateweedout=on,subquery_materialization_cost_based=on,use_index_extensions=on,condition_fanout_filter=on,derived_merge=on,use_invisible_indexes=off,skip_scan=on,hash_join=on,subquery_to_derived=off,prefer_ordering_index=on,hypergraph_optimizer=off,derived_condition_pushdown=on |
+  +------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  1 row in set (0.01 sec)
+  ```
+
+- `join_buffer_size`：驱动表能不能一次加载完，要看 join buffer 能不能存储所有的数据，`默认情况下 join_buffer_size = 256 KB`。join buffer size 的最大值在 32 位系统可以申请 4 GB，而在 64 位操做系统下可以申请大于 4 GB 的 join_buffer空间（64 位 Windows 除外，其大值会被截断为 4 GB，并发出警告）。
+
+##### 总结
+
+- 保证被驱动表的 JOIN 字段已经创建了索引（减少内层表的循环匹配次数）。
+- 需要 JOIN 的字段，数据类型保持绝对一致。
+- LEFT JOIN 时，选择小表作为驱动表， 大表作为被驱动表，减少外层循环的次数。
+- INNER JOIN 时，MySQL 会自动将小结果集的表选为驱动表，选择相信 MySQL 优化策略。
+- 能够直接多表关联的尽量直接关联，不用子查询。（减少查询的趟数）
+- 不建议使用子查询，建议将子查询 SQL 拆开，并结合程序多次查询，或使用 JOIN 来代替子查询。
+- 衍生表建不了索引。
+- 默认效率比较：INLJ > BNLJ > SNLJ。
+- 正确理解小表驱动大表：大小不是指表中的记录数，而是永远用小结果集驱动大结果集（其本质就是减少外层循环的数据数量）。 比如 A 表有 100 条记录，B 表有 1000 条记录，但是 WHERE 条件过滤后，B 表结果集只留下 50 个记录，A 表结果集有 80 条记录，此时就可能是 B 表驱动 A 表。其实上面的例子还是不够准确，因为结果集的大小也不能粗略的用结果集的行数表示，而是表行数 * 每行大小。其实要理解这一点，只需要结合 join buffer 就好了，因为表行数 * 每行大小越小，其占用内存越小，就可以在 join buffer 中尽量少的次数加载完了。
+
+##### Hash Join
+
+`从 MySQL 8.0.20 版本开始，将废弃 BNLJ，因为加入了 Hash Join，默认都会使用 Hash Join。`
+
+Nested Loop 与 Hash Join 对比如下：
+
+| 类型     | Nested Loop                                                  | Hash Join                                                    |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 使用条件 | 任何条件                                                     | 等值连接（=）                                                |
+| 相关资源 | CPU、磁盘 I/O                                                | 内存、临时空间                                               |
+| 特点     | 当有高选择性索引或进行限制性搜索时效率比较高，能够快速返回第一次的搜索结果 | 当缺乏索引或者索引条件模糊时，Hash Join 比 Nested Loop 有效。在数据仓库环境下，如果表的记录数多，效率高 |
+| 缺点     | 当索引丢失或者查询条件限制不够时，效率很低；当表的记录数较多，效率低 | 为建立哈希表，需要大量内存。第一次的结果返回较慢             |
+
+- Nested Loop：对于被连接的数据子集较小的情况，Nested Loop 是个较好的选择。
+- Hash Join 是做`大数据集连接`时的常用方法，优化器使用两个表中较小（相对较小）的表利用 join key 在内存中建立`散列表`，然后扫描较大的表并探测散列表，找出与 Hash 表匹配的行。
+  - 这种方式适用于较小的表完全可以放于内存中的情况，这样总成本就是访问两个表的成本之和。
+  - 在表很大的情况下并不能完全放入内存，这时优化器会将它分割成若干不同的分区，不能放入内存的部分就把该分区写入磁盘的临时段，此时要求有较大的临时段，从而尽量提高 I/O 的性能。
+  - 它能够很好的工作于没有索引的大表和并行查询的环境中，并提供最好的性能。大多数人都说它是 Join 的重型升降机。Hash Join 只能应用于等值连接（如 WHERE A.COL1 = B.COL2），这是由 Hash 的特点决定的。
+
+#### 子查询优化
+
+MySQL 从 4.1 版本开始支持子查询，使用子查询可以进行 SELECT 语句的嵌套查询，即一个 SELECT 查询的结果作为另一个 SELECT 语句的条件，子查询可以一次性完成很多逻辑上需要多个步骤才能完成的操作。
+
+子查询是 MySQL 的一项重要的功能，可以帮助我们通过一个 SQL 语句实现比较复杂的查询。但是，子查询的执行效率不高。 通常我们可以将其优化成一个连接查询。
+
+原因:
+
+① 执行子查询时，MySQL 需要为内层查询语句的查询结果建立一个临时表 ，然后外层查询语句从临时表中查询记录。查询完毕后，再撤销这些临时表 。这样会消耗过多的 CPU 和 IO 资源，产生大量的慢查询。
+
+② 子查询的结果集存储的临时表，不论是内存临时表还是磁盘临时表都 不会存在索引 ，所以查询性能会受到一定的影响。
+
+③ 对于返回结果集比较大的子查询，其对查询性能的影响也就越大。
+
+在 MySQL 中，可以使用连接（JOIN）查询来替代子查询。 连接查询 不需要建立临时表，其 速度比子查询要快，如果查询中使用索引的话，性能就会更好。
 
 
 
