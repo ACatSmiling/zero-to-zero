@@ -13939,7 +13939,7 @@ mysql> CALL proc_drop_index('atguigudb1','student');
 Query OK, 0 rows affected (0.06 sec)
 
 # 验证是否删除成功
-mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY' ;
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY';
 Empty set (0.00 sec)
 
 # 重新创建组合索引
@@ -13948,7 +13948,7 @@ Query OK, 0 rows affected (4.67 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 
 # 验证是否创建成功
-mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY' ;
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY';
 +----------------------+
 | INDEX_NAME           |
 +----------------------+
@@ -14523,23 +14523,1120 @@ Nested Loop 与 Hash Join 对比如下：
   - 在表很大的情况下并不能完全放入内存，这时优化器会将它分割成若干不同的分区，不能放入内存的部分就把该分区写入磁盘的临时段，此时要求有较大的临时段，从而尽量提高 I/O 的性能。
   - 它能够很好的工作于没有索引的大表和并行查询的环境中，并提供最好的性能。大多数人都说它是 Join 的重型升降机。Hash Join 只能应用于等值连接（如 WHERE A.COL1 = B.COL2），这是由 Hash 的特点决定的。
 
-#### 子查询优化
+### 子查询优化
 
 MySQL 从 4.1 版本开始支持子查询，使用子查询可以进行 SELECT 语句的嵌套查询，即一个 SELECT 查询的结果作为另一个 SELECT 语句的条件，子查询可以一次性完成很多逻辑上需要多个步骤才能完成的操作。
 
-子查询是 MySQL 的一项重要的功能，可以帮助我们通过一个 SQL 语句实现比较复杂的查询。但是，子查询的执行效率不高。 通常我们可以将其优化成一个连接查询。
+子查询是 MySQL 的一项重要的功能，可以帮助我们通过一个 SQL 语句实现比较复杂的查询。但是，`子查询的执行效率不高，通常可以将其优化成一个连接查询。`
 
-原因:
+原因：
 
-① 执行子查询时，MySQL 需要为内层查询语句的查询结果建立一个临时表 ，然后外层查询语句从临时表中查询记录。查询完毕后，再撤销这些临时表 。这样会消耗过多的 CPU 和 IO 资源，产生大量的慢查询。
+- 执行子查询时，MySQL 需要为内层查询语句的查询结果建立一个`临时表`，然后外层查询语句从临时表中查询记录。查询完毕后，再撤销这些临时表。这样会消耗过多的 CPU 和 IO 资源，产生大量的慢查询。
+- 子查询的结果集存储的临时表，不论是内存临时表还是磁盘临时表都`不会存在索引`，所以查询性能会受到一定的影响。
+- 对于返回结果集越大的子查询，其对查询性能的影响也就越大。
 
-② 子查询的结果集存储的临时表，不论是内存临时表还是磁盘临时表都 不会存在索引 ，所以查询性能会受到一定的影响。
+在 MySQL 中，可以使用连接（JOIN）查询来替代子查询。 连接查询`不需要建立临时表`，其`速度比子查询要快`，如果查询中`使用索引`的话，性能就会更好。
 
-③ 对于返回结果集比较大的子查询，其对查询性能的影响也就越大。
+示例 1：查询学生表中是班长的学生信息。
 
-在 MySQL 中，可以使用连接（JOIN）查询来替代子查询。 连接查询 不需要建立临时表，其 速度比子查询要快，如果查询中使用索引的话，性能就会更好。
+- 使用子查询：
+
+  ```mysql
+  # 创建班级表中班长的索引
+  mysql> CREATE INDEX idx_monitor ON class(monitor);
+  Query OK, 0 rows affected (0.11 sec)
+  Records: 0  Duplicates: 0  Warnings: 0
+  
+  # 询班长的信息
+  mysql> EXPLAIN SELECT * FROM student stu1 WHERE stu1.stuno IN (SELECT monitor FROM class c WHERE monitor IS NOT NULL);
+  +----+--------------+-------------+------------+--------+---------------------+---------------------+---------+-----------------------+--------+----------+--------------------------+
+  | id | select_type  | table       | partitions | type   | possible_keys       | key                 | key_len | ref                   | rows   | filtered | Extra                    |
+  +----+--------------+-------------+------------+--------+---------------------+---------------------+---------+-----------------------+--------+----------+--------------------------+
+  |  1 | SIMPLE       | stu1        | NULL       | ALL    | NULL                | NULL                | NULL    | NULL                  | 742203 |   100.00 | NULL                     |
+  |  1 | SIMPLE       | <subquery2> | NULL       | eq_ref | <auto_distinct_key> | <auto_distinct_key> | 5       | atguigudb1.stu1.stuno |      1 |   100.00 | NULL                     |
+  |  2 | MATERIALIZED | c           | NULL       | index  | idx_monitor         | idx_monitor         | 5       | NULL                  |   9952 |   100.00 | Using where; Using index |
+  +----+--------------+-------------+------------+--------+---------------------+---------------------+---------+-----------------------+--------+----------+--------------------------+
+  3 rows in set, 1 warning (0.00 sec)
+  ```
+
+- 推荐，使用连接查询：
+
+  ```mysql
+  mysql> EXPLAIN SELECT stu1.* FROM student stu1 JOIN class c ON stu1.stuno = c.monitor WHERE c.monitor IS NOT NULL;
+  +----+-------------+-------+------------+------+---------------+-------------+---------+-----------------------+--------+----------+-------------+
+  | id | select_type | table | partitions | type | possible_keys | key         | key_len | ref                   | rows   | filtered | Extra       |
+  +----+-------------+-------+------------+------+---------------+-------------+---------+-----------------------+--------+----------+-------------+
+  |  1 | SIMPLE      | stu1  | NULL       | ALL  | NULL          | NULL        | NULL    | NULL                  | 742203 |   100.00 | Using where |
+  |  1 | SIMPLE      | c     | NULL       | ref  | idx_monitor   | idx_monitor | 5       | atguigudb1.stu1.stuno |      1 |   100.00 | Using index |
+  +----+-------------+-------+------------+------+---------------+-------------+---------+-----------------------+--------+----------+-------------+
+  2 rows in set, 1 warning (0.00 sec)
+  ```
+
+示例 2：所有不为班长的同学。
+
+- 使用子查询：
+
+  ```mysql
+  # 查询不为班长的学生信息
+  mysql> EXPLAIN SELECT SQL_NO_CACHE a.* FROM student a WHERE a.stuno NOT IN (SELECT monitor FROM class b WHERE monitor IS NOT NULL);
+  +----+-------------+-------+------------+-------+---------------+-------------+---------+------+--------+----------+--------------------------+
+  | id | select_type | table | partitions | type  | possible_keys | key         | key_len | ref  | rows   | filtered | Extra                    |
+  +----+-------------+-------+------------+-------+---------------+-------------+---------+------+--------+----------+--------------------------+
+  |  1 | PRIMARY     | a     | NULL       | ALL   | NULL          | NULL        | NULL    | NULL | 742203 |   100.00 | Using where              |
+  |  2 | SUBQUERY    | b     | NULL       | index | idx_monitor   | idx_monitor | 5       | NULL |   9952 |   100.00 | Using where; Using index |
+  +----+-------------+-------+------------+-------+---------------+-------------+---------+------+--------+----------+--------------------------+
+  2 rows in set, 2 warnings (0.00 sec)
+  ```
+
+- 推荐，使用连接查询：
+
+  ```mysql
+  mysql> EXPLAIN SELECT SQL_NO_CACHE a.* FROM student a LEFT OUTER JOIN class b ON a.stuno =b.monitor WHERE b.monitor IS NULL;
+  +----+-------------+-------+------------+------+---------------+-------------+---------+--------------------+--------+----------+--------------------------+
+  | id | select_type | table | partitions | type | possible_keys | key         | key_len | ref                | rows   | filtered | Extra                    |
+  +----+-------------+-------+------------+------+---------------+-------------+---------+--------------------+--------+----------+--------------------------+
+  |  1 | SIMPLE      | a     | NULL       | ALL  | NULL          | NULL        | NULL    | NULL               | 742203 |   100.00 | NULL                     |
+  |  1 | SIMPLE      | b     | NULL       | ref  | idx_monitor   | idx_monitor | 5       | atguigudb1.a.stuno |      1 |   100.00 | Using where; Using index |
+  +----+-------------+-------+------------+------+---------------+-------------+---------+--------------------+--------+----------+--------------------------+
+  2 rows in set, 2 warnings (0.00 sec)
+  ```
+
+>尽量不要使用 NOT IN 或者 NOT EXISTS，用`LEFT JOIN xxx ON xx WHERE xx IS NULL`替代。
+
+### ORDER BY 排序优化
+
+#### 排序方式
+
+问题：在 WHERE 条件字段上加索引，但是为什么在 ORDER BY 字段上还要加索引呢？
+
+在 MySQL 中，支持两种排序方式，分别是`FileSort`和`Index 排序`。
+
+- Index 排序中，索引可以保证数据的有序性，就不需要再进行排序，效率更更高。
+
+- FileSort 排序则一般在`内存中`进行排序，占用 CPU 较多。如果待排序的结果较大，会产生临时文件 I/O 到磁盘进行排序的情况，效率低。
+
+优化建议：
+
+- SQL 中，可以在 WHERE 子句和 ORDER BY 子句中使用索引，目的是`在 WHERE 子句中避免全表扫描`，`在 ORDER BY 子句中避免使用 FileSort 排序`。当然，某些情况下全表扫描，或者 FileSort 排序不一定比索引慢。但总的来说，我们还是要避免，以提高查询效率。
+- 尽量使用 Index 完成 ORDER BY 排序。如果 WHERE 和 ORDER BY 后面是相同的列就使用单索引列；如果不同就使用联合索引。
+- 无法使用 Index 时，需要对 FileSort 方式进行调优。
+
+####  优化实例
+
+执先案例前，调用存储过程删除 student 和 class 表上的索引，只留主键：
+
+```mysql
+mysql> CALL proc_drop_index('atguigudb1','student');
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> CALL proc_drop_index('atguigudb1','class');
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY';
+Empty set (0.00 sec)
+
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='class' AND seq_in_index=1 AND index_name <>'
+PRIMARY';
+Empty set (0.00 sec)
+```
+
+##### 使用 LIMIT 参数
+
+不加 LIMIT 参数：
+
+```mysql
+# 全表扫描，使用filesort排序
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student ORDER BY age, classid;  
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+加上 LIMIT 参数：
+
+```mysql
+# 全表扫描，使用filesort排序
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student ORDER BY age, classid LIMIT 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+##### 使用索引
+
+创建索引，但是不加 LIMIT 限制，索引失效：
+
+```mysql
+mysql> CREATE  INDEX idx_age_classid_name ON student (age, classid, name);
+Query OK, 0 rows affected (4.40 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 未加LIMIT参数，全表扫描，使用filesort排序
+mysql> EXPLAIN  SELECT SQL_NO_CACHE * FROM student ORDER BY age, classid; 
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+- 虽然建立了索引，但是未加 LIMIT 参数得时候，优化器通过计算发现，需要回表的数据量特别大，使用索引的性能代价反而比不上不用索引的，因此并未使用索引。
+
+现在，添加 LIMIT 参数：
+
+```mysql
+# 可以看到，使用了索引
+mysql> EXPLAIN  SELECT SQL_NO_CACHE * FROM student ORDER BY age, classid LIMIT 10;
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows | filtered | Extra |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL |   10 |   100.00 | NULL  |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+假如只查询组合索引中有的字段，观察结果：
+
+```mysql
+# 可以看到，此时也使用了索引，因为不涉及回表
+mysql> EXPLAIN  SELECT SQL_NO_CACHE age, classid, name, id FROM student ORDER BY age, classid;  
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL | 742203 |   100.00 | Using index |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+--------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+##### ODRER BY 时顺序错误，索引失效
+
+```mysql
+# 创建索引age，classid，stuno
+mysql> CREATE INDEX idx_age_classid_stuno ON student (age, classid, stuno);
+Query OK, 0 rows affected (4.25 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student ORDER BY classid LIMIT 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student ORDER BY classid, name LIMIT 10;  
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student ORDER BY age, classid, stuno LIMIT 10;
++----+-------------+---------+------------+-------+---------------+-----------------------+---------+------+------+----------+-------+
+| id | select_type | table   | partitions | type  | possible_keys | key                   | key_len | ref  | rows | filtered | Extra |
++----+-------------+---------+------------+-------+---------------+-----------------------+---------+------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_stuno | 14      | NULL |   10 |   100.00 | NULL  |
++----+-------------+---------+------------+-------+---------------+-----------------------+---------+------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student ORDER BY age, classid LIMIT 10;
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows | filtered | Extra |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL |   10 |   100.00 | NULL  |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student ORDER BY age LIMIT 10;
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows | filtered | Extra |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL |   10 |   100.00 | NULL  |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+##### ODRER BY 时规则不一致，索引失效 
+
+**`顺序错，不索引；方向反，不索引。`**
+
+```mysql
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student ORDER BY age DESC, classid ASC LIMIT 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student ORDER BY classid DESC, name DESC LIMIT 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student ORDER BY age ASC, classid DESC LIMIT 10; 
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效（方向保持一致，要正都正，要反都反）
+mysql> EXPLAIN SELECT * FROM student ORDER BY age DESC, classid DESC LIMIT 10;
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+---------------------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows | filtered | Extra               |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+---------------------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL |   10 |   100.00 | Backward index scan |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+---------------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+##### 无过滤，不索引
+
+```mysql
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student WHERE age = 45 ORDER BY classid;
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys                              | key                  | key_len | ref   | rows  | filtered | Extra |
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_age_classid_name,idx_age_classid_stuno | idx_age_classid_name | 5       | const | 29880 |   100.00 | NULL  |
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student WHERE age = 45 ORDER BY classid, name;
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys                              | key                  | key_len | ref   | rows  | filtered | Extra |
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_age_classid_name,idx_age_classid_stuno | idx_age_classid_name | 5       | const | 29880 |   100.00 | NULL  |
++----+-------------+---------+------------+------+--------------------------------------------+----------------------+---------+-------+-------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引失效
+mysql> EXPLAIN SELECT * FROM student WHERE classid = 45 ORDER BY age;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra                       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |    10.00 | Using where; Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student WHERE classid = 45 ORDER BY age LIMIT 10;
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------------+
+| id | select_type | table   | partitions | type  | possible_keys | key                  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_classid_name | 73      | NULL |   10 |    10.00 | Using where |
++----+-------------+---------+------------+-------+---------------+----------------------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.01 sec)
+
+# student表创建classid索引
+mysql> CREATE INDEX idx_cid ON student(classid);
+Query OK, 0 rows affected (3.46 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 索引有效
+mysql> EXPLAIN SELECT * FROM student WHERE classid = 45 ORDER BY age;
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+----------------+
+| id | select_type | table   | partitions | type | possible_keys | key     | key_len | ref   | rows | filtered | Extra          |
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+----------------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_cid       | idx_cid | 5       | const |  804 |   100.00 | Using filesort |
++----+-------------+---------+------------+------+---------------+---------+---------+-------+------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+##### 总结
+
+```mysql
+对于索引：
+INDEX a_b_c(a, b, c)
+
+ORDER BY 能使用索引最左前缀，字段排序规则要保持一致
+- ORDER BY a
+- ORDER BY a, b
+- ORDER BY a, b, c
+- ORDER BY a DESC, b DESC, c DESC
+
+如果 WHERE 使用索引的最左前缀定义为常量，则 ORDER BY 能使用索引 
+- WHERE a = const ORDER BY b, c
+- WHERE a = const AND b = const ORDER BY c
+- WHERE a = const ORDER BY b, c
+- WHERE a = const AND b > const ORDER BY b, c
+
+不能使用索引进行排序
+- ORDER BY a ASC, b DESC, c DESC /* 排序不一致 */ 
+- WHERE g = const ORDER BY b, c /* 丢失a索引 */
+- WHERE a = const ORDER BY c /* 丢失b索引 */
+- WHERE a = const ORDER BY a, d /* d不是索引的一部分 */
+- WHERE a IN (...) ORDER BY b, c /* 对于排序来说，多个相等条件也是范围查询 */
+```
+
+> 可以从 SQL 执行顺序方面来思考，WHERE 的执行顺序，排在 ORDER BY 之前。
+
+#### 避免 FileSort 排序实例
+
+下面，通过一个案例来实战 FileSort 和 Index 两种排序。`对 ORDER BY 子句，尽量使用 Index 方式排序，避免使用 FileSort 方式排序。`
+
+场景：查询年龄为 30 岁的，且学生编号小于 101000 的学生，按用户名称排序。
+
+执行前先清除 student 上的索引，只留主键：
+
+```mysql
+mysql> CALL proc_drop_index('atguigudb1','student');
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY';
+Empty set (0.01 sec)
+```
+
+测试以下的查询，此时显然使用的是 FileSort 进行排序：
+
+```mysql
+# type是ALL，即最坏的情况，Extra里还出现了Using filesort，也是最坏的情况，优化是必须的
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND stuno <101000 ORDER BY name;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra                       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |     3.33 | Using where; Using filesort |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-----------------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+**方案一：为了去掉 FileSort 我们可以创建特定索引。**
+
+```mysql
+# 创建索引
+mysql> CREATE INDEX idx_age_name ON student(age, name);
+Query OK, 0 rows affected (4.06 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 可以看到已经使用了索引，虽然仅仅使用到了age这个字段
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND stuno < 101000 ORDER BY name;
++----+-------------+---------+------------+------+---------------+--------------+---------+-------+-------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key          | key_len | ref   | rows  | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+--------------+---------+-------+-------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_age_name  | idx_age_name | 5       | const | 30062 |    33.33 | Using where |
++----+-------------+---------+------------+------+---------------+--------------+---------+-------+-------+----------+-------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+**方案二：尽量让 WHERE 的过滤条件和排序使用上索引。**
+
+```mysql
+# 删除旧索引
+mysql> DROP INDEX idx_age_name ON student;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 新建索引
+mysql> CREATE INDEX idx_age_stuno_name ON student (age, stuno, name);
+Query OK, 0 rows affected (4.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 测试结果，虽然使用了索引，但是用的FileSort方式排序
+mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 30 AND stuno <101000 ORDER BY name;
++----+-------------+---------+------------+-------+--------------------+--------------------+---------+------+------+----------+---------------------------------------+
+| id | select_type | table   | partitions | type  | possible_keys      | key                | key_len | ref  | rows | filtered | Extra                                 |
++----+-------------+---------+------------+-------+--------------------+--------------------+---------+------+------+----------+---------------------------------------+
+|  1 | SIMPLE      | student | NULL       | range | idx_age_stuno_name | idx_age_stuno_name | 9       | NULL |   17 |   100.00 | Using index condition; Using filesort |
++----+-------------+---------+------------+-------+--------------------+--------------------+---------+------+------+----------+---------------------------------------+
+1 row in set, 2 warnings (0.00 sec)
+```
+
+原因：因为所有的排序都是在条件过滤之后才执行的，所以，如果条件过滤大部分数据的话，剩下几百几千条数据进行排序其实并不是很消耗性能，即使索引优化了排序，但实际提升性能很有限。相对的 stuno < 10100 这个条件，如果没有用到索引的话，要对几万条数据进行扫描，这是非常消耗性能的，所以索引放在这个字段上性价比最高，是最优选择。
+
+结论：
+
+- **两个索引同时存在，MySQL 自动选择最优的方案。（对于这个例子，MySQL 选择 idx_age_stuno_name）。但是，随着数据量的变化，选择的索引也会随之变化的 。**
+- **当 "范围条件" 和 "GROUP BY 或者 ORDER BY" 的字段出现二选一时，优先观察条件字段的过滤数量，如果过滤的数据足够多，而需要排序的数据并不多时，优先把索引放在范围字段上。反之，亦然。**
+
+#### FileSort 算法
+
+排序的字段若不在索引列上，则 FileSort 会有两种算法：`双路排序`和`单路排序`。
+
+##### 双路排序（慢）
+
+MySQL 4.1 之前是使用`双路排序`，字面意思就是两次扫描磁盘，最终得到数据， 读取行指针和 ORDER BY 列，对它们进行排序，然后扫描已经排序好的列表，按照列表中的值重新从列表中读取对应的数据输出。
+
+- 从磁盘取排序字段，在 buffer 进行排序，再从 磁盘取其他字段。
+
+因为取一批数据，要对磁盘进行两次扫描，众所周知，I/O 是很耗时的，所以在 MySQL 4.1 之后，出现了第二种改进的算法，就是单路排序。
+
+##### 单路排序（快）
+
+从磁盘读取查询需要的所有列，按照 ORDER BY 列在 buffer 对它们进行排序，然后扫描排序后的列表进行输出，它的效率更快一些，避免了第二次读取数据。并且把随机 I/O 变成了顺序 I/O，但是它会使用更多的空间， 因为它把每一行都保存在内存中了。
+
+单路排序总体是好过双路排序的，但是单路排序也存在问题：在 sort_buffer 中，单路排序比多路排序要`占用更多空间`。因为单路排序是把所有字段都取出，所以可能取出的数据的总大小超出了 sort_buffer 的容量，导致每次只能取 sort_buffer 容量大小的数据，再进行排序（创建 temp 文件，多路合并），排完再取 sort_buffer 容量大小，依次进行，从而导致`多次 I/O`。单路排序本来想省一次 I/O 操作，反而导致了大量的 I/O 操作，得不偿失。
+
+优化策略：
+
+- `提高 sort_buffer_size。`
+
+  - 不管用哪种算法，提高这个参数都会提高效率，但是要根据系统的能力去提高，因为这个参数是针对每个进程（connection）的 1MB ~ 8MB 之间调整。MySQL 5.7，InnoDB 存储引擎默认值都是 1048576 字节，即 1 MB。
+
+    ```mysql
+    mysql> SHOW VARIABLES LIKE '%sort_buffer_size%';
+    +-------------------------+---------+
+    | Variable_name           | Value   |
+    +-------------------------+---------+
+    | innodb_sort_buffer_size | 1048576 |
+    | myisam_sort_buffer_size | 8388608 |
+    | sort_buffer_size        | 262144  |
+    +-------------------------+---------+
+    3 rows in set (0.00 sec)
+    ```
+
+- `提高 max_length_for_sort_data。`
+
+  - 提高这个参数，会增加改进算法的概率。但是如果设的太高，数据总容量超出 sort_buffer_size 的概率就增大，明显症状是高的磁盘 I/O 活动和低的处理器使用率。如果需要返回的列的总长度大于 max_length_for_sort_data，使用双路算法，否则使用单路算法，可以在 1024 ~ 8192 字节之间调整。
+
+    ```mysql
+    mysql> SHOW VARIABLES LIKE'%max_length_for_sort_data%';
+    +--------------------------+-------+
+    | Variable_name            | Value |
+    +--------------------------+-------+
+    | max_length_for_sort_data | 4096  |
+    +--------------------------+-------+
+    1 row in set (0.00 sec)
+    ```
+
+- `ORDER BY 时避免使用 SELECT *，尽量只 Query 所需要的字段。`
+
+  - 当 Query 的字段大小综合小于 max_length_for_sort_data，而且排序字段不是 TEXT|BLOG 类型时，会使用改进后的算法——单路排序，否则用老算法——多路排序。
+  - 两种算法的数据都有可能超出 sort_buffer_size 的容量，超出之后，会创建 tmp 文件进行合并排序，导致多次 I/O，但是用单路排序算法的风险会更大一些，所以要提高 sort_buffer_size。
+
+### GROUP BY 分组优化
+
+- **GROUP BY 使用索引的原则几乎跟 ORDER BY 一致 ，GROUP BY 即使没有过滤条件用到索引，也可以直接使用索引。**
+- **GROUP BY 先排序再分组，遵照索引建的最佳左前缀法则。**
+- **当无法使用索引列，增大 max_length_for_sort_data 和 sort_buffer_size 参数的设置。**
+- **WHERE 效率高于 HAVING，能写在 WHERE 限定的条件就不要写在 HAVING 中了。**
+- **减少使用 ORDER BY，和业务沟通能不排序就不排序，或将排序放到程序端去做。ORDER BY、GROUP BY、DISTINCT 这些语句较为耗费 CPU，数据库的 CPU 资源是极其宝贵的。**
+- **包含了 ORDER BY、GROUP BY、DISTINCT 这些查询的语句，WHERE 条件过滤出来的结果集请保持在 1000 行以内，否则 SQL 会很慢。**
+
+### LIMIT 分页优化
+
+一般分页查询时，通过创建覆盖索引能够比较好地提高性能。一个常见又非常头疼的问题就是`LIMIT 2000000, 10`，此时需要 MySQL 排序前 2000010 记录，仅仅返回 2000000-2000010 的记录，其他记录丢弃，查询排序的代价非常大。
+
+```mysql
+mysql> EXPLAIN SELECT * FROM student LIMIT 2000000, 10;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |   100.00 | NULL  |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+**优化思路一**
+
+- 在索引上完成排序分页操作，最后根据主键关联回原表查询所需要的其他列内容。
+
+  ```mysql
+  mysql> EXPLAIN SELECT * FROM student t, (SELECT id FROM student ORDER BY id LIMIT 2000000, 10) a WHERE t.id = a.id;
+  +----+-------------+------------+------------+--------+---------------+---------+---------+------+--------+----------+-------------+
+  | id | select_type | table      | partitions | type   | possible_keys | key     | key_len | ref  | rows   | filtered | Extra       |
+  +----+-------------+------------+------------+--------+---------------+---------+---------+------+--------+----------+-------------+
+  |  1 | PRIMARY     | <derived2> | NULL       | ALL    | NULL          | NULL    | NULL    | NULL | 742203 |   100.00 | NULL        |
+  |  1 | PRIMARY     | t          | NULL       | eq_ref | PRIMARY       | PRIMARY | 4       | a.id |      1 |   100.00 | NULL        |
+  |  2 | DERIVED     | student    | NULL       | index  | NULL          | PRIMARY | 4       | NULL | 742203 |   100.00 | Using index |
+  +----+-------------+------------+------------+--------+---------------+---------+---------+------+--------+----------+-------------+
+  3 rows in set, 1 warning (0.00 sec)
+  ```
+
+**优化思路二**
+
+- 该方案适用于主键自增的表，可以把 LIMIT 查询转换成某个位置的查询。
+
+  ```mysql
+  mysql> EXPLAIN SELECT * FROM student WHERE id > 2000000 LIMIT 10;
+  +----+-------------+---------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+  | id | select_type | table   | partitions | type  | possible_keys | key     | key_len | ref  | rows | filtered | Extra       |
+  +----+-------------+---------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+  |  1 | SIMPLE      | student | NULL       | range | PRIMARY       | PRIMARY | 4       | NULL |    1 |   100.00 | Using where |
+  +----+-------------+---------+------------+-------+---------------+---------+---------+------+------+----------+-------------+
+  1 row in set, 1 warning (0.00 sec)
+  
+  mysql> SELECT * FROM student LIMIT 2000000, 10;
+  Empty set (0.20 sec)
+  
+  mysql> SELECT * FROM student WHERE id > 2000000 LIMIT 10;
+  Empty set (0.00 sec)
+  ```
+
+### 优先考虑覆盖索引
+
+#### 什么是覆盖索引
+
+理解方式一：索引是高效找到行的一个方法，但是一般数据库也能使用索引找到一个列的数据，因此它不必读取整个行。毕竟索引叶子节点存储了它们索引的数据；当能通过读取索引就可以得到想要的数据，那就不需要读取行了。一个索引包含了满足查询结果的数据就叫做`覆盖索引`。
+
+理解方式二：**非聚簇复合索引的一种形式，它包括在查询里的 SELECT、JOIN 和 WHERE 子句用到的所有列（即建索引的字段正好是覆盖查询条件中所涉及的字段）。**
+
+简单说就是， `覆盖索引的 "索引列 + 主键" 包含了 SELECT 到 FROM 之间查询的列`。
+
+示例一：
+
+```mysql
+# 先删除索引
+mysql> CALL proc_drop_index('atguigudb1','student');
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT index_name FROM information_schema.STATISTICS WHERE table_schema='atguigudb1' AND table_name='student' AND seq_in_index=1 AND index_name <>'PRIMARY';
+Empty set (0.00 sec)
+
+# 新建索引，student表的age和name字段
+mysql> CREATE INDEX idx_age_name ON student (age, name);
+Query OK, 0 rows affected (4.20 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 使用了不等于条件，索引失效
+mysql> EXPLAIN SELECT * FROM student WHERE age <> 20;
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | idx_age_name  | NULL | NULL    | NULL | 742203 |   100.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 也使用了不等于条件，但使用了索引idx_age_name，因为当前查询的字段只有age和name，idx_age_name在此处是覆盖索引
+mysql> EXPLAIN SELECT age,NAME FROM student WHERE age <> 20;
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+| id | select_type | table   | partitions | type  | possible_keys | key          | key_len | ref  | rows   | filtered | Extra                    |
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+|  1 | SIMPLE      | student | NULL       | index | idx_age_name  | idx_age_name | 68      | NULL | 742203 |   100.00 | Using where; Using index |
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+>**注意：前面提到如果使用上 <> 就不会使用上索引，这并不是绝对的，比如上面这条 SQL。需要明确的一点是，关于索引失效以及索引优化，都是根据`效率`来决定的。对于二级索引来说：查询时间 = 二级索引计算时间 + 回表查询时间，由于此处使用的是覆盖索引，回表查询时间 = 0，索引优化器考虑到这一点，就使用上二级索引了。**
+
+示例二：
+
+```mysql
+mysql> EXPLAIN SELECT * FROM student WHERE NAME LIKE '%abc';
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 742203 |    11.11 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 与示例一的<>同理，此处，LIKE的%在开头，但仍然使用了索引idx_age_name，idx_age_name在此处也是覆盖索引
+mysql> EXPLAIN SELECT id, age FROM student WHERE NAME LIKE '%abc';
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+| id | select_type | table   | partitions | type  | possible_keys | key          | key_len | ref  | rows   | filtered | Extra                    |
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+|  1 | SIMPLE      | student | NULL       | index | NULL          | idx_age_name | 68      | NULL | 742203 |    11.11 | Using where; Using index |
++----+-------------+---------+------------+-------+---------------+--------------+---------+------+--------+----------+--------------------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+#### 覆盖索引的利弊
+
+**好处：**
+
+1. **避免 Innodb 表进行索引的二次查询（回表）。**
+   - Innodb 是以聚集索引的顺序来存储的，对于 Innodb 来说，二级索引在叶子节点中所保存的是行的主键信息，如果是用二级索引查询数据，在查找到相应的键值后，还需通过主键进行二次查询才能获取真实所需要的其他字段的数据。
+   - 在覆盖索引中，二级索引的键值中可以获取所要的数据，避免了对主键的二次查询，减少了 I/O 操作，提升了查询效率。
+
+2. **可以把随机 I/O 变成顺序 I/O 加快查询效率。**
+   - 由于覆盖索引是按键值的顺序存储的，对于 I/O 密集型的范围查找来说，对比随机从磁盘读取每一行的数据 I/O 要少的多，因此利用覆盖索引在访问时也可以把磁盘的随机读取的 I/O 转变成索引查找的顺序 I/O。
+   - 由于覆盖索引可以减少树的搜索次数，显著提升查询性能，所以使用覆盖索引是一个常用的性能优化手段。
 
 
+**弊端：**
+
+- 索引字段的维护总是有代价的。因此，在建立冗余索引来支持覆盖索引时就需要权衡考虑了。这是业务 DBA，或者称为业务数据架构师的工作。
+
+### 如何给字符串添加索引
+
+假设有一张教师表，表定义如下：
+
+```mysql
+CREATE TABLE teacher(
+    ID bigint unsigned PRIMARY KEY,
+    email varchar(64),
+    ...
+)ENGINE=innodb;
+```
+
+讲师要使用邮箱登录，所以业务代码中一定会出现类似于这样的语句：
+
+```mysql
+SELECT col1, col2 FROM teacher WHERE email = 'xxx';
+```
+
+如果 email 这个字段上没有索引，那么这个语句就只能做`全表扫描` 。
+
+#### 前缀索引
+
+MySQL是支持`前缀索引`的。默认地，如果你创建索引的语句不指定前缀长度，那么索引就会包含整个字符串。
+
+```mysql
+ALTER TABLE teacher ADD INDEX index1(email); 
+# 或
+ALTER TABLE teacher ADD INDEX index2(email(6)); 
+```
+
+这两种不同的定义在数据结构和存储上有什么区别呢？下图就是这两个索引的示意图：
+
+<img src="mysql/image-20231104155631873.png" alt="image-20231104155631873" style="zoom:80%;" />
+
+<img src="mysql/image-20231104155706381.png" alt="image-20231104155706381" style="zoom:40%;" />
+
+如果使用的是 index1 （即 email 整个字符串的索引结构），执行顺序是这样的：
+
+- 从 index1 索引树找到满足索引值是 "zhangssxyz@xxx.com" 的这条记录，取得 ID2 的值；
+
+- 到主键上查到主键值是 ID2 的行，判断 email 的值是正确的，将这行记录加入结果集；
+- 取 index1 索引树上刚刚查到的位置的下一条记录，发现已经不满足email = "zhangssxyz@xxx.com" 的条件了，循环结束。
+- 这个过程中，只需要回主键索引取一次数据，所以系统认为只扫描了一行。
+
+如果使用的是 index2（即 email(6) 索引结构），执行顺序是这样的：
+
+- 从 index2 索引树找到满足索引值是 "zhangs " 的记录，找到的第一个是 ID1；
+- 到主键上查到主键值是 ID1 的行，判断出 email 的值不是 "zhangssxyz@xxx.com"，这行记录丢弃；
+- 取 index2 上刚刚查到的位置的下一条记录，发现仍然是 "zhangs"，取出 ID2，再到 ID 索引上取整行然后判断，这次值对了，将这行记录加入结果集；
+- 重复上一步，直到在 idxe2 上取到的值不是 "zhangs" 时，循环结束。
+- 也就是说`使用前缀索引，定义好长度，就可以做到既节省空间，又不用额外增加太多的查询成本。`前面已经讲过区分度，区分度越高越好。因为区分度越高，意味着重复的键值越少。
+
+#### 前缀索引对覆盖索引的影响
+
+前面我们说了使用`前缀索引可能会增加扫描行数`，这会影响到性能。其实，前缀索引的影响不止如此，我们再看一下另外一个场景：
+
+如果使用 index1（即 email 整个字符串的索引结构）的话，可以利用覆盖索引，从 index1 查到结果后直接就返回了，不需要回到 ID 索引再去查一次。而如果使用 index2（即 email(6) 索引结构）的话，就不得不回到 ID 索引再去判断 email 字段的值。
+
+即使你将 index2 的定义修改为 email(18) 的前缀索引，这时候虽然 index2 已经包含了所有的信息，但 InnoDB 还是要回到 id 索引再查一下，因为系统并不确定前缀索引的定义是否截断了完整信息。
+
+结论：`使用前缀索引就用不上覆盖索引对查询性能的优化了`，这也是你在选择是否使用前缀索引时需要考虑的一个因素。
+
+#### 拓展内容
+
+对于类似于邮箱这样的字段来说，使用前缀索引的效果可能还不错。但是，遇到前缀的区分度不够好的情况时，我们要怎么办呢?
+
+比如，我们国家的身份证号，一共 18 位，其中前 6 位是地址码，所以同一个县的人的身份证号前 6 位一般会是相同的。
+
+假设你维护的数据库是一个市的公民信息系统，这时候如果对身份证号做长度为 6 的前缀索引的话，这个索引的区分度就非常低了。按照我们前面说的方法，可能你需要创建长度为 12 以上的前缀索引，才能够满足区分度要求。
+
+但是，索引选取的越长，占用的磁盘空间就越大，相同的数据页能放下的索引值就越少，搜索的效率也就会越低。
+那么，如果我们能够确定业务需求里面只有按照身份证进行等值查询的需求，还有没有别的处理方法呢？要求这种方法，既可以占用更小的空间，也能达到相同的查询效率。有!
+
+**第一种方式是使用`倒序存储`。**如果你存储身份证号的时候把它倒过来存，每次查询的时候：
+
+```mysql
+mysql> SELECT field list FROM teacher WHERE id_card = reverse(input_id_card_string);
+```
+
+由于身份证号的最后 6 位没有地址码这样的重复逻辑，所以最后这 6 位很可能就提供了足够的区分度。当然，实践中你还要使用 COUNT(DISTINCT) 方法去做验证区分度。
+
+**第二种方式是`使用 hash 字段`。**你可以在表上再创建一个整数字段，来保存身份证的校验码，同时在这个字段上创建索引。
+
+```mysql
+mysql> ALTER TABLE teacher ADD id_card_crc int unsignedadd INDEX(id_card_crc);
+```
+
+然后每次插入新记录的时候，都同时用 crc32() 这个函数得到校验码填到这个新字段，由于校验码可能存在冲突，也就是说两个不同的身份证号通过 crc32() 函数得到的结果可能是相同的，所以你的查询语句 WHERE 部分要判断 id_card 的值是否精确相同。
+
+```mysql
+mysql> SELECT field list FROM teacher WHERE id_card_rc = crc32(input_id_card_string) AND id_card = input id_card_string;
+```
+
+这样，索引的长度变成了 4 个字节，比原来小了很多。
+
+>从查询效率上看，**使用 hash 字段方式的查询性能相对更稳定一些**，因为 crc32 算出来的值虽然有冲突的概率，但是概率非常小，可以认为每次查询的平均扫描行数接近 1。而倒序存储方式毕竟还是用的前缀索引的方式，也就是说还是会增加扫描行数。
+
+### 索引条件下推（索引下推）
+
+Index Condition Pushdown (ICP) 是 MySQL 5.6 中新特性，是一种在存储引擎层使用索引过滤数据的一种优化方式。`ICP 可以减少存储引擎访问基表的次数，以及 MySQL 服务器访问存储引擎的次数。`
+
+**索引中包含某个字段，但是实际查询没有使用到这个字段的索引（失效了，比如该字段的条件为 "%a%"），此时可以使用这个字段在索引中进行条件过滤，从而可以减少回表的记录条数，这种情况就叫做`索引条件下推/索引下推`。**
+
+#### 使用前后对比
+
+**在不使用 ICP 索引扫描的过程：**
+
+- Storage 层：只将满足 index key 条件的索引记录对应的整行记录取出，返回给 Server 层。
+- Server 层：对返回的数据，使用后面的 WHERE 条件过滤，直至返回最后一行。
+
+**使用 ICP 扫描的过程：**
+
+- Storage层：首先将 index key 条件满足的索引记录区间确定，然后在索引上使用 index filter 进行过滤。将满足的 index filter 条件的索引记录才去回表取出整行记录返回 Server 层。不满足 index filter 条件的索引记录丢弃，不回表、也不会返回 Server 层。
+- Server 层：对返回的数据，使用 table filter 条件做最后的过滤。
+
+**使用前后的成本差别：**
+
+- 使用 ICP 前，存储层多返回了需要被 index filter 过滤掉的整行记录。
+- 使用 ICP 后，直接就去掉了不满足 index filter 条件的记录，省去了这些记录回表和传递到 Server 层的成本。
+- ICP 的加速效果取决于在存储引擎内通过 ICP 筛选掉的数据的比例。
+
+#### ICP 的开启、关闭
+
+默认情况下`启用`索引条件下推。可以通过设置系统变量`optimizer_switch `控制`index_condition_pushdown`：
+
+```mysql
+mysql> SHOW VARIABLES LIKE '%optimizer_switch%';
++------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable_name    | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| optimizer_switch | index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,duplicateweedout=on,subquery_materialization_cost_based=on,use_index_extensions=on,condition_fanout_filter=on,derived_merge=on,use_invisible_indexes=off,skip_scan=on,hash_join=on,subquery_to_derived=off,prefer_ordering_index=on,hypergraph_optimizer=off,derived_condition_pushdown=on |
++------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+# 关闭索引下推
+mysql> SET optimizer_switch='index_condition_pushdown=off';
+Query OK, 0 rows affected (0.00 sec)
+
+# 打开索引下推
+mysql> SET optimizer_switch='index_condition_pushdown=on';
+Query OK, 0 rows affected (0.00 sec)
+```
+
+>当使用索引条件下推时，`EXPLAIN`语句输出的结果中`Extra`列内容如果显示为`Using index condition`，即为索引条件下推。
+
+#### ICP 使用案例
+
+建表：
+
+```mysql
+mysql> CREATE TABLE people (
+    -> `id` int NOT NULL AUTO_INCREMENT,
+    -> `zipcode` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+    -> `firstname` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+    -> `lastname` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+    -> `address` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+    -> PRIMARY KEY (`id`),
+    -> KEY `zip_last_first` (`zipcode`, `lastname`, `firstname`)
+    -> ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+Query OK, 0 rows affected, 6 warnings (0.04 sec)
+```
+
+插入数据：
+
+```mysql
+INSERT INTO people VALUES
+(1, '000001', 'san', 'zhang', 'beijing'),
+(2, '000002', 'si', 'li', 'nanjing'),
+(3, '000003', 'wu', 'wang', 'shanghai'),
+(4, '000001', 'liu', 'zhao', 'tianjin');
+```
+
+为该表定义联合索引 zip_last_first(zipcode, lastname, firstname) 。如果我们知道了一个人的邮编，但是不确定这个人的姓氏，可以进行如下检索：
+
+```mysql
+mysql> SELECT * FROM people WHERE zipcode= '000001' AND lastname LIKE '%zhang%' AND address LIKE '%beijing%';
++----+---------+-----------+----------+---------+
+| id | zipcode | firstname | lastname | address |
++----+---------+-----------+----------+---------+
+|  1 | 000001  | san       | zhang    | beijing |
++----+---------+-----------+----------+---------+
+1 row in set (0.00 sec)
+
+# 查询计划
+mysql> EXPLAIN SELECT * FROM people WHERE zipcode= '000001' AND lastname LIKE '%zhang%' AND address LIKE '%beijing%';
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+------------------------------------+
+| id | select_type | table  | partitions | type | possible_keys  | key            | key_len | ref   | rows | filtered | Extra                              |
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+------------------------------------+
+|  1 | SIMPLE      | people | NULL       | ref  | zip_last_first | zip_last_first | 63      | const |    2 |    25.00 | Using index condition; Using where |
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+------------------------------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+- 从查询计划可以看出，Extra 中显示了 Using index condition，这表示使用了索引下推。即：先使用索引的 zipcode 字段进行匹配，然后索引下推使用 lastname 字段进行过滤，最后再进行回表。
+- 另外，Using where 表示条件中包含需要过滤的非索引列的数据，即 "address LIKE '%beijing%'" 这个条件并不是索引列，需要在服务端过滤掉。
+
+> 为了便于 MySQL 客户端查询，将相关汉字替换为了拼音。
+
+这个 PEOPLE 表中存在两个索引，分别是：
+
+- 主键索引（简图）：
+
+  <img src="mysql/image-20231104201231770.png" alt="image-20231104201231770" style="zoom:67%;" />
+
+- 二级索引 zip_last_first：
+
+  <img src="mysql/image-20231104201305284.png" alt="image-20231104201305284" style="zoom:67%;" />
+
+下面关闭 IPC，再次查看执行计划：
+
+```mysql
+mysql> SET optimizer_switch='index_condition_pushdown=off';
+Query OK, 0 rows affected (0.00 sec)
+
+# 关闭IPC后，不再使用索引下推
+mysql> EXPLAIN SELECT * FROM people WHERE zipcode= '000001' AND lastname LIKE '%zhang%' AND address LIKE '%beijing%';
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+-------------+
+| id | select_type | table  | partitions | type | possible_keys  | key            | key_len | ref   | rows | filtered | Extra       |
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+-------------+
+|  1 | SIMPLE      | people | NULL       | ref  | zip_last_first | zip_last_first | 63      | const |    2 |    25.00 | Using where |
++----+-------------+--------+------------+------+----------------+----------------+---------+-------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+#### 开启和关闭 ICP 的性能对比
+
+创建存储过程，主要目的是插入很多 000001 的数据，这样查询的时候，为了在存储引擎层坐果率，减少 I/O，也为了减少缓冲池（缓存数据页，没有 I/O）的作用。
+
+```mysql
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE inser_people(max_num INT)
+    -> BEGIN
+    -> DECLARE i INT DEFAULT 0;
+    -> SET autocommit = 0;
+    -> REPEAT
+    -> SET i = i + 1;
+    -> INSERT INTO people(zipcode, firstname, lastname, address) VALUES('000001', 'liu', 'zhao', 'tianjin');
+    -> UNTIL i = max_num
+    -> END REPEAT;
+    -> COMMIT;
+    -> END //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+```
+
+调用存储过程：
+
+```mysql
+mysql> CALL inser_people(1000000);
+Query OK, 0 rows affected (27.68 sec)
+```
+
+首先，打开 profiling：
+
+```mysql
+mysql> SET profiling=1;
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+```
+
+执行 SQL 语句，此时索引下推打开：
+
+```mysql
+mysql>  SET optimizer_switch='index_condition_pushdown=on';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM people WHERE zipcode = '000001' AND lastname LIKE '%zhang%';
++----+---------+-----------+----------+---------+
+| id | zipcode | firstname | lastname | address |
++----+---------+-----------+----------+---------+
+|  1 | 000001  | san       | zhang    | beijing |
++----+---------+-----------+----------+---------+
+1 row in set (0.25 sec)
+```
+
+再次执行 SQL 语句，此时索引下推关闭：
+
+```mysql
+mysql> SET optimizer_switch='index_condition_pushdown=off';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM people WHERE zipcode = '000001' AND lastname LIKE '%zhang%';
++----+---------+-----------+----------+---------+
+| id | zipcode | firstname | lastname | address |
++----+---------+-----------+----------+---------+
+|  1 | 000001  | san       | zhang    | beijing |
++----+---------+-----------+----------+---------+
+1 row in set (2.52 sec)
+```
+
+查看当前会话所产生的所有 profiles：
+
+```mysql
+mysql> SHOW profiles\G;
+*************************** 1. row ***************************
+Query_ID: 1
+Duration: 0.24520475
+   Query: SELECT * FROM people WHERE zipcode = '000001' AND lastname LIKE '%zhang%'
+*************************** 2. row ***************************
+Query_ID: 2
+Duration: 2.52617775
+   Query: SELECT * FROM people WHERE zipcode = '000001' AND lastname LIKE '%zhang%'
+3 rows in set, 1 warning (0.00 sec)
+
+ERROR: 
+No query specified
+```
+
+- 多次测试效率对比来看，使用 ICP 优化的查询效率会好一些。这里建议多存储一些数据，效果更明显。
+
+#### ICP 的使用条件
+
+- 只能用于二级索引（Secondary Index）。
+- EXPLAIN 显示的执行计划中 type 值（join 类型）为 range 、ref、eq_ref 或者 ref_or_null 。
+- 并非全部 WHERE 条件都可以用 ICP 筛选，如果 WHERE 条件的字段不在索引列中，还是要读取整表的记录到 Server 端做 WHERE 过滤。(IPC 是 Storage 层行为)
+- ICP 可以用于 MyISAM 和 InnnoDB 存储引擎。
+- MySQL 5.6 版本的不支持分区表的 ICP 功能，5.7 版本的开始支持。
+- 当 SQL 使用覆盖索引时，不支持 ICP 优化方法。
+
+### 普通索引 vs 唯一索引
+
+在不同的业务场景下，应该选择普通索引，还是唯一索引？
+
+假设你在维护一个居民系统，每个人都有一个唯一的身份证号，而且业务代码已经保证了不会写入两个重复的身份证号。如果居民系统需要按照身份证号查姓名：
+
+```mysql
+SELECT name FROM CUser WHERE id_card = 'xxxxxxxyyyyyyzzzzz';
+```
+
+所以，你一定会考虑在 id_card 字段上建索引。
+
+由于身份证号字段比较大，不建议把身份证号当做主键。现在有两个选择，要么给 id_card 字段创建唯一素引，要么创建一个普通索引。如果业务代码已经保证了不会写入重复的身份证号，那么这两个选择逻辑上都是正确的。
+
+你知道的，InnoDB 的数据是按数据页为单位来读写的。也就是说，当需要读一条记录的时候，并不是将这个记录本身从磁盘读出来，而是以页为单位，将其整体读入内存。在 InnoDB中，每个数据页的大小默认是 16 KB。
+
+从性能的角度考虑，你选择唯一索引还是普通索引呢？选择的依据是什么呢？
+
+假设，我们有一个主键列为 id 的表，表中有字段 k，并且在 k 上有索引，假设字段 k 上的值都不重复。 这个表的建表语句是：
+
+```mysql
+CREATE TABLE test(
+    id int PRIMARY KEY,
+    k int NOT null,
+    name varchar(16),
+    index (k)
+)ENGINE=InnoDB;
+```
+
+表中 R1 ~ R5 的 (id, k) 值分别为 (100, 1)、(200, 2)、(300, 3)、(500, 5) 和 (600, 6)。
+
+#### 查询过程
+
+假设，执行查询的语句是 "SELECT id FROM test WHERE k = 5"。
+
+- 对于普通索引来说，查找到满足条件的第一个记录 (5, 500) 后，需要查找下一个记录，直到碰到第一个不满足 k = 5 条件的记录。
+- 对于唯一索引来说，由于索引定义了唯一性，查找到第一个满足条件的记录后，就会停止继续检索。
+
+那么，这个不同带来的性能差距会有多少呢？答案是， 微乎其微。
+
+你知道的，InnoDB 的数据是按数据页为单位来读写的。也就是说，当需要读一条记录的时候，并不是将这个记录本身从磁盘读出来，而是以页为单位，将其整体读入内存。在 InnoDB 中，每个数据页的大小默认是 16KB。
+
+因为引擎是按页读写的，所以说，当找到 k = 5 的记录的时候，它所在的数据页就都在内存里了。那么，对于普通索引来说，要多做的那一次 "查找和判断下一条记录" 的操作，就只需要一次指针寻找和一次计算。
+
+当然，如果 k = 5 这个记录刚好是这个数据页的最后一个记录，那么要取下一个记录，必须读取下一个数据页，这个操作会稍微复杂一些。
+
+但是，我们之前计算过，对于整型字段，一个数据页可以放近千个 key，因此出现这种情况的概率会很低。所以我们计算平均性能差异时，仍可以认为这个操作成本对于现在的 CPU 来说可以忽略不计。
+
+#### 更新过程
+
+为了说明普通索引和唯一索引对更新语句性能的影响这个问题，介绍一下`change buffer`。
+
+当需要更新一个数据页时，如果数据页在内存中就直接更新，而如果这个数据页还没有在内存中的话， 在不影响数据一致性的前提下，InooDB 会将这些更新操作缓存在 change buffer 中，这样就不需要从磁盘中读入这个数据页了。在下次查询需要访问这个数据页的时候，将数据页读入内存，然后执行 change buffer 中与这个页有关的操作。通过这种方式就能保证这个数据逻辑的正确性。
+
+将 change buffer 中的操作应用到原数据页，得到最新结果的过程称为`merge`。除了`访问这个数据页`会触发 merge 外，系统有`后台线程`会定期 merge。在`数据库正常关闭 (shutdown)`的过程中，也会执行 merge 操作。
+
+如果能够将更新操作先记录在 change buffer，`减少读磁盘`，语句的执行速度会得到明显的提升。而且， 数据读入内存是需要占用 buffer pool 的，所以这种方式还能够`避免占用内存`，提高内存利用率。
+
+那么，什么条件下可以使用 change buffer 呢？
+
+对干唯一索引来说，所有的更新操作都要先判断这个操作是否违反唯一性约束。比如，要插入 (4, 400) 这个记录，就要先判断现在表中是否已经存在 k = 4 的记录，而这必须要将数据页读入内存才能判断。如果都已经读入到内存了，那直接更新内存会更快，就没必要使用 change buffer 了。
+
+因此，`唯一索引的更新就不能使用 change buffer，实际上也只有普通索引可以使用。`
+
+change buffer 用的是 buffer pool 里的内存，因此不能无限增大。change buffer 的大小，可以通过参数`innodb_change_buffer_maxsize`来动态设置。这个参数设置为 50 的时候，表示 changebuffer 的大小最多只能占用 buffer pool 的 50%。
+
+```mysql
+mysql> SHOW VARIABLES LIKE '%change_buffer%';
++-------------------------------+-------+
+| Variable_name                 | Value |
++-------------------------------+-------+
+| innodb_change_buffer_max_size | 25    |
+| innodb_change_buffering       | all   |
++-------------------------------+-------+
+2 rows in set (0.01 sec)
+```
+
+那么，如果要在这张表中插入一个新记录 (4, 400) 的话，InnoDB 的处理流程是怎样的？
+
+第一种情况是，这个记录要更新的目标页在内存中。这时：
+
+- 对干唯一索引来说，找到 3 和 5 之间的位置，判断为没有冲突，插入这个值，语句执行结束。
+- 对于普通索引来说，找到 3 和 5 之间的位置，插入这个值，语句执行结束。
+- 这样看来，普通索引和唯一索引对更新语句性能影响的差别，只是一个判断，只会耗费微小的 CPU 时间。
+
+第二种情况是，这个记录要更新的目标页不在内存中。这时：
+
+- 对于唯一索引来说，需要将数据页读入内存，判断有没有冲突，插入这个值，语句执行结束。
+- 对于普通索引来说，则是将更新记录在 change buffer，语句执行就结束了。
+
+将数据从磁盘读入内存涉及随机 I/O 的访问，是数据库里面成本最高的操作之一。change buffer 因为减少了随机磁盘访问，所以对更新性能的提升是会很明显的。
+
+>案例：
+>
+>某个业务的库内存命中率突然从 99% 降低到了 75%，整个系统处于阻塞状态，更新语句全部堵住。而探究其原因后，发现这个业务有大量插入数据的操作，而他在前一天把其中的某个普通索引改成了唯一索引。
+
+#### change buffer 的使用场景
+
+change buffer 只限于用在普通索引的场景下，而不适用于唯一索引。那么，现在有一个问题就是：普通索引的所有场景，使用 change buffer 都可以起到加速作用吗？
+
+因为 merge 的时候是真正进行数据更新的时刻，而 change buffer 的主要目的就是将记录的变更动作缓存下来，所以`在一个数据页做 merge 之前，change buffer 记录的变更越多 (也就是这个页面上要更新的次数越多)，收益就越大。`
+
+因此，对于`写多读少`的业务来说，页面在写完以后马上被访问到的概率比较小，此时 change buffer 的使用效果最好。这种业务模型常见的就是账单类、日志类的系统。
+
+反过来，假设一个业务的更新模式是写入之后马上会做查询，那么即使满足了条件，将更新先记录在 change buffer，之后由于马上要访问这个数据页，会立即触发 merge 过程，这样随机访问 I/O 的次数不会减少，反而增加了 change buffer 的维护代价。所以，对于这种业务模式来说，changebuffer 反而起到了副作用。
+
+- 普通索引和唯一索引应该怎么选择？其实，这两类索引在查询能力上是没差别的，主要考虑的是对`更新性能`的影响。所以，建议你`尽量选择普通索引`。
+- 在实际使用中会发现，普通索引和 change buffer 的配合使用，对于`数据量大`的表的更新优化还是很明显的。
+- 如果所有的更新后面，都马上`伴随着对这个记录的查询，那么你应该关闭change buffer`。而在其他情况下，change buffer 都能提升更新性能。
+- 由于唯一索引用不上 change buffer 的优化机制，因此如果`业务可以接受`，从性能角度出发建议优先考虑`非唯一索引`。但是如果 "业务可能无法确保" 的情况下，怎么处理呢？
+  - 首先，`业务正确性优先`。我们的前提是 "业务代码已经保证不会写入重复数据" 的情况下，讨论性能问题。如果业务不能保证，或者业务就是要求数据库来做约束，那么没得选，必须创建唯一索引。 这种情况下，本节的意义在于，如果碰上了大量插入数据慢、内存命中率低的时候，给你多提供一个排查思路。
+  - 然后，在一些 "`归档库`" 的场景，你是可以考虑使用唯一索引的。比如，线上数据只需要保留半年， 然后历史数据保存在归档库。这时候，归档数据已经是确保没有唯一键冲突了。要提高归档效率， 可以考虑把表里面的唯一索引改成普通索引。
+
+### 其它查询优化策略
+
+#### EXISTS 和 IN 的区分
+
+**问题：**
+
+不太理解哪种情况下应该使用 EXISTS，哪种情况应该用 IN。选择的标准是看能否使用表的索引吗？
+
+回答:
+
+索引是个前提，其实选择与否还是要看表的大小。你可以将选择的标准理解为`小表驱动大表`。在这种方式下效率是最高的。
+
+比如下面这样：
+
+```mysql
+SELECT * FROM A WHERE cc IN (SELECT cc FROM B)
+
+SELECT * FROM A WHERE EXISTS (SELECT cc FROM B WHERE B.cc = A.cc)
+```
+
+- 当 A 小于 B 时，用 EXISTS。因为 EXISTS 的实现，相当于外表循环，实现的逻辑类似于：
+
+  ```mysql
+  for i in A
+      for j in B
+          if j.cc == i.cc then ...
+  ```
+
+- 当 B 小于 A 时用 IN，因为实现的逻辑类似于：
+
+  ```mysql
+  for i in B
+      for j in A
+          if j.cc == i.cc then ...
+  ```
+
+结论：**哪个表小就用哪个表来驱动，A 表小就用 EXISTS ，B 表小就用 IN。**
 
 ## 本文参考
 
@@ -14548,10 +15645,3 @@ https://www.bilibili.com/video/BV1iq4y1u7vj
 ## 声明
 
 写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
-
-
-
-
-
-
-
