@@ -1,5 +1,9 @@
 *date: 2021-08-25*
 
+
+
+[TOC]
+
 ## 大数据
 
 ### 大数据概念
@@ -3001,8 +3005,15 @@
 
 ### 基本语法
 
-- 方式一：`hadoop fs 具体命令`
-- 方式二：`hdfs dfs 具体命令`
+```bash
+hadoop fs [genericOptions] [commandOptions]
+```
+
+- 方式一：`hadoop fs 具体命令`，适用于任何不同的文件系统，比如本地文件系统和 HDFS 文件系统。
+- 方式二：`hadoop dfs 具体命令`，只适用于 HDFS 文件系统。
+- 方式三：`hdfs dfs 具体命令`，只适用于 HDFS 文件系统。
+
+>官方不推荐使用第二种命令 hadoop dfs，有些 Hadoop 版本中已将这种命令弃用。
 
 ### 命令大全
 
@@ -3066,6 +3077,24 @@ command [genericOptions] [commandOptions]
 ```
 
 ### 常用命令
+
+| HDFS 常用命令             | 说明                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| **hadoop fs -ls**         | **显示指定文件的详细信息**                                   |
+| hadoop fs -cat            | 将指定文件的内容输出到标准输出                               |
+| hadoop fs touchz          | 创建一个指定的空文件                                         |
+| **hadoop fs -mkdir [-p]** | **创建指定的一个或多个文件夹，-p 选项用于递归创建**          |
+| **hadoop fs -cp**         | **将文件从源路径复制到目标路径**                             |
+| hadoop fs -mv             | 将文件从源路径移动到目标路径                                 |
+| **hadoop fs -rm**         | **删除指定的文件，只删除非空目录和文件**                     |
+| hadoop fs -rm -r          | 删除指定的文件夹及其下的所有文件，-r 表示递归删除子目录      |
+| hadoop fs -chown          | 改变指定文件的所有者，该命令仅适用于超级用户                 |
+| hadoop fs -chmod          | 将指定的文件权限更改为可执行文件，该命令仅适用于超级用户和文件所有者 |
+| **hadoop fs -get**        | **复制指定的文件到本地文件系统指定的文件或文件夹**           |
+| **hadoop fs -put**        | **从本地文件系统中复制指定的单个或多个源文件到指定的目标文件系统** |
+| hadoop fs -moveFromLocal  | 与 -put 命令功能相同，但是文件上传结束后会删除源文件         |
+| hadoop fs -copyFromLocal  | 与 -put 命令功能相同，将本地源文件复制到路径指定的文件或文件夹中 |
+| hadoop fs -copyToLocal    | 与 -get命令功能相同，将目标文件复制到本地文件或文件夹中      |
 
 #### 查看帮助
 
@@ -4917,6 +4946,8 @@ command [genericOptions] [commandOptions]
 ### YARN 生产环境核心参数配置案例
 
 - 需求：从 1 G 数据中，统计每个单词出现的次数。服务器 3 台，每台配置 4 G 内存，4 核 CPU，4 线程。
+
+`// TODO`
 
 ## 本文参考
 
