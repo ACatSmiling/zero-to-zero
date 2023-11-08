@@ -32,8 +32,3 @@
   - [Hadoop](BigData/hadoop.md)
   - [Flink](BigData/flink.md)
   - [Kafka](MessageQueue/kafka.md)
-
-
-
-
-
