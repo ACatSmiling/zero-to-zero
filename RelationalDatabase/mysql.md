@@ -13600,7 +13600,7 @@ mysql> CREATE INDEX idx_age_classid ON student(age, classId);
 Query OK, 0 rows affected (3.60 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 
-mysql> CREATE INDEX idx_age_classid_name ON student(age, classId, NAME);
+mysql> CREATE INDEX idx_age_classid_name ON student(age, classId, name);
 Query OK, 0 rows affected (4.10 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 ```
@@ -13737,7 +13737,7 @@ Query OK, 0 rows affected (2.73 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 ```
 
-**`当有条件计算时，索引失效。`**示例如下：
+**`当有计算条件时，索引失效。`**示例如下：
 
 ```mysql
 mysql> EXPLAIN SELECT SQL_NO_CACHE id, stuno, NAME FROM student WHERE stuno = 900001;
@@ -13783,7 +13783,7 @@ Query OK, 0 rows affected (3.58 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 ```
 
-**`当有函数时，索引失效。`**示例如下
+**`当有函数条件时，索引失效。`**示例如下
 
 ```mysql
 mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE student.name LIKE 'abc%';
@@ -13904,7 +13904,7 @@ mysql> SELECT SQL_NO_CACHE * FROM student WHERE LEFT(student.name, 3) = 'abc';
 
 #### 类型转换（自动或手动）导致索引失效
 
-**`当有类型转换时 (自动或手动)，索引失效。`**示例如下：
+**`当有类型转换 (自动或手动) 条件时，索引失效。`**示例如下：
 
 ```mysql
 mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE name = '123';
@@ -14124,7 +14124,7 @@ mysql> EXPLAIN SELECT SQL_NO_CACHE * FROM student WHERE age = 10 OR classid = 10
 
 #### 数据库和表的字符集统一使用 utf8mb4/utf8mb3
 
-统一使用 utf8mb4（5.5.3 版本以上支持）兼容性更好，统一字符集可以避免由于字符集转换产生的乱码。**`不同的字符集进行比较前，需要进行 转换，会造成索引失效。`**
+统一使用 utf8mb4（5.5.3 版本以上支持）兼容性更好，统一字符集可以避免由于字符集转换产生的乱码。**`不同的字符集进行比较前，需要进行转换，会造成索引失效。`**
 
 #### 总结
 
@@ -14618,8 +14618,8 @@ MySQL 从 4.1 版本开始支持子查询，使用子查询可以进行 SELECT �
 优化建议：
 
 - SQL 中，可以在 WHERE 子句和 ORDER BY 子句中使用索引，目的是`在 WHERE 子句中避免全表扫描`，`在 ORDER BY 子句中避免使用 FileSort 排序`。当然，某些情况下全表扫描，或者 FileSort 排序不一定比索引慢。但总的来说，我们还是要避免，以提高查询效率。
-- 尽量使用 Index 完成 ORDER BY 排序。如果 WHERE 和 ORDER BY 后面是相同的列就使用单索引列；如果不同就使用联合索引。
-- 无法使用 Index 时，需要对 FileSort 方式进行调优。
+- **尽量使用 Index 完成 ORDER BY 排序。如果 WHERE 和 ORDER BY 后面是相同的列就使用单索引列；如果不同就使用联合索引。**
+- **无法使用 Index 时，需要对 FileSort 方式进行调优。**
 
 ####  优化实例
 
@@ -15155,7 +15155,7 @@ mysql> EXPLAIN SELECT id, age FROM student WHERE NAME LIKE '%abc';
 
 **好处：**
 
-1. **避免 Innodb 表进行索引的二次查询（回表）。**
+1. **可以避免 Innodb 表进行索引的二次查询（回表）。**
    - Innodb 是以聚集索引的顺序来存储的，对于 Innodb 来说，二级索引在叶子节点中所保存的是行的主键信息，如果是用二级索引查询数据，在查找到相应的键值后，还需通过主键进行二次查询才能获取真实所需要的其他字段的数据。
    - 在覆盖索引中，二级索引的键值中可以获取所要的数据，避免了对主键的二次查询，减少了 I/O 操作，提升了查询效率。
 
