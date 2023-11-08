@@ -1243,7 +1243,7 @@ public class Car {
 }
 ```
 
-自定义的类和配置文件绑定一般没有提示，Car 类上会出现以下提示，需要添加 `spring-boot-configuration-processo` 依赖：
+自定义的类和配置文件绑定一般没有提示，Car 类上会出现以下提示，需要添加`spring-boot-configuration-processo`依赖：
 
 ![image-20210715114843221](spring-boot/image-20210715114843221.png)
 
