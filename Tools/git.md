@@ -259,6 +259,10 @@ $ git branch
   master
 ```
 
+> ```bash
+> $ git checkout origin/远程分支名
+> ```
+
 ## Git 修改 master 分支为 main 
 
 因为一些原因，2020年10月1日后，Github 将所有新建的仓库的默认分支从`master`修改为`main`，这种情况下，为了避免麻烦，需要将旧仓库的 master 分支迁移到 main 分支上。
