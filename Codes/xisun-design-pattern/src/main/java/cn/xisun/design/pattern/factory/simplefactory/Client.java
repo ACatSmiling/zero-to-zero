@@ -1,4 +1,4 @@
-package cn.xisun.design.pattern.factory.simple;
+package cn.xisun.design.pattern.factory.simplefactory;
 
 /**
  * 客户端

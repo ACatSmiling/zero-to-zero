@@ -1,13 +1,12 @@
 package cn.xisun.design.pattern.factory.simplefactory;
 
 /**
- * 具体产品类B
+ * 具体产品类A
  *
  * @author XiSun
- * @since 2023/11/20 19:52
+ * @since 2023/11/20 19:49
  */
-public class ConcreteProductB extends Product {
-
+public class ConcreteProductA extends Product {
     /**
      * 实现业务方法
      */
