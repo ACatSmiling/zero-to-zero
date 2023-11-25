@@ -4,7 +4,7 @@
 
 [TOC]
 
-## Spring MVC简介
+## Spring MVC 简介
 
 ### 什么是 MVC
 
@@ -41,7 +41,7 @@ Spring MVC 是 Spring 的一个后续产品，是 Spring 的一个子项目。Sp
 - 内部组件化程度高，可插拔式组件**即插即用**，想要什么功能配置相应组件即可。
 - **性能卓著**，尤其适合现代大型、超大型互联网项目要求。
 
-## HelloWorld
+## Hello World
 
 ### Maven 引入依赖
 
@@ -2031,7 +2031,7 @@ private void processDispatchResult(HttpServletRequest request, HttpServletRespon
 
 ### Spring MVC 的执行流程
 
-![1697864470893](./../../../AppData/Local/Programs/Tencent/WeChat Files/WeChat Files/wxid_4nl44tzzfl5n22/FileStorage/Temp/1697864470893.jpg)
+![1700880988121](spring-mvc/1700880988121.jpg)
 
 1. 用户向服务器发送请求，请求被 Spring MVC 的前端控制器 DispatcherServlet 捕获。
 
