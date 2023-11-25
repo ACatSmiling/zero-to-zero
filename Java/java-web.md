@@ -1297,6 +1297,27 @@ public void removeAttribute(String name);
 >  servletContext.setAttribute("helloAppAttr", "helloAppAttr-VALUE");
 >  ```
 
+**Session 的钝化和活化：**
+
+- `钝化`：将一个 HttpSession 对象序列化到硬盘中的过程，称为Session的钝化。
+
+- `活化`：将写入硬盘中 HttpSession 对象反序列化到内存中的过程，称为 Session 的活化。
+
+- 一般情况下，当服务器停止时，Session 对象会被写入到硬盘中，然后当服务器再次启动时，会自动将硬盘中的对象加载进内存。
+
+- 如果希望 Session 域中的属性可以和 Session 一起钝化到磁盘中，那这些属性必须实现 java.io.Serializable 接口。
+
+- 当访问服务器的用户过多时，会有非常多的会话产生，这些会话，每一个会话都会对应一个 HttpSession 对象。这时在服务器的内存会存在大量的 Session 对象，但是这些对象并不是都在使用中，所以我们希望将这些不使用的 Session 对象钝化到硬盘中，当这些对象再次使用时，在活化进内存。在 Tomcat 的配置文件 conf/context.xml 文件的根标签中加入如下代码：
+
+  ```xml
+  <Manager className="org.apache.catalina.session.PersistentManager" maxIdleSwap="1">
+   <Store className="org.apache.catalina.session.FileStore" directory="mySession" />
+  </Manager>
+  ```
+
+  - maxIdleSwap：指 Session 的闲置时间，当闲置一定时间以后，会自动钝化到硬盘中。
+  - directory：Session 钝化后的目标文件夹。
+
 ## Thymeleaf
 
 > 略。
