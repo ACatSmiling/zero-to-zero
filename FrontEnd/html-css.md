@@ -2555,7 +2555,7 @@ HTML 元素间的关系，分为：父元素、子元素、祖先元素、后代
 
 ```css
 选择器1 选择器2 选择器3 ...... 选择器n {
-    
+    属性名: 属性值;
 } （先写祖先，再写后代）
 ```
 
@@ -3549,7 +3549,585 @@ HTML 元素间的关系，分为：父元素、子元素、祖先元素、后代
 
 #### 选择器的优先级（权重）
 
+通过**不同的选择器**，选中**相同的元素** ，并且为**相同的样式名**设置**不同的值**时，就发生了样式的冲突。到底应用哪个样式，此时就需要看**`优先级`**了。
+
+对于简单的选择器，可以按照如下规则：**`行内样式 > ID 选择器 > 类选择器 > 元素选择器 > 通配选择器`**。
+
+对于复杂的选择器，需要通过**计算公式**。每个选择器，都可计算出一组`权重`，格式为：**`(a, b, c)`**。
+
+- `a`：包含`ID`选择器的个数。
+- `b`：包含`类、伪类、属性`选择器的个数。
+- `c`：包含`元素、伪元素`选择器的个数。
+
+示例：
+
+| 选择器                    | 权重      |
+| ------------------------- | --------- |
+| ul>li                     | (0, 0, 2) |
+| div ul>li p a span        | (0, 0, 6) |
+| \#atguigu .slogan         | (1, 1, 0) |
+| \#atguigu .slogan a       | (1, 1, 1) |
+| \#atguigu .slogan a:hover | (1, 2, 1) |
+
+> VS CODE 中，将鼠标悬浮在选择器上方，即可显示其权重：
+>
+> <img src="html-css/image-20231211213230047.png" alt="image-20231211213230047" style="zoom:80%;" />
+
+**比较规则**：按照`从左到右`的顺序，依次比较大小，当前位胜出后，后面的不再对比。例如：
+
+**特殊规则：**
+
+1. **行内样式**权重大于**所有选择器**。
+2. `!important`的权重，大于**行内样式**，大于**所有选择器**，**权重最高！**
+
+图示：
+
+<img src="html-css/image-20231211213158998.png" alt="image-20231211213158998" style="zoom:80%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>选择器优先级_详细聊</title>
+    <style>
+        #atguigu {
+            color: orange;
+        }
+
+        .container span.slogan {
+            color: red;
+        }
+
+        div>p>span:nth-child(1) {
+            color: green;
+        }
+
+        .slogan {
+            color: purple !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <p>
+            <span class="slogan" id="atguigu" style="color: blue;">尚硅谷，让天下没有难学的技术！</span>
+            <span>欢迎同学们来学习！</span>
+        </p>
+    </div>
+</body>
+
+</html>
+```
+
 ### 三大特性
 
+#### 层叠性
 
+概念：如果发生了样式冲突，那就会根据一定的规则（选择器优先级），进行样式的`层叠`（覆盖）。
+
+>什么是样式冲突？ ——— 元素的**同一个样式名**，被设置了**不同的值**，这就是冲突。
+
+#### 继承性
+
+概念：元素会`自动拥有`其父元素、或其祖先元素上所设置的某些样式。
+
+规则：优先继承`离得近`的。
+
+常见的可继承属性：text-??，font-??，line-??、color 等。
+
+> 在 [MDN](https://developer.mozilla.org/zh-CN/) 网站，可以查看一个属性，是否可被继承。
+
+#### 优先级
+
+简单来说，规则如下：`!important > 行内样式 > ID选择器 > 类选择器 > 元素选择器 > * > 继承的样式`。
+
+更准确的方式，通过计算权重，来判断选择器的优先级。
+
+### 常用属性
+
+#### 像素
+
+概念：我们的电脑屏幕是，是由一个一个 "小点" 组成的，每个 "小点"，就是一个`像素`（px）。
+
+规律：像素点越小，呈现的内容就越清晰、越细腻。例如：
+
+<img src="html-css/image-20231211213937685.png" alt="image-20231211213937685" style="zoom: 50%;" />
+
+>注意：如果电脑设置中开启了缩放，那么就会影响一些工具的测量结果，但是一般情况下，我们工作中都是参考详细的设计稿，去给元素设置宽高，所以也不会有太大影响。
+
+#### 颜色的表示
+
+##### 颜色名
+
+编写方式：直接使用颜色对应的英文单词，编写比较简单。例如：
+
+- 红色：red。
+- 绿色：green。
+- 蓝色：blue。
+- 紫色：purple。
+- 橙色：orange。
+- 灰色：gray。
+
+缺点：颜色名这种方式，表达的颜色比较单一，所以用的并不多。
+
+> 更多颜色命名，参考：https://developer.mozilla.org/en-US/docs/Web/CSS/named-color
+
+##### rgb 或 rgba
+
+编写方式：使用`红、黄、蓝`这三种光的三原色进行组合。
+
+- `r`：表示**红色**。
+- `g`：表示**绿色**。
+- `b`：表示**蓝色**。
+- `a`：表示**透明度**。
+
+示例：
+
+```css
+/* 使用 0~255 之间的数字表示一种颜色 */
+color: rgb(255, 0, 0);/* 红色 */
+color: rgb(0, 255, 0);/* 绿色 */
+color: rgb(0, 0, 255);/* 蓝色 */
+color: rgb(0, 0, 0);/* 黑色 */
+color: rgb(255, 255, 255);/* 白色 */
+
+/* 混合出任意一种颜色 */
+color:rgb(138, 43, 226) /* 紫罗兰色 */
+color:rgba(255, 0, 0, 0.5);/* 半透明的红色 */
+
+/* 也可以使用百分比表示一种颜色（用的少） */
+color: rgb(100%, 0%, 0%);/* 红色 */
+color: rgba(100%, 0%, 0%, 50%);/* 半透明的红色 */
+```
+
+规律：
+
+1. 若三种颜色值相同，呈现的是灰色，值越大，灰色越浅。
+2. rgb(0, 0, 0) 是黑色， rgb(255, 255,255) 是白色。
+3. 对于 rbga 来说，前三位的 rgb 形式要保持一致，要么都是 0 ~ 255 的数字，要么都是百分比 。
+
+##### HEX 或 HEXA
+
+`HEX`的原理与 rgb 一样，也是通过红、绿、蓝三种颜色进行组合，只不过要用 6 位（分成 3 组）来表达，格式为：`#rrggbb`。
+
+- 每一位数字的取值范围是  0 ~ f，即（ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f ）。
+- 每一种光的最小值是 00 ，最大值是 ff。
+
+示例：
+
+```css
+color: #ff0000;/* 红色 */
+color: #00ff00;/* 绿色 */
+color: #0000ff;/* 蓝色 */
+color: #000000;/* 黑色 */
+color: #ffffff;/* 白色 */
+
+/* 如果每种颜色的两位都是相同的，就可以简写*/
+color: #ff9988;/* 可简为：#f98 */
+
+/* 但要注意前三位简写了，那么透明度就也要简写 */
+color: #ff998866;/* 可简为：#f986 */
+```
+
+> 注意：IE 浏览器不支持 HEXA，但支持 HEX。
+
+##### HSL 或 HSLA
+
+`HSL`是通过：色相、饱和度、亮度，来表示一个颜色的，格式为：` hsl(色相, 饱和度, 亮度)`。
+
+- `色相`：取值范围是 0 ~ 360 度，具体度数对应的颜色如下图：
+
+  <img src="html-css/image-20231211215448798.png" alt="image-20231211215448798" style="zoom:67%;" />
+
+- `饱和度`：取值范围是 0% ~ 100%。（向色相中对应颜色中添加灰色，0% 全灰，100% 没有灰）
+
+- `亮度`：取值范围是 0% ~ 100%。（ 0% 亮度没了，所以就是黑色，100% 亮度太强，所以就是白色了）
+
+- HSLA 其实就是在 HSL 的基础上，添加了透明度。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>颜色_第4种表示_HSL或HSLA</title>
+    <style>
+        .atguigu1 {
+            color: hsl(0, 100%, 50%);
+        }
+
+        .atguigu2 {
+            color: hsl(60, 100%, 50%);
+        }
+
+        .atguigu3 {
+            color: hsl(120, 100%, 50%);
+        }
+
+        .atguigu4 {
+            color: hsl(180, 100%, 50%);
+        }
+
+        .atguigu5 {
+            color: hsl(0, 100%, 50%);
+        }
+
+        .atguigu6 {
+            color: hsla(0, 100%, 50%, 67.8%);
+        }
+    </style>
+</head>
+
+<body>
+    <h2 class="atguigu1">尚硅谷1</h2>
+    <h2 class="atguigu2">尚硅谷2</h2>
+    <h2 class="atguigu3">尚硅谷3</h2>
+    <h2 class="atguigu4">尚硅谷4</h2>
+    <h2 class="atguigu5">尚硅谷5</h2>
+    <h2 class="atguigu6">尚硅谷6</h2>
+</body>
+
+</html>
+```
+
+#### 字体属性
+
+##### 字体大小
+
+属性名：`font-size`。
+
+作用：控制**字体的大小**。
+
+语法：
+
+```css
+div {
+	font-size: 40px;
+}
+```
+
+注意：
+
+1. Chrome 浏览器支持的最小文字为 12px ，默认的文字大小为 16px ，并且 0px 会自动消失。
+2. 不同浏览器默认的字体大小可能不一致，所以最好给一个明确的值，不要用默认大小。
+3. 通常给 body 设置 font-size 属性，这样 body 中的其他元素就都可以继承了。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_字体大小</title>
+    <style>
+        /* body {
+            font-size: 20px;
+        } */
+        .atguigu1 {
+            font-size: 40px;
+        }
+
+        .atguigu2 {
+            font-size: 30px;
+        }
+
+        .atguigu3 {
+            font-size: 20px;
+        }
+
+        .atguigu4 {
+            font-size: 12px;
+        }
+
+        .atguigu5 {
+            /* 浏览器能够接受的最小字体是12px */
+            font-size: 3px;
+        }
+
+        .atguigu7 {
+            font-size: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <div class="atguigu4">尚硅谷4</div>
+    <div class="atguigu5">尚硅谷5</div>
+    <div>尚硅谷6</div>
+    <div class="atguigu7">尚硅谷7</div>
+</body>
+
+</html>
+```
+
+借助控制台看样式：
+
+<img src="html-css/image-20231211220614996.png" alt="image-20231211220614996" style="zoom:80%;" />
+
+##### 字体族
+
+属性名： `font-family`。
+
+作用：控制**字体的类型**。
+
+语法：
+
+```css
+div {
+	font-family: "STCaiyun", "Microsoft YaHei", sans-serif;
+}
+```
+
+注意：
+
+1. 使用字体的英文名字兼容性会更好，具体的英文名可以自行查询，或在电脑的设置里去寻找。
+2. 如果字体名包含空格，必须使用引号包裹起来。
+3. 可以设置多个字体，按照从左到右的顺序逐个查找，找到就用，没有找到就使用后面的，且通常在最后写上 serif （衬线字体）或 sans-serif （非衬线字体）。（衬线和非衬线字体，不需要加引号）
+4. Windows 系统中，默认的字体就是微软雅黑。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_字体族</title>
+    <style>
+        .atguigu1 {
+            font-size: 100px;
+            font-family: "微软雅黑";
+        }
+
+        .atguigu2 {
+            font-size: 100px;
+            font-family: "楷体";
+        }
+
+        .atguigu3 {
+            font-size: 100px;
+            font-family: "宋体";
+        }
+
+        .atguigu4 {
+            font-size: 100px;
+            font-family: "华文彩云";
+        }
+
+        .atguigu5 {
+            font-size: 100px;
+            font-family: "翩翩体-简", "华文彩云", "华文琥珀", "微软雅黑";
+        }
+
+        .atguigu6 {
+            font-size: 100px;
+            font-family: "HanziPen SC", "STCaiyun", "STHupo", "Microsoft YaHei", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <div class="atguigu4">尚硅谷4</div>
+    <div class="atguigu5">尚硅谷5</div>
+    <div class="atguigu6">尚硅谷6</div>
+</body>
+
+</html>
+```
+
+##### 字体风格
+
+属性名： `font-style`。
+
+作用：控制**字体是否为斜体**。
+
+常用值：
+
+- `normal`：正常（默认值）。
+- `italic`：斜体（使用字体自带的斜体效果）。
+- `oblique`：斜体（强制倾斜产生的斜体效果）。
+
+> 实现斜体时，更推荐使用 italic。
+
+语法：
+
+```css
+div {
+	font-style: italic;
+}
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_字体风格</title>
+    <style>
+        .atguigu1 {
+            font-size: 100px;
+            font-style: normal;
+        }
+
+        .atguigu2 {
+            font-size: 100px;
+            font-style: italic;
+        }
+
+        .atguigu3 {
+            font-size: 100px;
+            font-style: oblique;
+        }
+
+        em {
+            font-size: 100px;
+            font-style: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <em>尚硅谷4</em>
+</body>
+
+</html>
+```
+
+##### 字体粗细
+
+属性名：`font-weight`。
+
+作用：控制**字体的粗细**。
+
+常用值：
+
+- 关键词：
+  - `lighter`：细。
+  - `normal`： 正常。
+  - `bold`：粗。
+  - `bolder`：很粗 （多数字体不支持）。
+- 数值：
+  - `100 ~ 1000`且无单位，数值越大，字体越粗 （或一样粗，具体得看字体设计时的精确程度）。
+  - 100 ~ 300 等同于 lighter，400 ~ 500 等同于 normal， 600 及以上等同于 bold。
+
+语法：
+
+```css
+div {
+ font-weight: bold;
+}
+
+div {
+ font-weight: 600;
+}
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_字体粗细</title>
+    <style>
+        div {
+            font-size: 100px;
+        }
+
+        .atguigu1 {
+            font-weight: lighter;
+        }
+
+        .atguigu2 {
+            font-weight: normal;
+        }
+
+        .atguigu3 {
+            font-weight: bold;
+        }
+
+        .atguigu4 {
+            font-weight: bolder;
+        }
+
+        .atguigu5 {
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <div class="atguigu4">尚硅谷4</div>
+    <div class="atguigu5">尚硅谷5</div>
+</body>
+
+</html>
+```
+
+##### 字体复合写法
+
+属性名： `font`，可以把上述字体样式合并成一个属性。
+
+作用：将上述所有字体相关的属性复合在一起编写。
+
+编写规则：
+
+1. **字体大小、字体族必须都写上。**
+2. **字体族必须是最后一位、字体大小必须是倒数第二位。**
+3. 各个属性间用空格隔开。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_字体复合属性</title>
+    <style>
+        .atguigu {
+            font: bold italic 100px "STCaiyun", "STHupo", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu">尚硅谷</div>
+</body>
+
+</html>
+```
+
+> 实际开发中更推荐复合写法，但这也不是绝对的，比如只想设置字体大小，那就直接用 font size 属性。
+
+#### 文本属性
 
