@@ -3877,6 +3877,10 @@ div {
 
 <img src="html-css/image-20231211220614996.png" alt="image-20231211220614996" style="zoom:80%;" />
 
+>扩展：
+>
+>
+
 ##### 字体族
 
 属性名： `font-family`。
@@ -4130,4 +4134,621 @@ div {
 > 实际开发中更推荐复合写法，但这也不是绝对的，比如只想设置字体大小，那就直接用 font size 属性。
 
 #### 文本属性
+
+##### 文本颜色
+
+属性名： `color`。
+
+作用：控制**文字的颜色**。
+
+可选值：
+
+1. 颜色名。
+2. rgb 或 rgba。
+3. HEX 或 HEXA（十六进制）。
+4. HSL 或 HSLA。
+
+> 开发中常用的是： rgb/rgba 或 HEX/HEXA（十六进制）。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_文本颜色</title>
+    <style>
+        div {
+            font-size: 90px;
+        }
+
+        .atguigu1 {
+            color: red;
+        }
+
+        .atguigu2 {
+            color: rgb(255, 0, 0);
+        }
+
+        .atguigu3 {
+            color: rgba(255, 0, 0, .5);
+        }
+
+        .atguigu4 {
+            color: #00f;
+        }
+
+        .atguigu5 {
+            color: #00f8;
+        }
+
+        .atguigu6 {
+            color: hsl(0, 100%, 50%);
+        }
+
+        .atguigu7 {
+            color: hsla(0, 100%, 50%, .5);
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <div class="atguigu4">尚硅谷4</div>
+    <div class="atguigu5">尚硅谷5</div>
+    <div class="atguigu6">尚硅谷6</div>
+    <div class="atguigu7">尚硅谷7</div>
+</body>
+
+</html>
+```
+
+##### 文本间距
+
+**字母间距**：`letter-spacing`。
+
+**单词间距**：`word-spacing`（通过空格识别词）。
+
+属性值为像素（px），正值让间距增大，负值让间距缩小。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_文本间距</title>
+    <style>
+        div {
+            font-size: 30px;
+        }
+
+        .atguigu2 {
+            /* 字母间距 */
+            letter-spacing: 20px;
+        }
+
+        .atguigu3 {
+            /* 单词间距 */
+            word-spacing: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>You got a dream, you gotta protect it.尚硅谷1</div>
+    <div class="atguigu2">You got a dream, you gotta protect it.尚硅谷2</div>
+    <div class="atguigu3">You got a dream, you gotta protect it.尚硅谷3</div>
+</body>
+
+</html>
+```
+
+示意图：
+
+<img src="html-css/image-20231212215315033.png" alt="image-20231212215315033" style="zoom: 60%;" />
+
+> 字母间距对中文有效，但是单词间距对中文无效。
+
+##### 文本修饰
+
+属性名：`text-decoration`。
+
+作用：控制**文本的各种装饰线**。
+
+可选值：
+
+- `none`：无装饰线（常用，比如去除 a 元素的下划线）。
+- `underline`：下划线（常用）。
+- `overline`：上划线。
+- `line-through`：删除线。
+
+可搭配如下值使用：
+
+- `dotted`：虚线。
+- `wavy`：波浪线。
+- 也可以指定颜色。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_文本修饰</title>
+    <style>
+        div {
+            font-size: 40px;
+        }
+
+        .atguigu1 {
+            /* 上划的绿色虚线 */
+            text-decoration: overline dotted green;
+        }
+
+        .atguigu2 {
+            /* 下划的红色波浪线 */
+            text-decoration: underline wavy red;
+        }
+
+        .atguigu3 {
+            /* 删除线 */
+            text-decoration: line-through;
+        }
+
+        .atguigu4,
+        ins,
+        del {
+            font-size: 40px;
+            /* 没有各种线 */
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="atguigu1">尚硅谷1</div>
+    <div class="atguigu2">尚硅谷2</div>
+    <div class="atguigu3">尚硅谷3</div>
+    <a class="atguigu4" href="https://www.baidu.com">尚硅谷4</a>
+    <ins>测试1</ins>
+    <del>测试2</del>
+</body>
+
+</html>
+```
+
+##### 文本缩进
+
+属性名：`text-indent`。
+
+作用：控制**文本首字母的缩进**。
+
+属性值：CSS 中的长度单位，例如：px。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_文本缩进</title>
+    <style>
+        div {
+            font-size: 60px;
+            /* 一个字符为60px，首行缩进两个字符，则为120px */
+            text-indent: 120px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>欢迎来到尚硅谷学习！欢迎来到尚硅谷学习！欢迎来到尚硅谷学习！欢迎来到尚硅谷学习！欢迎来到尚硅谷学习！</div>
+</body>
+
+</html>
+```
+
+##### 文本对齐 —— 水平方向
+
+属性名：`text-align`。
+
+作用：控制**文本的水平对齐方式**。
+
+常用值：
+
+- `left`：左对齐（默认值）。
+- `right`：右对齐。
+- `center`：居中对齐。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_文本对齐_水平</title>
+    <style>
+        div {
+            font-size: 40px;
+            background-color: orange;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div>尚硅谷</div>
+</body>
+
+</html>
+```
+
+##### 行高
+
+属性名：`line-height`。
+
+作用：控制**一行文字的高度**。
+
+可选值：
+
+- `normal`：由浏览器根据文字大小决定的一个默认值。
+- `像素值`。
+- `数字`：参考自身 font-size 的倍数（即 font-size 的倍数，很常用）。
+- `百分比`：参考自身 font-size 的百分比。
+
+>由于字体设计原因，文字在一行中，并不是绝对垂直居中，若一行中都是文字，不会太影响观感。
+
+注意：
+
+1. line-height 过小会怎样？—— 文字产生重叠，且最小值是 0，不能为负数（如果设置为负数，浏览器会舍弃此设置，恢复为默认值 normal）。
+2. **line-height 是可以继承的，且为了能更好的呈现文字，最好写数值。**
+3. line-height 和 height 是什么关系？
+   - 设置了 height，那么高度就是 height 的值。
+   - 不设置 height 的时候，会根据 line-height 计算高度。
+
+应用场景：
+
+1. 对于多行文字：控制行与行之间的距离。
+2. 对于单行文字：让 height 等于 line-height ，可以实现文字垂直居中。（备注：由于字体设计的原因，靠上述办法实现的居中，并不是绝对的垂直居中，但如果一行中都是文字，不会太影响观感）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>07_行高</title>
+    <style>
+        #d1 {
+            font-size: 40px;
+            background-color: skyblue;
+
+            /* 第一种写法，值为像素 */
+            /* line-height: 40px; */
+
+            /* 第二种写法，值为normal */
+            /* line-height: normal; */
+
+            /* 第三种写法，值为数值，1.5表示的就是1.5 * 40 = 60 px —— 用的比较多 */
+            line-height: 1.5;
+
+            /* 第四种写法，值为百分比 */
+            /* line-height: 150%; */
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="d1">
+        atguigux尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发atguigu尚硅谷让天下没有难掉的头发
+    </div>
+</body>
+
+</html>
+```
+
+##### 文本对齐 —— 垂直方向
+
+**顶部：**无需任何属性，在垂直方向上，默认就是顶部对齐。
+
+**居中：**对于单行文字，让 height = line-height 即可。
+
+> 多行文字的垂直居中，祥见后文定位章节。
+
+**底部：**对于单行文字，目前一个临时的方式是让 line-height = ( height × 2 ) - font-size - x。备注： x 是根据字体族，动态决定的一个值。
+
+> 垂直方向的底部对齐，祥见后文定位章节。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>09_文本对齐_垂直</title>
+    <style>
+        div {
+            font-size: 40px;
+            height: 400px;
+            line-height: 745px;
+            background-color: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div>atguigu尚硅谷</div>
+</body>
+
+</html>
+```
+
+##### vertical-align
+
+属性名：`vertical-align`。
+
+作用：用于指定**同一行元素之间**，或 **表格单元格** 内文字的 **垂直对齐方式**。
+
+常用值：
+
+1. baseline （默认值）：使元素的基线与父元素的基线对齐。
+2. top ：使元素的**顶部**与其**所在行的顶部**对齐。
+3. middle ：使元素的**中部**与**父元素的基线**加上父元素**字母** x **的一半**对齐。
+4. bottom ：使元素的**底部**与其**所在行的底部**对齐。
+
+#### 列表属性
+
+列表相关的属性，可以作用在 ul、ol、li 元素上。
+
+| 属性名                 | 功能               | 属性值                                                       |
+| ---------------------- | ------------------ | ------------------------------------------------------------ |
+| `list-style-type`      | 设置列表符号       | `none`：不显示前面的标识（很常用！）<br />square：实心方块<br />disc：圆形<br />decimal：数字<br />lower-roman：小写罗马字<br />upper-roman：大写罗马字<br />lower-alpha：小写字母<br />upper-alpha：大写字母<br />...... |
+| `list-style-position ` | 设置列表符号的位置 | `inside`：在 li 的里面<br />`outside`：在 li 的外边          |
+| `list-style-image `    | 自定义列表符号     | `url(图片地址)`                                              |
+| `list-style`           | 上面三个的复合属性 | 没有数量、顺序的要求                                         |
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>列表相关属性</title>
+    <style>
+        ul {
+            /* 列表符号 */
+            /* list-style-type: decimal; */
+            /* 列表符号的位置 */
+            /* list-style-position: inside; */
+            /* 自定义列表符号 */
+            /* list-style-image: url("../images/video.gif"); */
+            /* 复合属性 */
+            list-style: decimal url("../images/video.gif") inside;
+        }
+
+        li {
+            background-color: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li>《震惊！两男子竟然在教室做出这种事》</li>
+        <li>《一夜暴富指南》</li>
+        <li>《给成功男人的五条建议》</li>
+    </ul>
+</body>
+
+</html>
+```
+
+#### 表格属性
+
+**边框相关属性（除了表格，其他元素也能用）：**
+
+| 属性名         | 功能               | 属性值                                                       |
+| -------------- | ------------------ | ------------------------------------------------------------ |
+| `border-width` | 边框宽度           | CSS 中可用的长度值，如像素                                   |
+| `border-color` | 边框颜色           | CSS 中可用的颜色值                                           |
+| `border-style` | 边框风格           | `none`：默认值<br />`solid`：实线<br />`dashed`：虚线<br />`dotted`：点线<br />`double`：双实线 |
+| `border`       | 上面三个的复合属性 | 没有数量、顺序的要求                                         |
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_边框相关属性</title>
+    <style>
+        table {
+            /* border-width: 2px; */
+            /* border-color: green; */
+            /* border-style: solid; */
+            border: 2px green solid;
+        }
+
+        td,
+        th {
+            border: 2px orange solid;
+        }
+
+        h2 {
+            border: 3px red solid;
+        }
+
+        span {
+            border: 3px purple dashed;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>边框相关的属性，不仅仅是表格能用，其他元素也能用</h2>
+    <span>你要加油呀！</span>
+    <table>
+        <caption>人员信息</caption>
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>性别</th>
+                <th>政治面貌</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>张三</td>
+                <td>18</td>
+                <td>男</td>
+                <td>党员</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>李四</td>
+                <td>19</td>
+                <td>女</td>
+                <td>团员</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>王五</td>
+                <td>20</td>
+                <td>男</td>
+                <td>群众</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>赵六</td>
+                <td>21</td>
+                <td>女</td>
+                <td>党员</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>
+```
+
+**表格独有属性（只有 table 标签才能使用）：**
+
+| 属性名          | 功能                 | 属性值                                                       |
+| --------------- | -------------------- | ------------------------------------------------------------ |
+| table-layout    | 设置列宽度           | `auto`：自动，列宽根据内容计算，默认值<br />`fixed`：固定列宽，平均分 |
+| border-spacing  | 单元格间距           | CSS 中可用的长度值，如像素<br />生效的前提：单元格不能合并   |
+| border-collapse | 合并单元格边框       | `collapse`：合并<br />`separate`：不合并                     |
+| empty-cells     | 隐藏没有内容的单元格 | `show`：显示，默认值<br />`hide`：隐藏<br />生效前提：单元格不能合并 |
+| caption-side    | 设置表格标题位置     | `top`：上面，默认值<br />`bottom`：在表格下面                |
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_表格独有属性</title>
+    <style>
+        table {
+            border: 2px green solid;
+            width: 500px;
+            /* 控制表格的列宽 */
+            table-layout: fixed;
+            /* 控制单元格间距（生效的前提是：不能合并边框） */
+            border-spacing: 10px;
+            /* 合并相邻的单元格的边框 */
+            border-collapse: collapse;
+            /* 隐藏没有内容的单元格（生效的前提是：不能合并边框） */
+            empty-cells: hide;
+            /* 设置表格标题的位置 */
+            caption-side: top;
+        }
+
+        td,
+        th {
+            border: 2px orange solid;
+        }
+
+        .number {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <caption>人员信息</caption>
+        <thead>
+            <tr>
+                <th class="number">序号</th>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>性别</th>
+                <th>政治面貌</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>张三</td>
+                <td>18</td>
+                <td>男</td>
+                <td>党员</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>李四</td>
+                <td>19</td>
+                <td>女</td>
+                <td>团员</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>王五</td>
+                <td>20</td>
+                <td></td>
+                <td>群众</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>赵六</td>
+                <td>21</td>
+                <td>女</td>
+                <td>党员</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>
+```
 
