@@ -3877,9 +3877,40 @@ div {
 
 <img src="html-css/image-20231211220614996.png" alt="image-20231211220614996" style="zoom:80%;" />
 
->扩展：
+>扩展：字体设计。
 >
+>一种字体在设计时，会先确定一个字体框，然后以字母**`x`**（小写的）作为基准，并考虑到其他字符的大小等特点，完成一个设计。例如微软雅黑字体的 x 如下：
 >
+><img src="html-css/image-20231213210851431.png" alt="image-20231213210851431" style="zoom:50%;" />
+>
+>- 黄色的框即为字体框，font-size 为字体高度，如果 font-size 变大或缩小，字体框的宽和高会成比例变化。
+>
+>当 x 设计好后，该字体的其他字符也就随之完成：
+>
+><img src="html-css/image-20231213211042522.png" alt="image-20231213211042522" style="zoom: 50%;" />
+>
+>- 可以看到，并不是所有的字符，都会完全包裹在字体框内。
+>
+>`基线`：当一种字体设计好后，沿着 x 的下方画一条水平线，即为基线。（详细内容参考：https://developer.mozilla.org/zh-CN/docs/Glossary/Baseline）
+>
+><img src="html-css/image-20231213211445202.png" alt="image-20231213211445202" style="zoom:50%;" />
+>
+>> 除了基线，字体设计还有其他线，但是与 CSS 关联不大，此处不再扩展。
+>>
+>> <img src="html-css/image-20231213212051238.png" alt="image-20231213212051238" style="zoom: 50%;" />
+>
+>如上图所示，假设 font-size 为 40 px。此时，我们看一下隶书和翩翩体的字体设计：
+>
+><img src="html-css/image-20231213211733787.png" alt="image-20231213211733787" style="zoom:50%;" />
+>
+><img src="html-css/image-20231213211820129.png" alt="image-20231213211820129" style="zoom:50%;" />
+>
+>- 可以看到，不同的字体，差距比较大。
+>
+>综上，可总结如下：
+>
+>1. **由于字体设计的原因，文字最终呈现的大小，并不一定与 font-size 的值一致，可能大，也可能小。**
+>2. **通常情况下，文字相对字体设计框，并不是垂直居中的，通常都靠下一些。**
 
 ##### 字体族
 
@@ -4407,23 +4438,10 @@ div {
 
 - `normal`：由浏览器根据文字大小决定的一个默认值。
 - `像素值`。
-- `数字`：参考自身 font-size 的倍数（即 font-size 的倍数，很常用）。
+- `数字`：参考自身 font-size 的倍数（即 font-size 的倍数，很常用，常设置为 1.5，1.667 等）。
 - `百分比`：参考自身 font-size 的百分比。
 
->由于字体设计原因，文字在一行中，并不是绝对垂直居中，若一行中都是文字，不会太影响观感。
-
-注意：
-
-1. line-height 过小会怎样？—— 文字产生重叠，且最小值是 0，不能为负数（如果设置为负数，浏览器会舍弃此设置，恢复为默认值 normal）。
-2. **line-height 是可以继承的，且为了能更好的呈现文字，最好写数值。**
-3. line-height 和 height 是什么关系？
-   - 设置了 height，那么高度就是 height 的值。
-   - 不设置 height 的时候，会根据 line-height 计算高度。
-
-应用场景：
-
-1. 对于多行文字：控制行与行之间的距离。
-2. 对于单行文字：让 height 等于 line-height ，可以实现文字垂直居中。（备注：由于字体设计的原因，靠上述办法实现的居中，并不是绝对的垂直居中，但如果一行中都是文字，不会太影响观感）
+>由于字体设计原因，文字在一行中，并不是绝对垂直居中，一般靠下。但如果一行中都是文字，不会太影响观感。
 
 示例：
 
@@ -4464,6 +4482,105 @@ div {
 </html>
 ```
 
+注意事项：
+
+1. line-height 过小会怎样？—— 文字产生重叠，且最小值是 0，不能为负数（如果设置为负数，浏览器会舍弃此设置，恢复为默认值 normal）。
+
+2. **line-height 是可以继承的，且为了能更好的呈现文字，最好写数值。**（一行之中，会以行高最高的那个决定这一行的高度）
+
+   <img src="html-css/image-20231213215140144.png" alt="image-20231213215140144" style="zoom:50%;" />
+
+3. line-height 和 height 是什么关系？
+   - **设置了 height，那么 div 的高度就是 height 的值。**
+   - **不设置 height 的时候，会根据 line-height 计算 div 的高度。（line-height 乘以行数）**
+   - 一般，不要设置 line-height 和 height 相同，否则多行文字可能出现重叠情况。
+
+>如果将 line-height 逐渐的越来越小，可以看到：
+>
+>1. 多行文字会叠在一起。（line-height 为 0，则多行文字之间的垂直距离也变为 0）
+>2. 背景色会消失。（line-height 为 0，也没有设置 height，则 div 的高度为 0，自然就没有背景色了）
+>3. 文字顶部会被遮挡一点。
+
+应用场景：
+
+1. 对于多行文字：控制行与行之间的距离。
+2. 对于单行文字：让 height 等于 line-height ，可以实现文字垂直居中。（备注：由于字体设计的原因，靠上述办法实现的居中，并不是绝对的垂直居中，一般靠下。但如果一行中都是文字，不会太影响观感）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>08_行高_注意事项</title>
+    <style>
+        /* 注意点1：行高过小会怎样？ —— 文字重叠，且最小值是0，不能为负数。 */
+        #d1 {
+            font-size: 40px;
+            background-color: skyblue;
+            line-height: 0px;
+        }
+
+        /* 注意点2：行高是可以继承的 */
+        #d2 {
+            font-size: 40px;
+            background-color: orange;
+            line-height: 1.5;
+        }
+
+        span {
+            font-size: 200px;
+            color: red;
+        }
+
+        /* 注意点3：line-height和height是什么关系 
+            设置了height，div的高度就是height的值。
+            没有设置height，div的高度就是：line-height * 行数
+        */
+        #d3 {
+            font-size: 40px;
+            background-color: yellowgreen;
+            line-height: 100px;
+        }
+
+        /* line-height为0，则div的高度也是0 */
+        #d4 {
+            font-size: 40px;
+            background-color: skyblue;
+            line-height: 0px;
+        }
+
+        /* 行高的应用场景1：调整多行文字的间距 */
+        #d5 {
+            font-size: 40px;
+            background-color: skyblue;
+            line-height: 100px;
+        }
+
+        /* 行高的应用场景2：单行文字的垂直居中 */
+        #d6 {
+            font-size: 40px;
+            background-color: skyblue;
+            height: 300px;
+            line-height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="d1">atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术</div> -->
+    <!-- <div id="d2">atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu<span>尚硅谷</span>让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术</div> -->
+    <!-- <div id="d3">atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术</div> -->
+    <!-- <div id="d4">atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术</div> -->
+    <!-- <div id="d5">atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术atguigu尚硅谷让天下没有难学的技术</div> -->
+    <div id="d6">atguigu尚硅谷让天下没有难学的技术x</div>
+</body>
+
+</html>
+```
+
 ##### 文本对齐 —— 垂直方向
 
 **顶部：**无需任何属性，在垂直方向上，默认就是顶部对齐。
@@ -4474,7 +4591,7 @@ div {
 
 **底部：**对于单行文字，目前一个临时的方式是让 line-height = ( height × 2 ) - font-size - x。备注： x 是根据字体族，动态决定的一个值。
 
-> 垂直方向的底部对齐，祥见后文定位章节。
+> 垂直方向的底部对齐，更好的解决方法，祥见后文定位章节。
 
 示例：
 
@@ -4489,6 +4606,7 @@ div {
         div {
             font-size: 40px;
             height: 400px;
+             /* 400 * 2 - 40 -15 */
             line-height: 745px;
             background-color: skyblue;
         }
@@ -4506,14 +4624,109 @@ div {
 
 属性名：`vertical-align`。
 
-作用：用于指定**同一行元素之间**，或 **表格单元格** 内文字的 **垂直对齐方式**。
+作用：用于指定**同一行元素之间**，或**表格单元格**内文字的**垂直对齐方式**。
+
+>`vertical-align 对块元素无效，只对行内元素有效。`证明如下：
+>
+>```css
+>.test1 {
+>    width: 400px;
+>    height: 400px;
+>    background-color: gray;
+>}
+>
+>.test2 {
+>    width: 100px;
+>    height: 100px;
+>    background-color: green;
+>    /* 没有效果 */
+>    vertical-align: bottom;
+>}
+>```
+>
+>```html
+><div class="test1">
+>    <div class="test2">
+>        
+>    </div>
+></div>
+>```
 
 常用值：
 
-1. baseline （默认值）：使元素的基线与父元素的基线对齐。
-2. top ：使元素的**顶部**与其**所在行的顶部**对齐。
-3. middle ：使元素的**中部**与**父元素的基线**加上父元素**字母** x **的一半**对齐。
-4. bottom ：使元素的**底部**与其**所在行的底部**对齐。
+1. `baseline`：默认值，使元素的**基线**与父元素的**基线**对齐。
+2. `top`：使元素的**顶部**与其**所在行的顶部**对齐。
+3. `middle`：使元素的**中部**与**父元素的基线加上父元素字母 x 的一半**对齐。
+4. `bottom`：使元素的**底部**与其**所在行的底部**对齐。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>10_vertical-align</title>
+    <style>
+        div {
+            font-size: 100px;
+            height: 300px;
+            background-color: skyblue;
+        }
+
+        span {
+            font-size: 40px;
+            background-color: orange;
+            vertical-align: middle;
+        }
+
+        img {
+            height: 30px;
+            vertical-align: top;
+        }
+
+        .san {
+            vertical-align: bottom;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        atguigu尚硅谷x<span>x前端</span>
+    </div>
+    <hr>
+    <div>
+        atguigu尚硅谷x<img src="../images/我的自拍.jpg">
+    </div>
+    <hr>
+    <table border="1" cellspacing="0">
+        <caption>人员信息</caption>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>性别</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr height="200">
+                <td class="san">张三</td>
+                <td>18</td>
+                <td>男</td>
+            </tr>
+            <tr>
+                <td>李四</td>
+                <td>20</td>
+                <td>女</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>
+```
 
 #### 列表属性
 
@@ -4659,13 +4872,13 @@ div {
 
 **表格独有属性（只有 table 标签才能使用）：**
 
-| 属性名          | 功能                 | 属性值                                                       |
-| --------------- | -------------------- | ------------------------------------------------------------ |
-| table-layout    | 设置列宽度           | `auto`：自动，列宽根据内容计算，默认值<br />`fixed`：固定列宽，平均分 |
-| border-spacing  | 单元格间距           | CSS 中可用的长度值，如像素<br />生效的前提：单元格不能合并   |
-| border-collapse | 合并单元格边框       | `collapse`：合并<br />`separate`：不合并                     |
-| empty-cells     | 隐藏没有内容的单元格 | `show`：显示，默认值<br />`hide`：隐藏<br />生效前提：单元格不能合并 |
-| caption-side    | 设置表格标题位置     | `top`：上面，默认值<br />`bottom`：在表格下面                |
+| 属性名            | 功能                 | 属性值                                                       |
+| ----------------- | -------------------- | ------------------------------------------------------------ |
+| `table-layout`    | 设置列宽度           | `auto`：自动，列宽根据内容计算，默认值<br />`fixed`：固定列宽，平均分 |
+| `border-spacing`  | 单元格间距           | CSS 中可用的长度值，如像素<br />生效的前提：单元格不能合并   |
+| `border-collapse` | 合并单元格边框       | `collapse`：合并<br />`separate`：不合并                     |
+| `empty-cells`     | 隐藏没有内容的单元格 | `show`：显示，默认值<br />`hide`：隐藏<br />生效前提：单元格不能合并 |
+| `caption-side`    | 设置表格标题位置     | `top`：上面，默认值<br />`bottom`：在表格下面                |
 
 示例：
 
@@ -4751,4 +4964,115 @@ div {
 
 </html>
 ```
+
+隐藏没有内容的单元格图示：
+
+<img src="html-css/image-20231213222023998.png" alt="image-20231213222023998" style="zoom:67%;" />
+
+#### 背景属性
+
+| 属性名                | 功能               | 属性值                                                       |
+| --------------------- | ------------------ | ------------------------------------------------------------ |
+| `background-color`    | 设置背景颜色       | 符合 CSS 中颜色规范的值，默认背景颜色是`transparent`（透明） |
+| `background-image`    | 设置背景图片       | `url(图片的地址)`                                            |
+| `background-repeat`   | 设置背景重复方式   | repeat ：重复，铺满整个元素，默认值<br />repeat-x ：只在水平方向重复<br />repeat-y ：只在垂直方向重复<br />no-repeat ：不重复 |
+| `background-position` | 设置背景图位置     | **通过关键字设置位置：**<br />        写两个值，用空格隔开<br />                水平：`left`、`center`、`right`<br />                垂直：`top`、`center`、`bottom`<br />        写一个值，则另一个方向的值取 center<br />**通过长度指定坐标位置：**以元素左上角，为坐标原点，设置图片左上角的位置<br />        写两个值，则分别是 x 坐标和 y 坐标<br />        写一个值，会被当做 x 坐标， y 坐标取 center |
+| `background`          | 上面四个的复合属性 | 没有数量和顺序要求，如果某一个没写，会取对应的默认值         |
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>背景相关属性</title>
+    <style>
+        body {
+            background-color: gray;
+        }
+
+        div {
+            width: 400px;
+            height: 400px;
+            border: 5px black solid;
+            font-size: 20px;
+            /* 设置背景颜色，默认值是transparent */
+            background-color: skyblue;
+            /* 设置背景图片 */
+            background-image: url(../images/悟空.jpg);
+            /* 设置背景图片的重复方式 */
+            background-repeat: no-repeat;
+            /* 控制背景图片的位置——第一种写法：用关键词 */
+            background-position: center;
+            /* 控制背景图片的位置——第二种写法：用具体的像素值 */
+            background-position: 100px 200px;
+            /* 复合属性 */
+            background: url(../images/悟空.jpg) no-repeat 100px 200px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div>你好啊！</div>
+</body>
+
+</html>
+```
+
+#### 鼠标属性
+
+| 属性名   | 功能               | 属性值                                                       |
+| -------- | ------------------ | ------------------------------------------------------------ |
+| `cursor` | 设置鼠标光标的样式 | `pointer`：小手<br />`move`：移动图标<br />`text`：文字选择器<br />`crosshair`：十字架<br />`wait`：等待<br />`help`：帮助 |
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>鼠标相关属性</title>
+    <style>
+        div {
+            width: 400px;
+            height: 400px;
+            background-color: skyblue;
+            cursor: url("../images/arrow.png"), pointer;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        input {
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        把鼠标放进来看一看
+        <input type="text">
+        <a href="#">百度</a>
+        <button>点我</button>
+    </div>
+</body>
+
+</html>
+```
+
+> 扩展：自定义鼠标图标。
+>
+> ```css
+> /* 自定义鼠标光标 */
+> cursor: url("./arrow.png"), pointer;
+> ```
+
+### 盒子模型
 
