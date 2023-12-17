@@ -6426,7 +6426,7 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 
 **三：让子元素，在父亲中垂直居中。**
 
-- 若子元素为**块元素**，给子元素加上： margin-top ，值为：(父元素 content －子元素盒子总高) / 2。
+- 若子元素为**块元素**，给子元素加上：`margin-top`，值为：`(父元素 content - 子元素盒子总高) / 2`。
 - 若子元素为**行内元素**、**行内块元素**：
   - 让父元素的`height = line-height`，每个子元素都加上：`vertical-align: middle;`。
   - 补充：若想绝对垂直居中，父元素`font-size = 0`。
@@ -6473,7 +6473,7 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 
 ##### 元素之间的空白问题
 
-**产生的原因：**行内元素、行内块元素，彼此之间的换行会被浏览器解析为一个空白字符。
+**产生的原因：**行内元素、行内块元素，彼此之间的**换行**会被浏览器解析为一个空白字符。
 
 **解决方案：**
 
@@ -6566,6 +6566,145 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 <body>
     <div>
         <img src="../images/我的自拍.jpg" alt="悟空">
+    </div>
+</body>
+
+</html>
+```
+
+### 浮动
+
+在最初，浮动是用来实现文字环绕图片效果的，现在浮动是主流的页面布局方式之一。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_浮动_简介</title>
+    <style>
+        div {
+            width: 600px;
+            height: 400px;
+            background-color: skyblue;
+        }
+
+        img {
+            width: 200px;
+            float: right;
+            /* margin-right: 0.5em; */
+        }
+
+        .test::first-letter {
+            font-size: 80px;
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <img src="../images/我的自拍.jpg" alt="">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint, minus magnam accusamus eum laborum ducimus
+        possimus beatae fugit illum molestias odit et asperiores adipisci sunt dolorem qui autem enim excepturi alias ab
+        unde temporibus. Sapiente labore a magnam commodi itaque architecto quos doloribus voluptates perferendis rem,
+        earum consectetur. Tempora inventore ducimus veritatis voluptatem deleniti rem laboriosam. Officiis, impedit
+        explicabo! Impedit labore ea et vero rerum nihil in cum qui, itaque blanditiis eius nemo est? Tempora explicabo
+        voluptates consectetur officia aperiam eos impedit veritatis necessitatibus quidem deleniti ea, in odit cum ex
+        harum voluptas, quos eveniet quae voluptate aspernatur quod! Nostrum?
+    </div>
+    <hr>
+    <div class="test">
+        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quaerat voluptate impedit provident, debitis nostrum
+        cumque iste ab ipsum tempora dicta neque aliquid error in dolorum qui iure. Quibusdam eligendi ea id! Accusamus
+        praesentium vitae quidem iusto placeat provident alias tempore quasi quos, nesciunt rem, molestias quisquam?
+        Quisquam laborum nulla ea veniam, nesciunt, dolores modi officia animi laboriosam minima exercitationem.
+        Reiciendis enim sint at nisi quae obcaecati, vel iusto non libero officia possimus explicabo quis harum
+        inventore sapiente accusantium id quidem cupiditate et expedita maiores perferendis! Reiciendis, distinctio
+        doloribus! Quia harum iste doloremque pariatur obcaecati doloribus quasi iusto minima magnam iure!
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231217222759332.png" alt="image-20231217222759332" style="zoom:67%;" />
+
+####  元素浮动后的特点
+
+特点：
+
+1. 🤢 `脱离文档流`。（不是一件好事，文档流可以理解为浮动前，元素所在的那个面，开启浮动后，元素飘在了那个面上方，也就是脱离了文档流）
+2. 😊 不管浮动前是什么元素，浮动后：`默认宽与高都是被内容撑开（尽可能小），但是可以设置宽高。`
+3. 😊 `不会独占一行`，可以与其他元素共用一行。
+4. 😊 不会 margin 合并，也不会 margin 塌陷，`能够完美的设置四个方向的 margin 和 padding`。
+5. 😊 `不会像行内块一样被当做文本处理`（没有行内块的空白问题，将两个相邻的兄弟元素浮动，虽然二者之间有换行，也不会有空白问题出现）。
+
+> **浮动前：**
+>
+> <img src="html-css/image-20231217223321388.png" alt="image-20231217223321388" style="zoom:50%;" />
+>
+> **浮动后：**
+>
+> <img src="html-css/image-20231217223429353.png" alt="image-20231217223429353" style="zoom:50%;" />
+>
+> - 可以看出，盒子 2 开启浮动后，是漂浮在盒子 3 上面的，而且盒子 3 中的文字会自动避开盒子 2 所在的区域。（将盒子 3 的高度设置大一点，也可以很明显的看出盒子 2 是漂浮在盒子 3 上方）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_元素浮动后的特点</title>
+    <style>
+        .outer {
+            width: 800px;
+            height: 400px;
+            padding: 10px;
+            background-color: gray;
+            text-align: center;
+        }
+
+        .box {
+            font-size: 20px;
+            padding: 10px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+        }
+
+        .box2 {
+            background-color: orange;
+            float: left;
+            /* width: 200px; */
+            /* height: 200px; */
+            /* margin-left: 20px; */
+            /* margin-right: 20px; */
+            /* margin-top: 20px; */
+            /* margin-bottom: 20px; */
+        }
+
+        .box3 {
+            background-color: green;
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">盒子1</div>
+        <div class="box box2">盒子2</div>
+        <div class="box box3">盒子3</div>
     </div>
 </body>
 
