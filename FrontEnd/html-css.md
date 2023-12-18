@@ -6574,7 +6574,7 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 
 ### 浮动
 
-在最初，浮动是用来实现文字环绕图片效果的，现在浮动是主流的页面布局方式之一。
+在最初，`浮动`是用来实现文字环绕图片效果的，现在浮动是主流的页面布局方式之一。
 
 示例：
 
@@ -6711,3 +6711,536 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 </html>
 ```
 
+#### 浮动小练习
+
+**效果一：**
+
+<img src="html-css/image-20231218221046122.png" alt="image-20231218221046122" style="zoom:80%;" />
+
+- 盒子 1 右浮动，脱离文档流，盒子 2 和盒子 3 未脱离文档流。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_浮动的小练习</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1 {
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+**效果二：**
+
+<img src="html-css/image-20231218221222533.png" alt="image-20231218221222533" style="zoom:80%;" />
+
+- 盒子 1 左浮动，脱离文档流，盒子 2 和盒子 3 未脱离文档流。盒子 1 漂浮在盒子 2 上方，盒子 2 的文字环绕在盒子 1 下方，与盒子 3 文字重叠。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_浮动的小练习</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1 {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+**效果三：**
+
+<img src="html-css/image-20231218221559316.png" alt="image-20231218221559316" style="zoom:80%;" />
+
+- 盒子 1、盒子 2、盒子 3 全部左浮动，脱离文档流，父元素盒子因为子元素都浮动，没有内容，高度为 0，成为了一条线。（边框有高度）
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_浮动的小练习</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+            float: left;
+        }
+
+        .box1 {
+            
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+**效果四：**
+
+<img src="html-css/image-20231218221855381.png" alt="image-20231218221855381" style="zoom:80%;" />
+
+- 盒子 1、盒子 2、盒子 3 全部左浮动，脱离文档流，因为父元素盒子宽度不够，盒子 3  落在了下方。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_浮动的小练习</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+            float: left;
+        }
+
+        .box1 {
+            
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+**效果五：**
+
+<img src="html-css/image-20231218222100568.png" alt="image-20231218222100568" style="zoom:80%;" />
+
+- 盒子 1、盒子 2、盒子 3 全部左浮动，脱离文档流，因为父元素盒子宽度不够，盒子 3  落在了下方。又因为盒子 1 高度大，盒子 3 被卡在了右方。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_浮动的小练习</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+            float: left;
+        }
+
+        .box1 {
+            height: 230px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+#### 解决浮动产生的影响
+
+##### 元素浮动后会有哪些影响
+
+**对兄弟元素的影响：** 后面的兄弟元素，会占据浮动元素之前的位置，在浮动元素的下面；对前面的兄弟无影响。
+
+<img src="html-css/image-20231218223311824.png" alt="image-20231218223311824" style="zoom:80%;" />
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_浮动后的影响</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1,
+        .box2,
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <!-- 盒子0不受影响，独占一行，父元素的高度都是由盒子0撑起来的 -->
+        <div class="box box0">0</div>
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+
+</html>
+```
+
+<img src="html-css/image-20231218223404090.png" alt="image-20231218223404090" style="zoom:80%;" />
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_浮动后的影响</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1,
+        .box2,
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+        <!-- 盒子4在盒子1下方，文字环绕，父元素的高度都是由盒子0撑起来的 -->
+        <div class="box box4" style="background-color: red; width: 120px; height: 120px;">4</div>
+    </div>
+
+</html>
+```
+
+**对父元素的影响：** 不能撑起父元素的高度，导致父元素高度塌陷（进而导致父元素的兄弟元素，样式环绕）；但父元素的宽度依然束缚浮动的元素。
+
+<img src="html-css/image-20231218222447954.png" alt="image-20231218222447954" style="zoom:80%;" />
+
+![image-20231218222638680](html-css/image-20231218222638680.png)
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_浮动后的影响</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1,
+        .box2,
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+    <!-- <div style="background-color:orange">Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda expedita rem similique at laboriosam, magnam, ipsam inventore odit odio ipsum ex ad beatae quia, consequuntur quam dolore modi atque? Doloribus libero eos ut consequatur, assumenda amet quidem est quae doloremque maxime id cumque explicabo aliquam. Quas, explicabo illo neque rem dolores impedit aspernatur suscipit vel, dolore incidunt totam aliquam laborum! Fuga in rerum repudiandae suscipit, labore optio iste ratione nobis velit dolorem laborum doloribus perferendis porro enim, sequi, delectus nulla quam? Recusandae quidem nobis voluptatum quam quaerat itaque aliquam reiciendis molestias ratione nesciunt exercitationem quisquam laborum sit error magnam optio atque, debitis tempore. Quibusdam repellendus perspiciatis id consequuntur saepe suscipit enim temporibus, ipsa minima dolores laudantium inventore recusandae nam. Quo harum sunt reprehenderit nisi? Error quia quibusdam possimus tempore incidunt. Doloribus vitae quis nisi quod, aperiam molestias id quibusdam voluptate recusandae iure tempore hic doloremque similique corrupti expedita non odit a natus. Eius, harum iste, dolor omnis, saepe dolore illo aliquid impedit officia explicabo itaque dicta eos exercitationem at tempora perspiciatis voluptate ad eaque mollitia maiores obcaecati numquam. Veniam ex facere fugit ullam est velit officiis a autem perferendis ratione aliquid dolor voluptate magnam, illo alias sequi totam, ab nemo?</div> -->
+</body>
+
+</html>
+```
+
+##### 解决浮动产生的影响（清除浮动）
+
+效果：
+
+1. 父元素的高度不受影响。
+2. 后续兄弟元素不受影响。
+
+**解决方案：**
+
+1. 方案一： 给父元素指定高度。（但后续兄弟元素的影响未消除）
+
+2. 方案二： 给父元素也设置浮动。（但后续兄弟元素的影响未消除，父元素的兄弟元素也会受影响）
+
+3. 方案三： 给父元素设置`overflow: hidden`。（但后续兄弟元素的影响未消除）
+
+4. 方案四： 在所有浮动元素的最后面，添加一个块级元素，并给该块级元素设置`clear: both`。（在浮动元素的最后面，加一个空 div，设置其 clear: both）
+
+   <img src="html-css/image-20231218225339015.png" alt="image-20231218225339015" style="zoom:80%;" />
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="zh-CN">
+   
+   <head>
+       <meta charset="UTF-8">
+       <title>05_解决浮动后的影响</title>
+       <style>
+           .outer {
+               width: 500px;
+               background-color: gray;
+               border: 1px solid black;
+           }
+   
+           .box {
+               width: 100px;
+               height: 100px;
+               background-color: skyblue;
+               border: 1px solid black;
+               margin: 10px;
+           }
+   
+           .box1,
+           .box2,
+           .box3 {
+               float: left;
+           }
+   
+           .box4{
+               display: inline;
+               clear: both;
+           }
+       </style>
+   </head>
+   
+   <body>
+       <div class="outer">
+           <div class="box box1">1</div>
+           <div class="box box2">2</div>
+           <div class="box box3">3</div>
+           <div class="box box4">4</div>
+       </div>
+   </body>
+   
+   </html>
+   ```
+
+   - 前提一：后面的元素本身不能是浮动的。
+   - 前提二：后面的元素本身不能是行内元素，否则无法撑开父元素的高度。
+
+5. **方案五**： 给浮动元素的父元素，设置伪元素，通过伪元素清除浮动，原理与方案四相同。===> 推荐使用，但是注意，如果最后一个元素是不浮动的，这种方案解决不了问题。
+
+   ```css
+   .outer::after {
+       content: '';
+       display: block;
+       clear: both;
+   }
+   ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_解决浮动后的影响</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+            /* 第一种解决方案：父元素指定高度 */
+            /* height: 122px; */
+
+            /* 第二种解决方案：父元素也设置浮动 */
+            /* float: left; */
+
+            /* 第三种解决方案 */
+            /* overflow: scroll; */
+
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            margin: 10px;
+        }
+
+        .box1,
+        .box2,
+        .box3,
+        .box4 {
+            float: left;
+        }
+
+        .mofa {
+            /* 第四种解决方案：兄弟元素添加clear: both */
+            clear: both;
+        }
+
+        /* 第五种解决方案 */
+        .outer::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+        <div class="box box4">4</div>
+        <!-- <div class="mofa"></div> -->
+    </div>
+    <div style="background-color:orange">Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda expedita rem
+        similique at laboriosam, magnam, ipsam inventore odit odio ipsum ex ad beatae quia, consequuntur quam dolore
+        modi atque? Doloribus libero eos ut consequatur, assumenda amet quidem est quae doloremque maxime id cumque
+        explicabo aliquam. Quas, explicabo illo neque rem dolores impedit aspernatur suscipit vel, dolore incidunt totam
+        aliquam laborum! Fuga in rerum repudiandae suscipit, labore optio iste ratione nobis velit dolorem laborum
+        doloribus perferendis porro enim, sequi, delectus nulla quam? Recusandae quidem nobis voluptatum quam quaerat
+        itaque aliquam reiciendis molestias ratione nesciunt exercitationem quisquam laborum sit error magnam optio
+        atque, debitis tempore. Quibusdam repellendus perspiciatis id consequuntur saepe suscipit enim temporibus, ipsa
+        minima dolores laudantium inventore recusandae nam. Quo harum sunt reprehenderit nisi? Error quia quibusdam
+        possimus tempore incidunt. Doloribus vitae quis nisi quod, aperiam molestias id quibusdam voluptate recusandae
+        iure tempore hic doloremque similique corrupti expedita non odit a natus. Eius, harum iste, dolor omnis, saepe
+        dolore illo aliquid impedit officia explicabo itaque dicta eos exercitationem at tempora perspiciatis voluptate
+        ad eaque mollitia maiores obcaecati numquam. Veniam ex facere fugit ullam est velit officiis a autem perferendis
+        ratione aliquid dolor voluptate magnam, illo alias sequi totam, ab nemo?</div>
+</body>
+
+</html>
+```
+
+>布局中的一个原则：`设置浮动的时候，兄弟元素要么全都浮动，要么全都不浮动。`
