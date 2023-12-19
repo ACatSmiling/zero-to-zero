@@ -7152,7 +7152,7 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
    - 前提一：后面的元素本身不能是浮动的。
    - 前提二：后面的元素本身不能是行内元素，否则无法撑开父元素的高度。
 
-5. **方案五**： 给浮动元素的父元素，设置伪元素，通过伪元素清除浮动，原理与方案四相同。===> 推荐使用，但是注意，如果最后一个元素是不浮动的，这种方案解决不了问题。
+5. **`方案五`**： 给浮动元素的父元素，设置伪元素，通过伪元素清除浮动，原理与方案四相同。===> 推荐使用，但是注意，如果最后一个元素是不浮动的，这种方案解决不了问题。
 
    ```css
    .outer::after {
@@ -7244,3 +7244,266 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 ```
 
 >布局中的一个原则：`设置浮动的时候，兄弟元素要么全都浮动，要么全都不浮动。`
+
+#### 浮动布局小练习
+
+整体效果：
+
+<img src="html-css/image-20231219214933789.png" alt="image-20231219214933789" style="zoom:80%;" />
+
+具体标注：
+
+<img src="html-css/image-20231219215033343.png" alt="image-20231219215033343" style="zoom:80%;" />
+
+代码：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_浮动布局小练习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .leftfix {
+            float: left;
+        }
+
+        .rightfix {
+            float: right;
+        }
+
+        .clearfix::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .container {
+            width: 960px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo {
+            width: 200px;
+        }
+
+        .banner1 {
+            width: 540px;
+            margin: 0 10px;
+        }
+
+        .banner2 {
+            width: 200px;
+        }
+
+        .logo,
+        .banner1,
+        .banner2 {
+            height: 80px;
+            line-height: 80px;
+            background-color: #ccc;
+        }
+
+        .menu {
+            height: 30px;
+            background-color: #ccc;
+            margin-top: 10px;
+            line-height: 30px;
+        }
+
+        .item1,
+        .item2 {
+            width: 368px;
+            height: 198px;
+            line-height: 198px;
+            border: 1px solid black;
+            margin-right: 10px;
+        }
+
+        .content {
+            margin-top: 10px;
+        }
+
+        .item3,
+        .item4,
+        .item5,
+        .item6 {
+            width: 178px;
+            height: 198px;
+            line-height: 198px;
+            border: 1px solid black;
+            margin-right: 10px;
+        }
+
+        .bottom {
+            margin-top: 10px;
+        }
+
+        .item7,
+        .item8,
+        .item9 {
+            width: 198px;
+            height: 128px;
+            line-height: 128px;
+            border: 1px solid black;
+        }
+
+        .item8 {
+            margin: 10px 0;
+        }
+
+        .footer {
+            height: 60px;
+            background-color: #ccc;
+            margin-top: 10px;
+            line-height: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="page-header clearfix">
+            <div class="logo leftfix">logo</div>
+            <div class="banner1 leftfix">banner1</div>
+            <div class="banner2 leftfix">banner2</div>
+        </div>
+        <!-- 菜单 -->
+        <div class="menu">菜单</div>
+        <!-- 内容区 -->
+        <div class="content clearfix">
+            <!-- 左侧 -->
+            <div class="left leftfix">
+                <!-- 上 -->
+                <div class="top clearfix">
+                    <div class="item1 leftfix">栏目一</div>
+                    <div class="item2 leftfix">栏目二</div>
+                </div>
+                <!-- 下 -->
+                <div class="bottom clearfix">
+                    <div class="item3 leftfix">栏目三</div>
+                    <div class="item4 leftfix">栏目四</div>
+                    <div class="item5 leftfix">栏目五</div>
+                    <div class="item6 leftfix">栏目六</div>
+                </div>
+            </div>
+            <!-- 右侧 -->
+            <div class="right rightfix">
+                <div class="item7">栏目七</div>
+                <div class="item8">栏目八</div>
+                <div class="item9">栏目九</div>
+            </div>
+        </div>
+        <!-- 页脚 -->
+        <div class="footer">页脚</div>
+    </div>
+</body>
+
+</html>
+```
+
+#### 浮动相关属性
+
+| 属性名  | 功能                                     | 属性值                                                       |
+| ------- | ---------------------------------------- | ------------------------------------------------------------ |
+| `float` | 设置浮动设置浮动                         | `left`：设置左浮动<br />`right`：设置右浮动<br />`none`：不浮动，默认值 |
+| `clear` | 清除浮动，清除前面兄弟元素浮动元素的响应 | `left`：清除前面左浮动的影响<br />`right`：清除前面右浮动的影响<br />`both`：清除前面左右浮动的影响 |
+
+### 定位
+
+#### 相对定位
+
+**如何设置相对定位：**
+
+- 给元素设置`position:relative`即可实现相对定位。
+- 可以使用`left`、`right`、`top`、`bottom`四个属性调整位置。（可以取负值）
+
+**相对定位的参考点：**
+
+- 相对自己原来的位置。
+
+**相对定位的特点：**
+
+- `不会脱离文档流`，元素位置的变化，只是视觉效果上的变化，不会对其他元素产生任何影响。
+
+  <img src="html-css/image-20231219221443132.png" alt="image-20231219221443132" style="zoom: 67%;" />
+
+- 定位元素的显示`层级`比普通元素高，无论什么定位，显示层级都是一样的。默认规则：
+
+  - 定位的元素会盖在普通元素之上。（注意：不同于浮动，定位的元素不是漂浮在普通元素之上，而是盖在普通元素之上）
+  - 都发生定位的两个元素，**后写的元素会盖在先写的元素之上**。
+
+- `left 不能和 right 一起设置，top 和 bottom 不能一起设置。`
+
+- 相对定位的元素，也能继续浮动，但不推荐这样做。
+
+- 相对行为的元素，也能通过 margin 调整位置，但不推荐这样做。
+
+>注意：绝大多数情况下，相对定位，会与绝对定位配合使用。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_相对定位</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: skyblue;
+            border: 1px solid black;
+            padding: 20px;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-color: #888;
+        }
+
+        .box2 {
+            background-color: orange;
+            position: relative;
+            top: 10px;
+            left: 10px;
+            /* left: 100px; */
+            /* margin-left: 50px; */
+            /* float: right; */
+        }
+
+        .box3 {
+            background-color: green;
+            /* position: relative; */
+            /* top: -50px; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+#### 绝对定位
+
