@@ -7945,3 +7945,334 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 
 #### 定位层级
 
+定位的层级：
+
+- `定位元素的显示层级比普通元素高`，但无论什么定位，显示层级都是一样的。
+- 如果位置发生重叠，默认情况是：`后面的元素，会显示在前面元素之上。`
+- 可以通过 CSS 属性`z-index`调整元素的显示层级。
+- z-index 的属性值是数字，没有单位，`值越大显示层级越高`。
+- 只有定位的元素设置 z-index 才有效。
+- 如果 z-index 值大的元素，依然没有覆盖掉 z-index 值小的元素，那么请检查其包含块的层级。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_定位的层级</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: skyblue;
+            border: 1px solid black;
+            padding: 20px;
+            position: relative;
+            /* 包含块的z-index设置为11，大于box5，如果小于box5，即使box4的z-index大于box5，依然会被box5压着 */
+            z-index: 11;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-color: #888;
+        }
+
+        .box2 {
+            background-color: orange;
+            position: relative;
+            top: -150px;
+            left: 50px;
+        }
+
+        .box3 {
+            background-color: green;
+            position: absolute;
+            top: 130px;
+            left: 130px;
+        }
+
+        .box4 {
+            background-color: red;
+            position: fixed;
+            top: 200px;
+            left: 200px;
+            z-index: 50;
+        }
+
+        .box5 {
+            background-color: purple;
+            position: fixed;
+            top: 300px;
+            left: 300px;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+        <div class="box box4">4</div>
+    </div>
+    <div class="box box5">5</div>
+</body>
+
+</html>
+```
+
+#### 定位的特殊应用
+
+**定位可以越过 padding：**
+
+- 子元素的定位，可以越过包含块的 padding。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_定位可以越过padding</title>
+    <style>
+        .outer {
+            width: 800px;
+            height: 600px;
+            padding: 20px;
+            background-color: #888;
+            position: relative;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231221223917662.png" alt="image-20231221223917662" style="zoom:67%;" />
+
+>**注意：**
+>
+>1. 发生固定定位、绝对定位后，元素都变成了定位元素，其特点是默认宽高被内容撑开，且依然可以设置宽高。
+>
+>2. 发生相对定位后，元素依然是之前的显示模式。（比如定位的块元素显示模式仍是独占一行）
+>3. 以下所说的特殊应用，只针对**绝对定位**和**固定定位**的元素，不包括相对定位的元素。
+
+**定位的特殊应用一：**
+
+- `将一个定位的元素，充满包含块。`（不是通过定位元素的 width 和 height 来设置）
+- 块宽想与包含块一致，可以给定位元素同时设置`left 和 right 为 0`。
+- 块高想与包含块一致，可以给定位元素同时设置`top 和 bottom 为 0`。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>07_定位的特殊应用1</title>
+    <style>
+        .outer {
+            height: 400px;
+            background-color: #888;
+            position: relative;
+        }
+
+        .inner {
+            background-color: rgb(20, 134, 195);
+            font-size: 20px;
+            padding: 20px;
+            border: 10px solid black;
+            position: absolute;
+            /* 水平方向充满父元素 */
+            left: 0;
+            right: 0;
+            /* 垂直方向充满父元素 */
+            top: 0;
+            bottom: 0;
+            /* 注意，windth: 100%，设置的是子元素的内容区宽度与父元素一致，加上子元素的padding和border会超过父元素的宽度 */
+            /* width: 100%; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+![image-20231221230211295](html-css/image-20231221230211295.png)
+
+**定位的特殊应用二：**
+
+- `让定位元素在包含块中居中。`**注意：该定位的子元素必须设置宽高！！！**（如果不设置宽高，就跟特殊应用一一样）
+
+- 方案一：
+
+  ```css
+   .outer {
+      width: 800px;
+      height: 400px;
+      background-color: #888;
+       
+      /* 方案一：不使用定位 */
+      overflow: hidden;
+  }
+  
+  .inner {
+      width: 400px;
+      height: 100px;
+      background-color: orange;
+      font-size: 20px;
+  
+      margin: 0 auto;
+      margin-top: 150px;
+  }
+  ```
+
+- **方案二（推荐）：**
+
+  ```css
+  .outer {
+      width: 800px;
+      height: 400px;
+      background-color: #888;
+  
+      position: relative;
+  }
+  
+  .inner {
+      width: 400px;
+      height: 100px;
+      background-color: orange;
+      font-size: 20px;
+  
+      position: absolute;
+      /* 方案二 */
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: auto; 
+  }
+  ```
+
+- 方案三：
+
+  ```css
+  .outer {
+      width: 800px;
+      height: 400px;
+      background-color: #888;
+  
+      position: relative;
+  }
+  
+  .inner {
+      width: 400px;
+      height: 100px;
+      background-color: orange;
+      font-size: 20px;
+  
+      position: absolute;
+      /* 方案三 */
+      left: 50%;
+      top: 50%;
+      /* 负的宽度一半 */
+      margin-left: -200px;
+      /* 负的高度一半 */
+      margin-top: -50px;
+  }
+  ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        .outer {
+            width: 800px;
+            height: 400px;
+            background-color: #888;
+            /* 方案一：不使用定位 */
+            /* overflow: hidden; */
+            position: relative;
+        }
+
+        .inner {
+            width: 400px;
+            height: 100px;
+            background-color: orange;
+            font-size: 20px;
+
+            /* margin: 0 auto;
+            margin-top: 150px; */
+
+            position: absolute;
+            /* 方案二 */
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto; 
+
+            /* 方案三 */
+            /* left: 50%;
+            top: 50%;
+            margin-left: -200px;
+            margin-top: -50px; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231221230735325.png" alt="image-20231221230735325" style="zoom:67%;" />
