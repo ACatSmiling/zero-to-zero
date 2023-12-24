@@ -8139,7 +8139,7 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 
 **定位的特殊应用二：**
 
-- `让定位元素在包含块中居中。`**注意：该定位的子元素必须设置宽高！！！**（如果不设置宽高，就跟特殊应用一一样）
+- `让定位元素在包含块中居中。`**注意：该定位的子元素必须设置宽高！！！**（如果不设置宽高，就跟 "特殊应用一" 一样）
 
 - 方案一：
 
@@ -8276,3 +8276,581 @@ CSS 中，有些样式会继承，元素如果本身设置了某个样式，就�
 效果图：
 
 <img src="html-css/image-20231221230735325.png" alt="image-20231221230735325" style="zoom:67%;" />
+
+### 布局
+
+#### 版心
+
+在 PC 端网页中，一般都会有一个固定宽度且水平居中的盒子，来显示网页的主要内容，这是网页的`版心`。
+
+- 版心的宽度一般是 960 ~ 1200 像素之间。
+
+- 版心可以是一个，也可以是多个。
+
+#### 常用布局名词
+
+| 位置               | 布局名词               |
+| ------------------ | ---------------------- |
+| 顶部导航条         | topbar                 |
+| 页头               | header、page-header    |
+| 导航               | nav、navigator、navbar |
+| 搜索框             | search、search-box     |
+| 横幅、广告、宣传图 | banner                 |
+| 主要内容           | content、main          |
+| 侧边栏             | aside、sidebar         |
+| 页脚               | footer、page-footer    |
+
+#### 重置默认样式
+
+很多 CSS 元素都有默认样式，比如：
+
+1. p 元素有默认的上下 margin。
+2. h1 ~ h6 标题也有上下 margin，且字体加粗。
+3. body 元素有默认的 8 px 外边距。
+4. 超链接有默认的文字颜色和下划线。
+5. ul 元素有默认的左 pading。
+6. ......
+
+在早期，元素默认样式，能够让我们快速的绘制网页，但如今网页的设计越来越复杂，内容越来越多，也越来越精细，这些默认样式会给我们绘制页面带来麻烦；而且这些默认样式，在不同的浏览器上呈现出来的效果也不一样，所以我们需要重置这些默认样式。
+
+**方案一：使用全局选择器。**
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    ......
+}
+```
+
+- 此种方法，在简单案例中可以用一下，但实际开发中不会使用，因为 * 选择的是所有元素，但并不是所有的元素都有默认样式。而且我们重置时，有时候是需要做特定处理的，比如：想让 a 元素的文字是灰色，其他元素文字是蓝色。
+
+**方案二：定义 reset.css。**
+
+- 选择具有默认样式的元素，清空其默认的样式。
+
+- 经过 reset 后的网页，好似 "一张白纸"，开发人员可根据设计稿，精细的去添加具体的样式。
+
+- 示例：
+
+  ```css
+  /* 基础设置 */
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  hr,
+  p,
+  blockquote,
+  dl,
+  dt,
+  dd,
+  ul,
+  ol,
+  li,
+  pre,
+  form,
+  fieldset,
+  legend,
+  button,
+  input,
+  textarea,
+  th,
+  td {
+      margin: 0;
+      padding: 0;
+  }
+  
+  ul,
+  ol {
+      list-style: none;
+  }
+  
+  img {
+      /* 底部留白 */
+      display: block;
+      border: 0;
+  }
+  
+  b,
+  strong {
+      font-weight: 400;
+  }
+  
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+      /* 父元素字号的百分比 */
+      font-size: 100%;
+      font-weight: normal;
+  }
+  
+  i,
+  em {
+      /* 不倾斜 */
+      font-style: normal;
+  }
+  
+  u,
+  ins,
+  s,
+  del {
+      /* 去掉中划线和下划线 */
+      text-decoration: none;
+  }
+  
+  table {
+      border: 1px solid #999;
+      /* 相当于是cellspacing */
+      border-spacing: 0;
+      /* 1px边框 */
+      border-collapse: collapse;
+  }
+  
+  td,
+  th {
+      border: 1px solid #999;
+  }
+  
+  input,
+  button {
+      /* 去掉轮廓线 */
+      outline: none;
+      border: none;
+  }
+  
+  /* 风格设置 */
+  body {
+      font: 12px/1.5 "Microsoft YaHei", Tahoma, Helvetica, Arial, "\5b8b\4f53", sans-serif;
+      color: #333;
+  }
+  
+  a {
+      text-decoration: none;
+      color: #666;
+  }
+  
+  a:hover {
+      color: #DD302D;
+      text-decoration: none;
+  }
+  
+  .leftfix {
+      float: left;
+  }
+  
+  .rightfix {
+      float: right;
+  }
+  
+  .clearfix::after {
+      content: "";
+      display: block;
+      clear: both;
+  }
+  ```
+
+**方案三：定义 Normalize.css。**
+
+- Normalize.css 是一种最新方案，它在清除默认样式的基础上，保留了一些有价值的默认样式。官网：https://necolas.github.io/normalize.css/
+
+- 相对于 reset.css，Normalize.css 有如下优点：
+
+  - 保护了有价值的默认样式，而不是完全去掉它们。
+  - 为大部分 HTML 元素提供一般化的样式。
+  - 新增对 HTML 5 元素的设置。
+  - 对并集选择器的使用比较谨慎，有效避免调试工具杂乱。
+
+- Normalize.css 的重置，和 reset.css 相比，更加的温和，开发时可根据实际情况进行选择。
+
+- 示例：
+
+  ```css
+  /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+  
+  /* Document
+     ========================================================================== */
+  
+  /**
+   * 1. Correct the line height in all browsers.
+   * 2. Prevent adjustments of font size after orientation changes in iOS.
+   */
+  
+  html {
+    line-height: 1.15;
+    /* 1 */
+    -webkit-text-size-adjust: 100%;
+    /* 2 */
+  }
+  
+  /* Sections
+     ========================================================================== */
+  
+  /**
+   * Remove the margin in all browsers.
+   */
+  
+  body {
+    margin: 0;
+  }
+  
+  /**
+   * Render the `main` element consistently in IE.
+   */
+  
+  main {
+    display: block;
+  }
+  
+  /**
+   * Correct the font size and margin on `h1` elements within `section` and
+   * `article` contexts in Chrome, Firefox, and Safari.
+   */
+  
+  h1 {
+    font-size: 2em;
+    margin: 0.67em 0;
+  }
+  
+  /* Grouping content
+     ========================================================================== */
+  
+  /**
+   * 1. Add the correct box sizing in Firefox.
+   * 2. Show the overflow in Edge and IE.
+   */
+  
+  hr {
+    box-sizing: content-box;
+    /* 1 */
+    height: 0;
+    /* 1 */
+    overflow: visible;
+    /* 2 */
+  }
+  
+  /**
+   * 1. Correct the inheritance and scaling of font size in all browsers.
+   * 2. Correct the odd `em` font sizing in all browsers.
+   */
+  
+  pre {
+    font-family: monospace, monospace;
+    /* 1 */
+    font-size: 1em;
+    /* 2 */
+  }
+  
+  /* Text-level semantics
+     ========================================================================== */
+  
+  /**
+   * Remove the gray background on active links in IE 10.
+   */
+  
+  a {
+    background-color: transparent;
+  }
+  
+  /**
+   * 1. Remove the bottom border in Chrome 57-
+   * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+   */
+  
+  abbr[title] {
+    border-bottom: none;
+    /* 1 */
+    text-decoration: underline;
+    /* 2 */
+    text-decoration: underline dotted;
+    /* 2 */
+  }
+  
+  /**
+   * Add the correct font weight in Chrome, Edge, and Safari.
+   */
+  
+  b,
+  strong {
+    font-weight: bolder;
+  }
+  
+  /**
+   * 1. Correct the inheritance and scaling of font size in all browsers.
+   * 2. Correct the odd `em` font sizing in all browsers.
+   */
+  
+  code,
+  kbd,
+  samp {
+    font-family: monospace, monospace;
+    /* 1 */
+    font-size: 1em;
+    /* 2 */
+  }
+  
+  /**
+   * Add the correct font size in all browsers.
+   */
+  
+  small {
+    font-size: 80%;
+  }
+  
+  /**
+   * Prevent `sub` and `sup` elements from affecting the line height in
+   * all browsers.
+   */
+  
+  sub,
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  
+  sub {
+    bottom: -0.25em;
+  }
+  
+  sup {
+    top: -0.5em;
+  }
+  
+  /* Embedded content
+     ========================================================================== */
+  
+  /**
+   * Remove the border on images inside links in IE 10.
+   */
+  
+  img {
+    border-style: none;
+  }
+  
+  /* Forms
+     ========================================================================== */
+  
+  /**
+   * 1. Change the font styles in all browsers.
+   * 2. Remove the margin in Firefox and Safari.
+   */
+  
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: inherit;
+    /* 1 */
+    font-size: 100%;
+    /* 1 */
+    line-height: 1.15;
+    /* 1 */
+    margin: 0;
+    /* 2 */
+  }
+  
+  /**
+   * Show the overflow in IE.
+   * 1. Show the overflow in Edge.
+   */
+  
+  button,
+  input {
+    /* 1 */
+    overflow: visible;
+  }
+  
+  /**
+   * Remove the inheritance of text transform in Edge, Firefox, and IE.
+   * 1. Remove the inheritance of text transform in Firefox.
+   */
+  
+  button,
+  select {
+    /* 1 */
+    text-transform: none;
+  }
+  
+  /**
+   * Correct the inability to style clickable types in iOS and Safari.
+   */
+  
+  button,
+  [type="button"],
+  [type="reset"],
+  [type="submit"] {
+    -webkit-appearance: button;
+  }
+  
+  /**
+   * Remove the inner border and padding in Firefox.
+   */
+  
+  button::-moz-focus-inner,
+  [type="button"]::-moz-focus-inner,
+  [type="reset"]::-moz-focus-inner,
+  [type="submit"]::-moz-focus-inner {
+    border-style: none;
+    padding: 0;
+  }
+  
+  /**
+   * Restore the focus styles unset by the previous rule.
+   */
+  
+  button:-moz-focusring,
+  [type="button"]:-moz-focusring,
+  [type="reset"]:-moz-focusring,
+  [type="submit"]:-moz-focusring {
+    outline: 1px dotted ButtonText;
+  }
+  
+  /**
+   * Correct the padding in Firefox.
+   */
+  
+  fieldset {
+    padding: 0.35em 0.75em 0.625em;
+  }
+  
+  /**
+   * 1. Correct the text wrapping in Edge and IE.
+   * 2. Correct the color inheritance from `fieldset` elements in IE.
+   * 3. Remove the padding so developers are not caught out when they zero out
+   *    `fieldset` elements in all browsers.
+   */
+  
+  legend {
+    box-sizing: border-box;
+    /* 1 */
+    color: inherit;
+    /* 2 */
+    display: table;
+    /* 1 */
+    max-width: 100%;
+    /* 1 */
+    padding: 0;
+    /* 3 */
+    white-space: normal;
+    /* 1 */
+  }
+  
+  /**
+   * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+   */
+  
+  progress {
+    vertical-align: baseline;
+  }
+  
+  /**
+   * Remove the default vertical scrollbar in IE 10+.
+   */
+  
+  textarea {
+    overflow: auto;
+  }
+  
+  /**
+   * 1. Add the correct box sizing in IE 10.
+   * 2. Remove the padding in IE 10.
+   */
+  
+  [type="checkbox"],
+  [type="radio"] {
+    box-sizing: border-box;
+    /* 1 */
+    padding: 0;
+    /* 2 */
+  }
+  
+  /**
+   * Correct the cursor style of increment and decrement buttons in Chrome.
+   */
+  
+  [type="number"]::-webkit-inner-spin-button,
+  [type="number"]::-webkit-outer-spin-button {
+    height: auto;
+  }
+  
+  /**
+   * 1. Correct the odd appearance in Chrome and Safari.
+   * 2. Correct the outline style in Safari.
+   */
+  
+  [type="search"] {
+    -webkit-appearance: textfield;
+    /* 1 */
+    outline-offset: -2px;
+    /* 2 */
+  }
+  
+  /**
+   * Remove the inner padding in Chrome and Safari on macOS.
+   */
+  
+  [type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  
+  /**
+   * 1. Correct the inability to style clickable types in iOS and Safari.
+   * 2. Change font properties to `inherit` in Safari.
+   */
+  
+  ::-webkit-file-upload-button {
+    -webkit-appearance: button;
+    /* 1 */
+    font: inherit;
+    /* 2 */
+  }
+  
+  /* Interactive
+     ========================================================================== */
+  
+  /*
+   * Add the correct display in Edge, IE 10+, and Firefox.
+   */
+  
+  details {
+    display: block;
+  }
+  
+  /*
+   * Add the correct display in all browsers.
+   */
+  
+  summary {
+    display: list-item;
+  }
+  
+  /* Misc
+     ========================================================================== */
+  
+  /**
+   * Add the correct display in IE 10+.
+   */
+  
+  template {
+    display: none;
+  }
+  
+  /**
+   * Add the correct display in IE 10.
+   */
+  
+  [hidden] {
+    display: none;
+  }
+  ```
+
+  
