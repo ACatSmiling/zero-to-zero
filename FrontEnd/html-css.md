@@ -9431,7 +9431,7 @@ HTML 5 是新一代的 HTML 标准，2014 年 10 月，由万维网联盟（ W3C
 
 ### HTML 5 兼容性处理
 
-添加元信息，让浏览器处于最优渲染模式：
+**方式一：添加元信息，让浏览器处于最优渲染模式。**
 
 ```html
 <!--设置IE总是使用最新的文档模式进行渲染-->
@@ -9440,7 +9440,7 @@ HTML 5 是新一代的 HTML 标准，2014 年 10 月，由万维网联盟（ W3C
 <meta name="renderer" content="webkit">
 ```
 
-使用`html5shiv`让低版本浏览器认识 HTML 5 的语义化标签：
+**方式二：使用`html5shiv`让低版本浏览器认识 HTML 5 的语义化标签。**
 
 ```html
 <!--[if lt ie 9]>
@@ -9448,24 +9448,490 @@ HTML 5 是新一代的 HTML 标准，2014 年 10 月，由万维网联盟（ W3C
 <![endif]-->
 ```
 
-扩展：
-
-- `lt`：小于。
-- `lte`：小于等于。
-- `gt`：大于。
-- `gte`：大于等于。
-- `!`：逻辑非。
+> 扩展：
+>
+> - `lt`：小于。
+> - `lte`：小于等于。
+> - `gt`：大于。
+> - `gte`：大于等于。
+> - `!`：逻辑非。
+>
+> 用法：
+>
+> ```html
+> <!--[if IE 8]>仅IE8可见<![endif]-->
+> 
+> <!--[if gt IE 8]>仅IE8以上可见<![endif]—>
+> 
+> <!--[if lt IE 8]>仅IE8以下可见<![endif]—>
+> 
+> <!--[if gte IE 8]>IE8及以上可见<![endif]—>
+> 
+> <!--[if lte IE 8]>IE8及以下可见<![endif]—>
+> 
+> <!--[if !IE 8]>非IE8的IE可见<![endif]-->
+> ```
 
 示例：
 
 ```html
-<!--[if IE 8]>仅IE8可见<![endif]-->
-<!--[if gt IE 8]>仅IE8以上可见<![endif]—>
-<!--[if lt IE 8]>仅IE8以下可见<![endif]—>
-<!--[if gte IE 8]>IE8及以上可见<![endif]—>
-<!--[if lte IE 8]>IE8及以下可见<![endif]—>
-<!--[if !IE 8]>非IE8的IE可见<![endif]-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>兼容性处理</title>
+    <!-- 让IE浏览器处于一个最优的渲染模式 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 针对一些国产的“双核”浏览器的设置，让浏览器优先使用webkit内核去渲染网页 -->
+    <meta name="render" content="webkit">
+    <!--[if lt ie 9]>
+    <script src="./html5shiv.js"></script>
+    <![endif]-->
+    <style>
+        header {
+            background-color: orange;
+        }
+
+        footer {
+            height: 100px;
+            line-height: 100px;
+            text-align: center;
+            background-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 头部 -->
+    <header class="page-header">
+        <h1>尚品汇</h1>
+    </header>
+    <hr>
+    <!-- 主导航 -->
+    <nav>
+        <a href="#">首页</a>
+        <a href="#">订单</a>
+        <a href="#">购物车</a>
+        <a href="#">我的</a>
+    </nav>
+    <!-- 主要内容 -->
+    <div class="page-content">
+        <!-- 侧边栏导航 -->
+        <aside style="float: right;">
+            <nav>
+                <ul>
+                    <li><a href="#">秒杀专区</a></li>
+                    <li><a href="#">会员专区</a></li>
+                    <li><a href="#">领取优惠券</a></li>
+                    <li><a href="#">品牌专区</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <!-- 文章 -->
+        <article>
+            <h2>《如何一夜暴富》</h2>
+            <section>
+                <h3>第一种方式：通过做梦</h3>
+                <p>你要这么做梦：xxxxxxxxxxxxxxxxxxxxxxx</p>
+            </section>
+            <section>
+                <h3>第二种方式：通过买彩票</h3>
+                <p>你要这么买彩票：xxxxxxxxxxxxxxxxxxxxxxx</p>
+            </section>
+            <section>
+                <h3>第三种方式：通过学习前端</h3>
+                <p>你要来到尚硅谷学前端：xxxxxxxxxxxxxxxxxxxxxxx</p>
+            </section>
+        </article>
+    </div>
+    <hr>
+    <!-- 页脚 -->
+    <footer>
+        <nav>
+            <a href="#">友情链接1</a>
+            <a href="#">友情链接2</a>
+            <a href="#">友情链接3</a>
+            <a href="#">友情链接4</a>
+        </nav>
+    </footer>
+</body>
+
+</html>
 ```
 
 ## CSS 3
+
+CSS 3 是 CSS 2 的升级版本，它在 CSS 2 的基础上，新增了很多强大的新功能，从而解决一些实际面临的问题。
+
+CSS 3 的新特性如下：
+
+- 新增了**更加实用的选择器**，例如：动态伪类选择器、目标伪类选择器、伪元素选择器等等。
+- 新增了**更好的视觉效果**，例如：圆角、阴影、渐变等。
+- 新增了**丰富的背景效果**，例如：支持多个背景图片，同时新增了若干个背景相关的属性。
+- 新增了**全新的布局方案** —— 弹性盒子。
+- 新增了 Web **字体**，可以显示用户电脑上没有安装的字体。
+- 增强了**颜色**，例如： HSL 、 HSLA 、 RGBA 几种新的颜色模式，新增 opacity 属性来控制透明度。
+- 增加了 2D **和** 3D **变换**，例如：旋转、扭曲、缩放、位移等。
+- 增加**动画与过渡效果**，让效果的变换更具流线性、平滑性。
+- ……
+
+> CSS 3 在未来会按照**模块化**的方式去发展：https://www.w3.org/Style/CSS/current-work.html
+
+### 私有前缀
+
+如下代码中的`-webkit-`就是私有前缀：
+
+```css
+div {
+    width:400px;
+    height:400px;
+    -webkit-border-radius: 20px;
+}
+```
+
+**作用：**W3C 标准所提出的某个 CSS 特性，在被浏览器正式支持之前，浏览器厂商会**根据浏览器的内核**，`使用私有前缀来测试该 CSS 特性`，在浏览器正式支持该 CSS 特性后，就不需要私有前缀了。不同的私有前缀示例：
+
+```css
+border-radius: 20px;
+-webkit-border-radius: 20px;
+-moz-border-radius: 20px;
+-ms-border-radius: 20px;
+-o-border-radius: 20px;
+```
+
+> 查询 CSS 3 兼容性的网站：https://caniuse.com/
+>
+> 例如，查看 border-radius 的兼容性：
+>
+> <img src="html-css/image-20231227213035054.png" alt="image-20231227213035054" style="zoom: 67%;" />
+
+**常见浏览器私有前缀：**
+
+- Chrome 浏览器：`-webkit-`。
+- Safari 浏览器：`-webkit-`。
+- Firefox 浏览器：`-moz-`。
+- Edge 浏览器：`-webkit-`。
+- 旧 Opera 浏览器：` -o-`。
+- 旧 IE 浏览器：`-ms-`。
+
+> 注意：在编码时，不需要过于关注浏览器私有前缀，不用绞尽脑汁的去记忆，也不用每个都去查询，因为常用的 CSS 3 新特性，主流浏览器都是支持的，即便是为了老浏览器而加前缀，我们也可以借助现代的构建工具，去帮我们添加私有前缀。
+
+### 基本语法
+
+#### 新增长度单位
+
+CSS 3 新增了以下几种长度单位：
+
+- `rem`：根元素字体大小的倍数，只与根元素字体大小有关。
+- `vw`：视口宽度的百分之多少，10vw 就是视口宽度的 10%。（移动端使用较多）
+- `vh`：视口高度的百分之多少，10vh 就是视口高度的 10%。（移动端使用较多）
+- `vmax`：视口宽高中大的那个的百分之多少。（了解即可）
+- `vmin`：视口宽高中小的那个的百分之多少。（了解即可）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>新增长度单位</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .box1 {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+        }
+
+        .box2 {
+            width: 20vw;
+            height: 20vh;
+            background-color: green;
+        }
+
+        .box3 {
+            width: 20vmax;
+            height: 20vmin;
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">像素</div>
+    <div class="box2">vw和vh</div>
+    <div class="box3">vmax</div>
+</body>
+
+</html>
+```
+
+#### 新增颜色设置方式
+
+CSS 3 新增了三种颜色设置方式，分别是：`rgba`、`hsl`、`hsla`。这些在 CSS 2 中已经详细讲解，此处略过。
+
+#### 新增选择器
+
+CSS 3 新增的选择器有：`动态伪类`、`目标伪类`、`语言伪类`、`UI 伪类`、`结构伪类`、`否定伪类`、`伪元素`。这些在 CSS 2 中已经详细讲解，此处略过。
+
+#### 新增盒模型相关属性
+
+##### box-sizing 怪异盒模型
+
+使用`box-sizing`属性，可以**设置盒模型的两种类型**：
+
+- `content-box`：width 和 height 设置的是盒子内容区的大小。（默认值，**标准盒模型**：宽高是内容区的大小）
+- `border-box`：width 和 height 设置的是盒子总大小。（**怪异盒模型**：宽高是整个盒子的大小，内容区的大小需要减去 border 和 padding）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_box-sizing</title>
+    <style>
+        .box1 {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            padding: 5px;
+            border: 5px solid black;
+            margin-bottom: 20px;
+        }
+
+        .box2 {
+            width: 200px;
+            height: 200px;
+            background-color: gray;
+            padding: 5px;
+            border: 5px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1"></div>
+    <div class="box2"></div>
+</body>
+
+</html>
+```
+
+##### resize 调整盒子大小
+
+使用`resize`属性，可以控制是否允许用户调节元素尺寸：
+
+- `none`：不允许用户调整元素大小。（默认）
+- `both`：用户可以调节元素的宽度和高度。
+- `horizontal`：用户可以调节元素的宽度 。
+- `vertical`：用户可以调节元素的高度。
+
+>resize 使用的前提是，元素必须添加了 overflow 属性，日常开发中使用较少。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_resize</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            background-color: orange;
+            resize: both;
+            overflow: scroll;
+        }
+
+        .box2 {
+            width: 800px;
+            height: 600px;
+            background-color: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">
+        <div class="box2">123</div>
+    </div>
+</body>
+
+</html>
+```
+
+##### box-shadow 盒子阴影
+
+使用`box-shadow`属性，可以**为盒子添加阴影**。
+
+语法：
+
+```css
+box-shadow: h-shadow v-shadow blur spread color inset;
+```
+
+- `h-shadow`：水平阴影的位置，必须填写，可以为负值。
+
+- `v-shadow`：垂直阴影的位置，必须填写，可以为负值。
+
+- `blur`：可选，模糊距离。
+
+- `spread`：可选，阴影的外延值。
+
+- `color`：可选，阴影的颜色。
+
+- `inset`：可选，将外部阴影改为内部阴影。
+
+- 默认值：`box-shadow: none`，表示没有阴影。
+
+- 示例：
+
+  ```css
+  /* 写两个值，含义：水平位置、垂直位置 */
+  box-shadow: 10px 10px;
+  
+  /* 写三个值，含义：水平位置、垂直位置、颜色 */
+  box-shadow: 10px 10px red;
+  
+  /* 写三个值，含义：水平位置、垂直位置、模糊值 */
+  box-shadow: 10px 10px 10px;
+  
+  /* 写四个值，含义：水平位置、垂直位置、模糊值、颜色 */
+  box-shadow: 10px 10px 10px red;
+  
+  /* 写五个值，含义：水平位置、垂直位置、模糊值、外延值、颜色 */
+  box-shadow: 10px 10px 10px 10px blue;
+  
+  /* 写六个值，含义：水平位置、垂直位置、模糊值、外延值、颜色、内阴影 */
+  box-shadow: 10px 10px 20px 3px blue inset;
+  ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_box-shadow</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            background-color: orange;
+            margin: 0 auto;
+            margin-top: 100px;
+            font-size: 40px;
+
+            /* 写两个值，含义：水平位置 垂直位置 */
+            /* box-shadow: 10px 10px; */
+
+            /* 写三个值，含义：水平位置 垂直位置 阴影的颜色 */
+            /* box-shadow: 10px 10px blue; */
+
+            /* 写三个值，含义：水平位置 垂直位置 模糊程度 */
+            /* box-shadow: 10px 10px 20px; */
+
+            /* 写四个值，含义：水平位置 垂直位置 模糊程度 阴影颜色 */
+            /* box-shadow: 10px 10px 20px blue; */
+
+            /* 写五个值，含义：水平位置 垂直位置 模糊程度 外延值 阴影颜色 */
+            /* box-shadow: -10px -10px 20px 10px blue; */
+
+            /* 写六个值，含义：水平位置 垂直位置 模糊程度 外延值 阴影颜色 内阴影 */
+            /* box-shadow: 10px 10px 20px 10px blue inset; */
+
+            position: relative;
+            top: 0;
+            left: 0;
+            transition: 0.4s linear all;
+        }
+
+        .box1:hover {
+            box-shadow: 0px 0px 20px black;
+            top: -1px;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+</body>
+
+</html>
+```
+
+##### opacity 不透明度
+
+使用`opacity`属性，能为整个元素**添加透明效果**，值是 0 到 1 之间的小数，0 是完全透明，1 表示完全不透明。
+
+> opacity 与 rgba 的区别：
+>
+> - opacity 是一个属性，设置的是整个元素（包括元素里的内容）的不透明度。
+> - rgba 是颜色的设置方式，用于设置颜色，它的透明度，仅仅是调整颜色的透明度。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_opacity</title>
+    <style>
+        .box1 {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            font-size: 40px;
+            opacity: 0.1;
+            font-weight: bold;
+        }
+
+        .box2 {
+            position: relative;
+        }
+
+        h1 {
+            position: absolute;
+            top: 100px;
+            left: 0;
+            background-color: black;
+            color: white;
+            width: 400px;
+            line-height: 100px;
+            text-align: center;
+            font-size: 40px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+    <div class="box2">
+        <img src="../images/你瞅啥.jpg" alt="">
+        <h1>你瞅啥</h1>
+    </div>
+</body>
+
+</html>
+```
 
