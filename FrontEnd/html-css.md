@@ -9935,3 +9935,1724 @@ box-shadow: h-shadow v-shadow blur spread color inset;
 </html>
 ```
 
+#### 新增背景属性
+
+##### background-origin
+
+作用：**设置背景图的原点**。
+
+取值：
+
+- `padding-box`：从 padding 区域开始显示背景图像，默认值。
+- `border-box`：从 border 区域开始显示背景图像。
+- `content-box`：从 content 区域开始显示背景图像。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_background-origin</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            background-color: skyblue;
+            margin: 0 auto;
+            font-size: 40px;
+            padding: 50px;
+            border: 50px dashed rgba(255, 0, 0, 0.7);
+
+            background-image: url('../images/bg01.jpg');
+            background-repeat: no-repeat;
+            background-origin: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+</body>
+
+</html>
+```
+
+##### background-clip
+
+作用：**设置背景图的向外裁剪的区域**。
+
+取值：
+
+- `border-box`：从 border 区域开始向外裁剪背景，默认值。
+- `padding-box`：从 padding 区域开始向外裁剪背景。
+- `content-box`：从 content 区域开始向外裁剪背景。
+- `text`：背景图只呈现在文字上。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_background-clip</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            background-color: skyblue;
+            margin: 0 auto;
+            font-size: 120px;
+            font-weight: bold;
+            padding: 50px;
+            border: 50px dashed rgba(255, 0, 0, 0.7);
+            color: transparent;
+
+            background-image: url('../images/bg02.jpg');
+            background-repeat: no-repeat;
+            background-origin: border-box;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+</body>
+
+</html>
+```
+
+##### background-size
+
+作用：**设置背景图的尺寸**。
+
+取值：
+
+- 用`长度值`指定背景图片大小，不允许负值。
+
+  ```css
+  background-size: 400px 400px;
+  ```
+
+- 用`百分比`指定背景图片大小，不允许负值。
+
+  ```css
+  background-size: 100% 100%;
+  ```
+
+- `auto`：背景图片的真实大小，默认值。
+
+  ```css
+  background-size: auto;
+  ```
+
+- `contain`：将背景图片等比缩放，使背景图片的宽或高，与容器的宽或高相等，再将完整背景图片包含在容器内。注意：可能会造成容器里部分区域没有背景图片。
+
+  ```css
+  background-size: contain;
+  ```
+
+- `cover`：将背景图片等比缩放，直到完全覆盖容器，图片会尽可能全的显示在元素上。注意：背景图片有可能显示不完整。（相对比较好的选择）
+
+  ```css
+  background-size: cover;
+  ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_background-size</title>
+    <style>
+        div {
+            width: 400px;
+            height: 400px;
+            padding: 50px;
+            border: 50px dashed rgba(255, 0, 0, 0.7);
+            /* background-image: url('../images/bg03.jpg'); */
+            /* background-repeat: no-repeat; */
+
+            /* background-size: 400px 400px; */
+            /* background-size: 100% 100%; */
+            /* background-size: contain; */
+            background-size: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+</body>
+
+</html>
+```
+
+##### backgorund 复合属性
+
+语法：
+
+```css
+background: color url repeat position / size origin clip;
+```
+
+- origin 和 clip 的值如果一样，如果只写一个值，则 origin 和 clip 都设置；如果设置了两个值，前面的是 origin ，后面的 clip。
+- size 的值必须写在 position 值的后面，并且用 / 分开。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_background复合属性</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            margin: 0 auto;
+            font-size: 40px;
+            padding: 50px;
+            border: 50px dashed rgba(255, 0, 0, 0.7);
+
+            /* background: 背景颜色 背景url 是否重复 位置 / 大小 原点 裁剪方式; */
+            background: skyblue url('../images/bg03.jpg') no-repeat 10px 10px / 500px 500px border-box content-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+</body>
+
+</html>
+```
+
+##### 多背景图
+
+CSS 3 允许元素设置多个背景图片：
+
+```css
+/* 添加多个背景图 */
+background: url(../images/bg-lt.png) no-repeat,
+            url(../images/bg-rt.png) no-repeat right top,
+            url(../images/bg-lb.png) no-repeat left bottom,
+            url(../images/bg-rb.png) no-repeat right bottom;
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_多背景图</title>
+    <style>
+        div {
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+            background: url('../images/bg-lt.png') no-repeat left top,
+                url('../images/bg-rt.png') no-repeat right top,
+                url('../images/bg-lb.png') no-repeat left bottom,
+                url('../images/bg-rb.png') no-repeat right bottom;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228104008069.png" alt="image-20231228104008069" style="zoom:80%;" />
+
+#### 新增边框属性
+
+##### 边框圆角
+
+使用`border-radius`属性，可以**将盒子变为圆角**。
+
+**同时设置四个角的圆角：**
+
+```css
+border-radius:10px;
+```
+
+分开设置每个角的圆角（几乎不用）：
+
+- `border-top-left-radius`：设置左上角圆角半径。
+- `border-top-right-radius`：设置右上角圆角半径。
+- `border-bottom-right-radius`：设置右下角圆角半径。
+- `border-bottom-left-radius`：设置左下角圆角半径。
+-  一个值是正圆半径，两个值分别是椭圆的 x 半径、y 半径。
+
+分开设置每个角的圆角，综合写法（几乎不用）：
+
+```css
+border-raidus: 左上角x 右上角x 右下角x 左下角x / 左上y 右上y 右下y 左下y;
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_边框圆角</title>
+    <style>
+        div {
+            width: 400px;
+            height: 400px;
+            border: 2px solid black;
+            margin: 0 auto;
+
+            /* border-radius: 200px; */
+            /* border-radius: 50%; */
+
+            /* border-top-left-radius: 100px; */
+            /* border-top-right-radius: 50px; */
+            /* border-bottom-right-radius: 20px; */
+            /* border-bottom-left-radius: 10px; */
+
+            /* border-top-left-radius: 100px 50px; */
+            /* border-top-right-radius: 50px 20px; */
+            /* border-bottom-right-radius: 20px 10px; */
+            /* border-bottom-left-radius: 10px 5px; */
+
+            border-radius: 100px 50px 20px 10px / 50px 20px 10px 5px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+</body>
+
+</html>
+```
+
+##### 边框外轮廓（了解）
+
+通过以下属性，可以**设置边框外轮廓**：
+
+- `outline-width`：外轮廓的宽度。
+
+- `outline-color`：外轮廓的颜色。
+
+- `outline-style`：外轮廓的风格。
+
+  - `none`： 无轮廓。
+  - `dotted`： 点状轮廓。
+  - `dashed`： 虚线轮廓。
+  - `solid`： 实线轮廓。
+  - `double`： 双线轮廓。
+
+- `outline-offset`：设置外轮廓与边框的距离，正负值都可以设置。
+
+- `outline`：复合属性。示例：
+
+  ```css
+  outline:50px solid blue;
+  ```
+
+>注意： outline-offset 不是 outline 的子属性，是一个独立的属性。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_边框外轮廓</title>
+    <style>
+        .box1 {
+            width: 400px;
+            height: 400px;
+            padding: 10px;
+            border: 10px solid black;
+            background-color: gray;
+            font-size: 40px;
+            margin: 0 auto;
+            margin-top: 100px;
+
+            /* outline-width: 20px; */
+            /* outline-color: orange; */
+            /* outline-style: solid; */
+            outline-offset: 30px;
+
+            outline: 20px solid orange;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">你好啊</div>
+    <div>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nobis, architecto.</div>
+</body>
+
+</html>
+```
+
+#### 新增文本属性
+
+##### 文本阴影
+
+使用`text-shadow`属性，可以**给文本添加阴影**。
+
+语法：
+
+```css
+text-shadow: h-shadow v-shadow blur color;
+```
+
+取值：
+
+- `h-shadow`：必需写，水平阴影的位置，允许负值。
+- `v-shadow`：必需写，垂直阴影的位置，允许负值。
+- `blur`：可选，模糊的距离。
+- `color`：可选，阴影的颜色。
+- `text-shadow: none`：默认值，表示没有阴影。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_文本阴影</title>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        h1 {
+            font-size: 80px;
+            text-align: center;
+            color: white;
+
+            /* text-shadow: 3px 3px; */
+            /* text-shadow: 3px 3px red; */
+            /* text-shadow: 3px 3px 10px red; */
+            /* text-shadow: 0px 0px 15px black; */
+            text-shadow: 0px 0px 20px red;
+            font-family: '翩翩体-简';
+        }
+    </style>
+</head>
+
+<body>
+    <h1>红浪漫洗浴欢迎您的光临</h1>
+</body>
+
+</html>
+```
+
+##### 文本换行
+
+使用`white-space`属性，可以**设置文本换行方式**。
+
+取值：
+
+- `normal`：文本超出边界自动换行，文本中的换行被浏览器识别为一个空格，默认值。
+- `pre`：原样输出，与 pre 标签的效果相同。
+- `pre-wrap`：在 pre 效果的基础上，超出元素边界自动换行。
+- `pre-line`：在 pre 效果的基础上，超出元素边界自动换行，且只识别文本中的换行，空格会忽略。（文字首尾的空格，文字中间的空格不忽略）
+- `nowrap`：强制不换行。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_文本换行</title>
+    <style>
+        div {
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+            font-size: 20px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        山回路转不见君
+        雪上空留马行处
+        山回路转不见君 山回路转不见君山回路转不见君山回路转不见君山回路转不见君
+        雪上空留马行处
+        山回路转不见君
+        雪上空留马行处
+        山回路转不见君
+        雪上空留马行处
+        山回路转不见君
+        雪上空留马行处
+        山回路转不见君
+        雪上空留马行处
+    </div>
+</body>
+
+</html>
+```
+
+##### 文本溢出
+
+使用`text-overflow`属性，可以**设置文本内容溢出时的呈现模式**。
+
+取值：
+
+- `clip`：当内联内容溢出时，将溢出部分裁切掉，默认值。
+- `ellipsis`：当内联内容溢出块容器时，将溢出部分替换为 "..."。
+
+>**注意：要使得 text-overflow 属性生效，块容器必须显式定义 overflow 为非 visible 值，white-space 为 nowrap 值。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_文本溢出</title>
+    <style>
+        ul {
+            width: 400px;
+            height: 200px;
+            border: 1px solid black;
+            font-size: 20px;
+            list-style: none;
+            padding-left: 0;
+            padding: 10px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li>焦点访谈：隐形冠军 匠心打造 分毫必争</li>
+        <li>我，嫁到日本才发现，女性活得真憋屈，体毛不能有，放屁也不自由</li>
+        <li>高洪波无缘！足协盟主热门人选曝光，3选1，冷门人物或成黑马杀出</li>
+        <li>《狂飙》爆火以后“疯驴子”被骂上热搜：跪着赚钱丢人吗</li>
+        <li>气温猛降15℃，冷空气再来袭！这些地方迎大范围降雨！“虚高”气温大跳水！！！！！</li>
+    </ul>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228111203561.png" alt="image-20231228111203561" style="zoom:80%;" />
+
+#####  文本修饰
+
+CSS 3 升级了`text-decoration`属性，让其变成了复合属性。
+
+语法：
+
+```css
+text-decoration: text-decoration-line || text-decoration-style || text-decoration-color;
+```
+
+取值：
+
+- `text-decoration-line`：设置文本装饰线的位置。
+  - `none`：指定文字无装饰，默认值。
+  - `underline`：指定文字的装饰是下划线。
+  - `overline`：指定文字的装饰是上划线。
+  - `line-through`：指定文字的装饰是贯穿线。
+- `text-decoration-style`：文本装饰线条的形状。
+  - `solid`：实线，默认。
+  - `double`：双线。
+  - `dotted`：点状线条。
+  - `dashed`：虚线。
+  - `wavy`：波浪线。
+- `text-decoration-color`：文本装饰线条的颜色。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_文本修饰</title>
+    <style>
+        h1 {
+            font-size: 100px;
+            /* text-decoration-line: overline; */
+            /* text-decoration-style: dashed; */
+            /* text-decoration-color: blue; */
+            /* text-decoration: overline wavy blue; */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>你好啊，欢迎来到尚硅谷学习</h1>
+</body>
+
+</html>
+```
+
+##### 文本描边
+
+使用以下属性，可以**对文本进行描边**：
+
+- `-webkit-text-stroke-width`：设置文字描边的宽度，写长度值。
+- `-webkit-text-stroke-color`：设置文字描边的颜色，写颜色值。
+- `-webkit-text-stroke`：复合属性，设置文字描边宽度和颜色。
+
+> 注意：文字描边功能仅 webkit 内核浏览器支持。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_文本描边</title>
+    <style>
+        h1 {
+            font-size: 100px;
+            /* -webkit-text-stroke-color:red; */
+            /* -webkit-text-stroke-width:3px; */
+            /* -webkit-text-stroke-width:3px; */
+            -webkit-text-stroke: 3px red;
+            color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>先生您好，欢迎光临红浪漫！</h1>
+</body>
+
+</html>
+```
+
+#### 新增渐变
+
+##### 线性渐变
+
+使用`linear-gradient`属性，可以达到**线性渐变**的效果。
+
+1. 多个颜色之间的渐变， 默认**从上到下**渐变。
+
+   ```css
+   background-image: linear-gradient(red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228141532298.png" alt="image-20231228141532298" style="zoom:80%;" />
+
+2. 使用`关键词`设置线性**渐变的方向**。
+
+   ```css
+   /* 往上 */
+   background-image: linear-gradient(to top, red, yellow, green);
+   /* 往右上角 */
+   background-image: linear-gradient(to right top, red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228141649903.png" alt="image-20231228141649903" style="zoom:80%;" />
+
+3. 使用`角度`设置线性**渐变的方向**。
+
+   ```css
+   background-image: linear-gradient(30deg, red, yellow, green);
+   ```
+
+   <img src="html-css/1703744301305.jpg" alt="1703744301305" style="zoom:80%;" />
+
+4. 调整开始**渐变的位置**。
+
+   ```css
+   background-image: linear-gradient(red 50px, yellow 100px, green 150px);
+   ```
+
+   <img src="html-css/1703744363746(1).jpg" alt="1703744363746(1)" style="zoom:80%;" />
+
+5. **渐变文字**：
+
+   ```css
+   background-image: linear-gradient(20deg, red 50px, yellow 100px, green 150px);
+   font-size: 80px;
+   text-align: center;
+   line-height: 200px;
+   font-weight: bold;
+   color: transparent;
+   background-clip: text;
+   ```
+
+   <img src="html-css/image-20231228143207019.png" alt="image-20231228143207019" style="zoom: 50%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_线性渐变</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 200px;
+            border: 1px solid black;
+            float: left;
+            margin-left: 50px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-image: linear-gradient(red, yellow, green);
+        }
+
+        .box2 {
+            background-image: linear-gradient(to right top, red, yellow, green);
+        }
+
+        .box3 {
+            background-image: linear-gradient(20deg, red, yellow, green);
+        }
+
+        .box4 {
+            background-image: linear-gradient(red 50px, yellow 100px, green 150px);
+        }
+
+        .box5 {
+            background-image: linear-gradient(20deg, red 50px, yellow 100px, green 150px);
+            font-size: 80px;
+            text-align: center;
+            line-height: 200px;
+            font-weight: bold;
+            color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box box1">默认情况（从上到下）</div>
+    <div class="box box2">通过关键词调整线性渐变渐变的方向</div>
+    <div class="box box3">通过角度调整线性渐变渐变的方向</div>
+    <div class="box box4">调整线性渐变的区域</div>
+    <div class="box box5">你好啊</div>
+</body>
+
+</html>
+```
+
+效果图：
+
+![image-20231228143251345](html-css/image-20231228143251345.png)
+
+##### 径向渐变
+
+使用`radial-gradient`属性，可以达到**径向渐变**的效果。
+
+1. 多个颜色之间的渐变， 默认**从圆心四散**。（注意：不一定是正圆，要看容器本身宽高比）
+
+   ```css
+   background-image: radial-gradient(red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228143538353.png" alt="image-20231228143538353" style="zoom:80%;" />
+
+2. 使用`关键词`调整渐变圆的**圆心位置**。
+
+   ```css
+   background-image: radial-gradient(at right top, red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228143833996.png" alt="image-20231228143833996" style="zoom:80%;" />
+
+3. 使用`像素值`调整渐变圆的**圆心位置**。
+
+   ```css
+   background-image: radial-gradient(at 100px 50px, red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228143923884.png" alt="image-20231228143923884" style="zoom:80%;" />
+
+4. 调整渐变形状为**正圆**。
+
+   ```css
+   background-image: radial-gradient(circle, red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228144026295.png" alt="image-20231228144026295" style="zoom:80%;" />
+
+5. 调整形状的**半径**。
+
+   ```css
+   background-image: radial-gradient(100px, red, yellow, green);
+   background-image: radial-gradient(50px 100px, red, yellow, green);
+   ```
+
+   <img src="html-css/image-20231228144113305.png" alt="image-20231228144113305" style="zoom:80%;" />
+
+6. 调整**开始渐变的位置**。
+
+   ```css
+   background-image: radial-gradient(red 50px, yellow 100px, green 150px);
+   ```
+
+   <img src="html-css/image-20231228144152492.png" alt="image-20231228144152492" style="zoom:80%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_径向渐变</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 200px;
+            border: 1px solid black;
+            float: left;
+            margin-left: 50px;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        .box1 {
+            background-image: radial-gradient(red, yellow, green);
+        }
+
+        .box2 {
+            background-image: radial-gradient(at right top, red, yellow, green);
+        }
+
+        .box3 {
+            background-image: radial-gradient(at 100px 50px, red, yellow, green);
+        }
+
+        .box4 {
+            background-image: radial-gradient(circle, red, yellow, green);
+        }
+
+        .box5 {
+            background-image: radial-gradient(200px 200px, red, yellow, green);
+        }
+
+        .box6 {
+            background-image: radial-gradient(red 50px, yellow 100px, green 150px);
+        }
+
+        .box7 {
+            background-image: radial-gradient(100px 50px at 150px 150px, red 50px, yellow 100px, green 150px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box box1">默认情况</div>
+    <div class="box box2">通过关键词调整径向渐变圆的圆心</div>
+    <div class="box box3">通过像素值调整径向渐变圆的圆心</div>
+    <div class="box box4">通过circle关键字调整为正圆</div>
+    <div class="box box5">通过像素值调整为正圆</div>
+    <div class="box box6">调整径向渐变的区域</div>
+    <div class="box box7">综合写法</div>
+</body>
+
+</html>
+```
+
+效果图：
+
+![image-20231228144806404](html-css/image-20231228144806404.png)
+
+##### 重复渐变
+
+无论线性渐变，还是径向渐变，在没有发生渐变的位置，继续进行渐变，就为`重复渐变`。
+
+- 使用`repeating-linear-gradient`进行重复线性渐变，具体参数同 linear-gradient。
+- 使用`repeating-radial-gradient`进行重复径向渐变，具体参数同 radial-gradient。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_重复渐变</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 200px;
+            border: 1px solid black;
+            float: left;
+            margin-left: 50px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-image: repeating-linear-gradient(red 50px, yellow 100px, green 150px);
+        }
+
+        .box2 {
+            background-image: repeating-radial-gradient(red 50px, yellow 100px, green 150px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box box1">重复线性渐变</div>
+    <div class="box box2">重复径向渐变</div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228145736462.png" alt="image-20231228145736462" style="zoom: 67%;" />
+
+##### 渐变的应用案例
+
+利用渐变，可以做出很多有意思的效果，例如：横格纸、立体球等等。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_渐变小案例</title>
+    <style>
+        .box1 {
+            width: 600px;
+            height: 800px;
+            padding: 20px;
+            border: 1px solid black;
+            margin: 0 auto;
+            background-image: repeating-linear-gradient(transparent 0px, transparent 29px, gray 30px);
+            background-clip: content-box;
+        }
+
+        .box2 {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background-image: radial-gradient(at 80px 80px, white, #333);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1"></div>
+    <div class="box2"></div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228150227316.png" alt="image-20231228150227316" style="zoom: 67%;" />
+
+<img src="html-css/image-20231228150257389.png" alt="image-20231228150257389" style="zoom:80%;" />
+
+#### web 字体
+
+##### 基本用法
+
+通过`@font-face`指定字体的具体地址，浏览器会自动下载该字体，这样就不依赖用户电脑上已安装的字体。
+
+语法（简写方式）：
+
+```css
+@font-face {
+    font-family: "情书字体";
+    src: url('./方正手迹.ttf');
+}
+```
+
+语法（高兼容性写法）:
+
+```css
+@font-face {
+    font-family: "atguigu";
+    font-display: swap;
+    src: url('webfont.eot'); /* IE9 */
+    src: url('webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+    url('webfont.woff2') format('woff2'),
+    url('webfont.woff') format('woff'), /* chrome、firefox */
+    url('webfont.ttf') format('truetype'), /* chrome、firefox、opera、Safari,
+    Android*/
+    url('webfont.svg#webfont') format('svg'); /* iOS 4.1- */
+}
+```
+
+>中文的字体文件很大，使用完整的字体文件不现实，通常针对某几个文字进行单独定制。
+>
+>可使用阿里 Web 字体定制工具：https://www.iconfont.cn/webfont
+>
+><img src="html-css/image-20231228152644144.png" alt="image-20231228152644144" style="zoom:67%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "情书字体";
+            src: url('./font1/方正手迹.ttf');
+        }
+
+        @font-face {
+            font-family: "atguigu";
+            font-display: swap;
+            src: url('./font2/webfont.eot');
+            /* IE9 */
+            src: url('./font2/webfont.eot?#iefix') format('embedded-opentype'),
+                /* IE6-IE8 */
+                url('./font2/webfont.woff2') format('woff2'),
+                url('./font2/webfont.woff') format('woff'),
+                /* chrome、firefox */
+                url('./font2/webfont.ttf') format('truetype'),
+                /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+                url('./font2/webfont.svg#webfont') format('svg');
+            /* iOS 4.1- */
+        }
+
+        .t1 {
+            font-size: 100px;
+            font-family: '情书字体';
+        }
+
+        .t2 {
+            font-size: 100px;
+            font-family: 'atguigu';
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="t1">春风得意马蹄疾，不信人间有别离</h1>
+    <h1 class="t2">春风得意马蹄疾，不信人间有别离</h1>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228152440784.png" alt="image-20231228152440784" style="zoom: 33%;" />
+
+##### 字体图标
+
+优点：
+
+- 相比图片更加清晰。
+- 灵活性高，更方便改变大小、颜色、风格等。
+- 兼容性好，IE 也能支持。
+
+>字体图标的具体使用方式，每个平台不尽相同，最好参考平台使用指南，例如使用最多的阿里图标库，详细使用查看官网，从阿里图标库官网选中的图标，可以使用本地或在线两种方式使用。
+>
+>阿里图标库官网地址：https://www.iconfont.cn/
+
+###### 本地使用
+
+**方式一：**
+
+<img src="html-css/image-20231228162925747.png" alt="image-20231228162925747" style="zoom:80%;" />
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        /* 第一步 */
+        @font-face {
+            font-family: 'iconfont';
+            src: url('./font3/iconfont.woff2?t=1676857973138') format('woff2'),
+                url('./font3/iconfont.woff?t=1676857973138') format('woff'),
+                url('./font3/iconfont.ttf?t=1676857973138') format('truetype');
+        }
+
+        /* 第二步 */
+        .iconfont {
+            font-family: "iconfont" !important;
+            font-size: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="iconfont">&#xe85c;</span>
+    <span class="iconfont">&#xe85d;</span>
+    <span class="iconfont">&#xe85e;</span>
+    <span class="iconfont">&#xe85f;</span>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228162843803.png" alt="image-20231228162843803" style="zoom: 67%;" />
+
+**方式二：**
+
+<img src="html-css/image-20231228163058397.png" alt="image-20231228163058397" style="zoom:80%;" />
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_字体图标_方式二</title>
+    <link rel="stylesheet" href="./font3/iconfont.css">
+    <style>
+        .iconfont {
+            font-size: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="iconfont icon-chengzi"></span>
+    <span class="iconfont icon-bingqilin"></span>
+    <span class="iconfont icon-hanbao"></span>
+    <span class="iconfont icon-kafeibei"></span>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228163149724.png" alt="image-20231228163149724" style="zoom:67%;" />
+
+**方式三：**
+
+<img src="html-css/image-20231228163303703.png" alt="image-20231228163303703" style="zoom:80%;" />
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_字体图标_方式三</title>
+    <script src="./font3/iconfont.js"></script>
+    <style>
+        svg {
+            width: 150px;
+        }
+    </style>
+</head>
+
+<body>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-chengzi"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-bingqilin"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-hanbao"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-kafeibei"></use>
+    </svg>
+</body>
+
+</html>
+```
+
+> **svg：HTML 5 新增的矢量图标签。**
+
+效果图：
+
+<img src="html-css/image-20231228163355663.png" alt="image-20231228163355663" style="zoom: 67%;" />
+
+###### 在线使用
+
+**方式一：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_字体图标_方式一_在线使用</title>
+    <style>
+        @font-face {
+            font-family: 'iconfont';
+            /* Project id 3904680 */
+            src: url('//at.alicdn.com/t/c/font_3904680_cctp97jw61q.woff2?t=1676858967519') format('woff2'),
+                url('//at.alicdn.com/t/c/font_3904680_cctp97jw61q.woff?t=1676858967519') format('woff'),
+                url('//at.alicdn.com/t/c/font_3904680_cctp97jw61q.ttf?t=1676858967519') format('truetype');
+        }
+
+        .iconfont {
+            font-family: "iconfont" !important;
+            font-size: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="iconfont">&#xe85c;</span>
+    <span class="iconfont">&#xe85d;</span>
+    <span class="iconfont">&#xe85e;</span>
+    <span class="iconfont">&#xe85f;</span>
+</body>
+
+</html>
+```
+
+**方式二：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_字体图标_方式二_在线使用</title>
+    <link rel="stylesheet" href="//at.alicdn.com/t/c/font_3904680_cctp97jw61q.css">
+    <style>
+        .iconfont {
+            font-size: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="iconfont icon-chengzi"></span>
+    <span class="iconfont icon-bingqilin"></span>
+    <span class="iconfont icon-hanbao"></span>
+    <span class="iconfont icon-kafeibei"></span>
+</body>
+
+</html>
+```
+
+**方式三：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>07_字体图标_方式三_在线使用</title>
+    <script src="//at.alicdn.com/t/c/font_3904680_cctp97jw61q.js"></script>
+</head>
+
+<body>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-chengzi"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-bingqilin"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-hanbao"></use>
+    </svg>
+    <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-kafeibei"></use>
+    </svg>
+</body>
+
+</html>
+```
+
+#### 2D 变换
+
+前提，二维坐标系如下图所示：
+
+<img src="html-css/image-20231228192330007.png" alt="image-20231228192330007" style="zoom:67%;" />
+
+##### 2D 位移
+
+`2D 位移`是指**改变元素的位置**，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，相关可选值如下：
+   - `translateX`：设置**水平方向**位移，需指定长度值；若指定的是百分比，是**参考自身宽度**的百分比。
+   - `translateY`：设置**垂直方向**位移，需指定长度值；若指定的是百分比，是**参考自身高度**的百分比。
+   - `translate`：一个值代表 "水平方向"，两个值代表 "水平和垂直方向"。
+
+注意：
+
+- 位移与相对定位很相似，都**不脱离文档流**，不会影响到其它元素。
+
+- 与相对定位的区别：相对定位的百分比值，参考的是其父元素；定位的百分比值，参考的是其自身。
+
+- **浏览器针对位移有优化**，与定位相比，浏览器处理位移的效率更高。
+
+- transform 可以链式编写，例如：
+
+  ```css
+  transform: translateX(30px) translateY(40px);
+  ```
+
+- **位移对行内元素无效。**
+
+- 位移配合定位，可**实现元素水平垂直居中**。
+
+  ```css
+  .box {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+  }
+  ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_位移</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            position: relative;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            /* 水平位移 */
+            /* transform: translateX(50px); */
+
+            /* 垂直位移 */
+            /* transform: translateY(50px); */
+
+            /* 水平+垂直位移 */
+            transform: translate(50px, 50px);
+        }
+
+        /* 水平垂直居中 */
+        .inner2 {
+            width: 60px;
+            height: 60px;
+            background-color: orange;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+
+    <div class="outer">
+        <div class="inner2">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228195710103.png" alt="image-20231228195710103" style="zoom:67%;" />
+
+##### 2D 缩放
+
+`2D 缩放`是指**让元素放大或缩小**，具体使用方式如下：
+
+1. 先给元素添加 `转换属性 transform`。
+2. 编写 transform 的具体值，相关可选值如下：
+   - `scaleX`：设置**水平方向**的缩放比例，值为一个数字，1 表示不缩放，大于 1 放大，小于 1 缩小。
+   - `scaleY`：设置**垂直方向**的缩放比例，值为一个数字，1 表示不缩放，大于 1 放大，小于 1 缩小。
+   - `scale`：同时设置水平方向、垂直方向的缩放比例，一个值代表同时设置 "水平和垂直缩放"；两个值分别代表 "水平缩放、垂直缩放"。
+
+注意：
+
+- scale 的值，是支持写负数的，但几乎不用，因为容易让人产生误解。（有反转的效果）
+- **借助缩放，可实现小于 12 px 的文字。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_缩放</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            transform: scale(0.8);
+        }
+
+        /* 小于12px的文字 */
+        span {
+            display: inline-block;
+            font-size: 20px;
+            transform: scale(0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+        <div>好</div>
+        <span>好</span>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228221430185.png" alt="image-20231228221430185" style="zoom:80%;" />
+
+##### 2D 旋转
+
+`2D 旋转`是指**让元素在二维平面内，顺时针旋转或逆时针旋转**，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，相关可选值如下：
+   - `rotate`：设置**旋转角度**，需指定一个角度值（deg），正值是顺时针旋转，负值是逆时针旋转。
+
+>注意：
+>
+>- rotateX 和 rotateY 是 3D 旋转，rotateY 是 2D 旋转。
+>- rotate(20deg) 相当于 rotateZ(20deg)，即默认是 2D 旋转。当然到了 3D 变换的时候，还可以写为 rotate(x, x, x)。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_旋转</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            /* transform: rotateZ(-30deg); */
+            transform: rotate(30deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228221519541.png" alt="image-20231228221519541" style="zoom:80%;" />
+
+##### 2D 扭曲（了解）
+
+`2D 扭曲`是指**让元素在二维平面内被 "拉扯"，进而 "走形"**，实际开发几乎不用，了解即可，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，相关可选值如下：
+   - `skewX`：设置元素在**水平方向**扭曲，值为角度值，会将元素的左上角、右下角拉扯（左右方向）。
+   - `skewY`：设置元素在**垂直方向**扭曲，值为角度值，会将元素的左上角、右下角拉扯（上下方向）。
+   - `skew`：一个值代表 "水平方向"，两个值代表 "水平和垂直方向"。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_扭曲_了解</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            /* transform: skewX(-30deg); */
+            /* transform: skewY(30deg); */
+            /* transform: skewX(30deg) skewY(30deg); */
+            transform: skew(30deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228221819594.png" alt="image-20231228221819594" style="zoom:80%;" />
+
+##### 多重变换
+
+多个 2D 变换，可以同时使用一个 transform 来编写。
+
+语法：
+
+```css
+transform: translate(-50%, -50%) rotate(45deg);
+```
+
+> 注意：
+>
+> - 多重变换时，先缩放后位移的效果，与先位移后缩放的效果不一样。**位移的坐标系，参考的是最开始的位置，与缩放无关。**
+> - 多重变换时，如果先旋转，后位移。在旋转之后，位移的坐标系就不再是最开始的位置，与旋转有关。因此，**多重变换，建议最后旋转。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_多重变换</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            transform: translate(100px, 100px) rotate(30deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231228223053587.png" alt="image-20231228223053587" style="zoom:80%;" />
+
+##### 变换原点
+
+元素变换时，**默认的原点是元素的中心**，使用`transform-origin`可以**设置变换的原点**。
+
+- 修改变换原点对位移没有影响， 对旋转和缩放会产生影响。
+- 如果提供两个值，第一个用于横坐标，第二个用于纵坐标。
+- 如果只提供一个值，若是像素值，表示横坐标，纵坐标取 50%；若是关键词，则另一个坐标取 50%。
+  - `transform-origin: 50% 50%`： 变换原点在元素的中心位置，百分比是相对于自身，默认值。
+  - `transform-origin: left top`：变换原点在元素的左上角。
+  - `transform-origin: 50px 50px`：变换原点距离元素左上角 50px 50px 的位置。
+  - `transform-origin: 0`：只写一个值的时候，第二个值默认为 50%。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_多重变换</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            /* 通过关键词调整变换原点 */
+            /* transform-origin: right bottom; */
+
+            /* 通过具体像素值调整变换原点 */
+            /* transform-origin: 50px 50px; */
+
+            /* 通过百分比调整变换原点 */
+            /* transform-origin: 25% 25%; */
+
+            /* 只给一个值 */
+            /* transform-origin:top; */
+
+            /* transform-origin: right top; */
+
+            /* 变换原点位置的改变对 旋转 有影响 */
+            /* transform: rotate(0deg); */
+
+            /* 变换原点位置的改变对 缩放 有影响 */
+            /* transform: scale(1.3); */
+
+            /* 变换原点位置的改变对 位移 没有影响 */
+            /* transform: translate(100px,100px) */
+        }
+
+        .test {
+            width: 50px;
+            height: 100px;
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">
+            <div class="test">你好啊</div>
+        </div>
+    </div>
+</body>
+
+</html>
+```
+
+#### 3D 变换
+
+#####  开启 3D 空间
+
+**重要原则：元素进行 3D 变换的首要操作，父元素必须开启 3D 空间！**
+
+使用`transform-style`开启 3D 空间，可选值如下：
+
+- `flat`：让子元素位于此元素的二维平面内（2D 空间），默认值。
+
+- `preserve-3d`：让子元素位于此元素的三维空间内（ 3D 空间）。
+
+##### 设置景深
+
+`景深`：指定观察者与 z=0 平面的距离，能让发生 3D 变换的元素，产生透视效果，看来更加立体。
+
+使用`perspective`设置景深，可选值如下：
+
+- `none`：不指定透视，默认值。
+
+- `长度值`：指定观察者距离 z=0 平面的距离，不允许负值。
+
+>注意： perspective 设置给发生 3D 变换元素的父元素！
+
+##### 透视点位置
+
