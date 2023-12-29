@@ -11634,7 +11634,7 @@ transform: translate(-50%, -50%) rotate(45deg);
 
 #####  开启 3D 空间
 
-**重要原则：元素进行 3D 变换的首要操作，父元素必须开启 3D 空间！**
+**重要原则：元素进行 3D 变换的首要操作，`父元素`必须开启 3D 空间！**
 
 使用`transform-style`开启 3D 空间，可选值如下：
 
@@ -11652,7 +11652,1022 @@ transform: translate(-50%, -50%) rotate(45deg);
 
 - `长度值`：指定观察者距离 z=0 平面的距离，不允许负值。
 
->注意： perspective 设置给发生 3D 变换元素的父元素！
+>注意： perspective 设置给发生 3D 变换元素的**`父元素`**！
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_3D空间与景深</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小）
+                景深设置过大或者过小，都不太好，实际使用时按效果调整
+            */
+            perspective: 500px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            /* 如果不设置景深，很难观察3D效果，看起来就像是原div盒子变窄了，可以将30deg调大，直到90deg观察效果
+                90deg看不到盒子，因为与屏幕所在的面垂直了
+            */
+            transform: rotateX(30deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231229101907633.png" alt="image-20231229101907633" style="zoom:80%;" />
 
 ##### 透视点位置
+
+所谓`透视点位置`，就是观察者位置，默认的透视点在元素的中心。（是指开启 3D 空间的元素，也就是**`父元素的中心`**）
+
+使用`perspective-origin`设置观察者位置（透视点的位置），例如：
+
+```css
+/* 相对坐标轴往右偏移400px，往下偏移300px（相当于人蹲下300像素，然后向右移动400像素看元素）*/
+perspective-origin: 400px 300px;
+```
+
+>注意：通常情况下，我们不需要调整透视点位置。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_透视点的位置</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置，102px 102px就是父元素的中心，要考虑父元素的border */
+            perspective-origin: 400px 300px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: deepskyblue;
+            transform: rotateX(45deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图（注意与上一节的效果图对比）：
+
+<img src="html-css/image-20231229103244039.png" alt="image-20231229103244039" style="zoom:80%;" />
+
+##### 3D 位移
+
+3D 位移是在 2D 位移的基础上，可以**让元素沿 z 轴位移**，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，3D 相关可选值如下：
+   - `translateZ`：设置 z 轴位移，需指定长度值，正值向屏幕外，负值向屏幕里，且**不能写百分比**。（x 轴和 y 轴可以写百分比，一个是宽度，一个是高度，但 z 轴不行，div 盒子没有厚度）
+   - `translate3d`：第 1 个参数对应 x 轴，第 2 个参数对应 y 轴，第 3 个参数对应 z 轴，且均不能省略。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_位移</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置 */
+            perspective-origin: 102px 102px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 191, 255, 0.726);
+            /* transform: translateZ(150px); */
+            transform: translate3d(50%, 50%, 100px);
+            box-shadow: 0px 0px 10px black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231229131604747.png" alt="image-20231229131604747" style="zoom:80%;" />
+
+##### 3D 旋转
+
+`3D 旋转`是在 2D 旋转的基础上，可以**让元素沿 x 轴和 y 轴旋转**，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，3D 相关可选值如下：
+   - `rotateX`：设置 x 轴旋转角度，需指定一个角度值（deg），面对 x 轴正方向：正值顺时针，负值逆时针。
+   - `rotateY`：设置 y 轴旋转角度，需指定一个角度值（deg），面对 y 轴正方向：正值顺时针，负值逆时针。
+   - `rotate3d`：前 3 个参数分别表示坐标轴：x，y，z，第 4 个参数表示旋转的角度，参数不允许省略。例如：transform: rotate3d(1, 1, 1, 30deg) ，意思是：x、y、z 分别旋转 30 度。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_旋转</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置 */
+            perspective-origin: 102px 102px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 191, 255, 0.726);
+            /* transform: rotateX(315deg); */
+            /* transform: rotateY(-35deg); */
+            transform: rotate3d(1, 1, 1, 30deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231229132401342.png" alt="image-20231229132401342" style="zoom:80%;" />
+
+##### 3D 缩放
+
+`3D 缩放`是在 2D 缩放的基础上，可以**让元素沿 z 轴缩放**，具体使用方式如下：
+
+1. 先给元素添加`转换属性 transform`。
+2. 编写 transform 的具体值，3D 相关可选值如下：
+   - `scaleZ`：设置 z 轴方向的缩放比例，值为一个数字，等于 1 表示不缩放，大于 1 放大，小于 1 缩小。（scaleZ 的效果从正面无法观察，调整一个角度看。scaleZ 大于 1，视觉上是把盒子厚度变大，但是因为盒子没有厚度，可以理解为把景深变小了。开发中使用较少）
+   - `scale3d`：第 1 个参数对应 x 轴，第 2 个参数对应 y 轴，第 3 个参数对应 z 轴，参数不允许省略。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_缩放</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置 */
+            perspective-origin: 102px 102px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 191, 255, 0.726);
+            /* transform: scaleZ(4) rotateY(45deg); */
+            transform: scale3d(1.5, 1.5, 1) rotateY(45deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231229133139563.png" alt="image-20231229133139563" style="zoom:80%;" />
+
+##### 多重变换
+
+多个 3D 变换，可以同时使用一个 transform 来编写。
+
+语法：
+
+```css
+transform: translateZ(100px) scaleZ(3) rotateY(40deg);
+```
+
+> **注意：多重变换时，建议最后旋转。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_多重变换</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置 */
+            perspective-origin: 102px 102px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 191, 255, 0.726);
+            /* transform-origin: 202px 180px; */
+            /* transform: rotateX(-45deg); */
+            transform: translateZ(100px) scaleZ(1) rotateY(45deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231229135047460.png" alt="image-20231229135047460" style="zoom:80%;" />
+
+##### 背部可见性
+
+使用`backface-visibility`属性，可以**指定元素背面在面向用户时是否可见**，常用值如下：
+
+- `visible`：指定元素背面可见，允许显示正面的镜像，默认值。
+- `hidden`：指定元素背面不可见。
+
+>**注意：backface-visibility 需要加在发生 3D 变换元素的`自身`上。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_多重变换</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
+            margin: 0 auto;
+            margin-top: 100px;
+            /* 开启3D空间 */
+            transform-style: preserve-3d;
+            /* 设置景深（有了透视效果，近大远小） */
+            perspective: 500px;
+            /* 设置透视点的位置 */
+            perspective-origin: 102px 102px;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            transform: rotateY(0deg);
+            backface-visibility: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">你好啊</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图（调整角度，从背面就看不到元素了）：
+
+![image-20231229140141878](html-css/image-20231229140141878.png)
+
+#### 过渡
+
+`过渡`可以在不使用 Flash 动画，不使用 JavaScript 的情况下，让元素从一种样式，平滑过渡为另一种样式。
+
+##### 基本使用
+
+######  transition-property
+
+作用：**定义哪个属性需要过渡**，只有在该属性中定义的属性（比如宽、高、颜色等）才会以有过渡效果。
+
+取值：
+
+- `none`：不过渡任何属性。
+- `all`：过渡所有能过渡的属性。
+- `具体某个属性名`，例如：width、heigth，若有多个以逗号分隔。
+
+> **注意：不是所有的属性都能过渡，值为数字，或者值能转为数字的属性，都支持过渡，否则不支持过渡。**
+>
+> 常见的支持过渡的属性有：**颜色、长度值、百分比、z-index、opacity、2D 变换属性、3D 变换属性、阴影。**
+
+###### transition-duration
+
+作用：**设置过渡的持续时间**，即一个状态过渡到另外一个状态耗时多久。
+
+取值：
+
+1. `0`：没有任何过渡时间，默认值。
+2. `s 或 ms`：秒或毫秒。
+3. `列表`：
+   - 如果想让所有属性都持续一个时间，那就写一个值。
+   - 如果想让每个属性持续不同的时间，那就写一个时间的列表。
+
+###### 示例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_基本使用</title>
+    <style>
+        .box1 {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            opacity: 0.5;
+            /* 设置哪个属性需要过渡效果 */
+            /* transition-property: width,height,background-color; */
+
+            /* 让所有能过渡的属性，都过渡 */
+            transition-property: all;
+
+            /* 分别设置时间 */
+            /* transition-duration: 1s,1s,1s; */
+            /* 设置一个时间，所有人都用 */
+            transition-duration: 1s;
+        }
+
+        .box1:hover {
+            width: 400px;
+            height: 400px;
+            background-color: green;
+            transform: rotate(45deg);
+            box-shadow: 0px 0px 20px black;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1"></div>
+</body>
+
+</html>
+```
+
+##### 高级使用
+
+######  transition-delay
+
+作用：**指定开始过渡的延迟时间**，单位 s 或 ms。
+
+###### transition-timing-function
+
+作用：设置过渡的类型。
+
+取值：
+
+- `ease`：平滑过渡，默认值。
+- `linear`：线性过渡。
+- `ease-in`：慢 → 快。
+- `ease-out`：快 → 慢。
+- `ease-in-out`：慢 → 快 → 慢。（与平滑过渡效果类似，但平滑过渡更柔和）
+- `step-start`：等同于 steps(1, start)。
+- `step-end`：等同于 steps(1, end)。
+- `steps(integer, ?)`：接受两个参数的步进函数。第一个参数必须为正整数，指定函数的步数，第二个参数取值可以是 start 或 end，指定每一步的值发生变化的时间点，第二个参数默认值为 end 。
+- `cubic-bezie(number, number, number, number)`：特定的贝塞尔曲线类型。
+
+> 在线制作贝赛尔曲线：https://cubic-bezier.com
+
+###### 示例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_高级使用</title>
+    <style>
+        .outer {
+            width: 1300px;
+            height: 900px;
+            border: 1px solid black;
+        }
+
+        .outer:hover .box {
+            width: 1300px;
+        }
+
+        .box {
+            width: 200px;
+            height: 100px;
+            /* 让所有能过渡的属性，都过渡 */
+            transition-property: all;
+            /* 设置一个时间，所有人都用 */
+            transition-duration: 5s;
+            /* 过渡延迟 */
+            /* transition-delay: 2s; */
+        }
+
+        .box1 {
+            background-color: skyblue;
+            transition-timing-function: ease;
+        }
+
+        .box2 {
+            background-color: orange;
+            transition-timing-function: linear;
+        }
+
+        .box3 {
+            background-color: gray;
+            transition-timing-function: ease-in;
+        }
+
+        .box4 {
+            background-color: tomato;
+            transition-timing-function: ease-out;
+        }
+
+        .box5 {
+            background-color: green;
+            transition-timing-function: ease-in-out;
+        }
+
+        .box6 {
+            background-color: purple;
+            transition-timing-function: step-start;
+        }
+
+        .box7 {
+            background-color: deepskyblue;
+            transition-timing-function: step-end;
+        }
+
+        .box8 {
+            background-color: chocolate;
+            transition-timing-function: steps(20, end);
+        }
+
+        .box9 {
+            background-color: rgb(18, 78, 34);
+            transition-timing-function: cubic-bezier(1, .35, .78, 1.24);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="box box1">ease（慢，快，慢）</div>
+        <div class="box box2">linear（匀速）</div>
+        <div class="box box3">ease-in（慢，快）</div>
+        <div class="box box4">ease-out（快，慢）</div>
+        <div class="box box5">ease-in-out（慢，快，慢）</div>
+        <div class="box box6">step-start不考虑过渡的时间，直接就是终点</div>
+        <div class="box box7">step-end考虑过渡时间，但无过渡效果，过渡时间到了以后，瞬间到达终点</div>
+        <div class="box box8">steps分步过渡</div>
+        <div class="box box9">无敌的贝赛尔曲线</div>
+    </div>
+</body>
+
+</html>
+```
+
+##### transition 复合属性
+
+如果设置了一个时间，表示 duration；如果设置了两个时间，第一是 duration，第二个是 delay；其他两个值没有顺序要求。
+
+语法：
+
+```css
+transition: 1s 1s linear all;
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_过渡复合属性</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 100px;
+            border: 1px solid black;
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            transition: linear all 3s 0.5s;
+        }
+
+        .outer:hover .inner {
+            width: 1000px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 过渡的应用案例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_过渡案例</title>
+    <style>
+        .outer {
+            width: 400px;
+            height: 224px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mask {
+            width: 400px;
+            height: 224px;
+            background-color: black;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            text-align: center;
+            line-height: 224px;
+            font-size: 100px;
+            opacity: 0;
+            transition: 1s linear;
+            cursor: pointer;
+        }
+
+        img {
+            transition: 0.5s linear;
+        }
+
+        .outer:hover .mask {
+            opacity: 0.5;
+        }
+
+        .outer:hover img {
+            transform: scale(1.6) rotate(20deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <img src="../images/shanghai.jpg" alt="">
+        <div class="mask">上海</div>
+    </div>
+    <div class="outer">
+        <img src="../images/shanghai.jpg" alt="">
+        <div class="mask">上海2</div>
+    </div>
+</body>
+
+</html>
+```
+
+#### 动画
+
+##### 什么是帧
+
+一段动画，就是一段时间内连续播放 n 个画面。**每一张画面，我们管它叫做`帧`。**一定时间内连续快速播放若干个帧，就成了人眼中所看到的动画。同样时间内，播放的帧数越多，画面看起来越流畅。
+
+##### 什么是关键帧
+
+`关键帧`指的是，在构成一段动画的若干帧中，起到决定性作用的 2 ~ 3 帧。
+
+##### 动画的基本使用
+
+**第一步：定义关键帧（定义动画）。**
+
+- 简单方式定义：
+
+  ```css
+  /* 写法一 */
+  @keyframes 动画名 {
+      from {
+          /* property1:value1; */
+          /* property2:value2; */
+      }
+      to {
+      	/* property1:value1; */
+      }
+  }
+  ```
+
+- 完整方式定义：
+
+  ```css
+  @keyframes 动画名 {
+      0% {
+      	/* property1: value1; */
+      }
+      20% {
+      	/* property1: value1; */
+      }
+      40% {
+      	/* property1: value1; */
+      }
+      60% {
+      	/* property1: value1; */
+      }
+      80% {
+      	/* property1: value1; */
+      }
+      100% {
+      	/* property1: value1; */
+      }
+  }
+  ```
+
+**第二步：给元素应用动画，用到的属性如下。**
+
+- `animation-name`：给元素指定具体的动画（具体的关键帧）。
+
+- `animation-duration`：设置动画所需时间。
+
+- `animation-delay`：设置动画延迟。
+
+- 示例：
+
+  ```css
+  .box {
+      /* 指定动画 */
+      animation-name: testKey;
+      /* 设置动画所需时间 */
+      animation-duration: 5s;
+      /* 设置动画延迟 */
+      animation-delay: 0.5s;
+  }
+  ```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_基本使用</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 100px;
+            border: 1px solid black;
+        }
+
+        /* 定义一个动画（定义一组关键帧）—— 第一种方式 */
+        @keyframes wangyoudong {
+
+            /* 第一帧 */
+            from {}
+
+            /* 最后一帧 */
+            to {
+                transform: translate(900px);
+                background-color: red;
+            }
+        }
+
+        /* 定义一个动画（定义一组关键帧）—— 第二种方式 */
+        @keyframes wangyoudong2 {
+
+            /* 第一帧 */
+            0% {}
+
+            /* 29% {
+              background-color: red;  
+            } */
+            /* 48% {
+                background-color: orange;
+            } */
+            /* 88% {
+                background-color: yellow;
+            } */
+            /* 最后一帧 */
+            100% {
+                transform: translate(900px) rotate(360deg);
+                background-color: purple;
+                border-radius: 50%;
+            }
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: deepskyblue;
+            /* 应用动画到元素 */
+            animation-name: wangyoudong2;
+            /* 动画持续的时间 */
+            animation-duration: 3s;
+            /* 动画延迟时间 */
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 动画的其他属性
+
+- `animation-timing-function`：设置动画的类型。常用值如下：
+  - `ease`：平滑动画，默认值。
+  - `linear`：线性过渡。
+  - `ease-in`：慢 → 快。
+  - `ease-out`：快 → 慢。
+  - `ease-in-out`：慢 → 快 → 慢。
+  - `step-start`：等同于 steps(1, start)。
+  - `step-end`：等同于 steps(1, end)。
+  - `steps( integer, ?)`：接受两个参数的步进函数。第一个参数必须为正整数，指定函数的步数，第二个参数取值可以是 start 或 end，指定每一步的值发生变化的时间点，第二个参数默认值为 end。
+  - `cubic-bezie(number, number, number, number)`：特定的贝塞尔曲线类型。
+- `animation-iteration-count`：指定动画的播放次数。常用值如下：
+  - `number`：动画循环次数。
+  - `infinite`：无限循环。
+- `animation-direction`：指定动画方向。常用值如下：
+  - `normal`：正常方向，默认值。
+  - `reverse`：反方向运行。
+  - `alternate`：动画先正常运行再反方向运行，并持续交替运行。
+  - `alternate-reverse`：动画先反运行再正方向运行，并持续交替运行。
+- `animation-fill-mode`：设置动画之外的状态。常用值如下：
+  - `forwards`：设置对象状态为动画结束时的状态。
+  - `backwards`：设置对象状态为动画开始时的状态。
+- `animation-play-state`：设置动画的播放状态。常用值如下：
+  - `running`：运动，默认。
+  - `paused`：暂停。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_其他属性</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 100px;
+            border: 1px solid black;
+        }
+
+        @keyframes atguigu {
+            from {}
+
+            to {
+                transform: translate(900px) rotate(360deg);
+                background-color: purple;
+                border-radius: 50%;
+            }
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: deepskyblue;
+            /* 应用动画到元素 */
+            animation-name: atguigu;
+            /* 动画持续的时间 */
+            animation-duration: 3s;
+            /* 动画延迟时间 */
+            animation-delay: 0.2s;
+
+            /* ********其他属性--start*********** */
+            /* 设置动画的方式 */
+            animation-timing-function: linear;
+
+            /* 动画播放的次数 */
+            animation-iteration-count: infinite;
+
+            /* 动画的方向 */
+            animation-direction: alternate;
+
+            /* 动画以外的状态（不发生动画的时候在哪里） */
+            /* animation-fill-mode: forwards; */
+        }
+
+        .outer:hover .inner {
+            /* 动画的播放状态，鼠标悬浮就暂停 */
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 动画复合属性
+
+只设置一个时间表示 duration，设置两个时间分别是 duration 和 delay，其他属性没有数量和顺序要求。
+
+语法：
+
+```css
+.inner {
+	animation: atguigu 3s 0.5s linear 2 alternate-reverse forwards;
+}
+```
+
+> **注意：animation-play-state 一般单独使用。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_动画的复合属性</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 100px;
+            border: 1px solid black;
+        }
+
+        @keyframes atguigu {
+            from {}
+
+            to {
+                transform: translate(900px) rotate(360deg);
+                background-color: purple;
+                border-radius: 50%;
+            }
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: deepskyblue;
+            animation: forwards 3s 0.5s alternate-reverse linear 2 atguigu;
+        }
+
+        .outer:hover .inner {
+            /* 动画的播放状态 */
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 动画与过渡的区别
+
+
+
+##### 动画的应用案例
+
+
+
+#### 多列布局
 
