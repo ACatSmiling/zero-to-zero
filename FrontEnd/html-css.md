@@ -12663,11 +12663,714 @@ transition: 1s 1s linear all;
 
 ##### 动画与过渡的区别
 
+区别：
 
+- 动画不需要触发条件，过渡需要。
+- 动画可以精确控制中间过程的变化，过渡不行，只能处理首尾两个点。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_动画与过渡的区别</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 200px;
+            border: 1px solid black;
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+        }
+
+        /* 用过渡，实现inner1跑到右边去 */
+        .inner1 {
+            background-color: orange;
+            transition: 3s linear;
+        }
+
+        .outer:hover .inner1 {
+            transform: translate(900px);
+        }
+
+        /* 用动画，实现inner2跑到右边去 */
+        @keyframes atguigu {
+            0% {}
+
+            50% {
+                background-color: red;
+                border-radius: 50%;
+                box-shadow: 0px 0px 20px black;
+            }
+
+            100% {
+                transform: translate(900px);
+            }
+        }
+
+        .inner2 {
+            background-color: green;
+            animation: atguigu 3s linear forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">过渡</div>
+        <div class="inner inner2">动画</div>
+    </div>
+</body>
+
+</html>
+```
 
 ##### 动画的应用案例
 
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
 
+<head>
+    <meta charset="UTF-8">
+    <title>05_动画案例</title>
+    <style>
+        div {
+            width: 130px;
+            height: 130px;
+            background-image: url('../images/bike.png');
+            margin: 0 auto;
+            margin-top: 100px;
+            animation: bike 1s steps(31) infinite;
+        }
+
+        @keyframes bike {
+            from {}
+
+            to {
+                background-position: 0px -4030px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+</body>
+
+</html>
+```
 
 #### 多列布局
+
+作用：**专门用于实现类似于报纸的布局**。
+
+**常用属性如下：**
+
+- `column-count`：指定列数，值是数字。
+- `column-width`：指定列宽，值是长度。
+- `columns`：同时指定列宽和列数，复合属性；值没有数量和顺序要求。
+- `column-gap`：设置列边距，值是长度。
+- `column-rule-style`：设置列与列之间边框的风格，值与 border-style 一致。
+- `column-rule-width`：设置列与列之间边框的宽度，值是长度。
+- `column-rule-color`：设置列与列之间边框的颜色。
+- `coumn-rule`：设置列边框，复合属性。
+- `column-span`：指定是否跨列，值是 none 或者 all。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_多列布局案例</title>
+    <style>
+        .outer {
+            width: 1000px;
+            margin: 0 auto;
+
+            /* 直接指定列数 */
+            /* column-count: 5; */
+
+            /* 指定每一列的宽度，会根据width自动计算列数 */
+            /* column-width:220px ; */
+
+            /* 复合属性，能同时指定列宽和列数，最终取数值小的（不推荐使用） */
+            columns: 4;
+
+            /* 调整列间距 */
+            column-gap: 20px;
+
+            /* 每一列的边框宽度 */
+            /* column-rule-width: 2px; */
+
+            /* 每一列的边框风格 */
+            /* column-rule-style: dashed; */
+
+            /* 每一列的边框颜色 */
+            /* column-rule-color: red; */
+
+            /* 每一列的边框相关的复合属性 */
+            column-rule: 2px dashed red;
+        }
+
+        h1 {
+            /* 跨全列，默认值为none */
+            column-span: all;
+            text-align: center;
+            font-size: 50px;
+        }
+
+        img {
+            /* 图片所在列宽度的100% */
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <h1>《震惊！国际名模竟在尚硅谷学这个...》</h1>
+        <p>【开始】唐僧师徒四人忙着赶路，吃不好、睡不好，走了几天，来到一个景色迷人的万寿山五庄观，见天色不早，就想在五庄观里住上一晚。五庄观里的两个童子听说他们是来自东土大唐要到西天取经的，连忙说∶“我家师父到元始天尊那里讲经去了，让我们在这里等您，请快快进屋。”原来，这童子的师父是镇元子，在五百年前的兰盆会上认识了唐僧前世金蝉子。临走时曾告诉两个童子要好好对待唐僧，并交待童子用观里的两颗宝贝人参果招待他。【结束】
+        </p>
+        <img src="../images/start.jpg" alt="">
+        <p>【开始】两人摘了人参果，趁着唐僧的徒弟不在，偷偷拿来给唐僧吃。唐僧看见人参果就好像刚出生的婴儿一样，吓得浑身发抖，使劲摇手不敢吃。两个童子越是解释说∶“这是仙果，不是人！”唐僧仍是不信，让他们赶快端走。两个童子没有办法，只好端着人参果，回到房里。因为那人参果不能久放，否则吃下也不能长寿，于是两童子一人一个，分着吃了。说来也巧，这间房子正好和厨房挨着，两童子分吃人参果的事，八戒听得明明白白，看得清清楚楚，馋得直流口水，恨不得立刻吃一个。【结束】
+        </p>
+        <p>【开始】一会儿，悟空放马回来，八戒连忙把刚才的事情告诉了师兄。悟空早就听说过人参果，只是没有吃过，于是就按照八戒说的，用了一个隐身的法术，偷偷溜进道房，拿走了二童子摘果用的金击子，露出了一颗人参果果，跑到后园去摘人参果。这人参果树有一千多尺高，非常茂盛，朝南的枝头上，露出了一颗人参果。悟空轻轻一跳一跳，跳上树枝，用金击子一敲，那果子就掉下来，悟空紧跟着跳下来，可是却找不到那果子。悟空把果园里的土地神抓来，露出了一颗人参果，问他为什么把人参果偷走。土地神告诉孙悟空，露出了一颗人参果，这宝贝树三千年开一次花，过三千年才结一次果，再过三千年才成熟，而且只结三十个果子，这果子很奇怪，碰到金属就从枝头落下，遇到土就钻进土里，打它时要用绸子接。【结束】
+        </p>
+        <p>【开始】悟空送走土地神后，一手拿金击子敲，一手扯着自己的衣服接了三个果子。悟空回到厨房后，让八戒把沙僧叫来，三个人每人分一个。猪八戒性急，一口把果子吞下去，什么味道也没有尝出来，就想让悟空再去偷几个。悟空告诉他这人参果是一万年才结三十个果子，能吃到一个，就应该满足了，说完就把金击子放回了原处。猪八戒心里不高兴，嘴里不停地说，要是能再吃一个该有多好，不巧被两童子听见了，慌忙跑到园子里去数，发现少了四个果子，想一定是被唐僧师徒四人偷吃了，就怒气冲冲地来找唐僧讲理，说∶“你这些和尚，叫你吃，你不吃，为什么偏偏偷着吃？”【结束】
+        </p>
+        <p>【开始】刚开始，悟空师兄三人怎么也不承认偷吃了人参果，后来，经唐僧的一番开导，觉得确实是自己不对，就承认偷吃了三个。两个童子却说是四个，还骂了许多难听的话。悟空火了，拔了一根毫毛变成一个假悟空站在那挨骂，自己跳上云头向后园飞去。悟空一进果园，就拿出金箍棒一阵乱打，又使出自己的神力，把树连根拔出，摔在地上，仙果从树上掉下来，又碰到了土就全部钻到土里去了。【结束】
+        </p>
+        <p>【开始】悟空回到房中，收回毫毛，让两个童子随便骂，也不还口。两个童子见唐僧他们一句话也不说，就想，是不是树太高，叶子太密，自己数不清，又回到果园仔细看看。一到果园，见那情景，吓得他们半死，趴在地上，放声大哭∶“师父回来，可怎么说呀！”两个童子商量，先把唐僧留住，师父回来也好说一些，于是回到房中，假说果子一个也没有少，是自己刚才数错了，请唐僧他们原谅。【结束】
+        </p>
+        <p>【开始】接着，他们给唐僧师徒们准备了很多饭菜，趁他们吃饭时，关上门，又用一把大铜锁，把门锁上。孙悟空早就有了主意，等到夜深人静的时候，用开锁法术，将一道道紧锁的大门都打开，拔毫毛变成两个瞌睡虫，扔在童子脸上，两童子便呼噜地睡着了。唐僧师徒四人这才趁着黑夜逃出来，向西天赶路去了。天亮时镇元子回到五庄观，发现两个童子被人施了法术，躺在那里睡大觉，连忙运用神功把他们叫醒。二童子一见师父回来了，便急忙跪下，请师父原谅他们，并把唐僧师徒偷吃仙果，毁坏仙树的事情告诉了师父。镇元子想这一定是孙悟空干的，便去找孙悟空讲理。【结束】
+        </p>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231230142901008.png" alt="image-20231230142901008" style="zoom:80%;" />
+
+多图片案例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_多列图片案例</title>
+    <style>
+        .outer {
+            column-count: 5;
+        }
+
+        img {
+            width: 100%;
+            transition: 0.2s linear;
+        }
+
+        img:hover {
+            box-shadow: 0px 0px 20px black;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <img src="../images/img1.jpg">
+        <img src="../images/img2.jpg">
+        <img src="../images/img3.jpg">
+        <img src="../images/img4.jpg">
+        <img src="../images/img5.jpg">
+        <img src="../images/img6.jpg">
+        <img src="../images/img7.jpg">
+        <img src="../images/img8.jpg">
+        <img src="../images/img9.jpg">
+        <img src="../images/img10.jpg">
+        <img src="../images/img11.jpg">
+        <img src="../images/img12.jpg">
+        <img src="../images/img13.jpg">
+        <img src="../images/img14.jpg">
+        <img src="../images/img1.jpg">
+        <img src="../images/img2.jpg">
+        <img src="../images/img3.jpg">
+        <img src="../images/img4.jpg">
+        <img src="../images/img5.jpg">
+        <img src="../images/img6.jpg">
+        <img src="../images/img7.jpg">
+        <img src="../images/img8.jpg">
+        <img src="../images/img9.jpg">
+        <img src="../images/img10.jpg">
+        <img src="../images/img11.jpg">
+        <img src="../images/img12.jpg">
+        <img src="../images/img13.jpg">
+        <img src="../images/img14.jpg">
+        <img src="../images/img1.jpg">
+        <img src="../images/img2.jpg">
+        <img src="../images/img3.jpg">
+        <img src="../images/img4.jpg">
+        <img src="../images/img5.jpg">
+        <img src="../images/img6.jpg">
+        <img src="../images/img7.jpg">
+        <img src="../images/img8.jpg">
+        <img src="../images/img9.jpg">
+        <img src="../images/img10.jpg">
+        <img src="../images/img11.jpg">
+        <img src="../images/img12.jpg">
+        <img src="../images/img13.jpg">
+        <img src="../images/img14.jpg">
+    </div>
+</body>
+
+</html>
+```
+
+#### 伸缩盒模型
+
+2009 年，W3C 提出了一种新的盒子模型 —— `Flexible Box`（`伸缩盒模型`，又称`弹性盒子`）。它可以轻松的控制：元素分布方式、元素对齐方式、元素视觉顺序 .......
+
+截止目前，除了在部分 IE 浏览器不支持，其他浏览器均已全部支持。伸缩盒模型的出现，逐渐演变出了一套新的布局方案 —— `flex 布局`。
+
+>小贴士：
+>
+>1. 传统布局是指：基于传统盒状模型，主要靠`display 属性 + position 属性 + float 属性`。
+>
+>2. **flex 布局目前在移动端应用比较广泛，因为传统布局不能很好的呈现在移动设备上。**
+
+<img src="html-css/image-20231230200035199.png" alt="image-20231230200035199" style="zoom: 67%;" />
+
+##### 伸缩容器和伸缩项目
+
+**`伸缩容器`**：开启了 flex 的元素，就是伸缩容器。
+
+- 给元素设置：`display: flex`或`display: inline-flex` ，该元素就变为了伸缩容器。
+- "display: inline-flex" 很少使用，其效果是让多个容器并排（但是换行会产生空隙），因为可以给多个伸缩容器的父容器，也设置为伸缩容器，可以达到同样的效果。
+- 一个元素可以同时是：伸缩容器、伸缩项目。
+
+**`伸缩项目`**：伸缩容器所有**子元素**自动成为了伸缩项目。（子元素没有脱离文档流）
+
+- 仅伸缩容器的**子元素**成为了伸缩项目，孙子元素、重孙子元素等后代，不是伸缩项目。
+- 无论原来是哪种元素（块、行内块、行内），一旦成为了伸缩项目，全都会 **"块状化"**。
+
+> 扩展：如何查看一个元素是什么类型？
+>
+> ![image-20231231172520863](html-css/image-20231231172520863.png)
+>
+> > **此处，可以查看元素最终的所有计算过的属性值。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_伸缩容器_伸缩项目</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner3 {
+            /* a b c默认不是outer的伸缩项目，只有inner3开启了flex布局，它们才是伸缩项目 */
+            display: flex;
+            /* font-size: 20px; */
+            /* line-height: 2em; */
+        }
+
+        .inner3 div {
+            width: 50px;
+            height: 50px;
+            background-color: blueviolet;
+            margin: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner">2</div>
+        <div class="inner inner3">
+            <div>a</div>
+            <div>b</div>
+            <div>c</div>
+        </div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231231172055628.png" alt="image-20231231172055628" style="zoom:80%;" />
+
+##### 主轴与侧轴
+
+**`主轴`**：伸缩项目沿着主轴排列，主轴默认是**水平**的，默认方向是：**从左到右（左边是起点，右边是终点）**。
+
+**`侧轴`**：与主轴垂直的就是侧轴，侧轴默认是**垂直**的，默认方向是：**从上到下（上边是起点，下边是终点）**。
+
+> 关注方向，不要关注原点位置。
+
+##### 主轴方向
+
+属性名：`flex-direction`。
+
+取值：
+
+<img src="html-css/image-20231231221448860.png" alt="image-20231231221448860" style="zoom:67%;" />
+
+- `row`：主轴方向水平从左到右，默认值。
+- `row-reverse`：主轴方向水平从右到左。
+- `column`：主轴方向垂直从上到下。
+- `column-reverse`：主轴方向垂直从下到上。
+
+>**注意：改变了主轴的方向，侧轴方向也随之改变。**（侧轴与主轴垂直，默认是从左往右）
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_主轴方向</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            /* flex-direction: row; */
+
+            /* 调整主轴方向，水平从右到左 */
+            flex-direction: row-reverse;
+
+            /* 调整主轴方向，垂直从上到下 */
+            /* flex-direction: column; */
+
+            /* 调整主轴方向，垂直从下到上 */
+            /* flex-direction: column-reverse; */
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner">2</div>
+        <div class="inner">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231231221913775.png" alt="image-20231231221913775" style="zoom:80%;" />
+
+##### 主轴换行方式
+
+属性名：`flex-wrap`。
+
+取值：
+
+- `nowrap`：默认值，不换行。
+
+  <img src="html-css/image-20231231222731138.png" alt="image-20231231222731138" style="zoom: 67%;" />
+
+- `wrap`：自动换行，伸缩容器不够自动换行。（基于伸缩容器和伸缩项目的高度，当伸缩项目数量增加或减少时，上下行之间可能会有间隙）
+
+  <img src="html-css/image-20231231222808060.png" alt="image-20231231222808060" style="zoom:67%;" />
+
+- `wrap-reverse`：反向换行。
+
+  <img src="html-css/image-20231231222833627.png" alt="image-20231231222833627" style="zoom:67%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_主轴换行方式</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，不换行，默认值 */
+            /* flex-wrap: nowrap; */
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴换行方式，反向换行 */
+            /* flex-wrap: wrap-reverse; */
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner">2</div>
+        <div class="inner">3</div>
+        <div class="inner">4</div>
+        <div class="inner">5</div>
+        <div class="inner">6</div>
+        <div class="inner">7</div>
+        <div class="inner">8</div>
+        <div class="inner">9</div>
+        <div class="inner">10</div>
+        <div class="inner">11</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图（观察去掉第 11 个盒子前后的效果）：
+
+<img src="html-css/image-20231231225407482.png" alt="image-20231231225407482" style="zoom:80%;" />
+
+##### flex-flow
+
+`flex-flow`是一个复合属性，复合了 flex-direction 和 flex-wrap 两个属性，值没有顺序要求。（不建议使用）
+
+语法：
+
+```css
+flex-flow: row wrap;
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>04_flex-flow</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            /* flex-direction: row; */
+
+            /* 主轴换行方式，换行 */
+            /* flex-wrap: wrap; */
+
+            flex-flow: row wrap;
+
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner">2</div>
+        <div class="inner">3</div>
+        <div class="inner">4</div>
+        <div class="inner">5</div>
+        <div class="inner">6</div>
+        <div class="inner">7</div>
+        <div class="inner">8</div>
+        <div class="inner">9</div>
+        <div class="inner">10</div>
+        <div class="inner">11</div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 主轴对齐方式
+
+属性名： `justify-content`。
+
+取值：
+
+- `flex-start`：主轴起点对齐，默认值。
+
+  <img src="html-css/image-20231231225956046.png" alt="image-20231231225956046" style="zoom:80%;" />
+
+- `flex-end`：主轴终点对齐。
+
+  <img src="html-css/image-20231231230019436.png" alt="image-20231231230019436" style="zoom:80%;" />
+
+- `center`：居中对齐。
+
+  <img src="html-css/image-20231231230059508.png" alt="image-20231231230059508" style="zoom:80%;" />
+
+- `space-between`：均匀分布，两端对齐（最常用）。
+
+  <img src="html-css/image-20231231230153334.png" alt="image-20231231230153334" style="zoom:80%;" />
+
+- `space-around`：均匀分布，两端距离是中间距离的一半。
+
+  <img src="html-css/image-20231231230122467.png" alt="image-20231231230122467" style="zoom:80%;" />
+
+- `space-evenly`：均匀分布，两端距离与中间距离一致。
+
+  <img src="html-css/image-20231231230226175.png" alt="image-20231231230226175" style="zoom:80%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>05_主轴对齐方式</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            /* justify-content: flex-start; */
+
+            /* 主轴的对齐方式，主轴的结束位置 */
+            /* justify-content: flex-end; */
+
+            /* 主轴的对齐方式，中间对齐 */
+            /* justify-content: center; */
+
+            /* 主轴的对齐方式，项目均匀的分布在一行中，项目与项目之间的距离，是项目距边缘的二倍 */
+            /* justify-content: space-around; */
+
+            /* 主轴的对齐方式，项目均匀的分布在一行中，项目与项目之间的距离是相等的，项目距边缘没有距离 */
+            justify-content: space-between;
+
+            /* 主轴的对齐方式，项目均匀的分布在一行中 */
+            /* justify-content: space-evenly; */
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner">2</div>
+        <div class="inner">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20231231230359317.png" alt="image-20231231230359317" style="zoom:80%;" />
+
+##### 侧轴对齐方式
 
