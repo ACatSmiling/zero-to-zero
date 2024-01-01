@@ -10057,7 +10057,7 @@ box-shadow: h-shadow v-shadow blur spread color inset;
   background-size: contain;
   ```
 
-- `cover`：将背景图片等比缩放，直到完全覆盖容器，图片会尽可能全的显示在元素上。注意：背景图片有可能显示不完整。（相对比较好的选择）
+- `cover`：将背景图片等比缩放，直到完全覆盖容器，图片会尽可能全的显示在元素上。注意：背景图片有可能显示不完整。**（相对比较好的选择）**
 
   ```css
   background-size: cover;
@@ -13373,4 +13373,988 @@ flex-flow: row wrap;
 <img src="html-css/image-20231231230359317.png" alt="image-20231231230359317" style="zoom:80%;" />
 
 ##### 侧轴对齐方式
+
+###### 一行的情况
+
+属性名：`align-items`。
+
+取值：
+
+- `flex-start`：侧轴的起点对齐。
+
+  <img src="html-css/image-20240101085842988.png" alt="image-20240101085842988" style="zoom: 67%;" />
+
+- `flex-end`：侧轴的终点对齐。
+
+  <img src="html-css/image-20240101085913647.png" alt="image-20240101085913647" style="zoom:67%;" />
+
+- `center`：侧轴的中点对齐。
+
+  <img src="html-css/image-20240101085940356.png" alt="image-20240101085940356" style="zoom:67%;" />
+
+- `baseline`：伸缩项目的第一行文字的基线对齐。
+
+  <img src="html-css/image-20240101090013318.png" alt="image-20240101090013318" style="zoom:67%;" />
+
+- `stretch`：如果伸缩项目未设置高度，将占满整个容器的高度，默认值。**（所有伸缩项目都没有设置高度时生效）**
+
+  <img src="html-css/image-20240101090047586.png" alt="image-20240101090047586" style="zoom:67%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>06_侧轴对齐方式_一行</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式，侧轴的起始位置对齐 */
+            align-items: flex-start;
+
+            /* 侧轴的对齐方式，侧轴的结束位置对齐 */
+            /* align-items: flex-end; */
+
+            /* 侧轴的对齐方式，侧轴的中间位置对齐 */
+            /* align-items: center; */
+
+            /* 侧轴的对齐方式，侧轴的中间位置对齐 */
+            /* align-items: baseline; */
+
+            /* 侧轴的对齐方式，拉伸到整个父容器（前提：伸缩项目不能给高度），默认 */
+            /* align-items: stretch; */
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner2 {
+            height: 300px;
+            font-size: 80px;
+        }
+
+        .inner3 {
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1x</div>
+        <div class="inner inner2">2x</div>
+        <div class="inner inner3">3x</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101090323789.png" alt="image-20240101090323789" style="zoom:80%;" />
+
+###### 多行的情况
+
+属性名：`align-content`。
+
+取值：
+
+- `flex-start`：与侧轴的起点对齐。
+
+  <img src="html-css/image-20240101140526469.png" alt="image-20240101140526469" style="zoom:67%;" />
+
+- `flex-end`：与侧轴的终点对齐。
+
+  <img src="html-css/image-20240101140616004.png" alt="image-20240101140616004" style="zoom:67%;" />
+
+- `center`：与侧轴的中点对齐。
+
+  <img src="html-css/image-20240101140641273.png" alt="image-20240101140641273" style="zoom:67%;" />
+
+- `space-between`：与侧轴两端对齐，中间平均分布。
+
+  <img src="html-css/image-20240101140713166.png" alt="image-20240101140713166" style="zoom:67%;" />
+
+- `space-around`：伸缩项目间的距离相等，比距边缘大一倍。
+
+  <img src="html-css/image-20240101140740379.png" alt="image-20240101140740379" style="zoom:67%;" />
+
+- `space-evenly`：在侧轴上完全平分。
+
+  <img src="html-css/image-20240101140814080.png" alt="image-20240101140814080" style="zoom:67%;" />
+
+- `stretch`：占满整个侧轴，默认值。
+
+  <img src="html-css/image-20240101140841279.png" alt="image-20240101140841279" style="zoom:67%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>07_侧轴对齐方式_多行</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 900px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式（多行）侧轴的起始位置对齐 */
+            /* align-content: flex-start; */
+
+            /* 侧轴的对齐方式（多行）侧轴的结束位置对齐 */
+            /* align-content: flex-end; */
+
+            /* 侧轴的对齐方式（多行）侧轴的中间位置对齐 */
+            /* align-content: center; */
+
+            /* 侧轴的对齐方式（多行），伸缩项目之间的距离是相等的，且是边缘距离的2倍 */
+            /* align-content:space-around; */
+
+            /* 侧轴的对齐方式（多行），伸缩项目之间的距离是相等的，且边缘没有距离 */
+            /* align-content:space-between; */
+
+            /* 侧轴的对齐方式（多行），伸缩项目之间的距离是相等的 */
+            /* align-content:space-evenly; */
+
+            /* 侧轴的对齐方式（多行），拉伸，默认 */
+            /* align-content: stretch; */
+
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner2 {
+            height: 300px;
+        }
+
+        .inner3 {
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+        <div class="inner">4</div>
+        <div class="inner">5</div>
+        <div class="inner">6</div>
+        <div class="inner">7</div>
+        <div class="inner">8</div>
+        <div class="inner">9</div>
+        <div class="inner">10</div>
+        <div class="inner">11</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101090642286.png" alt="image-20240101090642286" style="zoom:80%;" />
+
+##### flex 实现水平垂直居中
+
+**方法一：父容器开启 flex 布局，随后使用 justify-content 和 align-items 实现水平垂直居中。**
+
+```css
+.outer {
+    width: 400px;
+    height: 400px;
+    background-color: #888;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inner {
+    width: 100px;
+    height: 100px;
+    background-color: orange;
+}
+```
+
+**方法二：父容器开启 flex 布局，随后子元素 margin: auto。**
+
+```css
+.outer {
+    width: 400px;
+    height: 400px;
+    background-color: #888;
+    
+    display: flex;
+}
+
+.inner {
+    width: 100px;
+    height: 100px;
+    background-color: orange;
+    
+    margin: auto;
+}
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>08_元素水平垂直居中</title>
+    <style>
+        .outer {
+            width: 400px;
+            height: 400px;
+            background-color: #888;
+            display: flex;
+
+            /* 方案一 */
+            /* justify-content: center; */
+            /* align-items: center; */
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            /* 方案二 */
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner"></div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101091011254.png" alt="image-20240101091011254" style="zoom:80%;" />
+
+##### 伸缩性
+
+###### flex-basis
+
+概念：`flex-basis`能够**设置主轴方向的基准长度**，会让宽度或高度失效。
+
+- **主轴横向：宽度失效；主轴纵向：高度失效。**
+
+作用：浏览器根据这个属性设置的值，计算主轴上是否有多余空间，**默认值 auto，即伸缩项目的宽或高。**
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>09_项目在主轴的基准长度</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 900px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner2 {
+            /* 设置伸缩项目在主轴上的基准长度，若主轴是横向的宽失效，若主轴是纵向的高失效 */
+            flex-basis: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101200418905.png" alt="image-20240101200418905" style="zoom:80%;" />
+
+###### flex-grow（伸）
+
+概念：`flex-grow`定义伸缩项目的放大比例，默认为 0，即纵使主轴存在剩余空间，也不拉伸（放大）。
+
+规则：
+
+1. 若所有伸缩项目的 flex-grow 值都为 1，则：它们将等分剩余空间（如果有空间的话）。
+2. 若三个伸缩项目的 flex-grow 值分别为：1、2、3，则分别瓜分到：1/6、2/6、3/6 的空间。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>10_伸缩项目_伸</title>
+    <style>
+        .outer {
+            width: 1000px;
+            height: 400px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            flex-wrap: wrap;
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+
+            flex-grow: 1;
+        }
+
+        /* .inner1 {
+            flex-grow: 1;
+        } */
+        .inner2 {
+            /* flex-grow: 2; */
+            width: 300px;
+        }
+
+        /* .inner3 {
+            flex-grow: 3;
+        } */
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101213518483.png" alt="image-20240101213518483" style="zoom:80%;" />
+
+###### flex-shrink（缩）
+
+概念：`flex-shrink`定义了项目的压缩比例，默认为 1，即如果空间不足，该项目将会缩小。（不要开启主轴自动换行，或者缩不起作用）
+
+收缩项目的计算，略微复杂一点，我们拿一个场景举例。
+
+假设三个收缩项目，宽度分别为：200 px、300 px、200 px，它们的 flex-shrink 值分别为：1、2、3。若想刚好容纳下三个项目，需要总宽度为 700 px，但目前容器只有 400 px，还差 300 px。所以每个人都要收缩一下才可以放下，具体收缩的值，这样计算：
+
+1. 计算分母：(200 × 1) + (300 × 2) + (200 × 3) = 1400。
+2. 计算比例：
+   - 项目一：(200 × 1) / 1400 = 比例值 1。
+   - 项目二：(300 × 2) / 1400 = 比例值 2。
+   - 项目三：(200 × 3) / 1400 = 比例值 3。
+3. 计算最终收缩大小：
+   - 项目一需要收缩：比例值 1 × 300。
+   - 项目二需要收缩：比例值 2 × 300。
+   - 项目三需要收缩：比例值 3 × 300。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>11_伸缩项目_缩</title>
+    <style>
+        .outer {
+            width: 400px;
+            height: 400px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行，不要开启自动换行，或者缩不起作用 */
+            /* flex-wrap: wrap; */
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式 */
+            align-content: flex-start;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        .inner1 {
+            flex-shrink: 1;
+        }
+
+        .inner2 {
+            flex-shrink: 2;
+            width: 300px;
+        }
+
+        .inner3 {
+            flex-shrink: 3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">
+            <div style="width: 50px;height:50px;background-color: green;">1</div>
+        </div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101215227425.png" alt="image-20240101215227425" style="zoom:80%;" />
+
+##### flex 复合属性
+
+`flex`是复合属性，复合了 "flex-grow flex-shrink flex-basis" 三个属性，默认值为 "0 1 auto"。
+
+- 如果写 "flex: 1 1 auto"，则可简写为："flex: auto"。
+- 如果写 "flex: 1 1 0"，则可简写为："flex: 1"。
+- 如果写 "flex: 0 0 auto"，则可简写为："flex: none"。
+- 如果写 "flex: 0 1 auto"，则可简写为："flex: 0 auto"，即 flex 初始值。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>12_flex复合属性</title>
+    <style>
+        .outer {
+            width: 600px;
+            height: 900px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            /* flex-wrap: wrap; */
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式 */
+            align-content: flex-start;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+            /* 可以拉伸 */
+            /* flex-grow: 1; */
+
+            /* 可以压缩 */
+            /* flex-shrink: 1; */
+
+            /* 基准长度 */
+            /* flex-basis: 100px; */
+
+            /* 可以拉伸 可以压缩 不设置基准长度，可简写为：flex:auto */
+            /* flex:1 1 auto; */
+
+            /* 可以拉伸 可以压缩 设置基准长度为0，可简写为：flex:1 */
+            /* flex: 1 1 0; */
+
+            /* 不可以拉伸 不可以压缩 不设置基准长度，可简写为：flex:none  */
+            /* flex: 0 0 auto; */
+
+            /* 不可以拉伸 可以压缩 不设置基准长度，可简写为：flex:0 auto */
+            /* flex: 0 1 auto; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+##### 项目排序
+
+使用`order`属性，定义**项目的排列顺序**。数值越小，排列越靠前，默认为 0。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>13_项目排序与单独对齐</title>
+    <style>
+        .outer {
+            width: 600px;
+            height: 400px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            /* flex-wrap: wrap; */
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式 */
+            align-content: flex-start;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+            /* 可以拉伸 可以压缩 设置基准长度为0，可简写为：flex:1 */
+            flex: 1 1 0;
+        }
+
+        .inner1 {
+            order: 3;
+        }
+
+        .inner2 {
+            order: 2;
+        }
+
+        .inner3 {
+            order: 1;
+        }
+
+        /* .inner2 {
+            align-self: center;
+        } */
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101220716584.png" alt="image-20240101220716584" style="zoom:80%;" />
+
+##### 单独对齐
+
+使用`align-self`属性，可以**单独调整某个伸缩项目的对齐方式**。默认值为 auto，表示继承父元素的 align-items 属性。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>13_项目排序与单独对齐</title>
+    <style>
+        .outer {
+            width: 600px;
+            height: 600px;
+            background-color: #888;
+            margin: 0 auto;
+
+            /* 伸缩盒模型相关属性-start */
+
+            /* 将该元素变为了伸缩容器（开启了flex布局） */
+            display: flex;
+
+            /* 调整主轴方向，水平从左到右，默认 */
+            flex-direction: row;
+
+            /* 主轴换行方式，换行 */
+            /* flex-wrap: wrap; */
+
+            /* 主轴的对齐方式，主轴的起始位置 */
+            justify-content: flex-start;
+
+            /* 侧轴的对齐方式 */
+            align-content: flex-start;
+        }
+
+        .inner {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+            /* 可以拉伸 可以压缩 设置基准长度为0，可简写为：flex:1 */
+            flex: 1 1 0;
+        }
+
+        /* .inner1 {
+            order: 3;
+        }
+
+        .inner2 {
+            order: 2;
+        }
+
+        .inner3 {
+            order: 1;
+        } */
+
+        .inner2 {
+            align-self: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240101220825679.png" alt="image-20240101220825679" style="zoom:80%;" />
+
+##### 伸缩盒模型的应用案例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>尚硅谷官网</title>
+    <style>
+        * {
+            font-family: Arial;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            background-image: url('../images/bg.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .page-header {
+            height: 70px;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .header-nav {
+            display: flex;
+
+        }
+
+        .header-nav li a {
+            color: white;
+            font-size: 20px;
+            border: 1px solid white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-right: 20px;
+        }
+
+        .header-nav li:last-child a {
+            margin-right: 0;
+        }
+
+        .page-content {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .content-nav {
+            width: 1000px;
+            height: 300px;
+            margin: auto;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .content-nav .item {
+            width: 180px;
+            height: 200px;
+            background-color: orange;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            transition: 0.2s linear;
+            cursor: pointer;
+        }
+
+        .content-nav .item:hover {
+            box-shadow: 0px 0px 20px black;
+        }
+
+        .content-nav .item span {
+            font-size: 20px;
+            color: white;
+        }
+
+        .content-nav .item:nth-child(1) {
+            background-color: #595CA8;
+        }
+
+        .content-nav .item:nth-child(2) {
+            background-color: #FF9D2E;
+        }
+
+        .content-nav .item:nth-child(3) {
+            background-color: #01A6DE;
+        }
+
+        .content-nav .item:nth-child(4) {
+            background-color: #015E91;
+        }
+
+        .content-nav .item:nth-child(5) {
+            background-color: #1DC128;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 头部 -->
+    <header class="page-header">
+        <a href="#">
+            <img src="../images/logo.png" alt="logo">
+        </a>
+        <ul class="header-nav">
+            <li><a href="#">国内校区</a></li>
+            <li><a href="#">缅甸校区</a></li>
+            <li><a href="#">非洲校区</a></li>
+            <li><a href="#">美国校区</a></li>
+        </ul>
+    </header>
+    <!-- 内容区 -->
+    <div class="page-content">
+        <div class="content-nav">
+            <div class="item">
+                <img src="../images/item1.png" alt="">
+                <span>我的邮箱</span>
+            </div>
+            <div class="item">
+                <img src="../images/item2.png" alt="">
+                <span>云服务</span>
+            </div>
+            <div class="item">
+                <img src="../images/item3.png" alt="">
+                <span>手机课堂</span>
+            </div>
+            <div class="item">
+                <img src="../images/item4.png" alt="">
+                <span>微信服务</span>
+            </div>
+            <div class="item">
+                <img src="../images/item5.png" alt="">
+                <span>在线客服</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+```
+
+效果图：
+
+![image-20240101221143495](html-css/image-20240101221143495.png)
+
+#### 响应式布局
+
+#### BFC
 
