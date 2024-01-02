@@ -14356,5 +14356,579 @@ flex-flow: row wrap;
 
 #### 响应式布局
 
+##### 媒体查询
+
+`媒体查询`使用`@media`属性。
+
+###### 媒体类型
+
+@media 能够查询的**媒体类型**：
+
+- `all`：检测所有设备。
+- `screen`：检测电子屏幕。包括：电脑屏幕、平板屏幕、手机屏幕等。
+- `print`：检测打印机。
+- aural：已废弃，用于语音和声音合成器。
+- braille：已废弃，应用于盲文触摸式反馈设备。
+- embossed：已废弃， 用于打印的盲人印刷设备。
+- handheld：已废弃， 用于掌上设备或更小的装置，如 PDA 和小型电话。
+- projection：已废弃， 用于投影设备。
+- tty：已废弃， 用于固定的字符网格，如电报、终端设备和对字符有限制的便携设备。
+- tv：已废弃， 用于电视和网络电视。
+
+> 完整的媒体类型列表，参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media 
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_媒体查询_媒体类型</title>
+    <style>
+        h1 {
+            width: 600px;
+            height: 400px;
+            line-height: 400px;
+            background-image: linear-gradient(30deg, red, yellow, green);
+            margin: 0 auto;
+            text-align: center;
+            font-size: 100px;
+            color: white;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* 媒体查询未提供优先级，需要放在正常样式的下面，否则无效果 */
+
+        /* 只有在打印机或打印预览才应用的样式 */
+        @media print {
+            h1 {
+                /* 打印机预览时去掉背景图 */
+                background: transparent;
+            }
+        }
+
+        /* 只有在屏幕上才应用的样式 */
+        @media screen {
+            h1 {
+                font-family: "翩翩体-简";
+            }
+        }
+
+        /* 一直都应用的样式 */
+        @media all {
+            h1 {
+                color: red;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>新年快乐</h1>
+</body>
+
+</html>
+```
+
+效果图：
+
+<img src="html-css/image-20240102104643733.png" alt="image-20240102104643733" style="zoom: 67%;" />
+
+<img src="html-css/image-20240102104730186.png" alt="image-20240102104730186" style="zoom: 67%;" />
+
+###### 媒体特性
+
+@media 能够查询的**媒体特性**：
+
+- `width`：检测视口**宽度**。
+- `max-width`：检测视口**最大宽度**。
+- `min-width`：检测视口**最小宽度**。
+- `height`：检测视口**高度**。
+- `max-height`：检测视口**最大高度**。
+- `min-height`：检测视口**最小高度**。
+- `device-width`：检测设备**屏幕的宽度**。
+- `max-device-width`：检测设备**屏幕的最大宽度**。
+- `min-device-width`：检测设备**屏幕的最小宽度**。
+- `orientation`：检测**视口的旋转方向**（是否横屏）。
+  - `portrait`：视口处于**纵向**，即高度大于等于宽度。
+  - `landscape`：视口处于**横向**，即宽度大于高度。
+
+> 完整的媒体类型列表，参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media
+>
+> **注意：设备屏幕的宽度，需要考虑系统的缩放。**如下图所示，显示器分辨率宽度为 2560，缩放为 125%，则实际的设备屏幕宽度为 2560 / 125% = 2048 px。
+>
+> <img src="html-css/image-20240102111351011.png" alt="image-20240102111351011" style="zoom:80%;" />
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_媒体查询_媒体特性</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            height: 200px;
+            background-color: gray;
+            text-align: center;
+            line-height: 200px;
+            font-size: 100px;
+        }
+
+        /* 检测到视口的宽度等于800px时，应用如下样式 */
+        @media (width:800px) {
+            h1 {
+                background-color: green;
+            }
+        }
+
+        /* 检测到视口的宽度小于等于700px时，应用如下样式 */
+        @media (max-width:700px) {
+            h1 {
+                background-color: orange;
+            }
+        }
+
+        /* 检测到视口的宽度大于等于900px时，应用如下样式 */
+        @media (min-width:900px) {
+            h1 {
+                background-color: deepskyblue;
+            }
+        }
+
+        /* 检测到视口的高度等于800px时，应用如下样式 */
+        /* @media (height:800px){
+            h1 {
+                background-color: yellow;
+            }
+        } */
+
+        /* 检测到屏幕的宽度等于2048px时，应用如下样式 */
+        /* @media (device-width:2048px) {
+            h1 {
+                color: white;
+            }
+        } */
+    </style>
+</head>
+
+<body>
+    <h1>你好啊</h1>
+</body>
+
+</html>
+```
+
+###### 运算符
+
+@media 能够使用的**运算符**：
+
+- `and`：并且。
+- `, 或 or`：或。
+- `not`：否定。
+- `only`：肯定。
+
+> only 能够解决一些 IE 老版本浏览器的兼容问题。比如：@media screen and (width:800px)，IE 浏览器可能会识别出 screen，但是后面的条件无法识别，导致错误的样式。添加 only 之后，IE 浏览器也无法识别出 only，因此就会直接舍弃整个 @media only screen and (width:800px) 条件，不会对整体样式产生影响。
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_媒体查询_运算符</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            height: 200px;
+            background-color: gray;
+            text-align: center;
+            line-height: 200px;
+            font-size: 100px;
+        }
+
+        /* 且运算符 */
+        /* @media (min-width:700px) and (max-width:800px) {
+            h1 {
+                background-color: orange;
+            }
+        } */
+        /* @media screen and (min-width:700px) and (max-width:800px) {
+            h1 {
+                background-color: orange;
+            }
+        } */
+
+        /* 或运算符 */
+        /* @media screen and (max-width:700px) or (min-width:800px) {
+            h1 {
+                background-color: orange;
+            }
+        } */
+
+        /* 否定运算符 */
+        /* @media not screen {
+            h1 {
+                background-color: orange;
+            }
+        } */
+
+        /* 肯定运算符 */
+        @media only screen and (width:800px) {
+            h1 {
+                background-color: orange;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>你好啊</h1>
+</body>
+
+</html>
+```
+
+##### 常用阈值
+
+在实际开发中，会将屏幕划分成几个区间，例如：
+
+<img src="html-css/image-20240102112748368.png" alt="image-20240102112748368" style="zoom:67%;" />
+
+##### 结合外部样式的用法
+
+用法一，在引入样式的时候，指定 @media，样式上不写 @media，只写普通的样式：
+
+```html
+<link rel="stylesheet" media="具体的媒体查询" href="mystylesheet.css">
+```
+
+用法二，直接在样式上指定 @media：
+
+```css
+@media screen and (max-width:768px) {
+/*CSS-Code;*/
+}
+
+@media screen and (min-width:768px) and (max-width:1200px) {
+/*CSS-Code;*/
+}
+```
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_媒体查询_运算符</title>
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/small.css">
+    <link rel="stylesheet" href="./css/middle.css">
+    <link rel="stylesheet" href="./css/large.css">
+    <link rel="stylesheet" media="screen and (min-width:1200px)" href="./css/huge.css">
+</head>
+
+<body>
+    <h1>你好啊</h1>
+</body>
+
+</html>
+```
+
+index.css：
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    height: 200px;
+    background-color: gray;
+    text-align: center;
+    line-height: 200px;
+    font-size: 100px;
+}
+```
+
+small.css：
+
+```css
+/* 超小屏幕 */
+@media screen and (max-width:768px) {
+    h1 {
+        background-color: orange;
+    }
+}
+```
+
+middle.css：
+
+```css
+/* 中等屏幕 */
+@media screen and (min-width:768px) and (max-width:992px) {
+    h1 {
+        background-color: green;
+    }
+}
+```
+
+large.css：
+
+```css
+/* 大屏幕 */
+@media screen and (min-width:992px) and (max-width:1200px) {
+    h1 {
+        background-color: deepskyblue;
+    }
+}
+```
+
+huge.css：
+
+```css
+/* 超大屏幕 */
+h1 {
+    background-color: purple;
+}
+```
+
 #### BFC
 
+##### 什么是 BFC
+
+W3C 上对 BFC 的定义：
+
+>Floats, absolutely positioned elements, block containers (such as inline-blocks, table cells, and table-captions) that are not block boxes, and block boxes with 'overflow' other than 'visible' (except when that value has been propagated to the viewport) establish new block formatting contexts for their contents.
+>
+>浮动、绝对定位元素、不是块盒子的块容器（如 inline-blocks、table-cells 和 table-captions），以及 overflow 属性的值除 visible 以外的块盒，将为其内容建立新的块格式化上下文。
+
+MDN 上对 BFC 的描述：
+
+>块格式化上下文（Block Formatting Context，BFC） 是 Web 页面的可视 CSS 渲染的一部分，是块盒子的布局过程发生的区域，也是浮动元素与其他元素交互的区域。
+
+更加通俗的描述：
+
+>`BFC 是 Block Formatting Context，块级格式上下文`，可以理解成元素的一个 "特异功能"。该 "特异功能"在默认的情况下处于关闭状态；当元素满足了某些条件后，该 "特异功能" 被激活。所谓激活 "特异功能"，专业点说就是：**该元素创建了 BFC，又称开启了 BFC。**
+
+##### 开启 BFC 的作用
+
+开启 BFC 能解决的问题：
+
+- **元素开启 BFC 后，其子元素不会再产生 margin 塌陷问题。**
+- **元素开启 BFC 后，自己不会被其他浮动元素所覆盖。**
+- **元素开启 BFC 后，就算其子元素浮动，元素自身高度也不会塌陷。**
+
+#####  如何开启 BFC
+
+能够开启 BFC 的元素有：
+
+- 根元素。
+- 浮动元素。
+- 绝对定位、固定定位的元素。
+- 行内块元素。
+- 表格单元格：table、thead、tbody、tfoot、th、td、tr、caption。
+- overflow 的值不为 visible 的块元素。
+- 伸缩项目。
+- 多列容器。
+- column-span 为 all 的元素（即使该元素没有包裹在多列容器中）。
+- display 的值，设置为 flow-root 的元素。
+
+##### BFC 的应用案例
+
+**示例一，解决子元素 margin 塌陷的问题：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>01_BFC_演示1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* 6. 父元素开启flex，子元素自动成为伸缩项目 */
+            /* display: flex; */
+        }
+
+        .outer {
+            width: 400px;
+            background-color: #888;
+            /* 1. 开启浮动 */
+            /* float: left; */
+
+            /* 2. 开启绝对定位 */
+            /* position: absolute; */
+
+            /* 3. 设置行内块元素 */
+            /* display: inline-block; */
+
+            /* 4. 设置表格 */
+            /* display: table; */
+
+            /* 5. 设置overflow */
+            /* overflow: auto; */
+
+            /* 7. 设置多列容器 */
+            /* column-count: 1; */
+
+            /* 8. 设置display */
+            /* display: flow-root; */
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            margin: 20px;
+        }
+
+        .inner1 {
+            background-color: orange;
+        }
+
+        .inner2 {
+            background-color: green;
+        }
+
+        .inner3 {
+            background-color: deepskyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1"></div>
+        <div class="inner inner2"></div>
+        <div class="inner inner3"></div>
+    </div>
+    <!-- <hr style="height: 50px; background-color: red;"> -->
+</body>
+
+</html>
+```
+
+**示例二，解决被浮动元素覆盖的问题：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>02_BFC_演示2</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+        }
+
+        .box1 {
+            background-color: orange;
+            float: left;
+        }
+
+        .box2 {
+            background-color: green;
+            /* float: left; */
+            /* position: absolute; */
+            /* display: inline-block; */
+            /* display: table; */
+            /* overflow: auto; */
+            /* column-count: 1; */
+            /* display: flow-root; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box box1"></div>
+    <div class="box box2"></div>
+</body>
+
+</html>
+```
+
+**示例三，解决全部子元素浮动，自身高度塌陷的问题：**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>03_BFC_演示3</title>
+    <style>
+        .outer {
+            width: 400px;
+            background-color: #888;
+            /* float: left; */
+            /* position: absolute; */
+            /* display: inline-block; */
+            /* display: table; */
+            /* overflow: auto; */
+            /* column-count: 1; */
+            display: flow-root;
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            float: left;
+        }
+
+        .inner1 {
+            background-color: orange;
+        }
+
+        .inner2 {
+            background-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer">
+        <div class="inner inner1"></div>
+        <div class="inner inner2"></div>
+    </div>
+</body>
+
+</html>
+```
+
+## 结束语
+
+<img src="html-css/image-20240102124220741.png" alt="image-20240102124220741" style="zoom: 50%;" />
+
+## 本文参考
+
+https://www.bilibili.com/video/BV1p84y1P7Z5
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
