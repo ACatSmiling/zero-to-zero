@@ -11075,7 +11075,7 @@ Enum 类中的常用方法：
       }
       ```
 
-      <img src="java-advanced/1616158959(1).jpg" alt="1616158959(1)" style="zoom: 70%;" />
+      <img src="java-advanced/1616158959.jpg" alt="1616158959" style="zoom: 70%;" />
 
   - `@Target`：用于修饰 Annotation 定义，用于指定被修饰的 Annotation 能用于修饰哪些程序元素。 @Target 也包含一个名为 value 的成员变量。
 
