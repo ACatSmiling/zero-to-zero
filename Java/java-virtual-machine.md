@@ -512,7 +512,7 @@ Java 编译器输入的指令集架构一般分为两种：一种是`基于栈�
 
 - 如果说 HotSpot 有一天真的被取代，Graal VM 希望最大。但是 Java 的软件生态没有丝毫变化。
 
-### 内存结构概述
+### JVM 内存结构总览
 
 **JVM 的整体结构（简化版）：**
 
@@ -532,4 +532,359 @@ Java 编译器输入的指令集架构一般分为两种：一种是`基于栈�
 >
 >- **执行引擎。**
 
+### 类的执行流程概述
+
+```java
+/**
+ *示例代码
+ */
+public class HelloLoader {
+    public static void main(String[] args) {
+        System.out.println("Hello World!");
+    }
+}
+```
+
+用流程图表示上述示例代码：
+
+<img src="java-virtual-machine/image-20240104102838396.png" alt="image-20240104102838396" style="zoom:67%;" />
+
 ### 类加载器子系统
+
+#### 类加载器子系统的作用
+
+
+
+![1704333355483](java-virtual-machine/1704333355483.jpg)
+
+- 类加载器子系统负责从文件系统或者网络中加载 Class 文件，Class 文件在文件开头有特定的文件标识。
+
+- ClassLoader 只负责 Class 文件的加载，至于它是否可以运行，则由 Execution Engine 决定。
+
+- 加载的类信息存放于一块称为方法区的内存空间。除了类的信息外，方法区中还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是 Class 文件中常量池部分的内存映射）。
+
+###### 加载 Class 文件的方式
+
+- **从`本地系统中直接加载`。**
+- **运行时计算生成，使用最多的是：`动态代理技术`。**
+
+- 通过网络获取，典型场景：Web Applet。
+
+- 从 zip 压缩包中读取，成为日后 Jar、War 格式的基础。
+
+- 由其他文件生成，典型场景：JSP 应用。
+
+- 从专有数据库中提取 .class 文件，比较少见。
+
+- 从加密文件中获取，典型的防 Class 文件被反编译的保护措施。
+
+#### 类的加载过程
+
+![1704342518603](java-virtual-machine/1704342518603.jpg)
+
+##### 加载阶段（Loading）
+
+- 通过一个**类的全限定名**获取定义此类的二进制字节流。
+- 将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。
+- `在内存中生成一个代表这个类的 java.lang.Class 对象`，作为方法区这个类的各种数据的访问入口。
+
+###### 类加载器 ClasLoader 的角色
+
+<img src="java-virtual-machine/image-20240104101503485.png" alt="image-20240104101503485" style="zoom:80%;" />
+
+- Class File 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候，需要加载到 JVM 当中，然后根据这个文件实例化出 n 个一模一样的实例。
+
+- Class File 加载到 JVM 中，被称为 DNA 元数据模板，放在方法区。
+
+- 在 .class文件 -> JVM -> 最终成为元数据模板的过程中，需要一个运输工具来扮演快递员的角色，这个运输工具就是`类装载器 Class Loader`。
+
+##### 链接阶段（Linking）
+
+###### 验证（Verify） 
+
+- 目的在于：**确保 Class 文件的字节流中包含的信息，符合当前虚拟机要求，保证被加载类的正确性，不会危害虚拟机自身安全。**
+
+- 主要包括四种验证：**文件格式验证，元数据验证，字节码验证，符号引用验证。**
+
+###### 准备（Prepare）
+
+- 为类变量分配内存，并且设置该类变量的默认初始值，即零值。
+
+- 这里不包含用 final 修饰的 static，因为 final 在编译的时候就会分配了，准备阶段会显式初始化。
+
+- 这里不会为实例变量分配初始化，类变量会分配在方法区中，而实例变量是随着对象一起分配到 Java 堆中。
+
+###### 解析（Resolve）
+
+- 将常量池内的符号引用转换为直接引用的过程。
+
+- 事实上，解析操作往往会伴随着 JVM 在执行完初始化之后再执行。
+
+- 符号引用就是一组符号来描述所引用的目标。符号引用的字面量形式明确定义在《Java 虚拟机规范》的 Class 文件格式中。直接引用就是直接指向目标的指针、相对偏移量或一个间接定位到目标的句柄。
+
+- 解析动作主要针对类或接口、字段、类方法、接口方法、方法类型等。对应常量池中的 CONSTANT_Class_info，CONSTANT_Fieldref_info、CONSTANT_Methodref_info 等。
+
+##### 初始化阶段（Initialization）
+
+- 初始化阶段就是执行类构造器方法`<clinit>()`的过程。
+
+- 此方法不需定义，是 javac 编译器自动收集类中的所有类变量的赋值动作和静态代码块中的语句合并而来。
+
+- 构造器方法中指令按语句在源文件中出现的顺序执行。
+
+- `<clinit>()`不同于类的构造器。（关联：构造器是虚拟机视角下的`<init>()`）
+
+- 若该类具有父类，JVM 会保证子类的`<clinit>()`执行前，父类的`<clinit>()`已经执行完毕。
+
+- 虚拟机必须保证一个类的`<clinit>()`方法在多线程下被同步加锁。
+
+#### 类加载器分类
+
+Java 虚拟机规范中，JVM 支持两种类型的类加载器，分别为：`引导类加载器 (Bootstrap ClassLoader)`和`自定义类加载器 (User-Defined ClassLoader)`。
+
+> 从概念上来讲，自定义类加载器一般指的是程序中由开发人员自定义的一类类加载器，但是 Java 虚拟机规范中没有如此定义，而是将**所有派生于抽象类 ClassLoader 的类加载器，都划分为自定义类加载器。**
+>
+> **扩展类加载器（Extension ClassLoader）和系统类加载器（应用程序类加载器，AppClassLoader）都派生于 ClssLoader，因此，它们二者属于自定义类加载器。**
+>
+> <img src="java-virtual-machine/image-20240104155649848.png" alt="image-20240104155649848" style="zoom:80%;" />
+>
+> <img src="java-virtual-machine/image-20240104155902861.png" alt="image-20240104155902861" style="zoom:80%;" />
+
+无论类加载器的类型如何划分，在程序中我们最常见的类加载器始终只有 3 个，如下所示：
+
+<img src="java-virtual-machine/image-20240104160216646.png" alt="image-20240104160216646" style="zoom: 67%;" />
+
+> **上图所示的四种类加载器之间的关系是`包含关系`，不是上层下层，也不是子父类的继承关系。**
+>
+> 代码示例：
+>
+> ```java
+> package cn.xisun.jvm;
+> 
+> /**
+>  * @author XiSun
+>  * @since 2024/1/4 15:38
+>  */
+> public class ClassLoaderTest {
+>     public static void main(String[] args) {
+>         // 获取系统类加载器
+>         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+>         System.out.println(systemClassLoader);// sun.misc.Launcher$AppClassLoader@18b4aac2
+> 
+>         // 获取系统类加载器的上层：扩展类加载器
+>         ClassLoader extClassLoader = systemClassLoader.getParent();
+>         System.out.println(extClassLoader);// sun.misc.Launcher$ExtClassLoader@1b6d3586
+> 
+>         // 获取扩展类加载器的上层：引导类加载器，此方式获取不到
+>         ClassLoader bootstrapClassLoader = extClassLoader.getParent();
+>         System.out.println(bootstrapClassLoader);// null
+> 
+>         // 对于用户自定义类来说：默认使用系统类加载器进行加载
+>         ClassLoader classLoader = ClassLoaderTest.class.getClassLoader();
+>         System.out.println(classLoader);// sun.misc.Launcher$AppClassLoader@18b4aac2
+> 
+>         // 获取不到类加载器，说明String类使用引导类加载器进行加载 ---> Java的核心类库，都是使用引导类加载器进行加载
+>         ClassLoader classLoader1 = String.class.getClassLoader();
+>         System.out.println(classLoader1);// null
+>     }
+> }
+> ```
+
+##### 虚拟机自带的加载器
+
+######  引导类加载器（Bootstrap ClassLoader）
+
+又叫**启动类加载器**，特点如下：
+
+- **使用 C/C++ 语言实现，嵌套在 JVM 内部。**
+
+- 它`用来加载 Java 的核心库 (JAVA_HOME/jre/lib/rt.jar、resources.jar 或 sun.boot.class.path 路径下的内容)`，用于提供 JVM 自身需要的类。
+
+- 不是继承自 java.lang.ClassLoader，`没有父加载器`。
+
+- 加载扩展类加载器和系统类加载器，`是扩展类加载器和系统类加载器的父类加载器`。（此处的父类加载器，不是 Java 种继承的那种关系）
+
+- 出于安全考虑，引导类加载器`只加载包名为 java、javax、sun 等开头的类`。
+
+###### 扩展类加载器（Extension ClassLoader）
+
+特点如下：
+
+- 使用Java 语言编写，`由 sun.misc.Launcher$ExtClassLoader 实现`。
+
+- 派生于 ClassLoader 类。
+
+- 父类加载器为引导类加载器。（此处的父类加载器，不是 Java 种继承的那种关系）
+
+- `从 java.ext.dirs 系统属性所指定的目录中加载类库，或从 JDK 的安装目录的 jre/1ib/ext 子目录 (扩展目录) 下加载类库。`**如果用户创建的 JAR 放在此目录下，也会自动由扩展类加载器加载。**
+
+###### 系统类加载器（Application ClassLoader）
+
+又叫**应用程序类加载器**，特点如下：
+
+- 使用Java 语言编写，`由 sun.misc.LaunchersAppClassLoader 实现`。
+
+- 派生于 ClassLoader 类。
+
+- 父类加载器为扩展类加载器。（此处的父类加载器，不是 Java 种继承的那种关系）
+
+- `负责加载环境变量 classpath 或系统属性 java.class.path 指定路径下的类库。`
+
+- `是程序中默认的类加载器`，一般来说，Java 应用的类都是由它来完成加载。
+
+- 通过`ClassLoader#getSystemclassLoader()`方法，可以获取到该类加载器。
+
+###### 查看类的加载器示例
+
+```java
+package cn.xisun.jvm;
+
+import com.sun.awt.SecurityWarning;
+import com.sun.javafx.PlatformUtil;
+import sun.misc.Launcher;
+
+import java.net.URL;
+
+/**
+ * @author XiSun
+ * @since 2024/1/4 21:59
+ */
+public class ClassLoaderTest1 {
+    public static void main(String[] args) {
+
+        System.out.println("**********引导类加载器**********");
+        URL[] urLs = Launcher.getBootstrapClassPath().getURLs();
+        for (URL url : urLs) {
+            System.out.println(url.toExternalForm());
+        }
+
+        // 从上面的路径中随意选择一个类，查看它的类加载器是什么
+        // 以file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/rt.jar为例，取com.sun.awt.SecurityWarning
+        ClassLoader classLoader = SecurityWarning.class.getClassLoader();
+        System.out.println(classLoader);// null -> 类加载器是引导类加载器
+
+        System.out.println("**********扩展类加载器**********");
+        String extDirs = System.getProperty("java.ext.dirs");
+        for (String path : extDirs.split(";")) {
+            System.out.println(path);
+        }
+
+        // 从上面的路径中随意选择一个类，查看它的类加载器是什么
+        // 以C:\Users\XiSun\AppData\Local\Programs\Java\jdk1.8.0_201\jre\lib\ext\jfxrt.jar为例，取com.sun.javafx.PlatformUtil
+        ClassLoader classLoader1 = PlatformUtil.class.getClassLoader();
+        System.out.println(classLoader1);// sun.misc.Launcher$ExtClassLoader@1540e19d -> 扩展类加载器
+    }
+}
+
+输出结果：
+**********引导类加载器**********
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/resources.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/rt.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/sunrsasign.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/jsse.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/jce.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/charsets.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/lib/jfr.jar
+file:/C:/Users/XiSun/AppData/Local/Programs/Java/jdk1.8.0_201/jre/classes
+null
+**********扩展类加载器**********
+C:\Users\XiSun\AppData\Local\Programs\Java\jdk1.8.0_201\jre\lib\ext
+C:\Windows\Sun\Java\lib\ext
+sun.misc.Launcher$ExtClassLoader@1540e19d
+```
+
+##### 用户自定义类加载器
+
+在 Java 的日常应用程序开发中，类的加载几乎都是由上述三种类加载器相互配合执行的。**在必要时，我们也可以自定义类加载器，来定制类的加载方式。**
+
+**为什么要自定义类加载器：**
+
+- 隔离加载类。
+
+- 修改类加载的方式。
+
+- 扩展加载源。
+
+- 防止源码泄漏。（加密字节码文件，使用时需要在自定义类加载器中进行解密）
+
+**用户自定义类加载器实现步骤：**
+
+1. 开发人员可以通过`继承抽象类 java.lang.ClassLoader 类`的方式，实现自定义的类加载器，以满足一些特殊的需求。
+2. 在 JDK 1.2 之前，在自定义类加载器时，总会去继承 ClassLoader 类并重写 loadClass() 方法，从而实现自定义的类加载器，但是在 JDK 1.2 之后，已不再建议用户去覆盖 loadclass() 方法，而是`建议把自定义的类加载逻辑写在 findClass()方法中`。
+3. 在编写自定义类加载器时，`如果没有太过于复杂的需求，可以直接继承 URLClassLoader 类。`这样就可以避免自己去编写 findClass() 方法及其获取字节码流的方式，使自定义类加载器编写更加简洁。
+
+#### ClassLoader 的使用说明
+
+`ClassLoader 类是一个抽象类，除引导类加载器以外，所有的类加载器都继承自 ClassLoader。`常用的方法如下：
+
+| 方法名称                                               | 描述                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| `getParent()`                                          | 返回该类加载器的超类加载器                                   |
+| `loadClass(String name)`                               | 加载名称为 name 的类，返回结果为 java.lang.Class 类的示例    |
+| `findClass(String name)`                               | 查找名称为 name 的类，返回结果为 java.lang.Class 类的示例    |
+| `findLoadedClass(String name)`                         | 查找名称为 name 的已经被记载过的类，返回结果为 java.lang.Class 类的示例 |
+| `defineClass(String name, byte[] b, int off, int len)` | 把字节数组 b 中的内容转换为一个 Java 类，返回结果为 java.lang.Class 类的示例 |
+| `resolveClass(Class<?> c)`                             | 连接指定的一个 Java 类                                       |
+
+**ClassLoader 与 ExtClassLoader（扩展类加载器）和 AppClassLoader（系统类加载器）之间的继承关系：**
+
+<img src="java-virtual-machine/image-20240104224340688.png" alt="image-20240104224340688" style="zoom:80%;" />
+
+> **sun.misc.Luncher 是一个 Java 虚拟机的入口应用，ExtClassLoader 和 AppClassLoader 都是 Launcher 的内部类。**
+
+**获取 ClassLoader 的途径：**
+
+- 方式一，获取当前类的 ClassLoader：`clazz.getClassLoader()`。示例：
+
+  ```java
+  try {
+      ClassLoader classLoader = Class.forName("java.lang.String").getClassLoader();
+      System.out.println(classLoader);// null
+  } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+  }
+  ```
+
+- 方式二，获取当前线程上下文的 ClassLoader：`Thread.currentThread().getContextClassLoader()`。示例：
+
+  ```java
+  ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+  System.out.println(contextClassLoader);// sun.misc.Launcher$AppClassLoader@18b4aac2
+  ```
+
+- 方式三，获取系统的 ClassLoader：`ClassLoader.getSystemClassLoader()`。示例：
+
+  ```java
+  ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+  System.out.println(systemClassLoader);// sun.misc.Launcher$AppClassLoader@18b4aac2
+  ```
+
+- 方式四，获取调用者的 ClassLoader：`DriverManager.getCallerClassLoader()`。
+
+#### 双亲委派机制
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<img src="java-virtual-machine/image-20240104132755817.png" alt="image-20240104132755817" style="zoom:67%;" />
