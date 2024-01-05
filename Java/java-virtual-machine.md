@@ -588,6 +588,14 @@ public class HelloLoader {
 - 将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。
 - `在内存中生成一个代表这个类的 java.lang.Class 对象`，作为方法区这个类的各种数据的访问入口。
 
+> IDEA 中可以直接反编译字节码文件的插件`jclasslib Bytecode Viewer`：
+>
+> <img src="java-virtual-machine/image-20240104132755817.png" alt="image-20240104132755817" style="zoom:67%;" />
+>
+> <img src="java-virtual-machine/image-20240105133727294.png" alt="image-20240105133727294" style="zoom:67%;" />
+>
+> 
+
 ###### 类加载器 ClasLoader 的角色
 
 <img src="java-virtual-machine/image-20240104101503485.png" alt="image-20240104101503485" style="zoom:80%;" />
@@ -863,28 +871,485 @@ sun.misc.Launcher$ExtClassLoader@1540e19d
 
 #### 双亲委派机制
 
+概念：**Java 虚拟机对 Class 文件采用的是`按需加载`的方式，也就是说当需要使用该类时才会将它的 Class 文件加载到内存生成 Class 对象。在加载某个类的 Class 文件时，Java 虚拟机采用的是`双亲委派模式`，即`把请求交由父类处理`，它是一种任务委派模式。**
+
+**`工作原理`：**
+
+<img src="java-virtual-machine/image-20240105113016848.png" alt="image-20240105113016848" style="zoom:67%;" />
+
+1. 如果一个类加载器收到了类加载请求，它并不会自己先去加载，而是把这个请求委托给父类的加载器去执行；
+2. 如果父类加载器还存在其父类加载器，则进一步向上委托，依次递归，**请求最终将到达顶层的引导类加载器**；
+3. 如果父类加载器可以完成该类的加载任务，就成功返回，倘若父类加载器无法完成该类的加载任务，子加载器才会尝试自己去加载，这就是双亲委派机制。
+
+**优势：**
+
+- `避免类的重复加载。`
+
+- `保护程序安全，防止核心 API 被随意篡改。`例如：
+
+  - 自定义类：java.lang.String。
+
+  - 自定义类：java.lang.ShkStart（报错：阻止创建 java.lang 开头的类）。
+
+    ```java
+    package java.lang;
+    
+    /**
+     * @author XiSun
+     * @since 2024/1/5 12:22
+     */
+    public class XiSunStart {
+    
+        /**
+         * 执行报错：
+         *  java.lang.SecurityException: Prohibited package name: java.lang
+         *
+         * @param args
+         */
+        public static void main(String[] args) {
+            System.out.println("xisun start");
+        }
+    }
+    ```
+
+> `沙箱安全机制`：假设自定义 java.langString 类，因为在加载自定义 String 类的时候，使用引导类加载器加载，而引导类加载器在加载的过程中会先加载 jdk 自带的文件（rt.jar 包中 java\lang\String.class），报错信息说没有 main 方法，就是因为加载的是 rt.jar 包中的 String 类。这样可以保证对 Java 核心源代码的保护，这就是沙箱安全机制。
+
+示例一：
+
+```java
+package java.lang;
+
+/**
+ * @author XiSun
+ * @since 2024/1/5 11:21
+ */
+public class String {
+
+    static {
+        System.out.println("加载自定义的java.lang.String");
+    }
+
+    /**
+     * 执行报错：
+     *  错误: 在类 java.lang.String 中找不到 main 方法, 请将 main 方法定义为:
+     *      public static void main(String[] args)
+     *  否则 JavaFX 应用程序类必须扩展javafx.application.Application
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        System.out.println("执行自定义的java.lang.String中的main方法");
+    }
+}
+```
+
+- 在项目中自定义 java.lang.String，在执行 main 方法时会报错。因为加载 String 类的时候使用双亲委派机制，最终引导类加载器会直接加载系统的 java.lang.String 类，而不是自定义的 java.lang.String，系统的 String 类没有 main 方法。
+
+示例二：
+
+<img src="java-virtual-machine/image-20240105113642652.png" alt="image-20240105113642652" style="zoom:67%;" />
+
+- 当加载 jdbc.jar 用于实现数据库连接的时候，首先我们需要知道的是 jdbc.jar 是基于 SPI 接口进行实现的，在加载的时候，会进行双亲委派机制。最终，首先从引导类加载器中加载 SPI 核心类，然后再加载 SPI 接口类，接着再进行反向委派，通过线程上下文类加载器进行实现类 jdbc.jar 的加载。
 
 
+#### 其他
 
+##### 如何判断两个 Class 对象是否相同
 
+在 JVM 中，表示两个 Class 对象是否为同一个类存在两个必要条件：
 
+- `类的完整类名必须一致，包括包名。`
 
+- `加载这个类的 ClassLoader (指 ClassLoader 实例对象) 必须相同。`
 
+换句话说，在 JVM 中，即使这两个类对象（Class 对象）来源同一个 Class 文件，被同一个虚拟机所加载，但只要加载它们的 ClassLoader 实例对象不同，那么这两个类对象也是不相等的。
 
+##### 对类加载器的引用
 
+JVM 必须知道一个类型是由引导类加载器加载的，还是由用户自定义类加载器加载的。**如果一个类型是由用户自定义类加载器加载的，那么 JVM 会将这个类加载器的一个引用作为类型信息的一部分保存在方法区中。**当解析一个类型到另一个类型的引用的时候，JVM 需要保证这两个类型的类加载器是相同的。
 
+##### 类的主动使用和被动使用
 
+Java 程序对类的使用方式分为：`主动使用`和`被动使用`。
 
+>**`类的被动使用，不会导致类的初始化。`**
 
+主动使用，分为七种情况：
 
+-  创建类的实例。
 
+-  访问某个类或接口的静态变量，或者对该静态变量赋值。
 
+-  调用类的静态方法。
 
+-  反射，比如：Class.forName("com.xisun.Test")。
 
+-  初始化一个类的子类。
 
+-  Java 虚拟机启动时被标明为启动类的类。
 
+-  JDK 7 开始提供的动态语言支持：
+  - java.lang.invoke.MethodHandle 实例的解析结果。
+  - REF_getStatic、REF_putStatic、REF_invokeStatic 句柄对应的类没有初始化，则初始化。
 
+除了以上七种情况，其他使用 Java 类的方式，都被看作是对类的被动使用，都不会导致类的初始化。
 
+### 运行时数据区
 
+>节选 https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf "Run-Time Data Areas"：
+>
+>The Java Virtual Machine defines various run-time data areas that are used during execution of a program. Some of these data areas are created on Java Virtual Machine start-up and are destroyed only when the Java Virtual Machine terminates. Other data areas are per thread. Per-thread data areas are created when a thread is created and destroyed when the thread terminates.
 
-<img src="java-virtual-machine/image-20240104132755817.png" alt="image-20240104132755817" style="zoom:67%;" />
+![1704432772778](java-virtual-machine/1704432772778.jpg)
+
+#### 概述
+
+内存是非常重要的系统资源，是硬盘和 CPU 的中间仓库及桥梁，承载着操作系统和应用程序的实时运行。**JVM 内存布局规定了 Java 在运行过程中内存申请、分配、管理的策略，保证了 JVM 的高效稳定运行。不同的 JVM 对于内存的划分方式和管理机制，存在着部分差异。**
+
+下面结合 JVM 虚拟机规范，来探讨一下经典的 JVM 内存布局。
+
+![1704433759018](java-virtual-machine/1704433759018.jpg)
+
+>**每个JVM 运行时，对应 Java 中 Runtime 类的一个实例（只对应一个），即为运行时环境，也就是上图中的 Runtime Data Area。**
+>
+>![image-20240105141633623](java-virtual-machine/image-20240105141633623.png)
+
+Java 虚拟机定义了若干种程序运行期间会使用到的运行时数据区，如上图所示：
+
+- **红色的区域为多个线程共享的，会随着虚拟机启动而创建，随着虚拟机退出而销毁。**（`生命周期与虚拟机一致`）
+  - 线程间共享：堆、堆外内存（永久代或元空间、代码缓存）。
+- **灰色的区域为单独线程私有的，与线程一一对应，会随着线程开始和结束而创建和销毁。**（`生命周期与线程一致`）
+  - 每个线程独有：程序计数器、虚拟机栈、本地方法栈。
+
+- 总结：
+
+  ![1704435027186](java-virtual-machine/1704435027186.jpg)
+
+##### 线程
+
+线程是一个程序里的运行单元，JVM 允许一个应用有多个线程并行的执行。
+
+- `在 Hotspot JVM 里，每个线程都与操作系统的本地线程直接映射。`
+  - 当一个 Java 线程准备好执行以后，此时一个操作系统的本地线程也同时创建。Java 线程执行终止后，操作系统的本地线程也会回收。
+
+- `操作系统负责将所有线程的安排调度到任何一个可用的 CPU 上。`一旦本地线程初始化成功，它就会调用 Java 线程中的 run() 方法。
+
+##### JVM 系统线程
+
+如果使用 jconsole 或者是任何一个调试工具，都能看到在后台有许多线程在运行。这些后台线程不包括调用 "public static void main(String[] args)" 的 main 线程，以及所有这个 main 线程自己创建的线程。
+
+这些后台系统线程，在 Hotspot JVM 里主要是以下几个：
+
+- `虚拟机线程`：这种线程的操作，是需要 JVM 达到安全点才会出现。这些操作必须在不同的线程中发生的原因是它们都需要 JVM 达到安全点，这样堆才不会变化。这种线程的执行类型包括 "stop-the-world" 的垃圾收集、线程栈收集、线程挂起以及偏向锁撤销。
+
+- `周期任务线程`：这种线程是时间周期事件的体现（比如中断），它们一般用于周期性操作的调度执行。
+
+- `GC 线程`：这种线程对在 JVM 里不同种类的垃圾收集行为提供了支持。
+
+- `编译线程`：这种线程在运行时会将字节码编译成到本地代码。
+
+- `信号调度线程`：这种线程接收信号并发送给 JVM，在它内部通过调用适当的方法进行处理。
+
+#### 程序计数器（PC 寄存器）
+
+>节选 https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf "The pc Register"：
+>
+>The Java Virtual Machine can support many threads of execution at once (JLS §17). Each Java Virtual Machine thread has its own pc (program counter) register. At any point, each Java Virtual Machine thread is executing the code of a single method, namely the current method (§2.6) for that thread. If that method is not native, the pc register contains the address of the Java Virtual Machine instruction currently being executed. If the method currently being executed by the thread is native, the value of the Java Virtual Machine's pc register is undefined. The Java Virtual Machine's pc register is wide enough to hold a returnAddress or a native pointer on the specific platform.
+
+JVM 中的程序计数寄存器（Program Counter Register）中，Register 的命名源于 CPU 的寄存器，寄存器存储指令相关的现场信息。CPU 只有把数据装载到寄存器才能够运行。这里，并非是广义上所指的物理寄存器，或许将其翻译为 PC 计数器（或指令计数器）会更加贴切（也称为程序钩子），并且也不容易引起一些不必要的误会。`JVM 中的 PC 寄存器是对物理 PC 寄存器的一种抽象模拟。`
+
+**作用：**
+
+<img src="java-virtual-machine/image-20240105150948017.png" alt="image-20240105150948017" style="zoom:67%;" />
+
+- `PC 寄存器用来存储指向下一条指令的地址`，即将要执行的指令代码，然后由执行引擎读取下一条指令。
+- 它是一块很小的内存空间，几乎可以忽略不记，也是运行速度最快的存储区域。
+- 在 JVM 规范中，每个线程都有它自己的程序计数器，是线程私有的，生命周期与线程的生命周期保持一致。
+- 任何时间一个线程都只有一个方法在执行，也就是所谓的`当前方法`。**程序计数器会存储当前线程正在执行的 Java 方法的 JVM 指令地址，如果是在执行 native 方法，则是未指定值（undefined）。**（native 方法不是 Java 语言所写，无法显示）
+- 它是程序控制流的指示器，分支、循环、跳转、异常处理、线程恢复等基础功能，都需要依赖程序计数器来完成。
+- 字节码解释器工作时，就是通过改变程序计数器的值来选取下一条需要执行的字节码指令。
+- **程序计数器是唯一一个在 Java 虚拟机规范中，没有规定任何 OutofMemoryError 情况的区域。**（程序计数器也不存在 GC 的问题）
+
+**举例说明：**
+
+- 代码：
+
+  ```java
+  package cn.xisun.jvm;
+  
+  /**
+   * @author XiSun
+   * @since 2024/1/5 15:22
+   */
+  public class PCRegisterTest {
+      public static void main(String[] args) {
+          int i = 10;
+          int j = 20;
+          int k = i + j;
+  
+          String s = "abc";
+  
+          System.out.println(i);
+          System.out.println(k);
+      }
+  }
+  ```
+
+- 字节码：
+
+  ```sh
+  PS C:\Users\XiSun\ACatSmiling\zero_to_zero\Codes\xisun-jvm> cd .\target\classes\cn\xisun\jvm\
+  PS C:\Users\XiSun\ACatSmiling\zero_to_zero\Codes\xisun-jvm\target\classes\cn\xisun\jvm> javap -v .\PCRegisterTest.class
+  Classfile /C:/Users/XiSun/ACatSmiling/zero_to_zero/Codes/xisun-jvm/target/classes/cn/xisun/jvm/PCRegisterTest.class
+    Last modified 2024-1-5; size 667 bytes
+    MD5 checksum ecf0ae84981af1188841422d6de9c1e6
+    Compiled from "PCRegisterTest.java"
+  public class cn.xisun.jvm.PCRegisterTest
+    minor version: 0
+    major version: 52
+    flags: ACC_PUBLIC, ACC_SUPER
+  Constant pool:
+     #1 = Methodref          #6.#26         // java/lang/Object."<init>":()V
+     #2 = String             #27            // abc
+     #3 = Fieldref           #28.#29        // java/lang/System.out:Ljava/io/PrintStream;
+     #4 = Methodref          #30.#31        // java/io/PrintStream.println:(I)V
+     #5 = Class              #32            // cn/xisun/jvm/PCRegisterTest
+     #6 = Class              #33            // java/lang/Object
+     #7 = Utf8               <init>
+     #8 = Utf8               ()V
+     #9 = Utf8               Code
+    #10 = Utf8               LineNumberTable
+    #11 = Utf8               LocalVariableTable
+    #12 = Utf8               this
+    #13 = Utf8               Lcn/xisun/jvm/PCRegisterTest;
+    #14 = Utf8               main
+    #15 = Utf8               ([Ljava/lang/String;)V
+    #16 = Utf8               args
+    #17 = Utf8               [Ljava/lang/String;
+    #18 = Utf8               i
+    #19 = Utf8               I
+    #20 = Utf8               j
+    #21 = Utf8               k
+    #22 = Utf8               s
+    #23 = Utf8               Ljava/lang/String;
+    #24 = Utf8               SourceFile
+    #25 = Utf8               PCRegisterTest.java
+    #26 = NameAndType        #7:#8          // "<init>":()V
+    #27 = Utf8               abc
+    #28 = Class              #34            // java/lang/System
+    #29 = NameAndType        #35:#36        // out:Ljava/io/PrintStream;
+    #30 = Class              #37            // java/io/PrintStream
+    #31 = NameAndType        #38:#39        // println:(I)V
+    #32 = Utf8               cn/xisun/jvm/PCRegisterTest
+    #33 = Utf8               java/lang/Object
+    #34 = Utf8               java/lang/System
+    #35 = Utf8               out
+    #36 = Utf8               Ljava/io/PrintStream;
+    #37 = Utf8               java/io/PrintStream
+    #38 = Utf8               println
+    #39 = Utf8               (I)V
+  {
+    public cn.xisun.jvm.PCRegisterTest();
+      descriptor: ()V
+      flags: ACC_PUBLIC
+      Code:
+        stack=1, locals=1, args_size=1
+           0: aload_0
+           1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+           4: return
+        LineNumberTable:
+          line 7: 0
+        LocalVariableTable:
+          Start  Length  Slot  Name   Signature
+              0       5     0  this   Lcn/xisun/jvm/PCRegisterTest;
+  
+    public static void main(java.lang.String[]);
+      descriptor: ([Ljava/lang/String;)V
+      flags: ACC_PUBLIC, ACC_STATIC
+      Code:
+        stack=2, locals=5, args_size=1
+           0: bipush        10
+           2: istore_1
+           3: bipush        20
+           5: istore_2
+           6: iload_1
+           7: iload_2
+           8: iadd
+           9: istore_3
+          10: ldc           #2                  // String abc
+          12: astore        4
+          14: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+          17: iload_1
+          18: invokevirtual #4                  // Method java/io/PrintStream.println:(I)V
+          21: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+          24: iload_3
+          25: invokevirtual #4                  // Method java/io/PrintStream.println:(I)V
+          28: return
+        LineNumberTable:
+          line 9: 0
+          line 10: 3
+          line 11: 6
+          line 13: 10
+          line 15: 14
+          line 16: 21
+          line 17: 28
+        LocalVariableTable:
+          Start  Length  Slot  Name   Signature
+              0      29     0  args   [Ljava/lang/String;
+              3      26     1     i   I
+              6      23     2     j   I
+             10      19     3     k   I
+             14      15     4     s   Ljava/lang/String;
+  }
+  SourceFile: "PCRegisterTest.java"
+  ```
+
+- 过程分析：
+
+  <img src="java-virtual-machine/image-20240105161316934.png" alt="image-20240105161316934" style="zoom:80%;" />
+
+**使用程序计数器存储字节码指令地址有什么用呢？为什么使用程序计数器记录当前线程的执行地址呢？**
+
+- CPU 需要不停的切换各个线程，当重新切换回之前的线程以后，就得知道接着从哪开始继续执行。JVM 的字节码解释器，就是**通过改变程序计数器中的值，来明确下一条应该执行什么样的字节码指令。**
+
+**程序计数器为什么被设定为私有的？**
+
+- 我们都知道，所谓的多线程在一个特定的时间段内只会执行其中某一个线程的方法，CPU 会不停地做任务切换，这样必然导致经常中断或恢复，如何保证分毫无差呢？为了能够准确地记录各个线程正在执行的当前字节码指令地址，最好的办法自然是**为每一个线程都分配一个程序计数器，这样一来各个线程之间便可以进行独立计算，从而不会出现相互干扰的情况。**
+- 由于 CPU 时间片的限制，众多线程在并发执行过程中，任何一个确定的时刻，一个处理器或者多核处理器中的一个内核，只会执行某个线程中的一条指令。这样必然导致经常中断或恢复，如何保证分毫无差呢？每个线程在创建后，都会产生自己的程序计数器和栈帧，程序计数器在各个线程之间互不影响。
+
+> `CPU 时间片`：
+>
+> <img src="java-virtual-machine/image-20240105162642609.png" alt="image-20240105162642609" style="zoom:80%;" />
+>
+> - CPU 时间片即 CPU 分配给各个程序的时间，每个线程被分配一个时间段，称作它的时间片。
+> - 在宏观上：我们可以同时打开多个应用程序，看起来每个程序并行不悖，同时运行。
+> - 但在微观上：由于只有一个 CPU，一次只能处理程序要求的一部分，对于如何公平处理，其中一种方法就是引入时间片，每个程序轮流执行。
+
+#### 虚拟机栈
+
+> 节选 https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf "Java Virtual Machine Stacks"：
+>
+> Each Java Virtual Machine thread has a private Java Virtual Machine stack, created at the same time as the thread. A Java Virtual Machine stack stores frames (§2.6). A Java Virtual Machine stack is analogous to the stack of a conventional language such as C: it holds local variables and partial results, and plays a part in method invocation and return. Because the Java Virtual Machine stack is never manipulated directly except to push and pop frames, frames may be heap allocated. The memory for a Java Virtual Machine stack does not need to be contiguous.
+>
+> This specification permits Java Virtual Machine stacks either to be of a fixed size or to dynamically expand and contract as required by the computation. If the Java Virtual Machine stacks are of a fixed size, the size of each Java Virtual Machine stack may be chosen independently when that stack is created.
+>
+> A Java Virtual Machine implementation may provide the programmer or the user control over the initial size of Java Virtual Machine stacks, as well as, in the case of dynamically expanding or contracting Java Virtual Machine stacks, control over the maximum and minimum sizes. The following exceptional conditions are associated with Java Virtual Machine stacks:
+>
+> • If the computation in a thread requires a larger Java Virtual Machine stack than is permitted, the Java Virtual Machine throws a StackOverflowError.
+>
+> • If Java Virtual Machine stacks can be dynamically expanded, and expansion is attempted but insufficient memory can be made available to effect the expansion, or if insufficient memory can be made available to create the initial Java Virtual Machine stack for a new thread, the Java Virtual Machine throws an OutOfMemoryError.
+
+##### 概述
+
+###### 背景
+
+- 由于跨平台性的设计，Java 的指令都是根据栈来设计的。由于不同平台 CPU 架构不同，所以不能设计为基于寄存器的。
+
+- **优点是跨平台，指令集小，编译器容易实现，缺点是性能下降，实现同样的功能需要更多的指令。**
+
+###### 基本概念
+
+`Java 虚拟机栈`（Java Virtual Machine Stack），早期也叫 Java 栈，**是线程私有的**。**每个线程在创建时都会创建一个虚拟机栈**，其内部保存着一个个的`栈帧`（Stack Frame），**每个栈帧对应着一次 Java 方法的调用**。
+
+###### 生命周期
+
+生命周期**和线程一致**。
+
+###### 作用
+
+**主管 Java 程序的运行**，它保存方法的局部变量、部分结果，并参与方法的调用和返回。
+
+###### 栈的特点
+
+- 栈是一种快速有效的分配存储方式，访问速度仅次于程序计数器。
+
+- JVM 直接对 Java 栈的操作只有两个：
+
+  <img src="java-virtual-machine/image-20240105221435260.png" alt="image-20240105221435260" style="zoom:67%;" />
+
+  - 每个方法执行，伴随着`进栈`（入栈、压栈）。
+
+  - 执行结束后的`出栈`工作。
+
+- 对于栈来说**不存在垃圾回收**问题（但是栈存在内存溢出的情况）。
+
+###### 内存中的栈与堆
+
+<img src="java-virtual-machine/image-20240105193327508.png" alt="image-20240105193327508" style="zoom:67%;" />
+
+`栈是运行时的单位，而堆是存储的单位`：
+
+- **栈解决的是程序的运行问题**，即程序如何执行，或者说如何处理数据。
+
+- **堆解决的是数据存储的问题**，即数据怎么放，放哪里。
+
+######栈中可能出现的异常
+
+Java 虚拟机规范中，允许 Java 栈的大小是`固定不变的`或者是`动态扩展的`。
+
+-  如果采用固定大小的 Java 虚拟机栈，那每一个线程的 Java 虚拟机栈容量，可以在线程创建的时候独立选定。如果线程请求分配的栈容量超过 Java 虚拟机栈允许的最大容量，Java 虚拟机将会抛出一个`StackOverflowError`异常。 
+
+-  如果 Java 虚拟机栈是动态扩展的，且在尝试扩展的时候无法申请到足够的内存，或者在创建新的线程时没有足够的内存去创建对应的虚拟机栈，Java 虚拟机将会抛出一个`OutOfMemoryError`异常。 
+
+###### 设置栈内存大小
+
+我们可以使用参数`-Xss`选项来设置线程的最大栈空间，**栈的大小直接决定了函数调用的最大可达深度**。
+
+示例：
+
+```java
+package cn.xisun.jvm;
+
+/**
+ * @author XiSun
+ * @since 2024/1/5 22:29
+ */
+public class StackErrorTest {
+
+    /**
+     * 默认情况下，count值最大为：11410
+     * 设置-Xss256k，count值最大为：2455
+     */
+    private static int count = 1;
+
+    /**
+     * 执行到最后，抛出异常：Exception in thread "main" java.lang.StackOverflowError
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        System.out.println(count);
+        count++;
+        main(args);
+    }
+}
+```
+
+> IDEA 设置 JVM 参数：
+>
+> <img src="java-virtual-machine/image-20240105223902879.png" alt="image-20240105223902879" style="zoom:80%;" />
+
+##### 栈的存储单位
+
+###### 栈中存储什么
+
+- 每个线程都有自己的栈，栈中的数据都是以栈帧（Stack Frame）为基本单位进行存储的。
+- 在这个线程上正在执行的每个方法都各自对应一个栈帧（Stack Frame）。
+  - **运行中的方法与栈帧是一一对应的关系。**
+  - **方法的开始，对应栈帧的入栈；方法的结束，对应栈帧的出栈。**
+- 栈帧是一个内存区块，是一个数据集，维系着方法执行过程中的各种数据信息。
+
+###### 栈运行原理
+
+<img src="java-virtual-machine/image-20240105225207075.png" alt="image-20240105225207075" style="zoom:67%;" />
+
+- JVM 直接对 Java 栈的操作只有两个，就是对栈帧的`压栈`和`出栈`，遵循`先进后出/后进先出`的原则。
+- 在一条活动线程中，一个时间点上，只会有一个活动的栈帧。即只有当前正在执行的方法的栈帧（栈顶栈帧）是有效的，这个栈帧被称为`当前栈帧`（Current Frame），与当前栈帧相对应的方法就是`当前方法`（Current Method），定义这个方法的类就是`当前类`（Current Class）。
+- **执行引擎运行的所有字节码指令，只针对当前栈帧进行操作。**
+- **如果在该方法中调用了其他方法，对应的新的栈帧会被创建出来，放在栈的顶端，成为新的当前帧。**
+- 不同线程中所包含的栈帧是不允许存在相互引用的，即不可能在一个栈帧之中引用另外一个线程的栈帧。
+- 如果当前方法调用了其他方法，方法返回之际，当前栈帧会传回此方法的执行结果给前一个栈帧，接着，虚拟机会丢弃当前栈帧，使得前一个栈帧重新成为当前栈帧。
+- Java 方法有两种返回函数的方式：**一种是正常的函数返回，使用 return 指令；另外一种是抛出异常（异常未在方法中被捕获，如果被捕获了，该方法是正常返回）。**不管使用哪种方式，都会导致栈帧被弹出。
+
+###### 栈帧的内部结构
+
