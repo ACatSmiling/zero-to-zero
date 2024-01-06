@@ -590,11 +590,23 @@ public class HelloLoader {
 
 > IDEA 中可以直接反编译字节码文件的插件`jclasslib Bytecode Viewer`：
 >
-> <img src="java-virtual-machine/image-20240104132755817.png" alt="image-20240104132755817" style="zoom:67%;" />
+> <img src="java-virtual-machine/image-20240104132755817.png" alt="image-20240104132755817" style="zoom: 80%;" />
 >
-> <img src="java-virtual-machine/image-20240105133727294.png" alt="image-20240105133727294" style="zoom:67%;" />
+> <img src="java-virtual-machine/image-20240105133727294.png" alt="image-20240105133727294" style="zoom: 80%;" />
 >
-> 
+> IDEA 中 jclasslib 插件的语言做了本地化，因此在中国显示的语言为中文。修改为英文的方法：
+>
+> <img src="java-virtual-machine/image-20240106225037263.png" alt="image-20240106225037263" style="zoom:80%;" />
+>
+> 在打开的 IDEA JVM 配置文件中加入如下配置：
+>
+> ```tex
+> -Duser.language=en
+> -Duser.region=CN
+> ```
+>
+> - -Duser.language：设置本地语言。
+> - -Duser.region：设置区域。
 
 ###### 类加载器 ClasLoader 的角色
 
@@ -1095,7 +1107,7 @@ JVM 中的程序计数寄存器（Program Counter Register）中，Register 的�
   }
   ```
 
-- 字节码：
+- `javap -v`命令：
 
   ```sh
   PS C:\Users\XiSun\ACatSmiling\zero_to_zero\Codes\xisun-jvm> cd .\target\classes\cn\xisun\jvm\
@@ -1352,4 +1364,86 @@ public class StackErrorTest {
 - Java 方法有两种返回函数的方式：**一种是正常的函数返回，使用 return 指令；另外一种是抛出异常（异常未在方法中被捕获，如果被捕获了，该方法是正常返回）。**不管使用哪种方式，都会导致栈帧被弹出。
 
 ###### 栈帧的内部结构
+
+<img src="java-virtual-machine/image-20240106222250325.png" alt="image-20240106222250325" style="zoom:67%;" />
+
+每个栈帧中存储着：
+
+- `局部变量表`（Local Variables）。
+
+- `操作数栈`（operand Stack）（或表达式栈）。
+
+- 动态链接（DynamicLinking）（或指向运行时常量池的方法引用）。
+
+- 方法返回地址（Return Address）（或方法正常退出或者异常退出的定义）。
+
+- 一些附加信息。
+
+> 多线程情况下的栈帧内部结构示意图：
+>
+> <img src="java-virtual-machine/image-20240106222714013.png" alt="image-20240106222714013" style="zoom:67%;" />
+>
+> - 每个线程都有自己私有的栈，每个栈里面都有很多栈帧，**栈帧的大小主要由局部变量表和操作数栈决定的**。
+
+##### 局部变量表（Local Variables）
+
+局部变量表，也被称之为局部变量数组或本地变量表。
+
+- 局部变量表定义为一个`数字数组`，主要用于存储方法参数和定义在方法体内的局部变量，这些数据类型包括各类基本数据类型、对象引用（reference），以及 returnAddress 类型。 
+
+- 由于局部变量表是建立在线程的栈上，是线程的私有数据，因此**不存在数据安全问题**。
+
+- 局部变量表**所需的容量大小是在编译期确定下来的**，并保存在方法的 Code 属性的 "maximum local variables" 数据项中。**在方法运行期间是不会改变局部变量表的大小的**。 
+
+- **方法嵌套调用的次数由栈的大小决定**。一般来说，栈越大，方法嵌套调用次数越多。对一个函数而言，它的参数和局部变量越多，使得局部变量表膨胀，它的栈帧就越大，以满足方法调用所需传递的信息增大的需求。进而函数调用就会占用更多的栈空间，导致其嵌套调用次数就会减少。 
+
+- **局部变量表中的变量只在当前方法调用中有效**。在方法执行时，虚拟机通过使用局部变量表完成参数值到参数变量列表的传递过程。当方法调用结束后，随着方法栈帧的销毁，局部变量表也会随之销毁。 
+
+示例：
+
+```java
+package cn.xisun.jvm;
+
+/**
+ * @author XiSun
+ * @since 2024/1/6 22:42
+ */
+public class LocalVariablesTest {
+
+    public void test1() {
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        String s = test2();
+        System.out.println(s);
+    }
+
+    public String test2() {
+        int l = 0;
+        int m = 0;
+        int n = 0;
+        return "test2";
+    }
+
+    public static void main(String[] args) {
+        LocalVariablesTest test = new LocalVariablesTest();
+        int num = 10;
+        test.test1();
+    }
+}
+```
+
+jclasslib 查看编译后的字节码文件信息：
+
+![image-20240106225852650](java-virtual-machine/image-20240106225852650.png)
+
+![image-20240106230408839](java-virtual-machine/image-20240106230408839.png)
+
+![image-20240106231452284](java-virtual-machine/image-20240106231452284.png)
+
+![image-20240106232148953](java-virtual-machine/image-20240106232148953.png)
+
+> jclasslib 查看的字节码文件信息内容，与 javap -v 命令相同。
+
+###### Slot 的理解
 
