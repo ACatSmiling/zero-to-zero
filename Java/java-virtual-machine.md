@@ -1399,6 +1399,11 @@ public class StackErrorTest {
 
 - **局部变量表中的变量只在当前方法调用中有效**。在方法执行时，虚拟机通过使用局部变量表完成参数值到参数变量列表的传递过程。当方法调用结束后，随着方法栈帧的销毁，局部变量表也会随之销毁。 
 
+>注意：
+>
+>- **在栈帧中，与性能调优关系最为密切的部分，就是局部变量表。在方法执行时，虚拟机使用局部变量表完成方法的传递。**
+>- **局部变量表中的变量，也是`重要的垃圾回收根节点`，只要被局部变量表中直接或间接引用的对象都不会被回收。**
+
 示例：
 
 ```java
@@ -1446,4 +1451,225 @@ jclasslib 查看编译后的字节码文件信息：
 > jclasslib 查看的字节码文件信息内容，与 javap -v 命令相同。
 
 ###### Slot 的理解
+
+局部变量表，**最基本的存储单元是`Slot`（变量槽）** 。
+
+-  参数值的存放总是在局部变量数组的 index 0 开始，到数组长度 -1 的索引结束。
+
+-  局部变量表中存放编译期可知的各种**基本数据类型（8 种）**，**引用类型（reference）**，**returnAddress 类型**的变量。
+
+-  **在局部变量表里，32 位以内的类型只占用一个 Slot（包括引用类型和 returnAddress 类型），64 位的类型（long 和 double）占用两个 Slot。**
+  - byte、short、char 在存储前会被转换为 int，boolean 也会被转换为 int，0 表示 false，非 0 表示 true。
+  - int、long、float 和 double 以原样保存。
+  - long 和 double 占据两个 slot。
+
+-  JVM 会为局部变量表中的每一个 Slot 都分配一个**访问索引**，通过这个索引即可成功访问到局部变量表中指定的局部变量值。
+
+  <img src="java-virtual-machine/image-20240107154235698.png" alt="image-20240107154235698" style="zoom:67%;" />
+
+  - 如果需要访问局部变量表中一个 64 bit 的局部变量值时，**只需要使用前一个索引，即起始索引。**（比如：访问 long 或 double 类型变量）。
+
+-  当一个实例方法被调用的时候，它的方法参数和方法体内部定义的局部变量，将会**按照顺序被复制到局部变量表中的每一个 Slot 上**。
+
+-  **如果当前帧是由构造方法或者实例方法创建的，那么该对象引用 this 将会存放在 index 为 0 的 Slot 处，其余的参数按照参数表顺序继续排列。**
+
+示例：
+
+![image-20240107155001201](java-virtual-machine/image-20240107155001201.png)
+
+###### Slot 的重复利用
+
+**栈帧中的局部变量表中的 Slot 槽位是可以重用的**，如果一个局部变量过了其作用域，那么在其作用域之后申明的新的局部变量，就很有可能会复用过期局部变量的 Slot 槽位，从而达到节省资源的目的。
+
+示例：
+
+![image-20240107155624506](java-virtual-machine/image-20240107155624506.png)
+
+![image-20240107160158188](java-virtual-machine/image-20240107160158188.png)
+
+###### 静态变量与局部变量的对比
+
+变量的分类：
+
+- 按照数据类型分：
+
+  - 基本数据类型。
+  - 引用数据类型。
+
+- 按照在类中声明的位置分：
+
+  - `成员变量`：在使用前，都经历过默认初始化赋值。
+
+    - `类变量`：也叫静态变量。类变量表有两次初始化的过程：
+      - 第一次是在 **Linking 的 prepare 阶段**，执行系统初始化，对类变量设置零值（默认赋值）。
+      - 第二次是在 **Initialization 阶段**，赋予程序员在代码中定义的初始值，即给类变量显示赋值或者静态代码块赋值。
+    - `实例变量`：也叫非静态变量。随着对象的创建，会在堆空间中分配实例变量空间，并进行默认赋值。
+
+  - `局部变量`：和类变量初始化不同的是，局部变量表不存在系统初始化的过程，这意味着**一旦定义了局部变量则必须人为的初始化，否则无法使用。**
+
+    ```java
+    public void test4() {
+        int num;
+        System.out.println(num);// 编译不通过：Variable 'num' might not have been initialized
+    }
+    ```
+
+##### 操作数栈（Operand Stack）
+
+###### 理论概念
+
+每一个独立的栈帧除了包含局部变量表以外，还包含一个**后进先出（Last-In-First-Out）**的`操作数栈`，也可以称之为表达式栈（Expression Stack）。
+
+- 操作数栈，在方法执行过程中，根据字节码指令，往栈中写入数据或提取数据，即`入栈 (push)`和` 出栈 (pop)`：
+
+  - 某些字节码指令是将值压入操作数栈，而另一些字节码指令是将操作数取出栈，使用（执行一些操作）它们后再把结果压入栈。比如：执行复制、交换、求和等操作。
+
+  <img src="java-virtual-machine/image-20240107215637827.png" alt="image-20240107215637827" style="zoom:67%;" />
+
+- 操作数栈，主要用于**保存计算过程的中间结果**，同时**作为计算过程中变量临时的存储空间**。
+
+- 操作数栈就是 JVM 执行引擎的一个工作区，当一个方法刚开始执行的时候，一个新的栈帧也会随之被创建出来，**此时这个方法的操作数栈是空的**。（栈可以使用数组或者链表实现，类似于数组，一旦创建，虽然没有数据，是空的，但是长度已经确定了）
+
+- 每一个操作数栈都会拥**有一个明确的栈深度**用于存储数值，其**所需的最大深度在编译期就定义好**了，保存在方法的 Code 属性中，为 max_stack 的值。
+
+  ![image-20240107220216937](java-virtual-machine/image-20240107220216937.png)
+
+- 栈中的任何一个元素，都可以是任意的 Java 数据类型。
+
+  - **32 bit 的类型占用一个栈单位深度。**
+
+  - **64 bit 的类型占用两个栈单位深度。**
+
+- 操作数栈**并非采用访问索引的方式来进行数据访问的**，而是只能通过标准的入栈（push）和出栈（pop）操作来完成一次数据访问。
+
+- **如果被调用的方法带有返回值的话，其返回值将会被压入当前栈帧的操作数栈中**，并更新程序计数器中下一条需要执行的字节码指令。
+
+- 操作数栈中元素的数据类型，必须与字节码指令的序列严格匹配，这由编译器在编译期间进行验证，同时在类加载过程中的类检验阶段的数据流分析阶段，会再次验证。
+
+- 另外，我们所说的 "Java 虚拟机的解释引擎是基于栈的执行引擎"，其中的栈指的就是操作数栈。
+
+###### 代码追踪
+
+代码：
+
+```java
+package cn.xisun.jvm;
+
+/**
+ * @author XiSun
+ * @since 2024/1/7 22:17
+ */
+public class OperandStackTest {
+    public void testAddOperation() {
+        byte i = 15;
+        int j = 8;
+        int k = i + j;
+    }
+}
+```
+
+javap -v 命令查看字节码指令：
+
+```java
+PS C:\Users\XiSun\ACatSmiling\zero_to_zero\Codes\xisun-jvm> cd .\target\classes\cn\xisun\jvm\
+PS C:\Users\XiSun\ACatSmiling\zero_to_zero\Codes\xisun-jvm\target\classes\cn\xisun\jvm> javap -v .\OperandStackTest.class
+Classfile /C:/Users/XiSun/ACatSmiling/zero_to_zero/Codes/xisun-jvm/target/classes/cn/xisun/jvm/OperandStackTest.class
+  Last modified 2024-1-7; size 447 bytes
+  MD5 checksum 7b669d2847c06ab9648b53afcb327303
+  Compiled from "OperandStackTest.java"
+public class cn.xisun.jvm.OperandStackTest
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #3.#19         // java/lang/Object."<init>":()V
+   #2 = Class              #20            // cn/xisun/jvm/OperandStackTest
+   #3 = Class              #21            // java/lang/Object
+   #4 = Utf8               <init>
+   #5 = Utf8               ()V
+   #6 = Utf8               Code
+   #7 = Utf8               LineNumberTable
+   #8 = Utf8               LocalVariableTable
+   #9 = Utf8               this
+  #10 = Utf8               Lcn/xisun/jvm/OperandStackTest;
+  #11 = Utf8               testAddOperation
+  #12 = Utf8               i
+  #13 = Utf8               B
+  #14 = Utf8               j
+  #15 = Utf8               I
+  #16 = Utf8               k
+  #17 = Utf8               SourceFile
+  #18 = Utf8               OperandStackTest.java
+  #19 = NameAndType        #4:#5          // "<init>":()V
+  #20 = Utf8               cn/xisun/jvm/OperandStackTest
+  #21 = Utf8               java/lang/Object
+{
+  public cn.xisun.jvm.OperandStackTest();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 7: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcn/xisun/jvm/OperandStackTest;
+
+  public void testAddOperation();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=4, args_size=1
+         0: bipush        15
+         2: istore_1
+         3: bipush        8
+         5: istore_2
+         6: iload_1
+         7: iload_2
+         8: iadd
+         9: istore_3
+        10: return
+      LineNumberTable:
+        line 9: 0
+        line 10: 3
+        line 11: 6
+        line 12: 10
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      11     0  this   Lcn/xisun/jvm/OperandStackTest;
+            3       8     1     i   B
+            6       5     2     j   I
+           10       1     3     k   I
+}
+SourceFile: "OperandStackTest.java"
+```
+
+jclasslib 查看字节码指令：
+
+![image-20240107222401027](java-virtual-machine/image-20240107222401027.png)
+
+- byte、short、char 和 boolean，都以 int 型保存。int、long、float 和 double 以原样保存。
+
+字节码指令执行过程：
+
+<img src="java-virtual-machine/image-20240107223419628.png" alt="image-20240107223419628" style="zoom:67%;" />
+
+<img src="java-virtual-machine/image-20240107223903841.png" alt="image-20240107223903841" style="zoom:67%;" />
+
+<img src="java-virtual-machine/image-20240107224200848.png" alt="image-20240107224200848" style="zoom:67%;" />
+
+<img src="java-virtual-machine/image-20240107225013593.png" alt="image-20240107225013593" style="zoom:67%;" />
+
+如果方法有返回值，其字节码指令如下：
+
+![image-20240107225635958](java-virtual-machine/image-20240107225635958.png)
+
+![image-20240107225812119](java-virtual-machine/image-20240107225812119.png)
+
+##### 栈顶缓存技术（Top Of Stack Cashing）
+
+
 
