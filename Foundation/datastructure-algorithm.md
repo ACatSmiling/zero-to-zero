@@ -52,13 +52,13 @@
 
 `线性结构`：**线性结构中的数据元素之间是一对一的关系。**
 
-![1705142247645(1)](datastructure-algorithm/1705142247645(1).jpg)
+![1705142247645](datastructure-algorithm/1705142247645.jpg)
 
 ##### 树形结构
 
 `树形结构`：**树形结构中的数据元素存在一种一对多的层次关系。**
 
-![1705142301245(1)](datastructure-algorithm/1705142301245(1).jpg)
+![1705142301245](datastructure-algorithm/1705142301245.jpg)
 
 ##### 图形结构
 
@@ -418,9 +418,105 @@ public class Test {
 
 为了去除示意图中的 "……"，我们改用更方便的存储示意图来表示单链表，如下图所示：
 
+![1705416164442](datastructure-algorithm/1705416164442.jpg)
 
+若带有头结点的单链表，则如下图所示：
+
+![1705416300736](datastructure-algorithm/1705416300736.jpg)
+
+空链表如下图所示：
+
+![1705416351279](datastructure-algorithm/1705416351279.jpg)
+
+在 Java 语言中，可以通过如下方式定义结点：
+
+```java
+private static class Node<E> {
+    E data;// 数据域
+
+    Node<E> next;// 后继结点的指针域
+
+    public Node(E data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+```
+
+从这个结构定义中，可以直到，结点由存放数据元素的数据域和存放后继结点的指针域组成。假设 $p$ 是指向线性表第 $i$ 个元素的指针，则该结点 $a_i$ 的数据域我们可以用 $p→data$ 来表示，$p→data$ 的值是一个属于元素，结点 $a_i$ 的指针域可以用 $p→next$ 来表示，$p→next$ 的值是一个指针。那么，$p→next$ 指向谁呢？当然是指向第 $i+1$ 个元素，即指向 $a_{i+1}$ 的指针。也就是说，如果 $p→data$ 等于 $a_i$，那么 $p→next→data$ 等于 $a_{i+1}$。如下图所示：
+
+![1705419058932](datastructure-algorithm/1705419058932.jpg)
 
 ### 单链表的读取
+
+```java
+package cn.xisun.datastructure.chain;
+
+/**
+ * @author XiSun
+ * @since 2024/1/16 22:50
+ * <p>
+ * 单链表
+ */
+public class SingleLinkedList<E> {
+
+    private Node<E> head;
+
+    public SingleLinkedList() {
+        this.head = null;
+    }
+
+    public void add(E data) {
+        Node<E> newNode = new Node<>(data);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<E> currentNode = head;
+            while (currentNode.next != null) {
+                currentNode = currentNode.next;
+            }
+            currentNode.next = newNode;
+        }
+    }
+
+    public void delete(E data) {
+        Node<E> current = head;
+        Node<E> previous = null;
+        while (current != null) {
+            // 根据实际情况，判断删除的条件
+            if (current.data == data) {
+                if (previous == null) {
+                    head = current.next;
+                } else {
+                    previous.next = current.next;
+                }
+                break;
+            }
+            previous = current;
+            current = current.next;
+        }
+    }
+
+    public void print() {
+        Node<E> currentNode = head;
+        while (currentNode != null) {
+            System.out.println(currentNode.data);
+            currentNode = currentNode.next;
+        }
+    }
+
+    private static class Node<E> {
+        E data;// 数据域
+
+        Node<E> next;// 后继结点的指针域
+
+        public Node(E data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+}
+```
 
 
 
