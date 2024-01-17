@@ -316,7 +316,7 @@ public class Test {
 
 ### 线性表的定义
 
-`线性表`：**零个或多个数据元素的有限序列。**
+`线性表 (List)`：**零个或多个数据元素的有限序列。**
 
 - 首先，线性表是一个序列。即，元素之间是有顺序的，若元素存在多个，则第一个元素无前驱，最后一个元素无后继，其他每个元素都有且只有一个前驱和后继。
 - 其次，线性表是有限的。
@@ -328,6 +328,76 @@ public class Test {
  其中，线性表元素的个数 $n(n≥0)$ 定义为`线性表的长度`，当 $n = 0$ 时，称为`空表`。
 
 在非空表中的每个数据元素都有一个确定的位置，如 $a_1$ 是第一个数据元素，$a_n$ 是最后一个数据元素，$a_i$ 是第 $i$ 个数据元素，称 $i$ 是数据元素 $a_i$ 在线性表中的`位序`。
+
+### 线性表的抽象数据类型
+
+在 Java 语言中，线性表的抽象数据类型，可以表示如下：
+
+```java
+package cn.xisun.datastructure.list;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/1/17 12:34
+ */
+public interface CustomizeList<E> {
+
+    /**
+     * 获取线性表大小
+     *
+     * @return 线性表大小
+     */
+    int size();
+
+    /**
+     * 返回线性表是否为空
+     *
+     * @return 线性表是否为空
+     */
+    boolean isEmpty();
+
+    /**
+     * 获取元素
+     *
+     * @param index 指定位置
+     * @return 获取的位置元素
+     */
+    E get(int index);
+
+
+    /**
+     * 添加元素
+     *
+     * @param data 添加的元素
+     */
+    void add(E data);
+
+
+    /**
+     * 插入元素
+     *
+     * @param index 指定位置
+     * @param data  插入的元素
+     */
+    void insert(int index, E data);
+
+    /**
+     * 替换元素
+     *
+     * @param index 指定位置
+     * @param data  替换的元素
+     */
+    void reset(int index, E data);
+
+    /**
+     * 删除元素
+     *
+     * @param index 指定位置
+     * @return 删除的元素
+     */
+    E delete(int index);
+}
+```
 
 ### 线性表的顺序存储结构
 
@@ -341,11 +411,26 @@ public class Test {
 
 线性表的每个数据元素的类型都相同，在 Java 语言中，**可以使用`一维数组`来实现顺序存储结构。**
 
-描述顺序存储结构所需要的三个属性：
+在 Java 语言中，线性表的顺序存储的结构代码，可以表示为：
 
-- 存储空间的起始位置。
-- 线性表的最大存储容量。
-- 线性表的当前长度。
+```java
+public class CustomizeSequentialList<E> implements CustomizeList<E> {
+    private E[] list;
+
+    private int size;
+
+    public CustomizeSequentialList(int capacity) {
+        list = (E[]) new Object[capacity];
+        size = 0;
+    }
+}
+```
+
+这里，可以发现，描述顺序存储结构所需要的三个属性：
+
+- **存储空间的起始位置**：数组 list，它的存储位置就是存储空间的存储位置。
+- **线性表的最大存储容量**：数组长度 capacity。
+- **线性表的当前长度**：size。
 
 #### 数组长度和线性表长度的区别
 
@@ -355,9 +440,137 @@ public class Test {
 
 > *在一些高级语言中，一维数组可以实现动态分配，这与数组分配后存储空间的长度是确定的不冲突，而是高级语言采用的一些编程手段实现的，往往会带来性能上的损耗。*
 
-#### 顺序存储结构的插入与删除
+#### 顺序存储结构的读取、插入与删除
 
-> *略，参考 Java 数组的操作语法。*
+**读取算法：**
+
+1. 如果读取位置不合理，抛出异常。
+2. 返回数组 $index$ 位置处的元素。
+
+**插入算法：**
+
+1. 如果插入位置不合理，抛出异常。
+2. 如果线性表长度大于等于数组长度，则抛出异常或动态增加容量。
+3. 从最后一个元素开始向前遍历到第 $index$ 个元素，分别将它们都向后移动一位。
+4. 将要插入元素填入位置 $index$ 处。
+5. 表的长度加 1。
+
+**删除算法：**
+
+1. 如果删除位置不合理，抛出异常。
+2. 取出删除元素。
+3. 从删除元素位置开始遍历到最后一个元素位置，分别将它们都向前移动一位。
+4. 表的长度减 1。
+
+**代码示例：**
+
+```java
+package cn.xisun.datastructure.list;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/1/17 12:17
+ */
+public class CustomizeSequentialList<E> implements CustomizeList<E> {
+
+    private E[] list;
+
+    private int size;
+
+    public CustomizeSequentialList(int capacity) {
+        list = (E[]) new Object[capacity];
+        size = 0;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public E get(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        return list[index];
+    }
+
+    @Override
+    public void add(E data) {
+        // 当数组满时，自动扩容为原来的两倍
+        if (size == list.length) {
+            resize(2 * list.length);
+        }
+        list[size++] = data;
+    }
+
+    @Override
+    public void insert(int index, E data) {
+        // 注意此处判断条件，index可以等于size，此时是在数组最后一个数据的后一位插入新数据，前面的数据元素不需要移动
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        // 当数组满时，自动扩容为原来的两倍
+        if (size == list.length) {
+            resize(2 * list.length);
+        }
+
+        // 从index位置开始，所有数据元素后移一位
+        for (int i = size; i > index; i--) {
+            list[i] = list[i - 1];
+        }
+        list[index] = data;
+        size++;
+    }
+
+    @Override
+    public void reset(int index, E data) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        list[index] = data;
+    }
+
+    @Override
+    public E delete(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        E removedElement = list[index];
+        // 从index位置开始，所有数据元素前移一位
+        for (int i = index + 1; i < size; i++) {
+            list[i - 1] = list[i];
+        }
+        size--;
+
+        // 当元素数量少于数组长度的1/4时，自动缩小为原来的一半
+        if (size > 0 && size == list.length / 4) {
+            resize(list.length / 2);
+        }
+
+        return removedElement;
+    }
+
+    private void resize(int newCapacity) {
+        E[] newList = (E[]) new Object[newCapacity];
+        if (size >= 0) System.arraycopy(list, 0, newList, 0, size);
+        list = newList;
+    }
+}
+```
+
+$\textcolor{RubineRed}{从算法和代码可以看出，线性表的顺序存储结构，在读取数据时，无论是哪个位置，时间复杂度都是\ O(1)，而插入或删除元素时，时间复杂度都是\ O(n)。}$
+
+> *以上代码实现仅作为示例参考，更详细和完善的用法，参考 java.util.ArrayList 类。*
 
 #### 顺序存储结构的优缺点
 
@@ -436,9 +649,9 @@ private static class Node<E> {
 
     Node<E> next;// 后继结点的指针域
 
-    public Node(E data) {
+    Node(E data, Node<E> next) {
         this.data = data;
-        this.next = null;
+        this.next = next;
     }
 }
 ```
@@ -447,78 +660,162 @@ private static class Node<E> {
 
 ![1705419058932](datastructure-algorithm/1705419058932.jpg)
 
-### 单链表的读取
+### 单链表的读取、插入和删除
+
+**读取算法：**
+
+1. 声明一个指针 $p$ 指向链表头结点，初始化 $j$ 从 1 开始。
+2. 当 $j < i$ 时，就遍历链表，让 $p$ 的指针向后移动，不断指向下一个结点，$j$ 累加 1。
+3. 若到链表末尾 $p$ 为空，则说明第 $i$ 个结点不存在。
+4. 否则查找成功，返回结点 $p$ 的数据。
+
+**插入算法：**
+
+1. 声明一个指针 $p$ 指向链表头结点，初始化 $j$ 从 1 开始。
+2. 当 $j < i$ 时，就遍历链表，让 $p$ 的指针向后移动，不断指向下一个结点，$j$ 累加 1。
+3. 若到链表末尾 $p$ 为空，则说明第 $i$ 个结点不存在。
+4. 否则查找成功，在系统中生成一个空结点 $s$。
+5. 将数据元素 $e$ 赋值给 $s→data$。
+6. 单链表的插入标准语句 $s→next=p→next;\  p→next=s;$。
+7. 返回成功。
+
+**删除算法：**
+
+1. 声明一个指针 $p$ 指向链表头结点，初始化 $j$ 从 1 开始。
+2. 当 $j < i$ 时，就遍历链表，让 $p$ 的指针向后移动，不断指向下一个结点，$j$ 累加 1。
+3. 若到链表末尾 $p$ 为空，则说明第 $i$ 个结点不存在。
+4. 否则查找成功，将欲删除的结点 $p→next$ 赋值给 $q$。
+5. 单链表的删除标准语句 $p→next=q→next;$。
+6. 将 $q$ 结点中的数据赋值给 $e$，作为返回。
+7. 释放 $q$ 结点。
+8. 返回成功。
+
+**代码实现：**
 
 ```java
-package cn.xisun.datastructure.chain;
+package cn.xisun.datastructure.list;
 
 /**
- * @author XiSun
- * @since 2024/1/16 22:50
- * <p>
- * 单链表
+ * @author Xisun Wang
+ * @since 2024/1/17 12:18
  */
-public class SingleLinkedList<E> {
+public class CustomizeLinkedList<E> implements CustomizeList<E> {
 
     private Node<E> head;
 
-    public SingleLinkedList() {
-        this.head = null;
-    }
-
-    public void add(E data) {
-        Node<E> newNode = new Node<>(data);
-        if (head == null) {
-            head = newNode;
-        } else {
-            Node<E> currentNode = head;
-            while (currentNode.next != null) {
-                currentNode = currentNode.next;
-            }
-            currentNode.next = newNode;
-        }
-    }
-
-    public void delete(E data) {
-        Node<E> current = head;
-        Node<E> previous = null;
-        while (current != null) {
-            // 根据实际情况，判断删除的条件
-            if (current.data == data) {
-                if (previous == null) {
-                    head = current.next;
-                } else {
-                    previous.next = current.next;
-                }
-                break;
-            }
-            previous = current;
-            current = current.next;
-        }
-    }
-
-    public void print() {
-        Node<E> currentNode = head;
-        while (currentNode != null) {
-            System.out.println(currentNode.data);
-            currentNode = currentNode.next;
-        }
-    }
+    private int size;
 
     private static class Node<E> {
         E data;// 数据域
 
         Node<E> next;// 后继结点的指针域
 
-        public Node(E data) {
+        Node(E data, Node<E> next) {
             this.data = data;
-            this.next = null;
+            this.next = next;
         }
+    }
+
+    public CustomizeLinkedList() {
+        head = null;
+        size = 0;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public E get(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> node = head;
+        for (int i = 0; i < index; i++) {
+            node = node.next;
+        }
+        return node.data;
+    }
+
+    @Override
+    public void add(E data) {
+        if (head == null) {
+            head = new Node<>(data, null);
+        } else {
+            Node<E> node = head;
+            while (node.next != null) {
+                node = node.next;
+            }
+            node.next = new Node<>(data, null);
+        }
+        size++;
+    }
+
+    @Override
+    public void insert(int index, E data) {
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (index == 0) {
+            head = new Node<>(data, head);
+        } else {
+            Node<E> prev = head;
+            for (int i = 0; i < index - 1; i++) {
+                prev = prev.next;
+            }
+            prev.next = new Node<>(data, prev.next);
+        }
+        size++;
+    }
+
+    @Override
+    public void reset(int index, E data) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> cur = head;
+        for (int i = 0; i < index; i++) {
+            cur = cur.next;
+        }
+        cur.data = data;
+    }
+
+    @Override
+    public E delete(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> prev = null;
+        Node<E> cur = head;
+        if (index == 0) {
+            head = cur.next;
+            size--;
+            return cur.data;
+        }
+        for (int i = 0; i < index; i++) {
+            prev = cur;
+            cur = cur.next;
+        }
+        prev.next = cur.next;
+        size--;
+        return cur.data;
     }
 }
 ```
 
+<font color='#f25692'>从算法和代码可以看出，线性表的链式存储结构，在读取、插入和删除数据时，时间复杂度都是 $O(n)$。如果我们不知道第 $i$ 个结点的指针位置，单链表数据结构在插入和删除操作上，与线性表的顺序存储结构是没有太大优势的。但如果我们希望从第 $i$ 个位置，插入 10 个结点，对于顺序存储结构意味着，每一次插入都需要移动 $n-i$ 个结点，每次都是 $O_(n)$。而单链表，我们只需要在第一次时，找到第 $i$ 个位置的指针，此时为 $O(n)$，接下来只是简答的通过赋值移动指针而已，时间复杂度都是 $O(1)$。显然，对于插入或删除数据越频繁的操作，单链表的效率优势就越明显。</font>
 
+> *以上代码实现仅作为示例参考，更详细和完善的用法，参考 java.util.LinkedList 类。*
 
 
 
