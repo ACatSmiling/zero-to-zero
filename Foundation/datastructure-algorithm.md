@@ -660,7 +660,9 @@ private static class Node<E> {
 
 ![1705419058932](datastructure-algorithm/1705419058932.jpg)
 
-### 单链表的读取、插入和删除
+#### 单链表
+
+##### 读取、插入和删除
 
 **读取算法：**
 
@@ -694,10 +696,35 @@ private static class Node<E> {
 7. 释放 $q$ 结点。
 8. 返回成功。
 
-**代码实现：**
+##### 整表创建和删除
+
+**整表创建算法：**
+
+![1705674835905](datastructure-algorithm/1705674835905.jpg)
+
+1. 声明一指针 $p$ 和计数器变量 $i$。
+2. 初始化一空链表 $L$。
+3. 让 $L$ 的头结点的指针指向 $NULL$，即建立一个带头结点的单链表。
+4. 循环：
+   - 生成一新结点赋值给 $p$。
+   - 随机生成一数字赋值给 $p$ 的数据域 $p→data;$。
+   - 将 $p$ 插入到头结点与前一新结点之间。
+
+**整表删除算法：**
+
+1. 声明一指针 $p$ 和 $q$。
+2. 将第一个结点赋值给 $p$。
+3. 循环：
+   - 将下一个结点赋值给 $q$。
+   - 释放 $p$。
+   - 将 $q$ 赋值给 $p$。
+
+##### 代码实现
 
 ```java
-package cn.xisun.datastructure.list;
+package com.cisco.webex.aibridge.aiintegration.demo;
+
+import cn.xisun.datastructure.list.CustomizeList;
 
 /**
  * @author Xisun Wang
@@ -709,12 +736,11 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
 
     private int size;
 
-    private static class Node<E> {
-        E data;// 数据域
+    private static class Node<T> {
+        T data;
+        Node<T> next;
 
-        Node<E> next;// 后继结点的指针域
-
-        Node(E data, Node<E> next) {
+        Node(T data, Node<T> next) {
             this.data = data;
             this.next = next;
         }
@@ -765,7 +791,7 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
     @Override
     public void insert(int index, E data) {
         if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
 
         if (index == 0) {
@@ -794,7 +820,7 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
     }
 
     @Override
-    public E delete(int index) {
+    public E remove(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
@@ -814,6 +840,105 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
         size--;
         return cur.data;
     }
+
+    /**
+     * 头插法创建链表：新结点始终在第一的位置
+     *
+     * @param arr 链表初始化时的数据元素
+     */
+    public void createListByHeadInsertionMethod(E[] arr) {
+        // 创建头结点
+        head = new Node<>(null, null);
+
+        // 对于每个要插入的元素
+        for (int i = 0; i < arr.length; i++) {
+            // 创建新结点
+            Node<E> newNode = new Node<>(arr[i], null);
+            // 将新节点插入到头结点之后
+            newNode.next = head.next;
+            head.next = newNode;
+            size++;
+        }
+    }
+
+    /**
+     * 尾插法创建链表：新结点始终在最后的位置
+     *
+     * @param arr 链表初始化时的数据元素
+     */
+    public void createListByTailInsertionMethod(E[] arr) {
+        // 创建头结点
+        head = new Node<>(null, null);
+        // 指定当前结点
+        Node<E> cur = head;
+
+        // 对于每个要插入的元素
+        for (int i = 0; i < arr.length; i++) {
+            // 创建新节点
+            Node<E> newNode = new Node<>(arr[i], null);
+            // 将新结点插入到当前结点之后
+            // 移动当前结点为新结点
+            cur.next = newNode;
+            cur = newNode;
+            size++;
+        }
+    }
+
+    /**
+     * 删除整个链表
+     */
+    public void delete() {
+        Node<E> prev = head;
+        Node<E> cur = head.next;
+        while (cur != null) {
+            System.out.println("deleting: " + cur.data);
+            // 前一个结点的指针域为空
+            prev.next = null;
+            prev = cur;
+            // 当前结点后移一位
+            cur = prev.next;
+            size--;
+        }
+    }
+
+    /**
+     * 打印整个链表
+     */
+    public void printList() {
+        Node<E> cur = head.next;
+        while (cur != null) {
+            System.out.print(cur.data + " ");
+            cur = cur.next;
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        Integer[] arr = {1, 2, 3, 4, 5};
+        CustomizeLinkedList<Integer> integerListNode = new CustomizeLinkedList<>();
+        integerListNode.createListByHeadInsertionMethod(arr);
+        integerListNode.printList();// 输出: 5 4 3 2 1
+
+        Integer[] arr2 = {6, 7, 8, 9, 10};
+        CustomizeLinkedList<Integer> integerListNode3 = new CustomizeLinkedList<>();
+        integerListNode3.createListByTailInsertionMethod(arr2);
+        integerListNode3.printList();// 输出: 6 7 8 9 10
+
+        String[] arr3 = {"a", "b", "c", "d", "e"};
+        CustomizeLinkedList<String> stringListNode = new CustomizeLinkedList<>();
+        stringListNode.createListByHeadInsertionMethod(arr3);
+        stringListNode.printList();// 输出: e d c b a
+
+        String[] arr4 = {"f", "g", "h", "i", "j"};
+        CustomizeLinkedList<String> stringListNode2 = new CustomizeLinkedList<>();
+        stringListNode2.createListByTailInsertionMethod(arr4);
+        stringListNode2.printList();// 输出: f g h i j
+
+        System.out.println(stringListNode.size);// 输出: 5
+        stringListNode.delete();
+        stringListNode.printList();// 输出:
+        System.out.println(stringListNode.size);// 输出: 0
+    }
 }
 ```
 
@@ -823,32 +948,33 @@ $\textcolor{RubineRed}{显然，对于插入或删除数据越频繁的操作，
 
 > *以上代码实现仅作为示例参考，更详细和完善的用法，参考`java.util.LinkedList`类。*
 
-### 单链表的整表创建和删除
+##### 单链表结构 VS 顺序存储结构
 
-**整表创建算法：**
+**存储分配方式：**
 
+- 顺序存储结构用一段连续存储单元依次存储线性表的数据元素。
+- 单链表采用链式存储结构，用一组任意的存储单元存放线性表的数据元素。
 
+**时间性能：**
 
-1. 声明一指针 $p$ 和计数器变量 $i$。
-2. 初始化一空链表 $L$。
-3. 让 $L$ 的头结点的指针指向 $NULL$，即建立一个带头结点的单链表。
-4. 循环：
-   - 生成一新结点赋值给 $p$。
-   - 随机生成一数字赋值给 $p$ 的数据域 $p→data;$。
-   - 将 $p$ 插入到头结点与前一新结点之间。
+- 查找：
+  - 顺序存储结构时间复杂度为 $O(1)$。
+  - 单链表时间复杂度为 $O(n)$。
+- 插入和删除：
+  - 顺序存储结构需要平均移动表长一半的数据元素，时间复杂度为 $O(n)$。
+  - 单链表在找出位置的指针后，插入和删除的时间复杂度为 $O(1)$。
 
-**整表删除算法：**
+**空间性能：**
 
-1. 声明一指针 $p$ 和 $q$。
-2. 将第一个结点赋值给 $p$。
-3. 循环：
-   - 将下一个结点赋值给 $q$。
-   - 释放 $p$。
-   - 将 $q$ 赋值给 $p$。
+- 顺序存储结构需要预分配存储空间，分大了，浪费，分小了，易发生上溢。
+- 单链表不需要分配存储空间，只要有就可以分配，数据元素个数不受限制。
 
-### 单链表结构 VS 顺序存储结构
+通过上面的对比，可以得出一些经验性的结论：
 
-### 静态链表
+- **若线性表需要频繁的查找，很少进行插入和删除操作时，宜采用顺序存储结构。若需要频繁插入和删除时，宜采用单链表结构。**
+- **当线性表中的数据元素个数变化较大或者根本不知道有多大时，最好使用单链表结构，这样不用考虑存储空间大小的问题。**
+
+#### 静态链表
 
 
 
