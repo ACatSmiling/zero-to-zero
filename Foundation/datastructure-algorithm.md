@@ -656,7 +656,7 @@ private static class Node<E> {
 }
 ```
 
-从这个结构定义中，可以直到，结点由存放数据元素的数据域和存放后继结点的指针域组成。假设 $p$ 是指向线性表第 $i$ 个元素的指针，则该结点 $a_i$ 的数据域我们可以用 $p→data$ 来表示，$p→data$ 的值是一个属于元素，结点 $a_i$ 的指针域可以用 $p→next$ 来表示，$p→next$ 的值是一个指针。那么，$p→next$ 指向谁呢？当然是指向第 $i+1$ 个元素，即指向 $a_{i+1}$ 的指针。也就是说，如果 $p→data$ 等于 $a_i$，那么 $p→next→data$ 等于 $a_{i+1}$。如下图所示：
+从这个结构定义中，可以直到，结点由存放数据元素的数据域和存放后继结点的指针域组成。假设 $p$ 是指向线性表第 $i$ 个元素的指针，则该结点 $a_i$ 的数据域我们可以用 $p\dashrightarrow data$ 来表示，$p\dashrightarrow data$ 的值是一个属于元素，结点 $a_i$ 的指针域可以用 $p\dashrightarrow next$ 来表示，$p\dashrightarrow next$ 的值是一个指针。那么，$p\dashrightarrow next$ 指向谁呢？当然是指向第 $i+1$ 个元素，即指向 $a_{i+1}$ 的指针。也就是说，如果 $p\dashrightarrow data$ 等于 $a_i$，那么 $p\dashrightarrow next\dashrightarrow data$ 等于 $a_{i+1}$。如下图所示：
 
 ![1705419058932](datastructure-algorithm/1705419058932.jpg)
 
@@ -679,8 +679,8 @@ private static class Node<E> {
 2. 当 $j < i$ 时，就遍历链表，让 $p$ 的指针向后移动，不断指向下一个结点，$j$ 累加 1。
 3. 若到链表末尾 $p$ 为空，则说明第 $i$ 个结点不存在。
 4. 否则查找成功，在系统中生成一个空结点 $s$。
-5. 将数据元素 $e$ 赋值给 $s→data$。
-6. 单链表的插入标准语句 $s→next=p→next;\  p→next=s;$。
+5. 将数据元素 $e$ 赋值给 $s\dashrightarrow data$。
+6. 单链表的插入标准语句 $s\dashrightarrow next=p\dashrightarrow next;\  p\dashrightarrow next=s;$。
 7. 返回成功。
 
 **删除算法：**
@@ -690,8 +690,8 @@ private static class Node<E> {
 1. 声明一个指针 $p$ 指向链表头结点，初始化 $j$ 从 1 开始。
 2. 当 $j < i$ 时，就遍历链表，让 $p$ 的指针向后移动，不断指向下一个结点，$j$ 累加 1。
 3. 若到链表末尾 $p$ 为空，则说明第 $i$ 个结点不存在。
-4. 否则查找成功，将欲删除的结点 $p→next$ 赋值给 $q$。
-5. 单链表的删除标准语句 $p→next=q→next;$。
+4. 否则查找成功，将欲删除的结点 $p\dashrightarrow next$ 赋值给 $q$。
+5. 单链表的删除标准语句 $p\dashrightarrow next=q\dashrightarrow next;$。
 6. 将 $q$ 结点中的数据赋值给 $e$，作为返回。
 7. 释放 $q$ 结点。
 8. 返回成功。
@@ -707,7 +707,7 @@ private static class Node<E> {
 3. 让 $L$ 的头结点的指针指向 $NULL$，即建立一个带头结点的单链表。
 4. 循环：
    - 生成一新结点赋值给 $p$。
-   - 随机生成一数字赋值给 $p$ 的数据域 $p→data;$。
+   - 随机生成一数字赋值给 $p$ 的数据域 $p\dashrightarrow data;$。
    - 将 $p$ 插入到头结点与前一新结点之间。
 
 **整表删除算法：**
@@ -736,11 +736,11 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
 
     private int size;
 
-    private static class Node<T> {
-        T data;
-        Node<T> next;
+    private static class Node<E> {
+        E data;
+        Node<E> next;
 
-        Node(T data, Node<T> next) {
+        Node(E data, Node<E> next) {
             this.data = data;
             this.next = next;
         }
@@ -976,7 +976,122 @@ $\textcolor{RubineRed}{显然，对于插入或删除数据越频繁的操作，
 
 #### 静态链表
 
+```java
+package cn.xisun.datastructure.list;
 
+/**
+ * @author Xisun Wang
+ * @since 2024/1/17 17:27
+ */
+public class CustomizeStaticLinkedList<E> {
+    private final Node<E>[] array;
+
+    private final int maxSize;
+
+    private int size;
+
+    private Node<E> head;
+
+    private Node<E> tail;
+
+    private static class Node<E> {
+        E data;
+        int cur;
+
+        Node(E data, int cur) {
+            this.data = data;
+            this.cur = cur;
+        }
+    }
+
+    public CustomizeStaticLinkedList(int capacity) {
+        this.array = (Node<E>[]) new Node<?>[capacity];
+        this.maxSize = capacity - 2;
+        this.size = 0;
+        this.head = new Node<E>(null, 1);
+        this.tail = new Node<E>(null, 0);
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public E get(int index) {
+        if (index < 0 || index >= maxSize) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        return array[index].data;
+    }
+
+    public void add(E data) {
+        if (size == maxSize) {
+            throw new RuntimeException("List is full");
+        }
+        // 添加时从第一个位置开始
+        if (tail.cur == 0) {
+            tail.cur = 1;
+        }
+        Node<E> newNode = new Node<>(data, head.cur + 1);
+        array[head.cur] = newNode;
+        head.cur++;
+        size++;
+        System.out.println("new node, data: " + newNode.data + ",cur: " + newNode.cur + ", size: " + size);
+    }
+
+    public void insert(int index, E element) {
+        if (index < 0 || index > maxSize) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        if (size == maxSize) {
+            throw new RuntimeException("List is full");
+        }
+        Node<E> newNode = new Node<>(element, head.cur);
+        if (tail.cur == 0) {
+            tail.cur = index;
+            array[head.cur] = newNode;
+            head.cur++;
+        } else {
+            head = array[tail.cur];
+        }
+        size++;
+    }
+
+    /*public void add(int data) {
+        Node<E> newNode = new Node<E>(data);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<E> currentNode = head;
+            while (currentNode.next != null) {
+                currentNode = currentNode.next;
+            }
+            currentNode.next = newNode;
+        }
+    }
+
+    public void print() {
+        Node<E> currentNode = head;
+        while (currentNode != null) {
+            System.out.println(currentNode.data);
+            currentNode = currentNode.next;
+        }
+    }*/
+
+    public static void main(String[] args) {
+        CustomizeStaticLinkedList<Integer> list = new CustomizeStaticLinkedList<>(5);
+        list.add(2);
+        list.add(3);
+        list.add(4);
+        System.out.println(list.size);
+        System.out.println(list.head.data);
+        System.out.println(list.head.cur);
+        System.out.println(list.tail.data);
+        System.out.println(list.tail.cur);
+    }
+
+
+}
+```
 
 
 
