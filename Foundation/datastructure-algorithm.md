@@ -394,12 +394,12 @@ public interface CustomizeList<E> {
     void reset(int index, E data);
 
     /**
-     * 删除元素
+     * 移除元素
      *
      * @param index 指定位置
-     * @return 删除的元素
+     * @return 移除的元素
      */
-    E delete(int index);
+    E remove(int index);
 }
 ```
 
@@ -544,13 +544,13 @@ public class CustomizeSequentialList<E> implements CustomizeList<E> {
     }
 
     @Override
-    public E delete(int index) {
+    public E remove(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
 
-        E removedElement = list[index];
         // 从index位置开始，所有数据元素前移一位
+        E removedElement = list[index];
         for (int i = index + 1; i < size; i++) {
             list[i - 1] = list[i];
         }
@@ -574,7 +574,7 @@ public class CustomizeSequentialList<E> implements CustomizeList<E> {
 
 $\textcolor{RubineRed}{从算法和代码可以看出，线性表的顺序存储结构，在读取数据时，无论是哪个位置，时间复杂度都是\ O(1)，而插入或删除元素时，时间复杂度都是\ O(n)。}$
 
-> *以上代码实现仅作为示例参考，更详细和完善的用法，参考`java.util.ArrayList`类。*
+> *以上代码实现仅作为示例参考，未经过严谨的测试验证，更详细和完善的用法，参考`java.util.ArrayList`类。*
 
 #### 顺序存储结构的优缺点
 
@@ -726,9 +726,7 @@ private static class Node<E> {
 ##### 代码实现
 
 ```java
-package com.cisco.webex.aibridge.aiintegration.demo;
-
-import cn.xisun.datastructure.list.CustomizeList;
+package cn.xisun.datastructure.list;
 
 /**
  * @author Xisun Wang
@@ -741,8 +739,9 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
     private int size;
 
     private static class Node<E> {
-        E data;
-        Node<E> next;
+        E data;// 数据域
+
+        Node<E> next;// 后继结点的指针域
 
         Node(E data, Node<E> next) {
             this.data = data;
@@ -892,15 +891,10 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
      * 删除整个链表
      */
     public void delete() {
-        Node<E> prev = head;
-        Node<E> cur = head.next;
+        Node<E> cur = head;
         while (cur != null) {
-            System.out.println("deleting: " + cur.data);
-            // 前一个结点的指针域为空
-            prev.next = null;
-            prev = cur;
-            // 当前结点后移一位
-            cur = prev.next;
+            cur.next = null;
+            cur = cur.next;
             size--;
         }
     }
@@ -909,6 +903,9 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
      * 打印整个链表
      */
     public void printList() {
+        if (head != null) {
+            System.out.print(head.data + " ");
+        }
         Node<E> cur = head.next;
         while (cur != null) {
             System.out.print(cur.data + " ");
@@ -918,7 +915,7 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
     }
 
     public static void main(String[] args) {
-        Integer[] arr = {1, 2, 3, 4, 5};
+        /*Integer[] arr = {1, 2, 3, 4, 5};
         CustomizeLinkedList<Integer> integerListNode = new CustomizeLinkedList<>();
         integerListNode.createListByHeadInsertionMethod(arr);
         integerListNode.printList();// 输出: 5 4 3 2 1
@@ -938,10 +935,15 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
         stringListNode2.createListByTailInsertionMethod(arr4);
         stringListNode2.printList();// 输出: f g h i j
 
-        System.out.println(stringListNode.size);// 输出: 5
-        stringListNode.delete();
-        stringListNode.printList();// 输出:
-        System.out.println(stringListNode.size);// 输出: 0
+        System.out.println(stringListNode2.size);
+        stringListNode2.delete();
+        System.out.println(stringListNode2.size);*/
+
+        CustomizeLinkedList<String> stringListNode = new CustomizeLinkedList<>();
+        stringListNode.insert(0, "a");
+        stringListNode.insert(1, "b");
+        stringListNode.insert(2, "c");
+        stringListNode.printList();// 输出: a b c
     }
 }
 ```
@@ -950,7 +952,7 @@ public class CustomizeLinkedList<E> implements CustomizeList<E> {
 
 $\textcolor{RubineRed}{显然，对于插入或删除数据越频繁的操作，单链表的效率优势就越明显。}$
 
-> *以上代码实现仅作为示例参考，更详细和完善的用法，参考`java.util.LinkedList`类。*
+> *以上代码实现仅作为示例参考，未经过严谨的测试验证，更详细和完善的用法，参考`java.util.LinkedList`类。*
 
 ##### 单链表结构 VS 顺序存储结构
 
@@ -980,6 +982,8 @@ $\textcolor{RubineRed}{显然，对于插入或删除数据越频繁的操作，
 
 #### 静态链表
 
+对于一些没有指针的语言，可以使用数组来实现链表，叫做`静态链表`，也叫游标实现法：数组中的元素都由两个数据域组成，data 和 cur，数据域 data 用来存放数据元素，指针域 cur，则相当于单链表中的 next 指针，存放当前元素的后继在数组中的下标，cur 也被称作游标。
+
 ```java
 package cn.xisun.datastructure.list;
 
@@ -988,9 +992,9 @@ package cn.xisun.datastructure.list;
  * @since 2024/1/17 17:27
  */
 public class CustomizeStaticLinkedList<E> {
-    private final Node<E>[] array;
+    private Node<E>[] nodes;
 
-    private final int maxSize;
+    private int maxSize;
 
     private int size;
 
@@ -1009,95 +1013,201 @@ public class CustomizeStaticLinkedList<E> {
     }
 
     public CustomizeStaticLinkedList(int capacity) {
-        this.array = (Node<E>[]) new Node<?>[capacity];
+        this.nodes = (Node<E>[]) new Node<?>[capacity];
+        // 初始化一个空的静态链表，使得链表的所有元素都连接在一起，但是还没有存储任何实际的数据
+        for (int i = 0; i < capacity; i++) {
+            // 使用(i + 1) % capacity，来获取当前结点的下一个元素在数组中的位置，并确保cur值在数组的范围内
+            nodes[i] = new Node<>(null, (i + 1) % capacity);
+            System.out.println(nodes[i].cur);
+        }
+        System.out.println();
+        this.head = nodes[0];
+        this.head.cur = 1;// head的cur初始值设为1
+        this.tail = nodes[capacity - 1];
+        this.tail.cur = 0;// tail的cur初始值设为0
         this.maxSize = capacity - 2;
         this.size = 0;
-        this.head = new Node<E>(null, 1);
-        this.tail = new Node<E>(null, 0);
     }
 
     public int size() {
         return size;
     }
 
+    /**
+     * 获取元素
+     * 注意：此处的index不是数据元素在数组中的位置，链表中的数据元素顺序是逻辑顺序，不一定和其存储的数组中数据元素的物理位置一致
+     *
+     * @param index 数据元素在链表中的位置
+     * @return 获取的数据元素
+     */
     public E get(int index) {
         if (index < 0 || index >= maxSize) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
-        return array[index].data;
+        // 头结点
+        int curr = tail.cur;
+        // 从头结点依次找到index位置的前一个结点
+        for (int i = 0; i < index; i++) {
+            curr = nodes[curr].cur;
+        }
+        return nodes[curr].data;
     }
 
+    /**
+     * 添加元素
+     *
+     * @param data 添加的数据元素
+     */
     public void add(E data) {
         if (size == maxSize) {
             throw new RuntimeException("List is full");
         }
-        // 添加时从第一个位置开始
+
+        // 添加时默认从第一个位置开始
         if (tail.cur == 0) {
             tail.cur = 1;
         }
-        Node<E> newNode = new Node<>(data, head.cur + 1);
-        array[head.cur] = newNode;
-        head.cur++;
+
+        int next = head.cur;
+        nodes[next].data = data;
+        head.cur = nodes[next].cur;
         size++;
-        System.out.println("new node, data: " + newNode.data + ",cur: " + newNode.cur + ", size: " + size);
     }
 
-    public void insert(int index, E element) {
-        if (index < 0 || index > maxSize) {
+    /**
+     * 插入元素
+     * 注意：此处的index不是数据元素在数组中的位置，链表中的数据元素顺序是逻辑顺序，不一定和其存储的数组中数据元素的物理位置一致
+     *
+     * @param index 数据元素在链表中的位置，
+     * @param data  插入的数据元素
+     */
+    public void insert(int index, E data) {
+        if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
+
         if (size == maxSize) {
             throw new RuntimeException("List is full");
         }
-        Node<E> newNode = new Node<>(element, head.cur);
-        if (tail.cur == 0) {
-            tail.cur = index;
-            array[head.cur] = newNode;
-            head.cur++;
+
+        if (index == 0) {
+            nodes[1].data = data;
+            tail.cur = 1;
+            head.cur = nodes[1].cur;
         } else {
-            head = array[tail.cur];
+            // 头结点
+            Node<E> curr = nodes[tail.cur];
+            // 从头结点依次找到index位置的前一个结点
+            for (int i = 0; i < index; i++) {
+                curr = nodes[curr.cur];
+            }
+            nodes[head.cur].cur = curr.cur;
+            curr.cur = head.cur;
+
+            nodes[head.cur].data = data;
+            head.cur = nodes[head.cur].cur;
         }
+
         size++;
     }
 
-    /*public void add(int data) {
-        Node<E> newNode = new Node<E>(data);
-        if (head == null) {
-            head = newNode;
-        } else {
-            Node<E> currentNode = head;
-            while (currentNode.next != null) {
-                currentNode = currentNode.next;
-            }
-            currentNode.next = newNode;
+
+    public void printList() {
+        Node<E> currentNode = nodes[tail.cur];
+        for (int i = 0; i < size; i++) {
+            System.out.println("位置: " + i + ", 数据: " + currentNode.data);
+            currentNode = nodes[currentNode.cur];
         }
     }
-
-    public void print() {
-        Node<E> currentNode = head;
-        while (currentNode != null) {
-            System.out.println(currentNode.data);
-            currentNode = currentNode.next;
-        }
-    }*/
 
     public static void main(String[] args) {
         CustomizeStaticLinkedList<Integer> list = new CustomizeStaticLinkedList<>(5);
-        list.add(2);
-        list.add(3);
-        list.add(4);
+        list.insert(0, 2);
+        list.insert(1, 3);
+        list.printList();
         System.out.println(list.size);
-        System.out.println(list.head.data);
         System.out.println(list.head.cur);
-        System.out.println(list.tail.data);
         System.out.println(list.tail.cur);
     }
-
-
 }
 ```
 
+> *对于静态链表的实现，主要关注其设计思想。*
 
+#### 循环链表
+
+```java
+package cn.xisun.datastructure.list;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/1/24 12:14
+ */
+public class CircularLinkedList<E> {
+    Node<E> head = null;
+
+    Node<E> tail = null;
+
+    private static class Node<E> {
+        E data;
+        Node<E> next;
+
+        Node(E data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
+    /**
+     * 添加节点到循环链表
+     *
+     * @param data 添加的数据元素
+     */
+    public void addNode(E data) {
+        Node<E> newNode = new Node<>(data);
+
+        if (head == null) {
+            head = newNode;
+        } else {
+            tail.next = newNode;
+        }
+
+        tail = newNode;
+        tail.next = head;
+    }
+
+    /**
+     * 显示循环链表中的节点
+     */
+    public void display() {
+        Node<E> current = head;
+        if (head == null) {
+            System.out.println("List is empty");
+        } else {
+            do {
+                System.out.print(" " + current.data);
+                current = current.next;
+            } while (current != head);
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        CircularLinkedList<Integer> circularLinkedList = new CircularLinkedList<>();
+
+        // 添加节点
+        circularLinkedList.addNode(1);
+        circularLinkedList.addNode(2);
+        circularLinkedList.addNode(3);
+        circularLinkedList.addNode(4);
+
+        // 显示节点
+        circularLinkedList.display();// 输出:  1 2 3 4
+    }
+}
+```
+
+#### 双向链表
 
 
 
