@@ -1,12 +1,18 @@
 *date: 2023-06-26*
 
-## 常用命令
+## 基础配置
+
+### 修改 root 密码
+
+```sh
+$ sudo passwd
+```
 
 ### 固定 IP
 
 操作系统：
 
-```bash
+```sh
 $ lsb_release -a
 No LSB modules are available.
 Distributor ID: Ubuntu
@@ -17,7 +23,7 @@ Codename:       lunar
 
 查看网卡信息：
 
-```bash
+```sh
 $ ip link show
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -33,7 +39,7 @@ $ ip link show
 
 打开并编辑 netplan 配置文件：
 
-```bash
+```sh
 $ sudo vim /etc/netplan/00-installer-config.yaml
 # This is the network config written by 'subiquity'
 #network:
@@ -55,13 +61,13 @@ network:
 
 生效配置：
 
-```bash
+```sh
 $ sudo netplan apply
 ```
 
 ### 时区设置
 
-```bash
+```sh
 # 查看时区
 $ date -R
 Thu, 03 Aug 2023 17:19:48 +0800
@@ -127,6 +133,547 @@ LC_TIME=en_DK.utf-8
 # 重启
 $ sudo reboot
 ```
+
+### 传输工具安装
+
+```sh
+$ apt install lrzsz
+```
+
+### jdk 安装
+
+```sh
+# 1. 下载
+$ wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
+
+# 2. 解压
+$ tar -zxvf jdk-17_linux-x64_bin.tar.gz
+
+# 3. 移动
+$ sudo mv jdk-17.0.10/ /usr/local
+
+# 4. 配置环境变量
+$ sudo vim /etc/profile
+
+# 5. 生效配置
+$ source /etc/profile
+
+# 6. 检查
+$ java -version
+```
+
+> 环境变量，追加在 /etc/profile 文件最后：
+>
+> ```sh
+> export JAVA_HOME=/usr/local/jdk-17.0.10
+> export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib
+> 
+> export PATH=$JAVA_HOME/bin:$PATH
+> ```
+
+### maven 安装
+
+```sh
+# 1. 下载
+$ wget https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+
+# 2. 解压
+$ tar xf apache-maven-3.9.6-bin.tar.gz
+
+# 3. 移动
+$ sudo mv apache-maven-3.9.6 /usr/local/
+
+# 4. 配置环境变量
+$ sudo vim /etc/profile
+
+# 5. 生效配置
+$ source /etc/profile
+
+# 6. 配置本地仓库路径和镜像仓库
+$ vim /usr/local/apache-maven-3.9.6/conf/settings.xml
+
+# 7. 检查
+$ mvn -version
+```
+
+>环境变量，追加在 /etc/profile 文件最后：
+>
+>```sh
+>export MAVEN_HOME=/usr/local/apache-maven-3.9.6
+>
+>export PATH=$MAVEN_HOME/bin:$PATH
+>```
+>
+>本地仓库路径和镜像仓库配置：
+>
+>```sh
+><localRepository>/path/to/local/repo</localRepository>
+>
+><mirror>
+>  <id>alimaven</id>
+>  <name>aliyun maven</name>
+>  <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+>  <mirrorOf>central</mirrorOf>
+></mirror>
+>```
+
+### python 环境
+
+
+
+### nodejs 环境
+
+首先，下载对应的官方安装包，https://nodejs.org/en/download/
+
+<img src="./deploy/image-20240316232500762.png" alt="image-20240316232500762" style="zoom: 67%;" />
+
+```sh
+# 1. 上传到服务器，并解压
+$ tar xf node-v20.11.1-linux-x64.tar.xz
+
+# 2. 移动
+$ sudo mv node-v20.11.1-linux-x64 /usr/local/
+
+# 3. 配置环境变量
+$ sudo vim /etc/profile
+$ source /etc/profile
+
+# 4. 验证
+$ node -v
+$ npm -v
+
+# 5. 设置npm国内淘宝源
+# npm中国镜像站地址: https://npmmirror.com/
+$ npm config set registry https://registry.npmmirror.com
+
+# 还原为初始源
+# $ npm config set registry https://registry.npmjs.org/
+```
+
+>环境变量，追加在 /etc/profile 文件最后：
+>
+>```sh
+>export NODE_HOME=/usr/local/node-v20.11.1-linux-x64
+>
+>export PATH=$NODE_HOME/bin:$PATH
+>```
+
+### docker 安装
+
+1. 官网下载安装包。（以下示例脚本为下载最新版 docker 离线压缩包，也可以用浏览器打开官网地址直接下载再传到服务器。如果使用该脚本，下面的第 2、3 步可以不执行。）
+
+   ```bash
+   #!/bin/bash
+   
+   set -u
+   # docker官网下载地址
+   url='https://download.docker.com/linux/static/stable/x86_64/'
+   # 获取最新版的docker包名
+   tarFile=$(curl -s ${url} | grep -E '.*docker-[0-9]*\.[0-9]*\.[0-9]*\.tgz' | tail -n 1 | awk -F '"' '{print $2}')
+   # 拼接完整url并下载
+   curl -o docker.tgz "${url}${tarFile}"
+   
+   # 解压，将压缩包内的文件挪到 /usr/local/bin
+   tar xf docker.tgz
+   mv docker/* /usr/local/bin/
+   
+   # 创建docker的数据目录
+   mkdir -p /home/data/docker
+   ```
+
+   ```sh
+   $ sudo bash docker.sh
+   ```
+
+2. 解压安装包，将安装包内的二进制程序解压到`/usr/local/bin`目录。
+
+   ```sh
+   $ tar xf docker.tgz
+   $ mv docker/* /usr/local/bin/
+   ```
+
+3. 建立 docker 的数据存放目录`/home/data/docker`。
+
+   ```sh
+   $ mkdir -p /home/data/docker
+   ```
+
+4. 创建 docker 的 service 文件`/usr/lib/systemd/system/docker.service`。
+
+   ```sh
+   $ sudo vim /usr/lib/systemd/system/docker.service
+   ```
+
+   ```sh
+   [Unit]
+   Description=Docker Application Container Engine
+   Documentation=https://docs.docker.com
+   After=network-online.target firewalld.service
+   Wants=network-online.target
+   
+   [Service]
+   Type=notify
+   # the default is not to use systemd for cgroups because the delegate issues still
+   # exists and systemd currently does not support the cgroup feature set required
+   # for containers run by docker
+   ExecStart=/usr/local/bin/dockerd --data-root /home/data/docker
+   
+   ExecReload=/bin/kill -s HUP $MAINPID
+   # Having non-zero Limit*s causes performance problems due to accounting overhead
+   # in the kernel. We recommend using cgroups to do container-local accounting.
+   LimitNOFILE=infinity
+   LimitNPROC=infinity
+   LimitCORE=infinity
+   # Uncomment TasksMax if your systemd version supports it.
+   # Only systemd 226 and above support this version.
+   #TasksMax=infinity
+   TimeoutStartSec=0
+   # set delegate yes so that systemd does not reset the cgroups of docker containers
+   Delegate=yes
+   # kill only the docker process, not all processes in the cgroup
+   KillMode=process
+   # restart the docker process if it exits prematurely
+   Restart=on-failure
+   StartLimitBurst=3
+   StartLimitInterval=60s
+   
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+5. 配置 docker 的 daemon.json。
+
+   ```sh
+   $ sudo vim /etc/docker/daemon.json
+   ```
+
+   ```sh
+   {
+       "registry-mirrors": [
+           "https://dockerproxy.com",
+           "https://hub-mirror.c.163.com",
+           "https://mirror.baidubce.com",
+           "https://ccr.ccs.tencentyun.com"
+       ]
+   }
+   ```
+
+   - /etc 目录下可能没有 docker 目录和 daemon.json，需要新建。
+   - 检查 daemon.json 文件的格式：`cat /etc/docker/daemon.json | python -m json.tool`。
+
+6. 生效配置。
+
+   ```sh
+   $ systemctl daemon-reload
+   $ systemctl start docker
+   $ systemctl enable docker
+   ```
+
+7. 验证。
+
+   ```sh
+   $ systemctl status docker
+   $ docker info
+   ```
+
+8. 普通用户如需使用二进制方式安装的 docker，可参考以下步骤，假设普通用户的用户名为 admin。
+
+   ```sh
+   # 1. 创建docker用户组
+   $ groupadd docker
+   # 2. 将admin用户加到docker用户组
+   $ usermod admin -a -G docker
+   # 3. 重启docker
+   $ systemctl restart docker
+   # 4. admin用户执行docker命令进行测试
+   ```
+
+9. 如果安装过程中出现错误，使用命令查看详细的错误日志。
+
+   ```sh
+   $ journalctl -xeu docker | less
+   ```
+
+> 补充，自用安装脚本，需联网。
+>
+> ```bash
+> #!/bin/bash
+> # description: 国内联网情况下通过docker二进制包安装docker和docker-compose
+> 
+> set -u
+> dataDir='/home/apps/docker'
+> 
+> downloadDocker(){
+>     # docker官网下载地址
+>     local url='https://download.docker.com/linux/static/stable/x86_64/'
+>     # 获取最新版的docker包名
+>     local tarFile=$(curl -s ${url} | grep -E '.*docker-[0-9]*\.[0-9]*\.[0-9]*\.tgz' | tail -n 1 | awk -F '"' '{print $2}')
+>     # 拼接完整url并下载
+>     curl -s -o docker.tgz "${url}${tarFile}"
+> 
+>     # 解压，将压缩包内的文件挪到 /usr/local/bin
+>     tar xf docker.tgz
+>     mv docker/* /usr/local/bin/
+> 
+>     # 创建docker的数据目录
+>     mkdir -p ${dataDir}
+>     echo -e "\n\t>>> docker data dir: ${dataDir} <<<\n"
+> 
+>     # (可选)创建docker用户组
+>     groupadd docker
+> }
+> 
+> downloadDockerCompose() {
+>     # 获取最新版tag
+>     local tag=$(curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}')
+>     # 通过ghproxy的代理拼接下载url
+>     local url="https://ghproxy.com/https://github.com/docker/compose/releases/download/${tag}/docker-compose-linux-x86_64"
+> 
+>     curl -s -o docker-compose ${url}
+>     chmod +x docker-compose
+>     mv docker-compose /usr/local/bin
+> }
+> 
+> createSystemConfig() {
+>     cat > docker.service <<EOF
+> [Unit]
+> Description=Docker Application Container Engine
+> Documentation=https://docs.docker.com
+> After=network-online.target firewalld.service
+> Wants=network-online.target
+> 
+> [Service]
+> Type=notify
+> ExecStart=/usr/local/bin/dockerd --data-root ${dataDir}
+> 
+> ExecReload=/bin/kill -s HUP $MAINPID
+> LimitNOFILE=infinity
+> LimitNPROC=infinity
+> LimitCORE=infinity
+> 
+> #TasksMax=infinity
+> TimeoutStartSec=0
+> 
+> Delegate=yes
+> 
+> KillMode=process
+> 
+> Restart=on-failure
+> StartLimitBurst=3
+> StartLimitInterval=60s
+> 
+> [Install]
+> WantedBy=multi-user.target
+> EOF
+>     mv docker.service /etc/systemd/system/
+> 
+>     systemctl daemon-reload
+>     systemctl start docker
+>     systemctl enable docker
+> }
+> 
+> # 生成docker的配置文件
+> createDockerConfig() {
+>     if [ ! -d "/etc/docker" ]; then
+>         echo -e "\n\t>>> /etc/docker is not exist. <<<\n"
+>         return
+>     fi
+> 
+>     if [ -f "/etc/docker/daemon.json" ]; then
+>         echo -e "\n\t>>> /etc/docker/daemon.json is exist. <<<\n"
+>         return
+>     fi
+> 
+>     cat > /etc/docker/daemon.json <<EOF
+> {
+>     "log-driver": "json-file",
+>     "log-level": "warn",
+>     "log-opts": {
+>         "max-size": "100m"
+>     }
+> }
+> EOF
+>     systemctl daemon-reload
+>     systemctl restart docker
+> }
+> 
+> main() {
+>     # 检测当前用户是否为 root 用户
+>     if [ $(whoami) != 'root' ]; then
+>         echo -e "\n\t>>> Please use \033[31mroot\033[0m privilege to run this script. <<<\n"
+>         exit 1
+>     fi
+> 
+>     # 检测docker是否已安装
+>     docker --version > /dev/null 2>&1
+>     if [ $? -eq 0 ]; then
+>         echo -e "\n\t\033[31m>>> Docker is already installed. <<<\033[0m"
+>         echo -e "\t\033[31m>>> If you want to reinstall, please uninstall it first. <<<\033[0m\n"
+>         exit 1
+>     fi
+> 
+>     downloadDocker
+>     downloadDockerCompose
+>     createSystemConfig
+>     createDockerConfig
+> }
+> 
+> main
+> ```
+
+>补充：docker 官方安装。
+>
+>官网：https://www.docker.com/
+>
+>Ubuntu 安装：https://docs.docker.com/engine/install/ubuntu/
+>
+>1. 卸载冲突包。
+>
+>   ```sh
+>   $ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
+>   ```
+>
+>   - 卸载冲突包后，保存在`/var/lib/docker/`路径的镜像、容器、数据卷、网络等，不会自动删除，如果想彻底删除，参考：https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine。
+>
+>2. 设置 docker 仓库。
+>
+>   ```sh
+>   # 更新apt软件包索引和安装包, 以允许apt使用HTTPS上的存储库
+>   $ sudo apt-get update
+>   $ sudo apt-get install ca-certificates curl gnupg
+>   
+>   # 添加docker的官方GPG密钥
+>   $ sudo install -m 0755 -d /etc/apt/keyrings
+>   $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+>   $ sudo chmod a+r /etc/apt/keyrings/docker.gpg
+>   
+>   # 设置仓库
+>   $ echo \
+>     "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+>     "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+>     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+>   ```
+>
+>3. 安装 docker 引擎。
+>
+>   ```sh
+>   $ sudo apt-get update
+>   $ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+>   ```
+>
+>   - 安装 dokcer 引擎的时候，也安装了 docker-compose 插件。
+>
+>4. 设置镜像源。
+>
+>   ```sh
+>   # 设置镜像源，新建一个daemon.json文件，然后添加如下内容
+>   $ sudo vim /etc/docker/daemon.json
+>   $ sudo cat /etc/docker/daemon.json
+>   {
+>       "registry-mirrors": ["http://hub-mirror.c.163.com"]
+>   }
+>   ```
+>
+>5. 验证是否安装成功。
+>
+>   ```sh
+>   $ sudo docker run hello-world
+>   ```
+>
+>6. 添加当前用户到 docker 组。
+>
+>   ```sh
+>   # 当前用户无权限
+>   $ docker ps
+>   permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
+>   
+>   # 添加当前用户到docker组
+>   $ sudo gpasswd -a ${USER} docker
+>   [sudo] password for xisun: 
+>   Adding user xisun to group docker
+>   
+>   # 退出当前用户, 比如切换为root, 再切换为xisun
+>   $ sudo su -
+>   $ su xisun 
+>   
+>   # 有权限
+>   $ docker ps
+>   CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+>   ```
+
+>官网：https://www.docker.com/
+>
+>Ubuntu 安装：https://docs.docker.com/compose/install/linux/
+>
+>Github：https://github.com/docker/compose
+>
+>releases：https://github.com/docker/compose/releases
+>
+>1. docker 引擎安装好之后，可以直接使用以下命令安装 docker-compose。
+>
+>   ```sh
+>   $ sudo apt-get update
+>   $ sudo apt-get install docker-compose-plugin
+>   ```
+>
+>2. 验证 docker-compose 是否安装成功。
+>
+>   ```sh
+>   $ docker compose version
+>   ```
+>
+>3. 更新 docker-compose。
+>
+>   ```sh
+>   $ sudo apt-get update
+>   $ sudo apt-get install docker-compose-plugin
+>   ```
+
+### docker-compose 安装
+
+1. 官网下载二进制程序包（以下示例脚本为通过代理站从 GitHub 下载最新版 docker-compose 的安装包，也可以用浏览器直接从浏览器下载再传到服务器。如果使用该脚本，下面的第 2、3 步可以不执行。）
+
+   ```bash
+   #!/bin/bash
+   
+   set -eu
+   tag=$(curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}')
+   
+   url="https://github.com/docker/compose/releases/download/${tag}/docker-compose-$(uname -s)-$(uname -m)"
+   
+   curl -o docker-compose ${url}
+   
+   chmod +x docker-compose
+   
+   # 将docker-compose挪到PATH环境变量的路径
+   mv docker-compose /usr/local/bin/
+   
+   # 验证并查看版本
+   docker-compose --version
+   ```
+
+   ```sh
+   $ sudo bash docker-compose.sh
+   ```
+
+2. 重命名为 docker-compose，并移到`/usr/local/bin`。
+
+3. 验证。
+
+> 如果脚本执行异常，下载的 docker-compose 安装包不正确，可以手动安装。（因为下载地址是 GitHub，如果没有配置代理，下载速度会很慢，甚至失败。）
+>
+> ```sh
+> # 1. 查看最新版本
+> $ curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}'
+> 
+> # 2. 下载, 如需下载其他版本, 替换v2.24.7为最新的版本号即可
+> $ sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+> 
+> # 3. 赋予二进制文件可执行权限
+> $ sudo chmod +x /usr/local/bin/docker-compose
+> ```
+
+## 常用命令
 
 ### 修改用户组
 
@@ -266,271 +813,56 @@ mysqldump -uroot -proot --databases db1 db2 > /tmp/user.sql
 mysqldump -uroot -proot --databases db1 --tables a1 a2  > /tmp/db1.sql
 ```
 
-
-
-## Docker
-
-官网：https://www.docker.com/
-
-Ubuntu 安装：https://docs.docker.com/engine/install/ubuntu/
-
-**卸载冲突包：**
-
-```bash
-$ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
-```
-
-> 卸载冲突包后，保存在`/var/lib/docker/`路径的镜像、容器、数据卷、网络等，不会自动删除，如果想彻底删除，参考：https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine。
-
-**设置 Docker 仓库：**
-
-```bash
-# 更新apt软件包索引和安装包, 以允许apt使用HTTPS上的存储库
-$ sudo apt-get update
-$ sudo apt-get install ca-certificates curl gnupg
-
-# 添加Docker的官方GPG密钥
-$ sudo install -m 0755 -d /etc/apt/keyrings
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-$ sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# 设置仓库
-$ echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-```
-
-**安装 Docker 引擎：**
-
-```bash
-$ sudo apt-get update
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-> 安装 Dokcer 引擎的时候，也安装了 Docker Compose 插件。
-
-**设置镜像源：**
-
-```bash
-# 设置镜像源，新建一个daemon.json文件，然后添加如下内容
-$ sudo vim /etc/docker/daemon.json
-$ sudo cat /etc/docker/daemon.json
-{
-    "registry-mirrors": ["http://hub-mirror.c.163.com"]
-}
-```
-
-**验证是否安装成功：**
-
-```bash
-$ sudo docker run hello-world
-```
-
-**添加当前用户到 docker 组：**
-
-```bash
-# 当前用户无权限
-$ docker ps
-permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
-
-# 添加当前用户到docker组
-$ sudo gpasswd -a ${USER} docker
-[sudo] password for xisun: 
-Adding user xisun to group docker
-
-# 退出当前用户, 比如切换为root, 再切换为xisun
-$ sudo su -
-$ su xisun 
-
-# 有权限
-$ docker ps
-CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
-
-```
-
 ## Docker Compose
 
-官网：https://www.docker.com/
-
-Ubuntu 安装：https://docs.docker.com/compose/install/linux/
-
-Github：https://github.com/docker/compose
-
-releases：https://github.com/docker/compose/releases
-
-**Docker 引擎安装好之后，可以直接使用以下命令安装 Docker Compose：**
-
-```bash
-$ sudo apt-get update
-$ sudo apt-get install docker-compose-plugin
-```
-
-**验证 Docker Compose 是否安装成功：**
-
-```bash
-$ docker compose version
-```
-
-**更新 Docker Compose：**
-
-```bash
-$ sudo apt-get update
-$ sudo apt-get install docker-compose-plugin
-```
-
-> 手动安装：
->
-> ```bash
-> # 下载, 如需下载其他版本, 替换v2.19.0为最新的版本号即可
-> $ sudo curl -L "https://github.com/docker/compose/releases/download/v2.19.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-> 
-> # 赋予二进制文件可执行权限
-> $ sudo chmod +x /usr/local/bin/docker-compose
-> ```
-
-**docker-compose.yaml：**
-
-```yaml
-version: "3.4"
-
-networks:
-  apps:
-    name: apps
-    external: false
-
-services:
-  mysql:
-    image: mysql:8.0.33
-    container_name: mysql
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/conf/mysql.conf.d/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_INNODB_BUFFER_SIZE=1G
-      - MYSQL_SERVER_ID=101
-    networks:
-      - apps
-    restart: on-failure:3
-  
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    hostname: rabbitmqhosta
-    ports:
-      - 5672:5672
-      - 15672:15672
-    volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq
-    environment:
-      - "RABBITMQ_DEFAULT_USER=rbmq"
-      - "RABBITMQ_DEFAULT_PASS=rbmq"
-    networks:
-      - apps
-    restart: on-failure:3
-
-  nginx:
-    image: nginx:1.23.4-perl
-    container_name: nginx
-    ports:
-      - 80:80
-      - 8081:8081
-    volumes:
-      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf/conf.d:/etc/nginx/conf.d
-      - ./nginx/logs:/var/log/nginx
-      - ./nginx/html:/apps/html
-      - ./nginx/picture:/apps/picture
-      - /etc/localtime:/etc/localtime:ro
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    networks:
-      - apps
-    restart: on-failure:3
-        
-  redis:
-    image: redis:7.0.11
-    container_name: redis
-    ports:
-      - 6379:6379
-    volumes:
-      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
-      - ./redis/data:/data
-    command: redis-server /usr/local/etc/redis/redis.conf
-    networks:
-      - apps
-    restart: on-failure:3
-  
-  minio:
-    container_name: minio
-    image: minio/minio:RELEASE.2023-07-21T21-12-44Z
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ACCESS_KEY: "admin"
-      MINIO_SECRET_KEY: "@admin2023"
-      TZ: Asia/Shanghai
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - ./minio/data:/data
-    networks:
-      - apps
-    restart: on-failure:3
-```
+### 语法
 
 **构建并启动容器命令：**
 
-```bash
-$ docker compose up -d
+```sh
+$ docker-compose up -d
 ```
 
 - -d 是后台运行。
 
 **停止容器命令：**
 
-```bash
-$ docker compose stop
+```sh
+$ docker-compose stop
 ```
 
 **启动容器命令：**
 
-```bash
-$ docker compose start
+```sh
+$ docker-compose start
 ```
 
 **重启容器服务：**
 
-```bash
-$ docker compose restart
+```sh
+$ docker-compose restart
 ```
 
 **停止并删除容器命令：**
 
-```bash
-$ docker compose down
+```sh
+$ docker-compose down
 ```
 
 - 此命令将会停止`up`命令所启动的容器（同时会删除容器），并移除网络。
 
 **指定 compose 文件启动：**
 
-```bash
-$ docker compose -f docker-compose-redis.yaml up -d
+```sh
+$ docker-compose -f docker-compose-redis.yaml up -d
 ```
 
 - 默认使用 docker-compose.yaml 文件。
 
 **检查配置：**
 
-```bash
-$ docker compose config
+```sh
+$ docker-compose config
 ```
 
 - 验证 compose 文件格式是否正确，若正确则显示配置，若格式错误显示错误原因。
@@ -539,8 +871,8 @@ $ docker compose config
 
 >指定 compose 文件启动时，可能会出现 network 错误：
 >
->```bash
->$ docker compose -f docker-compose.yaml up
+>```sh
+>$ docker-compose -f docker-compose.yaml up
 >[+] Running 6/0
 > ✔ Network apps        Created                                                                                                       0.1s 
 > ✔ Container nginx     Created                                                                                                       0.0s 
@@ -554,7 +886,7 @@ $ docker compose config
 >
 >查看当前所有的 network：
 >
->```bash
+>```sh
 >$ docker network ls
 >NETWORK ID     NAME      DRIVER    SCOPE
 >4c3e1c2beb1f   apps      bridge    local
@@ -565,7 +897,7 @@ $ docker compose config
 >
 >查看指定 network 的详细信息：
 >
->```bash
+>```sh
 >$ docker network inspect 4c3e1c2beb1f
 >[
 >    {
@@ -605,7 +937,7 @@ $ docker compose config
 >
 >查看容器绑定的 network：
 >
->```bash
+>```sh
 >$ docker inspect redis
 >......
 >"NetworkSettings": {
@@ -653,7 +985,7 @@ $ docker compose config
 >
 >可以看出，容器中绑定的 network，与当前该名称的 network id 不同，发生了变化，因此，需要重新绑定该 compose 文件中所有容器的 network：
 >
->```bash
+>```sh
 >$ docker network connect 4c3e1c2beb1f nginx
 >$ docker network connect 4c3e1c2beb1f redis
 >$ docker network connect 4c3e1c2beb1f mysql
@@ -663,8 +995,8 @@ $ docker compose config
 >
 >然后，重新指定该 compose 文件，可以正常启动服务：
 >
->```bash
->$ docker compose -f docker-compose.yaml up -d
+>```sh
+>$ docker-compose -f docker-compose.yaml up -d
 >[+] Running 5/5
 > ✔ Container minio     Started                                                                                                       0.9s 
 > ✔ Container mysql     Started                                                                                                       0.9s 
@@ -673,32 +1005,41 @@ $ docker compose config
 > ✔ Container nginx     Started                                                                                                       0.9s
 >```
 
-## MySQL
+### MySQL
 
 docker-compose.yaml：
 
 ```yaml
-mysql:
-    image: mysql:8.0.33
-    container_name: mysql
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/conf/mysql.conf.d/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_INNODB_BUFFER_SIZE=1G
-      - MYSQL_SERVER_ID=101
-    networks:
-      - apps
-    restart: on-failure:3
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:
+    mysql:
+        image: mysql:8.0.33
+        container_name: mysql
+        hostname: zeloud.mysql
+        ports:
+          - 3306:3306
+        volumes:
+          - ./mysql/data:/var/lib/mysql
+          - ./mysql/conf/mysql.conf.d/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+          - /etc/localtime:/etc/localtime:ro
+        environment:
+          - MYSQL_ROOT_PASSWORD=123456
+          - MYSQL_INNODB_BUFFER_SIZE=1G
+          - MYSQL_SERVER_ID=101
+        networks:
+          - apps
+        restart: on-failure:3
 ```
 
-mysqld.cnf：
+./mysql/conf/mysql.conf.d/mysqld.cnf（需要在本地目录预先创建）：
 
-```ini
+```sh
 [mysqld]
 pid-file        = /var/run/mysqld/mysqld.pid
 socket          = /var/run/mysqld/mysqld.sock
@@ -725,195 +1066,38 @@ innodb_buffer_pool_size=536870912
 #sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 ```
 
-- mysqld.cnf 需要在本地目录预先创建。
-
-## Rabbitmq
+### Redis
 
 docker-compose.yaml：
 
 ```yaml
-rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    hostname: rabbitmqhosta
-    ports:
-      - 5672:5672
-      - 15672:15672
-    volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq
-    environment:
-      - "RABBITMQ_DEFAULT_USER=rbmq"
-      - "RABBITMQ_DEFAULT_PASS=rbmq"
-    networks:
-      - apps
-    restart: on-failure:3
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:
+    redis:
+        image: redis:7.0.11
+        container_name: redis
+        hostname: zeloud.redis
+        ports:
+          - 6379:6379
+        volumes:
+          - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+          - ./redis/data:/data
+        # 挂载redis.conf的话，需要指定启动命令中的配置文件路径
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+          - apps
+        restart: on-failure:3
 ```
 
-## Nginx
+./redis/conf/redis.conf（需要在本地目录预先创建）：
 
-docker-compose.yaml：
-
-```yaml
-nginx:
-    image: nginx:1.23.4-perl
-    container_name: nginx
-    ports:
-      - 80:80
-      - 8081:8081
-    volumes:
-      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf/conf.d:/etc/nginx/conf.d
-      - ./nginx/logs:/var/log/nginx
-      - ./nginx/html:/apps/html
-      - ./nginx/picture:/apps/picture
-      - /etc/localtime:/etc/localtime:ro
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    networks:
-      - apps
-    restart: on-failure:3
-```
-
-nginx.conf：
-
-```ini
-user  nginx;
-worker_processes  auto;
-
-error_log  /var/log/nginx/error.log notice;
-pid        /var/run/nginx.pid;
-
-
-events {
-    worker_connections  65536;
-}
-
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-
-    log_format main '{"@timestamp": "$time_iso8601", '
-                '"connection": "$connection", '
-                '"remote_addr": "$remote_addr", '
-                '"remote_user": "$remote_user", '
-                '"request_method": "$request_method", '
-                '"request_uri": "$request_uri", '
-                '"request_length": "$request_length", '
-                '"server_protocol": "$server_protocol", '
-                '"status": "$status", '
-                '"body_bytes_sent": "$body_bytes_sent", '
-                '"http_referer": "$http_referer", '
-                '"http_user_agent": "$http_user_agent", '
-                '"http_x_forwarded_for": "$http_x_forwarded_for", '
-                '"upstream_addr": "$upstream_addr", '
-                '"request_time": "$request_time"}';
-
-    access_log  /var/log/nginx/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    keepalive_timeout  65;
-
-    # 始终发送静态的gzip压缩数据
-    gzip_static always;
-    # 若客户端浏览器不支持gzip压缩数据，则解压后再发送
-    gunzip on;
-    gunzip_buffers 16 8k;
-    # 当被代理的服务器符合条件时，对响应数据启用gzip压缩
-    gzip_proxied expired no-cache no-store private auth;
-
-    gzip on;
-    # 响应数据超过1KB时启用gzip压缩
-    gzip_min_length 1k;
-    gzip_comp_level 3;
-    gzip_types text/plain application/x-javascript
-                          text/css application/xml text/javascript
-                          application/x-httpd-php image/jpeg
-                          image/gif image/png;
-    gzip_vary on;
-
-    include /etc/nginx/conf.d/*-http.conf;
-}
-```
-
-apps-http.conf：
-
-```ini
-server {
-    listen 80;
-    server_name localhost;
-    charset utf-8;
-
-    location / {
-        root /apps/html;
-        index  index.html index.htm;
-    }
-
-    location /test/ {
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header REMOTE-HOST $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_pass http://192.168.2.100:7795/;
-    }
-
-    location /ws {
-        proxy_read_timeout 60s;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real_IP $remote_addr;
-        proxy_set_header X-Forwarded-for $remote_addr;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'Upgrade';
-        proxy_pass http://192.168.2.100:7795/;
-    }
-}
-server {
-    listen 8081;
-    location / {
-        root /apps/picture;
-        index  index.html index.htm;
-    }
-}
-```
-
-命令：
-
-```bash
-# 查看配置
-$ docker exec -it nginx nginx -t
-
-# 重新加载配置
-$ docker exec -it nginx nginx -s reload
-```
-
-## Redis
-
-docker-compose.yaml：
-
-```yaml
-redis:
-    image: redis:7.0.11
-    container_name: redis
-    ports:
-      - 6379:6379
-    volumes:
-      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
-      - ./redis/data:/data
-    # 挂载redis.conf的话，需要指定启动命令中的配置文件路径
-    command: redis-server /usr/local/etc/redis/redis.conf
-    networks:
-      - apps
-    restart: on-failure:3
-```
-
-redis.conf：
-
-```ini
+```sh
 port 6379
 requirepass 123456
 protected-mode no
@@ -922,29 +1106,248 @@ appendonly yes
 aof-use-rdb-preamble yes
 ```
 
-- redis.conf 需要在本地目录预先创建。
-
-## MinIO
+### Rabbitmq
 
 docker-compose.yaml：
 
 ```yaml
-minio:
-    container_name: minio
-    image: minio/minio:RELEASE.2023-07-21T21-12-44Z
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ACCESS_KEY: "admin"
-      MINIO_SECRET_KEY: "@admin2023"
-      TZ: Asia/Shanghai
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - ./minio/data:/data
-    networks:
-      - apps
-    restart: on-failure:3
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:
+    rabbitmq:
+        image: rabbitmq:management
+        container_name: rabbitmq
+        hostname: zeloud.rabbitmq
+        ports:
+          - 5672:5672
+          - 15672:15672
+        volumes:
+          - ./rabbitmq/data:/var/lib/rabbitmq
+        environment:
+          - "RABBITMQ_DEFAULT_USER=rbmq"
+          - "RABBITMQ_DEFAULT_PASS=rbmq"
+        networks:
+          - apps
+        restart: on-failure:3
+```
+
+### Nginx
+
+docker-compose.yaml：
+
+```yaml
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+
+services:
+    nginx:
+        image: nginx:1.23.4-perl
+        container_name: nginx
+        hostname: zeloud.nginx
+        ports:
+          - 80:80
+          - 8081:8081
+        volumes:
+          - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+          - ./nginx/conf/conf.d:/etc/nginx/conf.d
+          - ./nginx/logs:/var/log/nginx
+          - ./nginx/html:/apps/html
+          - ./nginx/picture:/apps/picture
+          - /etc/localtime:/etc/localtime:ro
+        ulimits:
+          nofile:
+            soft: 65536
+            hard: 65536
+        networks:
+          - apps
+        restart: on-failure:3
+```
+
+./nginx/conf/nginx.conf（需要在本地目录预先创建）：
+
+```sh
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log notice;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+```
+
+./nginx/conf/conf.d/default.conf（需要在本地目录预先创建）：
+
+```sh
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /apps/html;
+        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /apps/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    root           html;
+    #    fastcgi_pass   127.0.0.1:9000;
+    #    fastcgi_index  index.php;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+    #    include        fastcgi_params;
+    #}
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
+```
+
+./nginx/html/index.html（需要在本地目录预先创建）：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+./nginx/html/50x.html（需要在本地目录预先创建）：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Error</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>An error occurred.</h1>
+<p>Sorry, the page you are looking for is currently unavailable.<br/>
+Please try again later.</p>
+<p>If you are the system administrator of this resource then you should check
+the error log for details.</p>
+<p><em>Faithfully yours, nginx.</em></p>
+</body>
+</html>
+```
+
+命令：
+
+```sh
+# 查看配置文件是否有误
+$ docker exec -it nginx nginx -t
+
+# 重新加载配置
+$ docker exec -it nginx nginx -s reload
+```
+
+### MinIO
+
+docker-compose.yaml：
+
+```yaml
+version: "3.4"
+
+networks:
+  apps:
+    name: apps
+    external: false
+services:
+    minio:
+        image: minio/minio:RELEASE.2023-07-21T21-12-44Z
+        container_name: minio
+        hostname: zeloud.minio
+        ports:
+          - "9000:9000"
+          - "9001:9001"
+        volumes:
+          - ./minio/data:/data
+        command: server /data --console-address ":9001"
+        environment:
+          MINIO_ACCESS_KEY: "admin"
+          MINIO_SECRET_KEY: "@admin2023"
+          TZ: Asia/Shanghai
+        networks:
+          - apps
+        restart: on-failure:3
 ```
 
 ## 云效流水线部署
