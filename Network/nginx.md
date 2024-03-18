@@ -449,41 +449,54 @@ server {
 }
 ```
 
-> 基于二进制安装的 Nginx 配置文件，最小配置如下：
+- location 的语法：`location [=|~|~*|^~|@] pattern { … }`。
+  - `=`：要求路径完全匹配，忽略请求路径后的参数。
+  - `~`：用于区分大小写的正则匹配。
+  - `~*`：用于不区分大小写的正则匹配。
+  - `^~`：普通字符匹配，优先于正则表达式匹配，如果该选项匹配成功，不再进行正则表达式的匹配，多用来目录匹配。
+  - `@`：定义一个命名的 location，使用在内部定向。
+- location 优先级：
+  - Directives with the = prefix that match the query exactly. If found, searching stops.（= 前缀的指令严格匹配这个查询。如果找到，停止搜索）
+
+  - All remaining directives with conventional strings, longest match first. If this match used the ^~ prefix, searching stops.（所有剩下的常规字符串，最长的匹配。如果这个匹配使用 ^~ 前缀，搜索停止）
+  - Regular expressions, in order of definition in the configuration file.（正则表达式，按照在配置文件中定义的顺序）
+  - If #3 yielded a match, that result is used. Else the match from #2 is used.（如果第 3 条规则产生匹配的话，结果被使用。否则，使用第 2 条规则的结果）
+
+>基于二进制安装的 Nginx 配置文件，最小配置如下：
 >
-> ```sh
-> worker_processes  1;
-> 
-> events {
->     worker_connections  1024;
-> }
-> 
-> http {
->     include       /etc/nginx/mime.types;
->     default_type  application/octet-stream;
-> 
->     sendfile        on;
-> 
->     keepalive_timeout  65;
-> 
->     #gzip  on;
-> 
->     server {
->     	listen	80;
->     	server_name localhost;
->     	
->     	location / {
->     		root	html;
->     		index	index.html index.htm;
->     	}
->     	
->     	error_page 500 502 503 504 /50x.html;
->     	location = /50x.html {
->         	root html;
->         }
->     }
-> }
-> ```
+>```sh
+>worker_processes  1;
+>
+>events {
+>    worker_connections  1024;
+>}
+>
+>http {
+>    include       /etc/nginx/mime.types;
+>    default_type  application/octet-stream;
+>
+>    sendfile        on;
+>
+>    keepalive_timeout  65;
+>
+>    #gzip  on;
+>
+>    server {
+>    	listen	80;
+>    	server_name localhost;
+>    	
+>    	location / {
+>    		root	html;
+>    		index	index.html index.htm;
+>    	}
+>    	
+>    	error_page 500 502 503 504 /50x.html;
+>    	location = /50x.html {
+>        	root html;
+>        }
+>    }
+>}
+>```
 
 ## 虚拟主机
 
@@ -574,20 +587,19 @@ C:\Users\XiSun>ping acatsmiling.xisun.cn
 >```sh
 >zeloud@zeloud:~/apps/nginx/conf/conf.d$ cat localhost.conf 
 >server {
->    listen       80;
->    listen  [::]:80;
->    server_name  acatsmiling.xisun.cn;
+>        listen       80;
+>        listen  [::]:80;
+>        server_name  acatsmiling.xisun.cn;
 >
->    location / {
->        root   /apps/html;
->        index  index.html index.htm;
->    }
+>        location / {
+>            root   /apps/html;
+>            index  index.html index.htm;
+>        }
 >
->    error_page   500 502 503 504  /50x.html;
->    location = /50x.html {
->        root   /apps/html;
->    }
->
+>        error_page   500 502 503 504  /50x.html;
+>        location = /50x.html {
+>            root   /apps/html;
+>        }
 >}
 >```
 
@@ -611,7 +623,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 
 zeloud@zeloud:~/apps/nginx/conf/conf.d$ cat video.port.conf 
@@ -629,7 +640,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -678,7 +688,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 
 zeloud@zeloud:~/apps/nginx/conf/conf.d$ cat video.domain.conf 
@@ -696,7 +705,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -744,7 +752,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -784,7 +791,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -832,7 +838,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -876,7 +881,6 @@ server {
     location = /50x.html {
         root   /apps/html;
     }
-
 }
 ```
 
@@ -895,9 +899,225 @@ zeloud@zeloud:~/apps/nginx/conf/conf.d$ docker exec -it nginx nginx -s reload
 
 ## 反向代理
 
+正向代理（Forward Proxy）和反向代理（Reverse Proxy）都是代理服务器的工作模式，但它们工作在不同的场景并服务于不同的目的。
+
+`正向代理`：
+
+- 定义：正向代理位于客户端与目标服务器之间，客户端通过正向代理发送请求到目标服务器。客户端必须要进行一些特别的设置才能使用正向代理。
+- 功能：正向代理主要用于帮助客户端访问无法直接访问的服务器资源，例如跨越网络访问限制或墙。
+- 对象：**正向代理的服务对象是客户端。**
+- 匿名性：正向代理可以隐藏真实客户端的身份，使得服务器无法直接知道是谁在发起请求。
+- 应用场景：常用于内网环境中的 Internet 访问，帮助用户绕过访问限制，如 VPN、学校或公司网络等。
+
+`反向代理`：
+
+- 定义：反向代理位于服务器端，它接受来自 Internet 的请求，然后将这些请求转发到内部网络上的服务器，并将服务器上的响应返回给原始请求者。
+- 功能：反向代理主要用于负载均衡、缓存静态内容、加密和 SSL 加速、减轻 Web 服务器负载等。
+- 对象：**反向代理的服务对象是服务器。**
+- 安全性：反向代理可以保护内部网络的服务器不被直接访问，增强了安全性。
+- 应用场景：常用于提供外部访问的 Web 服务，如网站加速服务 CDN、负载均衡器等。
+
+简而言之，正向代理是代理客户端，帮助客户端访问服务器；反向代理是代理服务器，帮助服务器处理来自客户端的请求。正向代理隐藏了客户端的身份，而反向代理隐藏了服务器的身份。
+
+首先，创建一个简单的 Spring Boot Web 项目：
+
+- pom.xml：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+  
+      <parent>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-parent</artifactId>
+          <version>3.2.3</version>
+          <relativePath/>
+      </parent>
+  
+      <groupId>cn.zero.cloud</groupId>
+      <artifactId>nginx-demo</artifactId>
+      <version>1.0-SNAPSHOT</version>
+  
+      <properties>
+          <maven.compiler.source>17</maven.compiler.source>
+          <maven.compiler.target>17</maven.compiler.target>
+          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      </properties>
+  
+      <dependencies>
+          <dependency>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <optional>true</optional>
+          </dependency>
+  
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-web</artifactId>
+          </dependency>
+      </dependencies>
+  
+      <build>
+          <plugins>
+              <plugin>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-maven-plugin</artifactId>
+              </plugin>
+          </plugins>
+      </build>
+  
+  </project>
+  ```
+
+- application.yaml：
+
+  ```yaml
+  server:
+    port: 9527
+  ```
+
+- NginxDemoApplication.java：
+
+  ```java
+  package cn.zero.cloud;
+  
+  import lombok.extern.slf4j.Slf4j;
+  import org.springframework.boot.SpringApplication;
+  import org.springframework.boot.autoconfigure.SpringBootApplication;
+  
+  /**
+   * @author XiSun
+   * @version 1.0
+   * @since 2024/3/17 23:18
+   */
+  @Slf4j
+  @SpringBootApplication
+  public class NginxDemoApplication {
+      public static void main(String[] args) {
+          SpringApplication.run(NginxDemoApplication.class, args);
+          log.info("Starting Nginx");
+      }
+  }
+  ```
+
+- HelloController.java：
+
+  ```java
+  package cn.zero.cloud.controller;
+  
+  import org.springframework.web.bind.annotation.GetMapping;
+  import org.springframework.web.bind.annotation.RequestMapping;
+  import org.springframework.web.bind.annotation.RestController;
+  
+  /**
+   * @author XiSun
+   * @version 1.0
+   * @since 2024/3/17 23:23
+   */
+  @RestController
+  @RequestMapping
+  public class HelloController {
+  
+      @GetMapping("/hello")
+      public String hello() {
+          return "Hello, world!";
+      }
+  }
+  ```
+
+然后，打包，将 jar 包上传服务器并运行：
+
+```sh
+zeloud@zeloud:~/apps$ nohup java -jar nginx-demo-1.0-SNAPSHOT.jar > nginx-demo.log &
+```
+
+通过日志，查看服务正常启动：
+
+```sh
+zeloud@zeloud:~/apps$ cat nginx-demo.log 
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2024-03-18T14:22:13.090Z  INFO 3211 --- [           main] cn.zero.cloud.NginxDemoApplication       : Starting NginxDemoApplication using Java 17.0.10 with PID 3211 (/home/zeloud/apps/nginx-demo-1.0-SNAPSHOT.jar started by zeloud in /home/zeloud/apps)
+2024-03-18T14:22:13.101Z  INFO 3211 --- [           main] cn.zero.cloud.NginxDemoApplication       : No active profile set, falling back to 1 default profile: "default"
+2024-03-18T14:22:13.963Z  INFO 3211 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9527 (http)
+2024-03-18T14:22:13.979Z  INFO 3211 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-03-18T14:22:13.979Z  INFO 3211 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2024-03-18T14:22:14.018Z  INFO 3211 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-03-18T14:22:14.019Z  INFO 3211 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 844 ms
+2024-03-18T14:22:14.335Z  INFO 3211 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9527 (http) with context path ''
+2024-03-18T14:22:14.353Z  INFO 3211 --- [           main] cn.zero.cloud.NginxDemoApplication       : Started NginxDemoApplication in 1.716 seconds (process running for 2.212)
+2024-03-18T14:22:14.355Z  INFO 3211 --- [           main] cn.zero.cloud.NginxDemoApplication       : Starting Nginx
+```
+
+在 conf.d 目录下新增 proxy.conf 配置文件：
+
+```sh
+zeloud@zeloud:~/apps/nginx/conf/conf.d$ cat proxy.conf 
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  proxy.zeloud.cn;
+
+    location / {
+        root   /apps/html;
+        proxy_pass  http://192.168.2.20:9527; # 添加一个proxy_pass配置，指向服务器的9527端口
+        index  index.html index.htm;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /apps/html;
+    }
+}
+```
+
+生效配置：
+
+```sh
+zeloud@zeloud:~/apps/nginx/conf/conf.d$ docker exec -it nginx nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+zeloud@zeloud:~/apps/nginx/conf/conf.d$ docker exec -it nginx nginx -s reload
+```
+
+模拟访问 /hello 请求：
+
+```sh
+zeloud@zeloud:~/apps/nginx/conf/conf.d$ curl proxy.zeloud.cn/hello
+Hello, world
+```
+
+页面访问 /hello 请求：
+
+![image-20240318223358148](./nginx/image-20240318223358148.png)
+
+由此可见，`proxy_pass 配置`进行了反向代理。
+
+## 负载均衡
+
+
+
+## 动静分离
+
+
+
+## 高可用集群
+
 
 
 ## 本文参考
+
+https://www.bilibili.com/video/BV1zJ411w7SV
 
 https://www.bilibili.com/video/BV1yS4y1N76R
 
