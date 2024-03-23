@@ -673,6 +673,10 @@ $ npm config set registry https://registry.npmmirror.com
 > $ sudo chmod +x /usr/local/bin/docker-compose
 > ```
 
+### git 安装
+
+
+
 ## 常用命令
 
 ### 修改用户组
