@@ -779,7 +779,7 @@ NAT 的分类：
 
 <img src="network-protocol/image-20230121102836273.png" alt="image-20230121102836273" style="zoom:67%;" />
 
-规律，如果一个子网是原来网络的 ：
+规律，如果一个子网是原来网络的：
 $$
 \frac{1}{2}
 $$
