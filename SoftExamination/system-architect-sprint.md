@@ -438,6 +438,8 @@ CPU 的组成：
 
 `输入/输出技术`，是**指 CPU 控制主存与外设之间数据交互的过程**。因为外设处理速度比主存慢很多，对于二者之间的平衡，常见的方式有：
 
+<img src="./system-architect-sprint/image-20240429202004610.png" alt="image-20240429202004610" style="zoom:80%;" />
+
 - `直接程序控制`
   - 分为**无条件传送和程序查询**方式。
   - 降低了 CPU 的效率。
@@ -487,6 +489,10 @@ CPU 的组成：
 ### 指令系统
 
 <img src="./system-architect-sprint/image-20240424201706527.png" alt="image-20240424201706527" style="zoom: 43%;" />
+
+<img src="./system-architect-sprint/image-20240429205022163.png" alt="image-20240429205022163" style="zoom:80%;" />
+
+<img src="./system-architect-sprint/image-20240429211508729.png" alt="image-20240429211508729" style="zoom:80%;" />
 
 >以下关于 RISC 和 CISC 的叙述中，不正确的是（ ）。（2022 年上半年）
 >
@@ -661,6 +667,264 @@ CPU 的组成：
 >【答案】C
 >
 >【解析】选项 D 的可靠度为：R (1 - (1 - R)^2^)。
+
+### 例题
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429200834131.png" alt="image-20240429200834131" style="zoom: 80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429201039211.png" alt="image-20240429201039211" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/1714394151750.jpg" alt="1714394151750" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429203656961.png" alt="image-20240429203656961" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429204537701.png" alt="image-20240429204537701" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429204854029.png" alt="image-20240429204854029" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429205136271.png" alt="image-20240429205136271" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429205206757.png" alt="image-20240429205206757" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429205331181.png" alt="image-20240429205331181" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429205502861.png" alt="image-20240429205502861" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429205548336.png" alt="image-20240429205548336" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429205801555.png" alt="image-20240429205801555" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429205905735.png" alt="image-20240429205905735" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429205952586.png" alt="image-20240429205952586" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429210043734.png" alt="image-20240429210043734" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429210345626.png" alt="image-20240429210345626" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429210744575.png" alt="image-20240429210744575" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429210921016.png" alt="image-20240429210921016" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429211231570.png" alt="image-20240429211231570" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429211354567.png" alt="image-20240429211354567" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429211812348.png" alt="image-20240429211812348" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429211915558.png" alt="image-20240429211915558" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429211947720.png" alt="image-20240429211947720" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429212118999.png" alt="image-20240429212118999" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429212155185.png" alt="image-20240429212155185" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429212301644.png" alt="image-20240429212301644" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429222656738.png" alt="image-20240429222656738" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429222716925.png" alt="image-20240429222716925" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429222805112.png" alt="image-20240429222805112" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429222853937.png" alt="image-20240429222853937" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429224500634.png" alt="image-20240429224500634" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429224545688.png" alt="image-20240429224545688" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429224944718.png" alt="image-20240429224944718" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429225002613.png" alt="image-20240429225002613" style="zoom: 80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429230040535.png" alt="image-20240429230040535" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429230144912.png" alt="image-20240429230144912" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429230340647.png" alt="image-20240429230340647" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429230440765.png" alt="image-20240429230440765" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429230505414.png" alt="image-20240429230505414" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429230522308.png" alt="image-20240429230522308" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429230844889.png" alt="image-20240429230844889" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429230911320.png" alt="image-20240429230911320" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429231603872.png" alt="image-20240429231603872" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429231615882.png" alt="image-20240429231615882" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429231719068.png" alt="image-20240429231719068" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429231736537.png" alt="image-20240429231736537" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429231900504.png" alt="image-20240429231900504" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429231916331.png" alt="image-20240429231916331" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240429232034801.png" alt="image-20240429232034801" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240429232050953.png" alt="image-20240429232050953" style="zoom:80%;" />
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
 
 ## 操作系统
 
