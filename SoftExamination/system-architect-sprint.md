@@ -347,6 +347,8 @@ CPU 的组成：
 >
 >【答案】B
 
+<img src="./system-architect-sprint/image-20240501112330385.png" alt="image-20240501112330385" style="zoom:80%;" />
+
 ##### Cache 的地址映像方法
 
 <img src="./system-architect-sprint/image-20240316224752879.png" alt="image-20240316224752879" style="zoom:67%;" />
@@ -438,20 +440,24 @@ CPU 的组成：
 
 `输入/输出技术`，是**指 CPU 控制主存与外设之间数据交互的过程**。因为外设处理速度比主存慢很多，对于二者之间的平衡，常见的方式有：
 
-<img src="./system-architect-sprint/image-20240429202004610.png" alt="image-20240429202004610" style="zoom:80%;" />
-
 - `直接程序控制`
   - 分为**无条件传送和程序查询**方式。
   - 降低了 CPU 的效率。
   - 对外部的突发事件无法做出实时响应。
+  
 - `程序中断方式`
   - 利用中断方式完成数据的输入/输出。
   - CPU 接到中断请求信号后，保存正在执行程序的现场。
   - 与程序控制方式相比，因为 **CPU 无须等待**而提高了效率。
+  
 - `DMA`
+  
+  <img src="./system-architect-sprint/image-20240502103854236.png" alt="image-20240502103854236" style="zoom:80%;" />
+  
   - 在**主存与 I/O 设备（外设）之间建立数据通路**，进行数据的交换处理。
   - 在 DMA 传送过程中**无须 CPU 的干预**。
   - DMA 传送数据时要**占用系统总线**，此时，CPU 不能使用总线。
+  
 - `输入/输出处理机 (IOP)`
   - 分担了 CPU 的一部分功能，可以实现对外围设备的统一管理，完成外围设备与主存之间的数据传送。
   - 大大提高了 CPU 的工作效率，这种效率的提高是**以增加更多的硬件为代价**的。
@@ -469,6 +475,12 @@ CPU 的组成：
 >A. 程序查询方式和中断方式					 	B. 中断方式和 DMA 方式						  	C. 程序查询方式和 DMA 方式					 D. 程序查询方式、中断方式和 DMA 方式
 >
 >【答案】B
+
+<img src="./system-architect-sprint/image-20240429202004610.png" alt="image-20240429202004610" style="zoom:80%;" />
+
+<img src="./system-architect-sprint/image-20240502104922121.png" alt="image-20240502104922121" style="zoom:80%;" />
+
+<img src="./system-architect-sprint/image-20240502105018014.png" alt="image-20240502105018014" style="zoom:80%;" />
 
 ### Flynn 分类法
 
@@ -491,6 +503,8 @@ CPU 的组成：
 <img src="./system-architect-sprint/image-20240424201706527.png" alt="image-20240424201706527" style="zoom: 43%;" />
 
 <img src="./system-architect-sprint/image-20240429205022163.png" alt="image-20240429205022163" style="zoom:80%;" />
+
+<img src="./system-architect-sprint/image-20240502141339074.png" alt="image-20240502141339074" style="zoom:80%;" />
 
 <img src="./system-architect-sprint/image-20240429211508729.png" alt="image-20240429211508729" style="zoom:80%;" />
 
@@ -872,11 +886,277 @@ CPU 的组成：
 
 【题目】
 
+<img src="./system-architect-sprint/image-20240501090930541.png" alt="image-20240501090930541" style="zoom:80%;" />
 
+<img src="./system-architect-sprint/image-20240501104808034.png" alt="image-20240501104808034" style="zoom:80%;" />
 
 【解析】
 
+<img src="./system-architect-sprint/image-20240501090943467.png" alt="image-20240501090943467" style="zoom:80%;" />
 
+<img src="./system-architect-sprint/image-20240501111252261.png" alt="image-20240501111252261" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501104003123.png" alt="image-20240501104003123" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501104056034.png" alt="image-20240501104056034" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501104931385.png" alt="image-20240501104931385" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501104956654.png" alt="image-20240501104956654" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501111429192.png" alt="image-20240501111429192" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501111539755.png" alt="image-20240501111539755" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501111712025.png" alt="image-20240501111712025" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501111742426.png" alt="image-20240501111742426" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501111912427.png" alt="image-20240501111912427" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501111927156.png" alt="image-20240501111927156" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501112114495.png" alt="image-20240501112114495" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501112151020.png" alt="image-20240501112151020" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501112436265.png" alt="image-20240501112436265" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501113203583.png" alt="image-20240501113203583" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501113604185.png" alt="image-20240501113604185" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501113647646.png" alt="image-20240501113647646" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240501124504604.png" alt="image-20240501124504604" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240501124533003.png" alt="image-20240501124533003" style="zoom:80%;" />
+
+#### 输入/输出技术
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502094109076.png" alt="image-20240502094109076" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502094330320.png" alt="image-20240502094330320" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502103537531.png" alt="image-20240502103537531" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502103738709.png" alt="image-20240502103738709" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502104132319.png" alt="image-20240502104132319" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502104253846.png" alt="image-20240502104253846" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502104324186.png" alt="image-20240502104324186" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502104428820.png" alt="image-20240502104428820" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502104509088.png" alt="image-20240502104509088" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502104639209.png" alt="image-20240502104639209" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502111126767.png" alt="image-20240502111126767" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502111147012.png" alt="image-20240502111147012" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502111246510.png" alt="image-20240502111246510" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502111358113.png" alt="image-20240502111358113" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502111439307.png" alt="image-20240502111439307" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502111503487.png" alt="image-20240502111503487" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502121814771.png" alt="image-20240502121814771" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502125838693.png" alt="image-20240502125838693" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502135142821.png" alt="image-20240502135142821" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502135013582.png" alt="image-20240502135013582" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502135710323.png" alt="image-20240502135710323" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502135931394.png" alt="image-20240502135931394" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502140344240.png" alt="image-20240502140344240" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502140403240.png" alt="image-20240502140403240" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502140506580.png" alt="image-20240502140506580" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502140524242.png" alt="image-20240502140524242" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502140751824.png" alt="image-20240502140751824" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502140840675.png" alt="image-20240502140840675" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502141041993.png" alt="image-20240502141041993" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502141141464.png" alt="image-20240502141141464" style="zoom:80%;" />
+
+#### 计算机体系结构
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502143605973.png" alt="image-20240502143605973" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502143637539.png" alt="image-20240502143637539" style="zoom:80%;" />
+
+#### 总线
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502144605650.png" alt="image-20240502144605650" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502144641751.png" alt="image-20240502144641751" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502144751099.png" alt="image-20240502144751099" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502145001025.png" alt="image-20240502145001025" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502145314091.png" alt="image-20240502145314091" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502145338188.png" alt="image-20240502145338188" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502183929969.png" alt="image-20240502183929969" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502184317360.png" alt="image-20240502184317360" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502184641116.png" alt="image-20240502184641116" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502194511199.png" alt="image-20240502194511199" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502200843982.png" alt="image-20240502200843982" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502200928893.png" alt="image-20240502200928893" style="zoom:80%;" />
+
+【题目】
+
+<img src="./system-architect-sprint/image-20240502201047835.png" alt="image-20240502201047835" style="zoom:80%;" />
+
+【解析】
+
+<img src="./system-architect-sprint/image-20240502201104866.png" alt="image-20240502201104866" style="zoom:80%;" />
 
 【题目】
 
@@ -923,6 +1203,24 @@ CPU 的组成：
 
 
 【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
+
+【题目】
+
+
+
+【解析】
+
+
 
 
 
