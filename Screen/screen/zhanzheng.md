@@ -11,10 +11,13 @@
 [豆瓣评分: 8.5](https://movie.douban.com/subject/1308078/)
 
 导演: [冯小宁](https://movie.douban.com/celebrity/1274250/)
+
 编剧: [冯小宁](https://movie.douban.com/celebrity/1274250/)
+
 主演: [富大龙](https://movie.douban.com/celebrity/1274705/) / [前田知惠](https://movie.douban.com/celebrity/1314345/) / [安娜·捷尼拉洛娃](https://movie.douban.com/celebrity/1315581/) / [王学伟](https://movie.douban.com/celebrity/1336967/) / [李鸣](https://movie.douban.com/celebrity/1336632/) / [孟承光](https://movie.douban.com/subject_search?search_text=孟承光) / [张巍](https://movie.douban.com/subject_search?search_text=张巍) / [谢加起](https://movie.douban.com/celebrity/1374753/) / [富俊峰](https://movie.douban.com/celebrity/1374752/) / [张雁鸣](https://movie.douban.com/subject_search?search_text=张雁鸣) / [曹立柱](https://movie.douban.com/subject_search?search_text=曹立柱) / [刘玉津](https://movie.douban.com/subject_search?search_text=刘玉津) / [王文华](https://movie.douban.com/subject_search?search_text=王文华) / [陆广义](https://movie.douban.com/subject_search?search_text=陆广义) / [陈名](https://movie.douban.com/subject_search?search_text=陈名) / [聂清富](https://movie.douban.com/subject_search?search_text=聂清富) / [沈尚军](https://movie.douban.com/subject_search?search_text=沈尚军) / [朱玉涛](https://movie.douban.com/subject_search?search_text=朱玉涛) / [王建民](https://movie.douban.com/subject_search?search_text=王建民) / [奥列克](https://movie.douban.com/subject_search?search_text=奥列克) / [刘同友](https://movie.douban.com/subject_search?search_text=刘同友) / [鲍恺](https://movie.douban.com/subject_search?search_text=鲍恺) / [姚岗](https://movie.douban.com/celebrity/1349851/) / [陈丰](https://movie.douban.com/subject_search?search_text=陈丰) / [长尾麻油](https://movie.douban.com/subject_search?search_text=长尾麻油)
 
 上映日期: 2001-04-11(中国大陆)
+
 片长: 106分钟
 
 ## World War Ⅱ
