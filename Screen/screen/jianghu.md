@@ -1,3 +1,7 @@
+## 
+
+[豆瓣评分: ]()
+
 ## 英雄本色
 
 ![image-20240507201748842](./jianghu/image-20240507201748842.png)
@@ -221,6 +225,22 @@
 上映日期: 1996-03-30(中国香港)
 
 片长: 98分钟
+
+## 马永贞
+
+![image-20240514210352627](./jianghu/image-20240514210352627.png)
+
+[豆瓣评分: 6.9](https://movie.douban.com/subject/1304694/)
+
+导演: [元奎](https://movie.douban.com/celebrity/1289150/)
+
+编剧: [刘镇伟](https://movie.douban.com/celebrity/1274431/)
+
+主演: [金城武](https://movie.douban.com/celebrity/1027883/) / [元彪](https://movie.douban.com/celebrity/1163752/) / [宣萱](https://movie.douban.com/celebrity/1023521/) / [周嘉玲](https://movie.douban.com/celebrity/1037015/) / [元华](https://movie.douban.com/celebrity/1050240/)
+
+上映日期: 1997-06-17(中国香港)
+
+片长: 97分钟
 
 ## 黑社会
 
