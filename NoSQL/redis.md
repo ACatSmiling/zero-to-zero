@@ -210,9 +210,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 ### Client 命令
 
-- 连接客户端：`redis-cli [-h hostname] [-p port] [-a password]`。
+- **连接客户端**：`redis-cli [-h hostname] [-p port] [-a password]`。
 
-  ```bash
+  ```sh
   $ redis-cli -h 127.0.0.1 -p 6379 -a "mypass"
   127.0.0.1:6379>
   ```
@@ -221,9 +221,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 ### Server 命令
 
-- 验证密码：`AUTH <password>`。密码匹配时返回 OK，否则返回一个错误。
+- **验证密码**：`AUTH <password>`。密码匹配时返回 OK，否则返回一个错误。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> AUTH password
   (error) ERR Client sent AUTH, but no password is set
   127.0.0.1:6379> CONFIG SET requirepass "mypass"
@@ -232,9 +232,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   Ok
   ```
 
-- 服务器统计信息：`INFO [section]`。返回关于 Redis 服务器的各种信息和统计数值。通过给定可选的参数 section，可以让命令只返回某一部分的信息。
+- **服务器统计信息**：`INFO [section]`。返回关于 Redis 服务器的各种信息和统计数值。通过给定可选的参数 section，可以让命令只返回某一部分的信息。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> INFO
   # Server
   redis_version:7.0.11								# Redis服务器版本
@@ -253,8 +253,8 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   run_id:8de30f0d5af0e8f0f7761f0cd0636c03885baa7d		# Redis服务器的随机标识符(用于Sentinel和集群)
   tcp_port:6379										# TCP/IP监听端口
   server_time_usec:1693962718865941
-  uptime_in_seconds:5689318							# 自Redis服务器启动以来, 经过的秒数
-  uptime_in_days:65									# 自Redis服务器启动以来, 经过的天数
+  uptime_in_seconds:5689318							# 自Redis服务器启动以来，经过的秒数
+  uptime_in_days:65									# 自Redis服务器启动以来，经过的天数
   hz:10
   configured_hz:10
   lru_clock:16241118
@@ -273,11 +273,11 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   clients_in_timeout_table:0
   
   # Memory
-  used_memory:1292232									# 由Redis分配器分配的内存总量, 以字节(byte)为单位
+  used_memory:1292232									# 由Redis分配器分配的内存总量，以字节(byte)为单位
   used_memory_human:1.23M								# 以人类可读的格式返回Redis分配的内存总量
-  used_memory_rss:10547200							# 从操作系统的角度, 返回Redis已分配的内存总量(俗称常驻集大小), 这个值和top、ps等命令的输出一致
+  used_memory_rss:10547200							# 从操作系统的角度，返回Redis已分配的内存总量(俗称常驻集大小)，这个值和top、ps等命令的输出一致
   used_memory_rss_human:10.06M
-  used_memory_peak:1402552							# Redis的内存消耗峰值, 以字节(byte)为单位
+  used_memory_peak:1402552							# Redis的内存消耗峰值，以字节(byte)为单位
   used_memory_peak_human:1.34M						# 以人类可读的格式返回Redis的内存消耗峰值
   used_memory_peak_perc:92.13%
   used_memory_overhead:868304
@@ -289,7 +289,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   allocator_resident:4808704
   total_system_memory:8369803264
   total_system_memory_human:7.79G
-  used_memory_lua:31744								# Lua引擎所使用的内存大小, 以字节(byte)为单位
+  used_memory_lua:31744								# Lua引擎所使用的内存大小，以字节(byte)为单位
   used_memory_vm_eval:31744
   used_memory_lua_human:31.00K
   used_memory_scripts_eval:0
@@ -451,16 +451,16 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   db4:keys=4,expires=0,avg_ttl=0
   ```
 
-- 打印字符串：`ECHO <message>`。返回字符串本身。
+- **打印字符串**：`ECHO <message>`。返回字符串本身。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ECHO "Hello World"
   "Hello World"
   ```
 
-- 查看服务是否运行：`PING`。如果连接正常就返回一个 PONG，否则返回一个连接错误。
+- **查看服务是否运行**：`PING`。如果连接正常就返回一个 PONG，否则返回一个连接错误。
 
-  ```bash
+  ```sh
   # 客户端和服务器连接正常
   127.0.0.1:6379> PING
   PONG
@@ -470,26 +470,26 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   Could not connect to Redis at 127.0.0.1:6379: Connection refused
   ```
 
-- 返回当前服务器时间：`TIME`。返回一个包含两个字符串的列表，第一个字符串是当前时间（以 UNIX 时间戳格式表示），第二个字符串是当前这一秒钟已经逝去的微秒数。
+- **返回当前服务器时间**：`TIME`。返回一个包含两个字符串的列表，第一个字符串是当前时间（以 UNIX 时间戳格式表示），第二个字符串是当前这一秒钟已经逝去的微秒数。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> TIME
   1) "1693965189"
   2) "195945"
   ```
 
-- 切换到指定数据库：`SELECT <index>`。总是返回 OK。
+- **切换到指定数据库**：`SELECT <index>`。总是返回 OK。
 
-  ```bash
+  ```sh
   # 默认使用0号数据库
   127.0.0.1:6379> SET db_number 0
   OK
   
-  # 使用 1 号数据库
+  # 使用1号数据库
   127.0.0.1:6379> SELECT 1
   OK
   
-  # 已经切换到 1 号数据库，注意 Redis 现在的命令提示符多了个 [1]
+  # 已经切换到1号数据库，注意Redis现在的命令提示符多了个[1]
   127.0.0.1:6379[1]> GET db_number
   (nil)
   
@@ -507,9 +507,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   127.0.0.1:6379[3]>
   ```
 
-- 清空当前数据库：`FLUSHDB`。总是返回 OK。
+- **清空当前数据库**：`FLUSHDB`。总是返回 OK。
 
-  ```bash
+  ```sh
   # 清空前的key数量
   127.0.0.1:6379> DBSIZE
   (integer) 4
@@ -522,13 +522,13 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-  - Redis 默认是 16 个库，通过 0 ~ 15 标识库名，默认使用 0 号库，可以通过 redis.conf 修改配置。
+  - **Redis 默认是 16 个库，通过 0 ~ 15 标识库名，默认使用 0 号库，可以通过 redis.conf 修改配置。**
 
     <img src="redis/image-20230908115310519.png" alt="image-20230908115310519" style="zoom: 80%;" />
 
-- 清空全部数据库：`FLUSHALL`。总是返回 OK。
+- **清空全部数据库**：`FLUSHALL`。总是返回 OK。
 
-  ```bash
+  ```sh
   # 0号数据库的key数量
   127.0.0.1:6379> DBSIZE
   (integer) 9
@@ -557,9 +557,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-- 实时打印出 Redis 服务器接收到的命令：`MONITOR`。调试用。
+- **实时打印出 Redis 服务器接收到的命令**：`MONITOR`。调试用。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> MONITOR
   OK
   1693965563.441319 [0 127.0.0.1:46990] "auth" "(redacted)"
@@ -567,25 +567,25 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   1693965630.705873 [0 127.0.0.1:46992] "keys" "*"
   ```
 
-- 关闭当前连接：`QUIT`。总是返回 OK。
+- **关闭当前连接**：`QUIT`。总是返回 OK。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> QUIT
   OK
   ```
 
 ### Key 命令
 
-- 查看当前库 key 的数量：`DBSIZE`。返回当前数据库的 key 的数量。
+- **查看当前库 key 的数量**：`DBSIZE`。返回当前数据库的 key 的数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> dbsize
   (integer) 1
   ```
 
-- 查找所有符合给定模式（pattern）的 key：`KEYS <pattern>`。返回符合给定模式的 key 列表。
+- **查找所有符合给定模式（pattern）的 key**：`KEYS <pattern>`。返回符合给定模式的 key 列表。
 
-  ```bash
+  ```sh
   # 获取所有的key
   127.0.0.1:6379> KEYS *
   1) "inspection_task-1115"
@@ -599,16 +599,18 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (empty array)
   ```
 
-- 判断某个 key 是否存在：`EXISTS <key_name>`。若 key 存在返回 1，否则返回 0。
+  - **生产环境不要轻易使用 KEYS 命令，因为 Redis 是单线程的，KEYS 命令的性能随着数据库数据的增多而越来越慢，使用 KEYS 命令时会占用唯一的一个线程的大量处理时间，引发 Redis 阻塞并且增加 Redis 的 CPU 占用，导致所有的请求都被拖慢，可能造成 Redis 所在的服务器宕机。**
 
-  ```bash
+- **判断某个 key 是否存在**：`EXISTS <key_name>`。若 key 存在返回 1，否则返回 0。
+
+  ```sh
   127.0.0.1:6379> EXISTS runoob-new-key
   (integer) 0
   ```
 
-- 返回 key 所储存的值的类型：`TYPE <key_name>`。返回 key 的数据类型。
+- **返回 key 所储存的值的类型**：`TYPE <key_name>`。返回 key 的数据类型。
 
-  ```bash
+  ```sh
   # key不存在
   127.0.0.1:6379> TYPE aabb
   none
@@ -616,63 +618,69 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   # 字符串
   127.0.0.1:6379> SET weather "sunny"
   OK
+  
   127.0.0.1:6379> TYPE weather
   string
   
   # 列表
   127.0.0.1:6379> LPUSH book_list "programming in scala"
   (integer) 1
+  
   127.0.0.1:6379> TYPE book_list
   list
   
   # 集合
   127.0.0.1:6379> SADD pat "dog"
   (integer) 1
+  
   127.0.0.1:6379> TYPE pat
   set
   ```
 
-- 在 key 存在时删除 key：`DEL <key_name>`。返回被删除 key 的数量。
+- **在 key 存在时删除 key**：`DEL <key_name>`。返回被删除 key 的数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> DEL key
   (integer) 1
   ```
 
-- 以秒为单位，为给定 key 设置过期时间：`EXPIRE <key_name> <time_in_seconds>`。设置成功返回 1，当 key 不存在或者不能为 key 设置过期时间时返回 0。
+- **以秒为单位，为给定 key 设置过期时间**：`EXPIRE <key_name> <time_in_seconds>`。设置成功返回 1，当 key 不存在或者不能为 key 设置过期时间时返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> EXPIRE runooobkey 60
   (integer) 1
   ```
 
-- 以秒为单位，返回 key 的剩余过期时间：`TTL <key_name>`。当 key 不存在时，返回 -2，当 key 存在但没有设置剩余生存时间时，返回 -1，否则，以秒为单位，返回 key 的剩余生存时间。
+- **以秒为单位，返回 key 的剩余过期时间**：`TTL <key_name>`。当 key 不存在时，返回 -2，当 key 存在但没有设置剩余生存时间时，返回 -1，否则，以秒为单位，返回 key 的剩余生存时间。
 
-  ```bash
+  ```sh
   # 不存在的key
   127.0.0.1:6379> FLUSHDB
   OK
+  
   127.0.0.1:6379> TTL key
   (integer) -2
   
-  # key存在, 但没有设置剩余生存时间
+  # key存在，但没有设置剩余生存时间
   127.0.0.1:6379> SET key value
   OK
+  
   127.0.0.1:6379> TTL key
   (integer) -1
   
   # 有剩余生存时间的key
   127.0.0.1:6379> EXPIRE key 10086
   (integer) 1
+  
   127.0.0.1:6379> TTL key
   (integer) 10084
   ```
 
-- 将当前数据库的 key 移动到给定的数据库 db 当中：`MOVE <key_name> <db_name>`。移动成功返回 1，失败则返回 0。
+- **将当前数据库的 key 移动到给定的数据库 db 当中**：`MOVE <key_name> <db_name>`。移动成功返回 1，失败则返回 0。
 
-  ```bash
+  ```sh
   # key存在于当前数据库
-  127.0.0.1:6379> SELECT 0								# redis默认使用数据库0, 为了清晰起见, 这里再显式指定一次
+  127.0.0.1:6379> SELECT 0								# redis默认使用数据库0，为了清晰起见，这里再显式指定一次
   OK
   
   127.0.0.1:6379> SET song "secret base - Zone"
@@ -687,7 +695,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   127.0.0.1:6379> SELECT 1								# 使用数据库1
   OK
   
-  127.0.0.1:6379[1]> EXISTS song							# 证实 song被移到了数据库1
+  127.0.0.1:6379[1]> EXISTS song							# 证实song被移到了数据库1
   (integer) 1
   
   
@@ -695,7 +703,7 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   127.0.0.1:6379[1]> EXISTS fake_key
   (integer) 0
   
-  127.0.0.1:6379[1]> MOVE fake_key 0						# 试图从数据库1移动一个不存在的key到数据库0, 失败
+  127.0.0.1:6379[1]> MOVE fake_key 0						# 试图从数据库1移动一个不存在的key到数据库0，失败
   (integer) 0
   
   127.0.0.1:6379[1]> select 0								# 使用数据库0
@@ -708,18 +716,20 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   # 当源数据库和目标数据库有相同的key时
   127.0.0.1:6379> SELECT 0								# 使用数据库0
   OK
+  
   127.0.0.1:6379> SET favorite_fruit "banana"
   OK
   
   127.0.0.1:6379> SELECT 1								# 使用数据库1
   OK
+  
   127.0.0.1:6379[1]> SET favorite_fruit "apple"
   OK
   
-  127.0.0.1:6379[1]> SELECT 0								# 使用数据库0, 并试图将favorite_fruit移动到数据库1
+  127.0.0.1:6379[1]> SELECT 0								# 使用数据库0，并试图将favorite_fruit移动到数据库1
   OK
   
-  127.0.0.1:6379> MOVE favorite_fruit 1					# 因为两个数据库有相同的key, MOVE失败
+  127.0.0.1:6379> MOVE favorite_fruit 1					# 因为两个数据库有相同的key，MOVE失败
   (integer) 0
   
   127.0.0.1:6379> GET favorite_fruit						# 数据库0的favorite_fruit没变
@@ -728,25 +738,25 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   127.0.0.1:6379> SELECT 1
   OK
   
-  127.0.0.1:6379[1]> GET favorite_fruit					# 数据库1的favorite_fruit也是
+  127.0.0.1:6379[1]> GET favorite_fruit					# 数据库1的favorite_fruit也没变
   "apple"
   ```
 
 ### Value 命令
 
-帮助命令：`HELP @数据类型`。
+- **帮助命令**：`HELP @数据类型`。
 
-```bash
-127.0.0.1:6379> HELP @string
-
-127.0.0.1:6379> HELP @list
-```
+  ```sh
+  127.0.0.1:6379> HELP @string
+  
+  127.0.0.1:6379> HELP @list
+  ```
 
 #### String
 
-- 设置指定 key 的值：`SET <key_name> <value>`。在设置操作成功完成后，返回 OK。
+- **设置指定 key 的值**：`SET <key_name> <value>`。在设置操作成功完成后，返回 OK。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SET key "value"
   OK
   
@@ -754,9 +764,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   "value"
   ```
 
-- 获取指定 key 的值：`GET <key_name>`。返回 key 的值，如果 key 不存在时，返回 nil。 如果 key 不是字符串类型，那么返回一个错误。
+- **获取指定 key 的值**：`GET <key_name>`。返回 key 的值，如果 key 不存在时，返回 nil。如果 key 不是字符串类型，那么返回一个错误。
 
-  ```bash
+  ```sh
   # 对不存在的key或字符串类型key进行GET
   127.0.0.1:6379> GET db
   (nil)
@@ -778,45 +788,51 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (error) ERR Operation against a key holding the wrong kind of value
   ```
 
-- 将值 value 关联到 key ，并将 key 的过期时间设为 seconds（以秒为单位）：`SETEX <key_name> <timeout> <value>`。在设置操作成功完成后，返回 OK。
+- **将值 value 关联到 key ，并将 key 的过期时间设为 seconds（以秒为单位）**：`SETEX <key_name> <timeout> <value>`。在设置操作成功完成后，返回 OK。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SETEX mykey 60 redis
   OK
+  
   127.0.0.1:6379> TTL mykey
   60
+  
   127.0.0.1:6379> GET mykey
   "redis
   ```
 
-- 同时设置一个或多个 key-value 对：` MSET <key_name1> <value1> [<key_name2> <value2>] .. [<key_nameN> <valueN>]`。总是返回 OK。
+- **同时设置一个或多个 key-value 对**：` MSET <key_name1> <value1> [<key_name2> <value2>] .. [<key_nameN> <valueN>]`。总是返回 OK。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> MSET key1 "Hello" key2 "World"
   OK
+  
   127.0.0.1:6379> GET key1
   "Hello"
+  
   127.0.0.1:6379> GET key2
   1) "World"
   ```
 
-- 获取所有（一个或多个）给定 key 的值：`MGET <key_name1> [<key_name2>] .. [<key_nameN>]`。返回一个包含所有给定 key 的值的列表。
+- **获取所有（一个或多个）给定 key 的值**：`MGET <key_name1> [<key_name2>] .. [<key_nameN>]`。返回一个包含所有给定 key 的值的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SET key1 "hello"
   OK
+  
   127.0.0.1:6379> SET key2 "world"
   OK
+  
   127.0.0.1:6379> MGET key1 key2 someOtherKey
   1) "Hello"
   2) "World"
   3) (nil)
   ```
 
-- 将给定 key 的值设为 value，并返回 key 的旧值 old value：`GETSET <key_name> <value>`。返回给定 key 的旧值。当 key 没有旧值时，即 key 不存在时，返回 nil。当 key 存在，但不是字符串类型时，返回一个错误。
+- **将给定 key 的值设为 value，并返回 key 的旧值 old value**：`GETSET <key_name> <value>`。返回给定 key 的旧值。当 key 没有旧值时，即 key 不存在时，返回 nil。当 key 存在，但不是字符串类型时，返回一个错误。
 
-  ```bash
-  127.0.0.1:6379> GETSET db mongodb	# 没有旧值, 返回nil
+  ```sh
+  127.0.0.1:6379> GETSET db mongodb	# 没有旧值，返回nil
   (nil)
   
   127.0.0.1:6379> GET db
@@ -829,31 +845,35 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   "redis"
   ```
 
-- 用 value 参数覆写给定 key 所储存的字符串值，从偏移量 offset 开始：`SETRANGE <key_name> OFFSET <value>`。返回被修改后的字符串长度。
+- **用 value 参数覆写给定 key 所储存的字符串值，从偏移量 offset 开始**：`SETRANGE <key_name> OFFSET <value>`。返回被修改后的字符串长度。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SET key1 "Hello World"
   OK
+  
   127.0.0.1:6379> SETRANGE key1 6 "Redis"
   (integer) 11
+  
   127.0.0.1:6379> GET key1
   "Hello Redis"
   ```
 
-- 返回 key 中字符串值的子字符：`GETRANGE <key_name> <start> <end>`。返回截取得到的子字符串。
+- **返回 key 中字符串值的子字符**：`GETRANGE <key_name> <start> <end>`。返回截取得到的子字符串。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SET mykey "This is my test key"
   OK
+  
   127.0.0.1:6379> GETRANGE mykey 0 3
   "This"
+  
   127.0.0.1:6379> GETRANGE mykey 0 -1
   "This is my test key"
   ```
 
-- 返回 key 所储存的字符串值的长度：`STRLEN <key_name>`。返回字符串值的长度，当 key 不存在时，返回 0。
+- **返回 key 所储存的字符串值的长度**：`STRLEN <key_name>`。返回字符串值的长度，当 key 不存在时，返回 0。
 
-  ```bash
+  ```sh
   # 获取字符串的长度
   127.0.0.1:6379> SET mykey "Hello World"
   OK
@@ -866,14 +886,14 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-- 如果 key 已经存在并且是一个字符串， APPEND 命令将指定的 value 追加到该 key 原来值（value）的末尾：`APPEND <key_name> <new_value>`。返回追加指定值之后， key 中字符串的长度。如果 key 已经存在并且是一个字符串，APPEND 命令将 value 追加到 key 原来的值的末尾。如果 key 不存在，APPEND 就简单地将给定 key 设为 value，就像执行 SET key value 一样。
+- **如果 key 已经存在并且是一个字符串， APPEND 命令将指定的 value 追加到该 key 原来值（value）的末尾**：`APPEND <key_name> <new_value>`。返回追加指定值之后， key 中字符串的长度。如果 key 已经存在并且是一个字符串，APPEND 命令将 value 追加到 key 原来的值的末尾。**如果 key 不存在，APPEND 就简单地将给定 key 设为 value，就像执行 SET key value 一样。**
 
-  ```bash
+  ```sh
   # 对不存在的key执行APPEND
   127.0.0.1:6379> EXISTS myphone				# myphone不存在
   (integer) 0
   
-  127.0.0.1:6379> APPEND myphone "nokia"		# 对不存在的key进行APPEND, 等同于SET myphone "nokia"
+  127.0.0.1:6379> APPEND myphone "nokia"		# 对不存在的key进行APPEND，等同于SET myphone "nokia"
   (integer) 5
   
   # 对已存在的字符串进行APPEND
@@ -884,9 +904,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   "nokia - 1110"
   ```
 
-- 将 key 中储存的数字值增一：`INCR <key_name>`。返回执行 INCR 命令之后 key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 INCR 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+- **将 key 中储存的数字值增一**：`INCR <key_name>`。返回执行 INCR 命令之后 key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 INCR 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SET page_view 20
   OK
   
@@ -897,9 +917,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   "21"
   ```
 
-- 将 key 所储存的值加上给定的增量值（increment）：`INCRBY <key_name> <increment>`。返回加上指定的增量值之后， key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 INCRBY 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+- **将 key 所储存的值加上给定的增量值（increment）**：`INCRBY <key_name> <increment>`。返回加上指定的增量值之后， key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 INCRBY 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
 
-  ```bash
+  ```sh
   # key存在且是数字值
   127.0.0.1:6379> SET rank 50
   OK
@@ -928,9 +948,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (error) ERR value is not an integer or out of range
   ```
 
-- 将 key 中储存的数字值减一：`DECR <key_name>`。返回执行 INCR 命令之后 key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 DECR 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+- **将 key 中储存的数字值减一**：`DECR <key_name>`。返回执行 INCR 命令之后 key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 DECR 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
 
-  ```bash
+  ```sh
   # 对存在的数字值key进行DECR
   redis> SET failure_times 10
   OK
@@ -953,9 +973,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (error) ERR value is not an integer or out of range
   ```
 
-- 将 key 所储存的值减去给定的减量值（decrement）：`DECRBY <key_name> <decrement>`。返回加上指定的增量值之后， key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 DECRBY 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+- **将 key 所储存的值减去给定的减量值（decrement）**：`DECRBY <key_name> <decrement>`。返回加上指定的增量值之后， key 的值。如果 key 不存在，那么 key 的值会先被初始化为 0，然后再执行 DECRBY 操作。如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
 
-  ```bash
+  ```sh
   # 对已存在的key进行DECRBY
   redis> SET count 100
   OK
@@ -973,125 +993,150 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### List
 
-- 将一个或多个值插入到列表头部：`LPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
+- **将一个或多个值插入到列表头部**：`LPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> LPUSH list1 "foo"
   (integer) 1
-  127.0.0.1:6379> LPUSH list1 "bar"
+   
+   127.0.0.1:6379> LPUSH list1 "bar"
   (integer) 2
+  
   127.0.0.1:6379> LRANGE list1 0 -1
   1) "bar"
   2) "foo"
   ```
 
-- 将一个或多个值添加到列表尾部：`RPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
+- **将一个或多个值添加到列表尾部**：`RPUSH <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "foo"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "bar"
   (integer) 3
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "hello"
   2) "foo"
   3) "bar"
   ```
 
-- 将一个值插入到已存在的列表头部：`LPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
+- **将一个值插入到已存在的列表头部**：`LPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> LPUSH list1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> LPUSHX list1 "bar"
   (integer) 2
+  
   127.0.0.1:6379> LPUSHX list2 "bar"		# 列表不存在时操作无效
   (integer) 0
+  
   127.0.0.1:6379> LRANGE list1 0 -1
   1) "bar"
   2) "foo"
   ```
 
-- 将一个值添加到已存在的列表头部：`RPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
+- **将一个值添加到已存在的列表头部**：`RPUSHX <key_name1> <value1> [<value2>] .. [<valueN>]`。返回列表的长度，列表不存在时操作无效。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "foo"
   (integer) 2
+  
   127.0.0.1:6379> RPUSHX mylist2 "bar"	# 列表不存在时操作无效
   (integer) 0
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "hello"
   2) "foo"
   ```
 
-- 移出并获取列表的第一个元素：`LPOP <key_name>`。返回列表的第一个元素。当列表 key 不存在时，返回 nil。
+- **移出并获取列表的第一个元素**：`LPOP <key_name>`。返回列表的第一个元素。当列表 key 不存在时，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH list1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH list1 "bar"
   (integer) 2
+  
   127.0.0.1:6379> LPOP list1
   "foo"
   ```
 
-- 移出并获取列表的最后一个元素：`RPOP <key_name>`。返回列表的最后一个元素。当列表 key 不存在时，返回 nil。
+- **移出并获取列表的最后一个元素**：`RPOP <key_name>`。返回列表的最后一个元素。当列表 key 不存在时，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "one"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "two"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "three"
   (integer) 3
-  re127.0.0.1:6379dis> RPOP mylist
+  
+  127.0.0.1:6379> RPOP mylist
   "three"
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "one"
   2) "two"
   ```
 
-- 获取列表的长度：`LLEN <key_name>`。返回列表的长度。如果列表 key 不存在，则 key 被解释为一个空列表，返回 0。 如果 key 不是列表类型，返回一个错误。
+- **获取列表的长度**：`LLEN <key_name>`。返回列表的长度。如果列表 key 不存在，则 key 被解释为一个空列表，返回 0。 如果 key 不是列表类型，返回一个错误。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH list1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH list1 "bar"
   (integer) 2
+  
   127.0.0.1:6379> LLEN list1
   (integer) 2
   ```
 
-- 获取列表指定范围内的元素：`LRANGE <key_name> <start> <end>`。返回一个列表，包含指定区间内的元素。其中 0 表示列表的第一个元素， 1 表示列表的第二个元素，以此类推。 也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+- **获取列表指定范围内的元素**：`LRANGE <key_name> <start> <end>`。返回一个列表，包含指定区间内的元素。其中 0 表示列表的第一个元素， 1 表示列表的第二个元素，以此类推。 也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "one"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "two"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "three"
   (integer) 3
+  
   127.0.0.1:6379> LRANGE mylist 0 0
   1) "one"
+  
   127.0.0.1:6379> LRANGE mylist -3 2
   1) "one"
   2) "two"
   3) "three"
+  
   127.0.0.1:6379> LRANGE mylist -100 100
   1) "one"
   2) "two"
   3) "three"
+  
   127.0.0.1:6379> LRANGE mylist 5 10
   (empty list or set)
   ```
 
-- 通过索引获取列表中的元素：`LINDEX <key_name> <index>`。返回列表中下标为指定索引值的元素，如果指定索引值不在列表的区间范围内，返回 nil。
+- **通过索引获取列表中的元素**：`LINDEX <key_name> <index>`。返回列表中下标为指定索引值的元素，如果指定索引值不在列表的区间范围内，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> LPUSH mylist "World"
   (integer) 1
   
@@ -1108,19 +1153,24 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (nil)
   ```
 
-- 通过索引设置列表元素的值：`LSET <key_name> <index> <value>`。操作成功返回 ok，否则返回错误信息。当索引参数超出范围，或对一个空列表进行 LSET 时，返回一个错误。
+- **通过索引设置列表元素的值**：`LSET <key_name> <index> <value>`。操作成功返回 ok，否则返回错误信息。当索引参数超出范围，或对一个空列表进行 LSET 时，返回一个错误。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "foo"
   (integer) 3
+  
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 4
+  
   127.0.0.1:6379> LSET mylist 0 "bar"
   OK
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1: "bar"
   2) "hello"
@@ -1128,34 +1178,42 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   4) "hello"
   ```
 
-- 在列表的元素前或者后插入元素：`LINSERT <key_name> BEFORE|AFTER <pivot> <value>`。如果命令执行成功，返回插入操作完成之后，列表的长度。如果没有找到指定元素 ，返回 -1。如果 key 不存在或为空列表，返回 0。当指定元素不存在于列表中时，不执行任何操作。当列表不存在时，被视为空列表，不执行任何操作。
+- **在列表的元素前或者后插入元素**：`LINSERT <key_name> BEFORE|AFTER <pivot> <value>`。如果命令执行成功，返回插入操作完成之后，列表的长度。如果没有找到指定元素 ，返回 -1。如果 key 不存在或为空列表，返回 0。当指定元素不存在于列表中时，不执行任何操作。当列表不存在时，被视为空列表，不执行任何操作。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "Hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "World"
   (integer) 2
+  
   127.0.0.1:6379> LINSERT mylist BEFORE "World" "There"
   (integer) 3
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "Hello"
   2) "There"
   3) "World"
   ```
 
-- 移除列表元素：`LREM <key_name> <count> <value>`。
+- **移除列表元素**：`LREM <key_name> <count> <value>`。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "foo"
   (integer) 3
+  
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 4
+  
   127.0.0.1:6379> LREM mylist -2 "hello"
   (integer) 2
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "hello"
   2) "foo"
@@ -1165,19 +1223,24 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   - count < 0：从表尾开始向表头搜索，移除与 value 相等的元素，数量为 count 的绝对值。
   - count = 0：移除表中所有与 value 相等的值。
 
-- 对一个列表进行修剪（trim），即让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除：`LTRIM <key_name> <start> <stop>`。
+- **对一个列表进行修剪（trim），即让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除**：`LTRIM <key_name> <start> <stop>`。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 1
+  
   127.0.0.1:6379> RPUSH mylist "hello"
   (integer) 2
+  
   127.0.0.1:6379> RPUSH mylist "foo"
   (integer) 3
+  
   127.0.0.1:6379> RPUSH mylist "bar"
   (integer) 4
+  
   127.0.0.1:6379> LTRIM mylist 1 -1
   OK
+  
   127.0.0.1:6379> LRANGE mylist 0 -1
   1) "hello"
   2) "foo"
@@ -1186,11 +1249,12 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### Hash
 
-- 将哈希表 key 中的字段 field 的值设为 value：`HSET <key_name> <field> <value>`。如果字段是哈希表中的一个新建字段，并且值设置成功，返回 1。如果哈希表中域字段已经存在，且旧值已被新值覆盖，返回 0。
+- **将哈希表 key 中的字段 field 的值设为 value**：`HSET <key_name> <field> <value>`。如果字段是哈希表中的一个新建字段，并且值设置成功，返回 1。如果哈希表中域字段已经存在，且旧值已被新值覆盖，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   OK
+  
   127.0.0.1:6379> HGET myhash field1
   "foo"
   
@@ -1201,48 +1265,56 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-- 获取存储在哈希表中指定字段的值：`HGET <key_name> <field>`。返回给定字段的值。如果给定的字段或 key 不存在时，返回 nil。
+- **获取存储在哈希表中指定字段的值**：`HGET <key_name> <field>`。返回给定字段的值。如果给定的字段或 key 不存在时，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET site redis redis.com
   1
+  
   127.0.0.1:6379> HGET site redis
   "redis.com"
+  
   127.0.0.1:6379> HGET site mysql
   (nil)
   ```
 
-- 同时将多个 field-value（域-值）对设置到哈希表 key 中：`HMSET <key_name> <field1> <value1> [<field2> <value2>] .. [<fieldN> <valueN>]`。如果命令执行成功，返回 OK。此命令会覆盖哈希表中已存在的字段。如果哈希表不存在，会创建一个空哈希表，并执行 HMSET 操作。
+- **同时将多个 field-value（域-值）对设置到哈希表 key 中**：`HMSET <key_name> <field1> <value1> [<field2> <value2>] .. [<fieldN> <valueN>]`。如果命令执行成功，返回 OK。此命令会覆盖哈希表中已存在的字段。如果哈希表不存在，会创建一个空哈希表，并执行 HMSET 操作。
 
-  ```bash
-  redis 127.0.0.1:6379> HMSET myhash field1 "Hello" field2 "World"
+  ```sh
+  127.0.0.1:6379> HMSET myhash field1 "Hello" field2 "World"
   OK
-  redis 127.0.0.1:6379> HGET myhash field1
+  
+  127.0.0.1:6379> HGET myhash field1
   "Hello"
-  redis 127.0.0.1:6379> HGET myhash field2
+  
+  127.0.0.1:6379> HGET myhash field2
   "World"
   ```
 
-- 获取所有给定字段的值：`HMGET <key_name> <field1> [<field2>] .. [<fieldN>]`。返回一个包含多个给定字段关联值的表，表值的排列顺序和指定字段的请求顺序一样。
+- **获取所有给定字段的值**：`HMGET <key_name> <field1> [<field2>] .. [<fieldN>]`。返回一个包含多个给定字段关联值的表，表值的排列顺序和指定字段的请求顺序一样。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HSET myhash field2 "bar"
   (integer) 1
+  
   127.0.0.1:6379> HMGET myhash field1 field2 nofield
   1) "foo"
   2) "bar"
   3) (nil)
   ```
 
-- 获取在哈希表中指定 key 的所有字段和值：`HGETALL <key_name>`。以列表形式返回哈希表的字段及字段值。 若 key 不存在，返回空列表。在返回值里，紧跟每个字段名之后是字段的值，所以返回值的长度是哈希表大小的两倍。
+- **获取在哈希表中指定 key 的所有字段和值**：`HGETALL <key_name>`。以列表形式返回哈希表的字段及字段值。 若 key 不存在，返回空列表。在返回值里，紧跟每个字段名之后是字段的值，所以返回值的长度是哈希表大小的两倍。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "Hello"
   (integer) 1
+  
   127.0.0.1:6379> HSET myhash field2 "World"
   (integer) 1
+  
   127.0.0.1:6379> HGETALL myhash
   1) "field1"
   2) "Hello"
@@ -1250,58 +1322,68 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   4) "World"
   ```
 
-- 查看哈希表 key 中，指定的字段是否存在：`HEXISTS <key_name> <field>`。如果哈希表含有给定字段，返回 1。如果哈希表不含有给定字段，或 key 不存在，返回 0。
+- **查看哈希表 key 中，指定的字段是否存在**：`HEXISTS <key_name> <field>`。如果哈希表含有给定字段，返回 1。如果哈希表不含有给定字段，或 key 不存在，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HEXISTS myhash field1
   (integer) 1
+  
   127.0.0.1:6379> HEXISTS myhash field2
   (integer) 0
   ```
 
-- 删除一个或多个哈希表字段，不存在的字段将被忽略：`HDEL <key_name> <field1> [<field2>] .. [<fieldN>]`。返回被成功删除字段的数量，不包括被忽略的字段。
+- **删除一个或多个哈希表字段，不存在的字段将被忽略**：`HDEL <key_name> <field1> [<field2>] .. [<fieldN>]`。返回被成功删除字段的数量，不包括被忽略的字段。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HDEL myhash field1
   (integer) 1
+  
   127.0.0.1:6379> HDEL myhash field2
   (integer) 0
   ```
 
-- 获取哈希表中字段的数量：`HLEN <key_name>`。返回哈希表中字段的数量，当 key 不存在时，返回 0。
+- **获取哈希表中字段的数量**：`HLEN <key_name>`。返回哈希表中字段的数量，当 key 不存在时，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HSET myhash field2 "bar"
   (integer) 1
+  
   127.0.0.1:6379> HLEN myhash
   (integer) 2
   ```
 
-- 获取哈希表中的所有字段：`HKEYS <key_name>`。返回包含哈希表中所有域（field）列表。当 key 不存在时，返回一个空列表。
+- **获取哈希表中的所有字段**：`HKEYS <key_name>`。返回包含哈希表中所有域（field）列表。当 key 不存在时，返回一个空列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HSET myhash field2 "bar"
   (integer) 1
+  
   127.0.0.1:6379> HKEYS myhash
   1) "field1"
   2) "field2"
   ```
 
-- 获取哈希表中所有值：`HVALS <key_name>`。返回一个包含哈希表中所有值的列表。当 key 不存在时，返回一个空表。
+- **获取哈希表中所有值**：`HVALS <key_name>`。返回一个包含哈希表中所有值的列表。当 key 不存在时，返回一个空表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HSET myhash field2 "bar"
   (integer) 1
+  
   127.0.0.1:6379> HVALS myhash
   1) "foo"
   2) "bar"
@@ -1314,41 +1396,50 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (empty list or set)
   ```
 
-- 为哈希表 key 中的指定字段的整数值加上增量 increment：`HINCRBY <key_name> <field> <increment>`。返回执行 HINCRBY 命令之后，哈希表中字段的值。
+- **为哈希表 key 中的指定字段的整数值加上增量 increment**：`HINCRBY <key_name> <field> <increment>`。返回执行 HINCRBY 命令之后，哈希表中字段的值。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET myhash field 5
   (integer) 1
+  
   127.0.0.1:6379> HINCRBY myhash field 1
   (integer) 6
+  
   127.0.0.1:6379> HINCRBY myhash field -1
   (integer) 5
+  
   127.0.0.1:6379> HINCRBY myhash field -10
   (integer) -5
   ```
 
-- 为哈希表 key 中的指定字段的浮点数值加上增量 increment：`HINCRBYFLOAT <key_name> <field> <increment>`。返回执行 HINCRBYFLOAT 命令之后，哈希表中字段的值。
+- **为哈希表 key 中的指定字段的浮点数值加上增量 increment**：`HINCRBYFLOAT <key_name> <field> <increment>`。返回执行 HINCRBYFLOAT 命令之后，哈希表中字段的值。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSET mykey field 10.50
   (integer) 1
+  
   127.0.0.1:6379> HINCRBYFLOAT mykey field 0.1
   "10.6"
+  
   127.0.0.1:6379> HINCRBYFLOAT mykey field -5
   "5.6"
+  
   127.0.0.1:6379> HSET mykey field 5.0e3
   (integer) 0
+  
   127.0.0.1:6379> HINCRBYFLOAT mykey field 2.0e2
   "5200"
   ```
 
-- 只有在字段 field 不存在时，设置哈希表字段的值：`HSETNX <key_name> <field> <value>`。设置成功，返回 1。如果给定字段已经存在且没有操作被执行，返回 0。
+- **只有在字段 field 不存在时，设置哈希表字段的值**：`HSETNX <key_name> <field> <value>`。设置成功，返回 1。如果给定字段已经存在且没有操作被执行，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> HSETNX myhash field1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> HSETNX myhash field1 "bar"
   (integer) 0
+  
   127.0.0.1:6379> HGET myhash field1
   "foo"
   
@@ -1361,85 +1452,104 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### Set
 
-- 向集合添加一个或多个成员，已经存在于集合的成员元素将被忽略：`SADD <key_name> <member1> [<member2>] .. [<memberN>]`。返回被添加到集合中的新元素的数量，不包括被忽略的元素。
+- **向集合添加一个或多个成员，已经存在于集合的成员元素将被忽略**：`SADD <key_name> <member1> [<member2>] .. [<memberN>]`。返回被添加到集合中的新元素的数量，不包括被忽略的元素。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "foo"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "hello"
   (integer) 0
+  
   127.0.0.1:6379> SMEMBERS myset
   1) "hello"
   2) "foo"
   ```
 
-- 返回集合中的所有成员：`SMEMBERS <key_name>`。返回集合中的所有成员，不存在的集合 key 被视为空集合。
+- **返回集合中的所有成员**：`SMEMBERS <key_name>`。返回集合中的所有成员，不存在的集合 key 被视为空集合。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "world"
   (integer) 1
+  
   127.0.0.1:6379> SMEMBERS myset1
   1) "World"
   2) "Hello"
   ```
 
-- 判断 member 元素是否是集合 key 的成员：`SISMEMBER <key_name> <member>`。如果成员元素是集合的成员，返回 1。如果成员元素不是集合的成员，或 key 不存在，返回 0。
+- **判断 member 元素是否是集合 key 的成员**：`SISMEMBER <key_name> <member>`。如果成员元素是集合的成员，返回 1。如果成员元素不是集合的成员，或 key 不存在，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SISMEMBER myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SISMEMBER myset1 "world"
   (integer) 0
   ```
 
-- 移除集合中一个或多个成员，不存在的成员元素会被忽略：`SREM <key_name> <member1> [<member2>] .. [<memberN>]`。返回被成功移除的元素的数量，不包括被忽略的元素。
+- **移除集合中一个或多个成员，不存在的成员元素会被忽略**：`SREM <key_name> <member1> [<member2>] .. [<memberN>]`。返回被成功移除的元素的数量，不包括被忽略的元素。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "world"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "bar"
   (integer) 1
+  
   127.0.0.1:6379> SREM myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SREM myset1 "foo"
   (integer) 0
+  
   127.0.0.1:6379> SMEMBERS myset1
   1) "bar"
   2) "world"
   ```
 
-- 获取集合的成员数：`SCARD <key_name>`。返回集合的数量。当集合 key 不存在时，返回 0。
+- **获取集合的成员数**：`SCARD <key_name>`。返回集合的数量。当集合 key 不存在时，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "foo"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "hello"
   (integer) 0
+  
   127.0.0.1:6379> SCARD myset
   (integer) 2
   ```
 
-- 返回集合中一个或多个随机数：`SRANDMEMBER <key_name> [<count>]`。只提供集合 key 参数时，返回一个元素；如果集合为空，返回 nil。如果提供了 count 参数，那么返回一个数组；如果集合为空，返回空数组。
+- **返回集合中一个或多个随机数**：`SRANDMEMBER <key_name> [<count>]`。只提供集合 key 参数时，返回一个元素；如果集合为空，返回 nil。如果提供了 count 参数，那么返回一个数组；如果集合为空，返回空数组。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "world"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "bar"
   (integer) 1
+  
   127.0.0.1:6379> SRANDMEMBER myset1
   "bar"
+  
   127.0.0.1:6379> SRANDMEMBER myset1 2
   1) "Hello"
   2) "world"
@@ -1448,48 +1558,62 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   - 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。如果 count 大于等于集合基数，那么返回整个集合。
   - 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
 
-- 移除并返回集合中的一个随机元素：`SPOP <key_name> [<count>]`。参考 SRANDMEMBER 命令，前者不移除元素，而 SPOP 会移除元素。
+- **移除并返回集合中的一个随机元素**：`SPOP <key_name> [<count>]`。参考 SRANDMEMBER 命令，前者不移除元素，而 SPOP 会移除元素。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset "one"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "two"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "three"
   (integer) 1
+  
   127.0.0.1:6379> SPOP myset
   "one"
+  
   127.0.0.1:6379> SMEMBERS myset
   1) "three"
   2) "two"
+  
   127.0.0.1:6379> SADD myset "four"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "five"
   (integer) 1
+  
   127.0.0.1:6379> SPOP myset 3
   1) "five"
   2) "four"
   3) "two"
+  
   127.0.0.1:6379> SMEMBERS myset
   1) "three"
   ```
 
-- 将 member 元素从 source 集合移动到 destination 集合：`SMOVE <source> <destination> <member>`。如果成员元素被成功移除，返回 1。如果成员元素不是 source 集合的成员，并且没有任何操作对 destination 集合执行，那么返回 0。
+- **将 member 元素从 source 集合移动到 destination 集合**：`SMOVE <source> <destination> <member>`。如果成员元素被成功移除，返回 1。如果成员元素不是 source 集合的成员，并且没有任何操作对 destination 集合执行，那么返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "world"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "bar"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "foo"
   (integer) 1
+  
   127.0.0.1:6379> SMOVE myset1 myset2 "bar"
   (integer) 1
+  
   127.0.0.1:6379> SMEMBERS myset1
   1) "World"
   2) "Hello"
+  
   127.0.0.1:6379> SMEMBERS myset2
   1) "foo"
   2) "bar"
@@ -1500,97 +1624,126 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   - 当 destination 集合已经包含 member 元素时，SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
   - 当 source 或 destination 不是集合类型时，返回一个错误。
 
-- 返回第一个集合与其他集合之间的差异：`SDIFF <first_key_name> <other_key_name1> [<other_key_name2>] .. [<other_key_nameN>]`。返回包含差集成员的列表。
+- **返回第一个集合与其他集合之间的差异**：`SDIFF <first_key_name> <other_key_name1> [<other_key_name2>] .. [<other_key_nameN>]`。返回包含差集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD key1 "a"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "b"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "d"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "e"
   (integer) 1
+  
   127.0.0.1:6379> SDIFF key1 key2
   1) "a"
   2) "b"
   ```
 
-- 返回给定所有集合的差集并存储在 destination 中，如果指定的集合 key 已存在，则会被覆盖：`SDIFFSTORE <destination> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。
+- **返回给定所有集合的差集并存储在 destination 中，如果指定的集合 key 已存在，则会被覆盖**：`SDIFFSTORE <destination> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "foo"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "bar"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "world"
   (integer) 1
+  
   127.0.0.1:6379> SDIFFSTORE destset myset myset2
   (integer) 2
+  
   127.0.0.1:6379> SMEMBERS destset
   1) "foo"
   2) "bar"
   ```
 
-- 返回给定所有集合的交集：`SINTER <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回交集成员的列表。不存在的集合 key 被视为空集。 当给定集合当中有一个空集时，结果也为空集（根据集合运算定律）。
+- **返回给定所有集合的交集**：`SINTER <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回交集成员的列表。不存在的集合 key 被视为空集。 当给定集合当中有一个空集时，结果也为空集（根据集合运算定律）。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "foo"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset "bar"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "world"
   (integer) 1
+  
   127.0.0.1:6379> SINTER myset myset2
   1) "hello"
   ```
 
-- 返回给定所有集合的交集并存储在 destination 中：`SINTERSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回存储交集的集合的元素数量。如果指定的集合已经存在，则将其覆盖。
+- **返回给定所有集合的交集并存储在 destination 中**：`SINTERSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回存储交集的集合的元素数量。如果指定的集合已经存在，则将其覆盖。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD myset1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset1 "bar"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "hello"
   (integer) 1
+  
   127.0.0.1:6379> SADD myset2 "world"
   (integer) 1
+  
   127.0.0.1:6379> SINTERSTORE myset myset1 myset2
   (integer) 1
+  
   127.0.0.1:6379> SMEMBERS myset
   1) "hello"
   ```
 
-- 返回所有给定集合的并集：`SUNION <key_name> <key_name1> [<key_name2>] .. [<key_nameN>] `。返回并集成员的列表。
+- **返回所有给定集合的并集**：`SUNION <key_name> <key_name1> [<key_name2>] .. [<key_nameN>] `。返回并集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD key1 "a"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "b"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "d"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "e"
   (integer) 1
+  
   127.0.0.1:6379> SUNION key1 key2
   1) "a"
   2) "c"
@@ -1599,23 +1752,30 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   5) "d"
   ```
 
-- 所有给定集合的并集存储在 destination 集合中：`SUNIONSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。如果 destination 已经存在，则将其覆盖。
+- **所有给定集合的并集存储在 destination 集合中**：`SUNIONSTORE <destination> <key_name> <key_name1> [<key_name2>] .. [<key_nameN>]`。返回结果集中的元素数量。如果 destination 已经存在，则将其覆盖。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> SADD key1 "a"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "b"
   (integer) 1
+  
   127.0.0.1:6379> SADD key1 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "c"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "d"
   (integer) 1
+  
   127.0.0.1:6379> SADD key2 "e"
   (integer) 1
+  
   127.0.0.1:6379> SUNIONSTORE key key1 key2
   (integer) 5
+  
   127.0.0.1:6379> SMEMBERS key
   1) "c"
   2) "b"
@@ -1626,15 +1786,18 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
 #### ZSet
 
-- 向有序集合添加一个或多个成员，或者更新已存在成员的分数：`ZADD <key_name> <score1> <value1> [<score2> <value2>] .. [<scoreN> <valueN>]`。返回被成功添加的新成员的数量，不包括那些被更新的、已经存在的成员。
+- **向有序集合添加一个或多个成员，或者更新已存在成员的分数**：`ZADD <key_name> <score1> <value1> [<score2> <value2>] .. [<scoreN> <valueN>]`。返回被成功添加的新成员的数量，不包括那些被更新的、已经存在的成员。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD myzset 1 "one"
   (integer) 1
+  
   127.0.0.1:6379> ZADD myzset 1 "uno"
   (integer) 1
+  
   127.0.0.1:6379> ZADD myzset 2 "two" 3 "three"
   (integer) 2
+  
   127.0.0.1:6379> ZRANGE myzset 0 -1 WITHSCORES
   1) "one"
   2) "1"
@@ -1651,9 +1814,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   - 如果有序集合 key 不存在，则创建一个空的有序集并执行 ZADD 操作。
   - 当 key 存在但不是有序集类型时，返回一个错误。
 
-- 获取有序集合的成员数：`ZCARD <key_name>`。当 key 存在且是有序集类型时，返回有序集的基数。当 key 不存在时，返回 0。
+- **获取有序集合的成员数**：`ZCARD <key_name>`。当 key 存在且是有序集类型时，返回有序集的基数。当 key 不存在时，返回 0。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD myzset 1 "one"
   (integer) 1
   127.0.0.1:6379> ZADD myzset 2 "two"
@@ -1662,9 +1825,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 2
   ```
 
-- 返回有序集合中指定成员的索引，其中有序集成员按分数值递增（从小到大）顺序排列：`ZRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回 member 的排名。如果成员不是有序集 key 的成员，返回 nil。
+- **返回有序集合中指定成员的索引，其中有序集成员按分数值递增（从小到大）顺序排列**：`ZRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回 member 的排名。如果成员不是有序集 key 的成员，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES			# 显示所有成员及其score值
   1) "peter"
   2) "3500"
@@ -1673,13 +1836,13 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   5) "jack"
   6) "5000"
   
-  127.0.0.1:6379> ZRANK salary tom						# 显示tom的薪水排名, 第二
+  127.0.0.1:6379> ZRANK salary tom						# 显示tom的薪水排名，第二
   (integer) 1
   ```
 
-- 移除有序集合中的一个或多个成员，不存在的成员将被忽略：`ZREM <key_name> <member> [<member2>] .. [<memberN>]`。返回被成功移除的成员的数量，不包括被忽略的成员。
+- **移除有序集合中的一个或多个成员，不存在的成员将被忽略**：`ZREM <key_name> <member> [<member2>] .. [<memberN>]`。返回被成功移除的成员的数量，不包括被忽略的成员。
 
-  ```bash
+  ```sh
   # 测试数据
   127.0.0.1:6379> ZRANGE page_rank 0 -1 WITHSCORES
   1) "bing.com"
@@ -1711,35 +1874,41 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-- 计算在有序集合中指定区间分数的成员数：`ZCOUNT <key_name> <min> <max>`。返回分数值在 min 和 max 之间的成员的数量。
+- **计算在有序集合中指定区间分数的成员数**：`ZCOUNT <key_name> <min> <max>`。返回分数值在 min 和 max 之间的成员的数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD myzset 1 "hello"
   (integer) 1
+  
   127.0.0.1:6379> ZADD myzset 1 "foo"
   (integer) 1
+  
   127.0.0.1:6379> ZADD myzset 2 "world" 3 "bar"
   (integer) 2
+  
   127.0.0.1:6379> ZCOUNT myzset 1 3
   (integer) 4
   ```
 
-- 在有序集合中计算指定字典区间内成员数量：`ZLEXCOUNT <key_name> <min> <max>`。返回指定区间内的成员数量。
+- **在有序集合中计算指定字典区间内成员数量**：`ZLEXCOUNT <key_name> <min> <max>`。返回指定区间内的成员数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD myzset 0 a 0 b 0 c 0 d 0 e
   (integer) 5
+  
   127.0.0.1:6379> ZADD myzset 0 f 0 g
   (integer) 2
+  
   127.0.0.1:6379> ZLEXCOUNT myzset - +
   (integer) 7
+  
   127.0.0.1:6379> ZLEXCOUNT myzset [b [f
   (integer) 5
   ```
 
-- 通过索引区间返回有序集合指定区间内的成员：`ZRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+- **通过索引区间返回有序集合指定区间内的成员**：`ZRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 显示整个有序集成员
   1) "jack"
   2) "3500"
@@ -1768,9 +1937,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
   - 下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。也可以使用负数下标，以 -1 表示最后一个成员，-2 表示倒数第二个成员，以此类推。
 
-- 返回有序集中指定区间内的成员，通过索引，分数从高到低：`ZREVRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+- **返回有序集中指定区间内的成员，通过索引，分数从高到低**：`ZREVRANGE <key_name> <start> <stop> [WITHSCORES]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES			# 递增排列
   1) "peter"
   2) "3500"
@@ -1788,14 +1957,16 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   6) "3500"
   ```
 
-- 通过分数返回有序集合指定区间内的成员：`ZRANGEBYSCORE <key_name> <min> <max> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+- **通过分数返回有序集合指定区间内的成员**：`ZRANGEBYSCORE <key_name> <min> <max> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD salary 2500 jack							# 测试数据
   (integer) 0
-  redis 127.0.0.1:6379> ZADD salary 5000 tom
+  
+  127.0.0.1:6379> ZADD salary 5000 tom
   (integer) 0
-  redis 127.0.0.1:6379> ZADD salary 12000 peter
+  
+  127.0.0.1:6379> ZADD salary 12000 peter
   (integer) 0
   
   127.0.0.1:6379> ZRANGEBYSCORE salary -inf +inf					# 显示整个有序集
@@ -1823,15 +1994,18 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
 
   - 默认情况下，区间的取值使用闭区间（小于等于或大于等于），也可以通过给参数前增加`(`符号来使用可选的开区间（小于或大于）。
 
-- 返回有序集中指定分数区间内的成员，分数从高到低排序：`ZREVRANGEBYSCORE <key_name> <max> <min> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
+- **返回有序集中指定分数区间内的成员，分数从高到低排序**：`ZREVRANGEBYSCORE <key_name> <max> <min> [WITHSCORES] [LIMIT offset count]`。返回指定区间内，带有分数值（可选）的有序集成员的列表。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD salary 10086 jack
   (integer) 1
+  
   127.0.0.1:6379> ZADD salary 5000 tom
   (integer) 1
+  
   127.0.0.1:6379> ZADD salary 7500 peter
   (integer) 1
+  
   127.0.0.1:6379> ZADD salary 3500 joe
   (integer) 1
   
@@ -1847,9 +2021,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   3) "joe"
   ```
 
-- 返回有序集合中指定成员的排名，有序集成员按分数值递减（从大到小）排序：`ZREVRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回成员的排名。如果成员不是有序集 key 的成员，返回 nil。
+- **返回有序集合中指定成员的排名，有序集成员按分数值递减（从大到小）排序**：`ZREVRANK <key_name> <member>`。如果成员是有序集 key 的成员，返回成员的排名。如果成员不是有序集 key 的成员，返回 nil。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 测试数据
   1) "jack"
   2) "2000"
@@ -1865,9 +2039,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (integer) 0
   ```
 
-- 返回有序集中，成员的分数值：`ZSCORE <key_name> <member>`。返回成员的分数值，以字符串形式表示。
+- **返回有序集中，成员的分数值**：`ZSCORE <key_name> <member>`。返回成员的分数值，以字符串形式表示。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES				# 测试数据
   1) "tom"
   2) "2000"
@@ -1880,15 +2054,18 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   "3500"
   ```
 
-- 有序集合中对指定成员的分数加上增量 increment：`ZINCRBY <key_name> <increment> <member>`。当 key 不存在，或分数不是 key 的成员时，ZINCRBY key increment member 等同于 ZADD key increment member。
+- **有序集合中对指定成员的分数加上增量 increment**：`ZINCRBY <key_name> <increment> <member>`。当 key 不存在，或分数不是 key 的成员时，ZINCRBY key increment member 等同于 ZADD key increment member。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD myzset 1 "one"
   (integer) 1
+  
   127.0.0.1:6379> ZADD myzset 2 "two"
   (integer) 1
+  
   127.0.0.1:6379> ZINCRBY myzset 2 "one"
   "3"
+  
   127.0.0.1:6379> ZRANGE myzset 0 -1 WITHSCORES
   1) "two"
   2) "2"
@@ -1896,13 +2073,15 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   4) "3"
   ```
 
-- 移除有序集合中给定的排名区间的所有成员：`ZREMRANGEBYRANK <key_name> <start> <stop>`。
+- **移除有序集合中给定的排名区间的所有成员**：`ZREMRANGEBYRANK <key_name> <start> <stop>`。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZADD salary 2000 jack
   (integer) 1
+  
   127.0.0.1:6379> ZADD salary 5000 tom
   (integer) 1
+  
   127.0.0.1:6379> ZADD salary 3500 peter
   (integer) 1
   
@@ -1914,9 +2093,9 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   2) "5000"
   ```
 
-- 移除有序集合中给定的分数区间的所有成员：`ZREMRANGEBYSCORE <key_name> <min> <max>`。返回被移除成员的数量。
+- **移除有序集合中给定的分数区间的所有成员**：`ZREMRANGEBYSCORE <key_name> <min> <max>`。返回被移除成员的数量。
 
-  ```bash
+  ```sh
   127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES          # 显示有序集内所有成员及其score值
   1) "tom"
   2) "2000"
@@ -1970,7 +2149,7 @@ Persistence refers to the writing of data to durable storage, such as a solid-st
 
 <img src="redis/image-20230911181545576.png" alt="image-20230911181545576" style="zoom: 67%;" />
 
-`RDB，即 Redis Database，RDB 持久性以指定的时间间隔执行数据集的时间点快照。`
+**`RDB，即 Redis Database，RDB 持久性以指定的时间间隔执行数据集的时间点快照。`**
 
 - 在指定的时间间隔内，将内存中的数据集快照写入磁盘，也就是 Snapshot 内存快照，Redis 服务恢复时再将磁盘快照文件直接读回到内存里。
 - Redis 的数据都在内存中，保存备份时它执行的是`全量快照`，也就是说，把内存中的所有数据都记录到磁盘中。
@@ -1994,7 +2173,7 @@ By default Redis saves snapshots of the dataset on disk, in a binary file called
 
 For example, this configuration will make Redis automatically dump the dataset to disk every 60 seconds if at least 1000 keys changed:
 
-```bash
+```sh
 save 60 1000
 ```
 
@@ -2025,7 +2204,7 @@ Redis 通过 SAVE 和 BGSAVE 两个命令，手动触发 RDB 文件备份：
 
 - `LASTSAVE`：可以通过 LASTSAVE 命令，获取最后一次成功执行快照的时间。
 
-  ```bash
+  ```sh
   # 在Redis客户端查看最后一次成功执行快照的时间
   127.0.0.1:6379> LASTSAVE
   (integer) 1694404800
@@ -2045,7 +2224,7 @@ dump 文件路径默认设置：
 
 - 使用 CONFIG 命令，获取 dump 文件实际路径：
 
-  ```bash
+  ```sh
   127.0.0.1:6379> CONFIG GET dir
   1) "dir"
   2) "/data"
@@ -2057,7 +2236,7 @@ dump 文件名称默认设置：
 
 - 使用 CONFIG 命令，获取 dump 文件实际名称：
 
-  ```bash
+  ```sh
   127.0.0.1:6379> CONFIG GET dbfilename
   1) "dbfilename"
   2) "dump.rdb"
@@ -2067,7 +2246,7 @@ dump 文件名称默认设置：
 
 /usr/local/bin 路径：
 
-```bash
+```sh
 root@a5e838348b37:~# cd /usr/local/bin/
 root@a5e838348b37:/usr/local/bin# ls -l
 total 31732
@@ -2083,7 +2262,7 @@ lrwxrwxrwx 1 root root       12 May 23 11:10 redis-sentinel -> redis-server
 
 /data 路径：
 
-```bash
+```sh
 root@a5e838348b37:~# cd /data/
 root@a5e838348b37:/data# ls -l
 total 8
@@ -2093,7 +2272,7 @@ drwx------ 2 redis redis  103 Jun  1 11:16 appendonlydir
 
 检查和修复：
 
-```bash
+```sh
 root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb 
 [offset 0] Checking RDB file /data/dump.rdb
 [offset 27] AUX FIELD redis-ver = '7.0.11'
@@ -2166,7 +2345,7 @@ root@a5e838348b37:~# /usr/local/bin/redis-check-rdb /data/dump.rdb
 
 - 命令：
 
-  ```bash
+  ```sh
   # 动态停止所有RDB保存规则
   $ redis-cli config set save ""
   ```
@@ -2219,7 +2398,7 @@ The *append-only file* is an alternative, fully-durable strategy for Redis. It b
 
 You can turn on the AOF in your configuration file:
 
-```bash
+```sh
 appendonly yes
 ```
 
@@ -2227,7 +2406,7 @@ From now on, every time Redis receives a command that changes the dataset (e.g. 
 
 Since Redis 7.0.0, Redis uses a multi part AOF mechanism. That is, the original single AOF file is split into base file (at most one) and incremental files (there may be more than one). The base file represents an initial (RDB or AOF format) snapshot of the data present when the AOF is [rewritten](https://redis.io/docs/management/persistence/#log-rewriting). The incremental files contains incremental changes since the last base AOF file was created. All these files are put in a separate directory and are tracked by a manifest file.
 
-`AOF，即 Append Only File，以日志的形式来记录每一个写操作。`
+**`AOF，即 Append Only File，以日志的形式来记录每一个写操作。`**
 
 - AOF 将 Redis 执行过的所有写指令都记录下来（读指令不记录）。
 - AOF 只允许追加文件，不可以改写文件。
@@ -2359,7 +2538,7 @@ AOF 文件的路径：
 
 - Redis 7.0 之后，在 RDB 文件指定的路径下，会新建 appendonlydir 路径，AOF 文件存放于 appendonlydir 路径下，以此与 RDB 文件区分隔离。
 
-  ```bash
+  ```sh
   $ pwd
   /data
   $ ls
@@ -2386,7 +2565,7 @@ AOF 文件的名称：
 
 It is possible the server crashed while writing the AOF file, or the volume where the AOF file is stored was full at the time of writing. When this happens the AOF still contains consistent data representing a given point-in-time version of the dataset (that may be old up to one second with the default AOF fsync policy), but the last command in the AOF could be truncated. The latest major versions of Redis will be able to load the AOF anyway, just discarding the last non well formed command in the file. In this case the server will emit a log like the following:
 
-```bash
+```sh
 * Reading RDB preamble from AOF file...
 * Reading the remaining AOF tail...
 # !!! Warning: short read while loading the AOF file !!!
@@ -2402,7 +2581,7 @@ Older versions of Redis may not recover, and may require the following steps:
 
 - Fix the original file using the `redis-check-aof` tool that ships with Redis:
 
-  ```bash
+  ```sh
   $ redis-check-aof --fix <filename>
   ```
 
@@ -2412,7 +2591,7 @@ Older versions of Redis may not recover, and may require the following steps:
 
 If the AOF file is not just truncated, but corrupted with invalid byte sequences in the middle, things are more complex. Redis will complain at startup and will abort:
 
-```bash
+```sh
 * Reading the remaining AOF tail...
 # Bad file format reading the append only file: make a backup of your AOF file, then use ./redis-check-aof --fix <filename>
 ```
@@ -2423,7 +2602,7 @@ The best thing to do is to run the `redis-check-aof` utility, initially without 
 
 AOF 文件异常修复命令`redis-check-aof --fix <filename>`：
 
-```bash
+```sh
 root@a5e838348b37:~# /usr/local/bin/redis-check-aof --fix /data/appendonlydir/appendonly.aof.1.incr.aof 
 Start checking Old-Style AOF
 AOF analyzed: filename=/data/appendonlydir/appendonly.aof.1.incr.aof, size=471170, ok_up_to=471170, ok_up_to_line=539, diff=0
@@ -2585,7 +2764,7 @@ Calling [`DISCARD`](https://redis.io/commands/discard) instead will flush the tr
 
 The following example increments keys `foo` and `bar` atomically.
 
-```bash
+```sh
 > MULTI
 OK
 > INCR foo
@@ -2612,7 +2791,7 @@ Redis 事务的执行过程：
 
 #### 正常执行
 
-```bash
+```sh
 127.0.0.1:6379[6]> select 2
 OK
 127.0.0.1:6379[2]> keys *
@@ -2643,7 +2822,7 @@ QUEUED
 
 [`DISCARD`](https://redis.io/commands/discard) can be used in order to abort a transaction. In this case, no commands are executed and the state of the connection is restored to normal.
 
-```bash
+```sh
 > SET foo 1
 OK
 > MULTI
@@ -2658,7 +2837,7 @@ OK
 
 示例：
 
-```bash
+```sh
 127.0.0.1:6379[2]> MULTI
 OK
 127.0.0.1:6379[2](TX)> set k1 v1
@@ -2691,7 +2870,7 @@ Errors happening *after* [`EXEC`](https://redis.io/commands/exec) instead are no
 
 This is more clear on the protocol level. In the following example one command will fail when executed even if the syntax is right:
 
-```bash
+```sh
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
@@ -2713,7 +2892,7 @@ It's important to note that **even when a command fails, all the other commands 
 
 Another example, again using the wire protocol with `telnet`, shows how syntax errors are reported ASAP instead:
 
-```bash
+```sh
 MULTI
 +OK
 INCR a b c
@@ -2726,7 +2905,7 @@ This time due to the syntax error the bad [`INCR`](https://redis.io/commands/inc
 
 **事务中的所有命令，如果存在一个命令语法错误，会导致编译失败，事务中的所有命令都不会执行**。示例：
 
-```bash
+```sh
 127.0.0.1:6379[2]> MULTI
 OK
 127.0.0.1:6379[2](TX)> SET k1 1111
@@ -2752,7 +2931,7 @@ QUEUED
 
 **事务中的所有命令，如果语法规则上都正确，不会导致编译失败，运行期间，如果某个命令出错，只会影响该命令，事务中的其他命令会正常执行。**示例：
 
-```bash
+```sh
 127.0.0.1:6379[2]> MULTI
 OK
 127.0.0.1:6379[2](TX)> GET k1
@@ -2797,7 +2976,7 @@ For example, imagine we have the need to atomically increment the value of a key
 
 The first try may be the following:
 
-```bash
+```sh
 val = GET mykey
 val = val + 1
 SET mykey $val
@@ -2807,7 +2986,7 @@ This will work reliably only if we have a single client performing the operation
 
 Thanks to [`WATCH`](https://redis.io/commands/watch) we are able to model the problem very well:
 
-```bash
+```sh
 WATCH mykey
 val = GET mykey
 val = val + 1
@@ -2853,7 +3032,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
 
 - `WATCH`：
 
-  ```bash
+  ```sh
   # WATCH监控的key, 在EXEC命令之前, 没有其他地方修改, 则事务正常提交
   127.0.0.1:6379[2]> WATCH balance
   OK
@@ -2915,7 +3094,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
 
 - `UNWATCH`：
 
-  ```bash
+  ```sh
   # 客户端1, WATCH balance之后, 使用UNWATCH取消监控
   # 顺序1
   127.0.0.1:6379[2]> WATCH balance
@@ -3021,7 +3200,7 @@ This is called pipelining, and is a technique widely in use for many decades. Fo
 
 Redis has supported pipelining since its early days, so whatever version you are running, you can use pipelining with Redis. This is an example using the raw netcat utility:
 
-```bash
+```sh
 $ (printf "PING\r\nPING\r\nPING\r\n"; sleep 1) | nc localhost 6379
 +PONG
 +PONG
@@ -3101,7 +3280,7 @@ end
 
 Running the above simple script yields the following figures on my Mac OS X system, running over the loopback interface, where pipelining will provide the smallest improvement as the RTT is already pretty low:
 
-```bash
+```sh
 without pipelining 1.185238 seconds
 with pipelining 0.250783 seconds
 ```
@@ -3110,7 +3289,7 @@ As you can see, using pipelining, we improved the transfer by a factor of five.
 
 示例：
 
-```bash
+```sh
 root@aa28ffab505b:/tmp# ls
 cmd.txt
 root@aa28ffab505b:/tmp# cat cmd.txt 
@@ -3269,13 +3448,13 @@ aof-use-rdb-preamble yes
 
 启动镜像：
 
-```bash
+```sh
 $ docker compose -f docker-compose.yaml up -d
 ```
 
 查看镜像：
 
-```bash
+```sh
 $ docker ps
 CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                                       NAMES
 568ef64d7acd   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:6378->6379/tcp, :::6378->6379/tcp   redis-6378
@@ -3327,13 +3506,13 @@ masterauth 123456								# 当master设置了密码保护时(用requirepass指�
 >
 >To do it on a running instance, use `redis-cli` and type:
 >
->```bash
+>```sh
 >config set masterauth <password>
 >```
 >
 >To set it permanently, add this to your config file:
 >
->```bash
+>```sh
 >masterauth <password>
 >```
 >
@@ -3343,7 +3522,7 @@ masterauth 123456								# 当master设置了密码保护时(用requirepass指�
 >
 >To configure basic Redis replication is trivial: just add the following line to the replica configuration file:
 >
->```bash
+>```sh
 >replicaof 192.168.1.1 6379
 >```
 >
@@ -3353,19 +3532,19 @@ masterauth 123456								# 当master设置了密码保护时(用requirepass指�
 
 关闭之前启动的 3 个 Redis 镜像：
 
-```bash
+```sh
 $ docker compose -f docker-compose.yaml down
 ```
 
 再重新启动：
 
-```bash
+```sh
 $ docker compose -f docker-compose.yaml up -d
 ```
 
 查看日志：
 
-```bash
+```sh
 # Master: redis-6376
 $ docker logs -f --tail=100 redis-6376
 1:C 17 Sep 2023 02:46:31.027 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
@@ -3493,7 +3672,7 @@ $ docker logs -f --tail=100 redis-6378
 
 在 Master 执行命令`INFO replication`：
 
-```bash
+```sh
 127.0.0.1:6379> INFO replication
 # Replication
 role:master																		# 当前角色是master
@@ -3513,7 +3692,7 @@ repl_backlog_histlen:8292
 
 在 Slave 执行命令`INFO replication`：
 
-```bash
+```sh
 127.0.0.1:6379> INFO replication
 # Replication
 role:slave																		# 当前角色是slave
@@ -3562,7 +3741,7 @@ masterauth 123456
 
 Docker 命令启动：
 
-```bash
+```sh
 $ docker run --name redis-6380 -p 6380:6379 -v /home/xisun/apps/redis/redis-6380/conf/redis.conf:/usr/local/etc/redis/redis.conf -v /home/xisun/apps/redis/redis-6380/data:/data -d redis:7.0.11 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
 ```
 
@@ -3570,7 +3749,7 @@ $ docker run --name redis-6380 -p 6380:6379 -v /home/xisun/apps/redis/redis-6380
 
 查看镜像：
 
-```bash
+```sh
 $ docker ps
 CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                                       NAMES
 408a02b63b71   redis:7.0.11   "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   0.0.0.0:6380->6379/tcp, :::6380->6379/tcp   redis-6380
@@ -3590,7 +3769,7 @@ $ docker logs -f redis-6380
 
 连接 redis-6380，使用命令`REPLICAOF`设置从库：
 
-```bash
+```sh
 127.0.0.1:6379> KEYS *
 (empty array)
 127.0.0.1:6379> REPLICAOF 192.168.3.145 6376
@@ -3626,7 +3805,7 @@ repl_backlog_histlen:21938
 
 查看 redis-6380 的日志，也可以看到连接 Master 成功：
 
-```bash
+```sh
 $ docker logs -f redis-6380
 1:C 17 Sep 2023 09:53:57.597 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 1:C 17 Sep 2023 09:53:57.597 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
@@ -3676,7 +3855,7 @@ $ docker logs -f redis-6380
 
 注意：`使用 SLAVEOF 命令设置的从机，在从机服务重启后，主从关系就会断开。`
 
-```bash
+```sh
 # 重启redis-6380
 $ docker restart redis-6380
 redis-6380
@@ -3717,7 +3896,7 @@ OK
 
 使用命令`REPLICAOF NO ONE`，会关闭当前 Slave 与 Master 的连接，转变为主服务器，原来同步的数据集不会被丢弃，当前服务器可以写入新数据。
 
-```bash
+```sh
 127.0.0.1:6379> INFO replication
 # Replication
 role:slave
@@ -3762,7 +3941,7 @@ repl_backlog_histlen:322
 
 Every Redis master has a replication ID: it is a large pseudo random string that marks a given story of the dataset. Each master also takes an offset that increments for every byte of replication stream that it is produced to be sent to replicas, to update the state of the replicas with the new changes modifying the dataset. The replication offset is incremented even if no replica is actually connected, so basically every given pair of:
 
-```bash
+```sh
 Replication ID, offset
 ```
 
@@ -3852,7 +4031,7 @@ Before version 4.0, writable replicas were incapable of expiring keys with a tim
 
 Also note that since Redis 4.0 replica writes are only local, and are not propagated to sub-replicas attached to the instance. Sub-replicas instead will always receive the replication stream identical to the one sent by the top-level master to the intermediate replicas. So for example in the following setup:
 
-```bash
+```sh
 A ---> B ---> C
 ```
 
@@ -3860,7 +4039,7 @@ Even if `B` is writable, C will not see `B` writes and will instead have identic
 
 Slave 默认设置为`只读模式`，在 Slave 中尝试写命令时，会发生错误：
 
-```bash
+```sh
 127.0.0.1:6379> SET slave_key1 slave_value1
 (error) READONLY You can't write against a read only replica.
 ```
@@ -3907,7 +4086,7 @@ Every time data safety is important, and replication is used with master configu
 
 Master 如果宕机，Slave 服务正常不变，数据可以正常读取，并等待 Master 服务恢复正常。Master 服务恢复正常后，Slave 会继续同步 Master 的数据。
 
-```bash
+```sh
 # 关闭master服务
 $ docker ps
 CONTAINER ID   IMAGE          COMMAND                  CREATED        STATUS        PORTS                                       NAMES
@@ -4464,7 +4643,7 @@ Redis 7.0 将所有数据放在内存中，内存的响应时长大约为 100 �
 
 生成 100W 条 Redis 批量设置 key-value 的语句（key=kn，value=vn），写入到 /tmp 目录下的 redisTest.txt 文件中：
 
-```bash
+```sh
 $ for((i=1;i<=100*10000;i++)); do echo "set k$i v$i" >> /tmp/redisTest.txt; done;
 
 # more命令查看文件
@@ -4473,7 +4652,7 @@ $ more /tmp/redisTest.txt
 
 通过管道 --pipe 命令，插入 100W 条数据到 Redis 中：
 
-```bash
+```sh
 $ cat /tmp/redisTest.txt | redis-cli -h 127.0.0.1 -p 6379 -a 123456 --pipe
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 All data transferred. Waiting for the last reply...
@@ -4500,7 +4679,7 @@ errors: 0, replies: 1000000
 
 配置完成后，重启服务，可以发现，这几个命令都不能再使用：
 
-```bash
+```sh
 127.0.0.1:6379> KEYS *
 (error) ERR unknown command 'KEYS', with args beginning with: '*' 
 127.0.0.1:6379> FLUSHDB
@@ -4525,7 +4704,7 @@ errors: 0, replies: 1000000
 
 示例：
 
-```bash
+```sh
 127.0.0.1:6379> SCAN 0 MATCH k* COUNT 15
 1) "458752"
 2)  1) "k590789"
@@ -4591,7 +4770,7 @@ errors: 0, replies: 1000000
 
   - 常规使用：`redis-cli -h 127.0.0.1 -p 6379 -a 123456 --bigkeys`。
 
-    ```bash
+    ```sh
     $ redis-cli -h 127.0.0.1 -p 6379 -a 123456 --bigkeys
     Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
     
@@ -4628,7 +4807,7 @@ errors: 0, replies: 1000000
 
   - 格式：`MEMORY USAGE key [SAMPLES count]`。
 
-    ```bash
+    ```sh
     127.0.0.1:6379> MEMORY USAGE k1000000
     (integer) 72
     ```
