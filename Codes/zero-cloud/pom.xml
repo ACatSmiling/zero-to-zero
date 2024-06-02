@@ -17,6 +17,7 @@
     <modules>
         <module>platform-server</module>
         <module>platform-common</module>
+        <module>platform-basic</module>
     </modules>
 
     <properties>
