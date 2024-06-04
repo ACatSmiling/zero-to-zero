@@ -1,0 +1,12 @@
+server:
+  port: 9527
+  servlet:
+    context-path: /platform
+
+spring:
+  profiles:
+    default: dev
+
+logging:
+  level:
+    root: INFO

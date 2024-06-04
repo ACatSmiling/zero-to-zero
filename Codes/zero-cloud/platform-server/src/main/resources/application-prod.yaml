@@ -1,0 +1,3 @@
+spring:
+  config:
+    import: file:/opt/zecloud/conf/platform_kafka_common.properties

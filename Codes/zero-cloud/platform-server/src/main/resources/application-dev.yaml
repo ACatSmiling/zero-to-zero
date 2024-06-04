@@ -1,0 +1,16 @@
+spring:
+  config:
+    import:
+      # - "classpath:conf/platform.properties"
+      - "classpath:conf/platform.yaml"
+      - "classpath:conf/platform_thread_pool.yaml"
+      - "classpath:conf/platform_kafka.yaml"
+      - "classpath:conf/test.properties"
+
+#logging:
+#  level:
+#    org.apache.kafka.clients.consumer: DEBUG
+#    org.springframework.kafka.core.KafkaTemplate: DEBUG
+#    org.springframework.kafka.listener.KafkaMessageListenerContainer: DEBUG
+event:
+  date: "2024-01-01 10:00:00"
