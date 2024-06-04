@@ -2,7 +2,85 @@
 
 [豆瓣评分: ]()
 
+## 指环王 1：护戒使者
 
+![image-20240602093656744](./kehuan/image-20240602093656744.png)
+
+[豆瓣评分: 9.1](https://movie.douban.com/subject/1291571/)
+
+导演: [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/)
+
+编剧: [弗兰·威尔士](https://movie.douban.com/celebrity/1013998/) / [菲利帕·鲍恩斯](https://movie.douban.com/celebrity/1279114/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [J.R.R.托尔金](https://movie.douban.com/celebrity/1152849/)
+
+主演: [伊利亚·伍德](https://movie.douban.com/celebrity/1054395/) / [西恩·奥斯汀](https://movie.douban.com/celebrity/1031818/) / [伊恩·麦克莱恩](https://movie.douban.com/celebrity/1054410/) / [维果·莫腾森](https://movie.douban.com/celebrity/1054520/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [多米尼克·莫纳汉](https://movie.douban.com/celebrity/1036320/) / [比利·博伊德](https://movie.douban.com/celebrity/1049629/) / [克里斯托弗·李](https://movie.douban.com/celebrity/1054467/) / [马尔顿·索克斯](https://movie.douban.com/celebrity/1009284/) / [梅根·爱德华兹](https://movie.douban.com/celebrity/1192159/) / [伊安·霍姆](https://movie.douban.com/celebrity/1049594/) / [凯特·布兰切特](https://movie.douban.com/celebrity/1054441/) / [阿兰·霍华德](https://movie.douban.com/celebrity/1090960/) / [马克·弗格森](https://movie.douban.com/celebrity/1090417/) / [肖恩·宾](https://movie.douban.com/celebrity/1002683/) / [萨拉·贝克](https://movie.douban.com/celebrity/1049790/) / [劳伦斯·马克奥雷](https://movie.douban.com/celebrity/1125247/) / [安迪·瑟金斯](https://movie.douban.com/celebrity/1002708/) / [彼得·麦肯齐](https://movie.douban.com/celebrity/1397428/) / [伊恩·穆内](https://movie.douban.com/celebrity/1292702/) / [克雷格·帕克](https://movie.douban.com/celebrity/1040564/) / [卡梅隆·罗德](https://movie.douban.com/celebrity/1138759/) / [约翰·瑞斯-戴维斯](https://movie.douban.com/celebrity/1147054/) / [丽芙·泰勒](https://movie.douban.com/celebrity/1041027/) / [大卫·韦瑟莱](https://movie.douban.com/celebrity/1162853/) / [雨果·维文](https://movie.douban.com/celebrity/1040994/) / [菲利普·格里夫](https://movie.douban.com/celebrity/1216537/) / [威廉·约翰逊](https://movie.douban.com/celebrity/1370260/) / [伊丽莎白·穆迪](https://movie.douban.com/celebrity/1315493/) / [布莱恩·瑟金特](https://movie.douban.com/celebrity/1145461/) / [杰德·布罗菲](https://movie.douban.com/celebrity/1325970/) / [诺曼·凯茨](https://movie.douban.com/celebrity/1303617/) / [兰德尔·威廉·库克](https://movie.douban.com/celebrity/1281196/) / [萨比恩·克洛森](https://movie.douban.com/celebrity/1335966/) / [西奥沙福瓦](https://movie.douban.com/celebrity/1362754/) / [本·弗兰舍姆](https://movie.douban.com/celebrity/1349888/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [艾伦·李](https://movie.douban.com/celebrity/1109822/)
+
+上映日期: 2002-04-04(中国大陆) / 2021-04-16(中国大陆重映) / 2001-12-19(美国)
+
+片长: 179分钟 / 208分钟(加长版) / 228分钟(蓝光加长版)
+
+## 指环王 2：双塔奇兵
+
+![image-20240602093617918](./kehuan/image-20240602093617918.png)
+
+[豆瓣评分: 9.2](https://movie.douban.com/subject/1291572/)
+
+导演: [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/)
+
+编剧: [弗兰·威尔士](https://movie.douban.com/celebrity/1013998/) / [菲利帕·鲍恩斯](https://movie.douban.com/celebrity/1279114/) / [斯蒂芬·辛克莱](https://movie.douban.com/celebrity/1297678/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [J.R.R.托尔金](https://movie.douban.com/celebrity/1152849/)
+
+主演: [伊利亚·伍德](https://movie.douban.com/celebrity/1054395/) / [西恩·奥斯汀](https://movie.douban.com/celebrity/1031818/) / [多米尼克·莫纳汉](https://movie.douban.com/celebrity/1036320/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [维果·莫腾森](https://movie.douban.com/celebrity/1054520/) / [伊恩·麦克莱恩](https://movie.douban.com/celebrity/1054410/) / [凯特·布兰切特](https://movie.douban.com/celebrity/1054441/) / [比利·博伊德](https://movie.douban.com/celebrity/1049629/) / [杰德·布罗菲](https://movie.douban.com/celebrity/1325970/) / [丽芙·泰勒](https://movie.douban.com/celebrity/1041027/) / [安迪·瑟金斯](https://movie.douban.com/celebrity/1002708/) / [米兰达·奥图](https://movie.douban.com/celebrity/1036459/) / [雨果·维文](https://movie.douban.com/celebrity/1040994/) / [布拉德·道里夫](https://movie.douban.com/celebrity/1031866/) / [卡卢姆·吉廷斯](https://movie.douban.com/celebrity/1192504/) / [伯纳德·希尔](https://movie.douban.com/celebrity/1036511/) / [布鲁斯·霍普金斯](https://movie.douban.com/celebrity/1094578/) / [克里斯托弗·李](https://movie.douban.com/celebrity/1054467/) / [纳撒尼尔·利斯](https://movie.douban.com/celebrity/1394743/) / [罗宾·马尔科姆](https://movie.douban.com/celebrity/1126033/) / [约翰·贝西](https://movie.douban.com/celebrity/1056393/) / [萨拉·贝克](https://movie.douban.com/celebrity/1049790/) / [克雷格·帕克](https://movie.douban.com/celebrity/1040564/) / [布鲁斯·菲利普斯](https://movie.douban.com/celebrity/1050372/) / [Robert Pollock](https://movie.douban.com/celebrity/1051291/) / [约翰·瑞斯-戴维斯](https://movie.douban.com/celebrity/1147054/) / [奥利维亚·田內](https://movie.douban.com/celebrity/1150928/) / [卡尔·厄本](https://movie.douban.com/celebrity/1017903/) / [史蒂芬·乌瑞](https://movie.douban.com/celebrity/1155436/) / [大卫·文翰](https://movie.douban.com/celebrity/1049573/) / [菲利普·格里夫](https://movie.douban.com/celebrity/1216537/) / [肖恩·宾](https://movie.douban.com/celebrity/1002683/) / [约翰·诺贝尔](https://movie.douban.com/celebrity/1022665/) / [Jarl Benzon](https://movie.douban.com/celebrity/1221458/) / [Jørn Benzon](https://movie.douban.com/celebrity/1174553/) / [Ben Britton](https://movie.douban.com/celebrity/1187436/) / [阿利斯泰尔·布朗宁](https://movie.douban.com/celebrity/1279475/) / [Sean Button](https://movie.douban.com/celebrity/1306452/) / [Robert Catto](https://movie.douban.com/celebrity/1242595/) / [罗德尼·库克](https://movie.douban.com/celebrity/1394740/) / [卡尔洛斯·德林克沃特](https://movie.douban.com/celebrity/1202515/) / [西奥沙福瓦](https://movie.douban.com/celebrity/1362754/) / [本·弗兰舍姆](https://movie.douban.com/celebrity/1349888/) / [Jonathan Harding](https://movie.douban.com/celebrity/1327062/) / [Lucas Hayward](https://movie.douban.com/celebrity/1172342/) / [丹·汉纳](https://movie.douban.com/celebrity/1286442/) / [保罗·霍姆斯](https://movie.douban.com/celebrity/1098761/) / [杰森霍德](https://movie.douban.com/celebrity/1361778/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [Sam Kelly](https://movie.douban.com/celebrity/1425375/) / [Sandro Kopp](https://movie.douban.com/celebrity/1216494/)
+
+上映日期: 2003-04-25(中国大陆) / 2021-04-23(中国大陆重映) / 2002-12-05(纽约首映) / 2002-12-18(美国)
+
+片长: 180分钟 / 223分钟(加长版) / 235分钟(蓝光加长版)
+
+## 加勒比海盗
+
+![image-20240602092550862](./kehuan/image-20240602092550862.png)
+
+[豆瓣评分: 8.8](https://movie.douban.com/subject/1298070/)
+
+导演: [戈尔·维宾斯基](https://movie.douban.com/celebrity/1031987/)
+
+编剧: [泰德·艾略特](https://movie.douban.com/celebrity/1283130/) / [特里·鲁西奥](https://movie.douban.com/celebrity/1009677/) / [斯图尔特·贝亚蒂耶](https://movie.douban.com/celebrity/1278161/) / [杰·沃尔伯特](https://movie.douban.com/celebrity/1344903/)
+
+主演: [约翰尼·德普](https://movie.douban.com/celebrity/1054456/) / [杰弗里·拉什](https://movie.douban.com/celebrity/1010543/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [凯拉·奈特莉](https://movie.douban.com/celebrity/1054448/) / [杰克·达文波特](https://movie.douban.com/celebrity/1031865/) / [乔纳森·普雷斯](https://movie.douban.com/celebrity/1019055/)
+
+上映日期: 2003-11-21(中国大陆) / 2003-07-09(美国)
+
+片长: 143 分钟
+
+## 指环王 3：王者无敌
+
+![image-20240602093720915](./kehuan/image-20240602093720915.png)
+
+[豆瓣评分: 9.3](https://movie.douban.com/subject/1291552/)
+
+导演: [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/)
+
+编剧: [弗兰·威尔士](https://movie.douban.com/celebrity/1013998/) / [菲利帕·鲍恩斯](https://movie.douban.com/celebrity/1279114/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [J.R.R.托尔金](https://movie.douban.com/celebrity/1152849/)
+
+主演: [伊利亚·伍德](https://movie.douban.com/celebrity/1054395/) / [西恩·奥斯汀](https://movie.douban.com/celebrity/1031818/) / [维果·莫腾森](https://movie.douban.com/celebrity/1054520/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [伊恩·麦克莱恩](https://movie.douban.com/celebrity/1054410/) / [肖恩·宾](https://movie.douban.com/celebrity/1002683/) / [多米尼克·莫纳汉](https://movie.douban.com/celebrity/1036320/) / [丽芙·泰勒](https://movie.douban.com/celebrity/1041027/) / [约翰·贝西](https://movie.douban.com/celebrity/1056393/) / [凯特·布兰切特](https://movie.douban.com/celebrity/1054441/) / [比利·博伊德](https://movie.douban.com/celebrity/1049629/) / [萨德文·布罗菲](https://movie.douban.com/celebrity/1334507/) / [阿利斯泰尔·布朗宁](https://movie.douban.com/celebrity/1279475/) / [马尔顿·索克斯](https://movie.douban.com/celebrity/1009284/) / [伯纳德·希尔](https://movie.douban.com/celebrity/1036511/) / [伊安·霍姆](https://movie.douban.com/celebrity/1049594/) / [布鲁斯·霍普金斯](https://movie.douban.com/celebrity/1094578/) / [伊恩·休斯](https://movie.douban.com/celebrity/1113996/) / [劳伦斯·马克奥雷](https://movie.douban.com/celebrity/1125247/) / [诺埃尔·阿普利比](https://movie.douban.com/celebrity/1277324/) / [布雷特·麦肯齐](https://movie.douban.com/celebrity/1009383/) / [Alexandra Astin](https://movie.douban.com/celebrity/1060394/) / [Sarah McLeod](https://movie.douban.com/celebrity/1123092/) / [Maisy McLeod-Riera](https://movie.douban.com/celebrity/1189091/) / [约翰·诺贝尔](https://movie.douban.com/celebrity/1022665/) / [Paul Norell](https://movie.douban.com/celebrity/1131185/) / [米兰达·奥图](https://movie.douban.com/celebrity/1036459/) / [布鲁斯·菲利普斯](https://movie.douban.com/celebrity/1050372/) / [沙恩·朗吉](https://movie.douban.com/celebrity/1185516/) / [约翰·瑞斯-戴维斯](https://movie.douban.com/celebrity/1147054/) / [托德·里彭](https://movie.douban.com/celebrity/1145258/) / [安迪·瑟金斯](https://movie.douban.com/celebrity/1002708/) / [Harry Sinclair](https://movie.douban.com/celebrity/1297669/) / [乔尔·托贝克](https://movie.douban.com/celebrity/1018287/) / [卡尔·厄本](https://movie.douban.com/celebrity/1017903/) / [史蒂芬·乌瑞](https://movie.douban.com/celebrity/1155436/) / [雨果·维文](https://movie.douban.com/celebrity/1040994/) / [大卫·文翰](https://movie.douban.com/celebrity/1049573/) / [阿兰·霍华德](https://movie.douban.com/celebrity/1090960/) / [萨拉·贝克](https://movie.douban.com/celebrity/1049790/) / [Robert Pollock](https://movie.douban.com/celebrity/1051291/) / [佩特·史密斯](https://movie.douban.com/celebrity/1297921/) / [杰德·布罗菲](https://movie.douban.com/celebrity/1325970/) / [菲利普·格里夫](https://movie.douban.com/celebrity/1216537/) / [布拉德·道里夫](https://movie.douban.com/celebrity/1031866/) / [克里斯托弗·李](https://movie.douban.com/celebrity/1054467/) / [布鲁斯·斯宾斯](https://movie.douban.com/celebrity/1049682/) / [吉诺·阿赛维多](https://movie.douban.com/celebrity/1276783/) / [Jarl Benzon](https://movie.douban.com/celebrity/1221458/) / [Jørn Benzon](https://movie.douban.com/celebrity/1174553/) / [Robert Catto](https://movie.douban.com/celebrity/1242595/) / [Michael Elsworth](https://movie.douban.com/celebrity/1189529/) / [彼得·杰克逊](https://movie.douban.com/celebrity/1040524/) / [Sandro Kopp](https://movie.douban.com/celebrity/1216494/) / [安德鲁·莱斯尼](https://movie.douban.com/celebrity/1289847/) / [约瑟夫·米卡-亨特](https://movie.douban.com/celebrity/1394738/) / [亨利·莫腾森](https://movie.douban.com/celebrity/1127967/) / [克雷格·帕克](https://movie.douban.com/celebrity/1040564/) / [克里斯蒂安·瑞沃斯](https://movie.douban.com/celebrity/1295714/) / [迈克尔·斯曼内科 ](https://movie.douban.com/celebrity/1297191/)/ [霍华德·肖](https://movie.douban.com/celebrity/1027953/) / [约翰·斯蒂芬森](https://movie.douban.com/celebrity/1027079/) / [理查德·泰](https://movie.douban.com/celebrity/1299006/)
+
+上映日期: 2004-03-12(中国大陆) / 2021-05-14(中国大陆重映) / 2003-12-17(美国)
+
+片长: 201分钟 / 254分钟(加长版) / 263分钟(蓝光加长版)
+
+## 加勒比海盗 2：亡灵的宝藏
+
+![image-20240602092535701](./kehuan/image-20240602092535701.png)
+
+[豆瓣评分: 8.4](https://movie.douban.com/subject/1315574/)
+
+导演: [戈尔·维宾斯基](https://movie.douban.com/celebrity/1031987/)
+
+编剧: [泰德·艾略特](https://movie.douban.com/celebrity/1283130/) / [特里·鲁西奥](https://movie.douban.com/celebrity/1009677/) / [斯图尔特·贝亚蒂耶](https://movie.douban.com/celebrity/1278161/) / [杰·沃尔伯特](https://movie.douban.com/celebrity/1344903/)
+
+主演: [约翰尼·德普](https://movie.douban.com/celebrity/1054456/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [凯拉·奈特莉](https://movie.douban.com/celebrity/1054448/) / [杰克·达文波特](https://movie.douban.com/celebrity/1031865/) / [比尔·奈伊](https://movie.douban.com/celebrity/1041002/) / [乔纳森·普雷斯](https://movie.douban.com/celebrity/1019055/) / [李·阿伦伯格](https://movie.douban.com/celebrity/1010673/) / [麦肯锡·克鲁克](https://movie.douban.com/celebrity/1027264/) / [凯文·麦克纳利](https://movie.douban.com/celebrity/1123046/) / [大卫·拜利](https://movie.douban.com/celebrity/1315199/) / [斯特兰·斯卡斯加德](https://movie.douban.com/celebrity/1017918/) / [汤姆·霍兰德尔](https://movie.douban.com/celebrity/1049625/) / [娜奥米·哈里斯](https://movie.douban.com/celebrity/1049542/) / [马丁·科勒巴](https://movie.douban.com/celebrity/1010683/) / [大卫·斯科菲尔德](https://movie.douban.com/celebrity/1386016/) / [亚力克斯·诺顿](https://movie.douban.com/celebrity/1007169/) / [劳伦·马赫](https://movie.douban.com/celebrity/1343121/) / [内杰·亚当森](https://movie.douban.com/celebrity/1142541/) / [卢克·德·沃夫松](https://movie.douban.com/celebrity/1032669/) / [德里克·奥康纳](https://movie.douban.com/celebrity/1343058/) / [德莫特·基尼](https://movie.douban.com/celebrity/1107468/) / [克里夫·阿什伯恩](https://movie.douban.com/celebrity/1331140/) / [罗比·基](https://movie.douban.com/celebrity/1098633/) / [麦克斯·贝克](https://movie.douban.com/celebrity/1356336/) / [史蒂夫·斯皮尔斯](https://movie.douban.com/celebrity/1150852/) / [约翰·博斯沃尔](https://movie.douban.com/celebrity/1343024/) / [克里斯托弗·亚当森](https://movie.douban.com/celebrity/1383902/) / [安迪·比克维奇](https://movie.douban.com/celebrity/1348311/) / [乔纳森·林斯利](https://movie.douban.com/celebrity/1124613/) / [西蒙·米考克](https://movie.douban.com/celebrity/1357921/) / [瓦妮莎·布兰奇](https://movie.douban.com/celebrity/1000388/) / [大卫·斯特恩](https://movie.douban.com/celebrity/1313115/) / [安东尼·帕特里西奥](https://movie.douban.com/celebrity/1215485/) / [迈克尔·恩莱特](https://movie.douban.com/celebrity/1349653/) / [马克·可汗](https://movie.douban.com/celebrity/1321919/) / [大卫·扎赫迪安](https://movie.douban.com/celebrity/1174734/) / [法乌齐·卜拉希米](https://movie.douban.com/celebrity/1077973/) / [雷吉·李](https://movie.douban.com/celebrity/1316002/) / [杰拉德·J·雷耶斯](https://movie.douban.com/celebrity/1220720/) / [哈亚提·阿克巴斯](https://movie.douban.com/celebrity/1220956/) / [斯蒂芬·阿纳尼茨](https://movie.douban.com/celebrity/1239520/) / [拉斯蒂·格瑞斯登·博林](https://movie.douban.com/celebrity/1241469/) / [罗恩·博蒂塔](https://movie.douban.com/celebrity/1172334/) / [盖伊·查普曼](https://movie.douban.com/celebrity/1210482/) / [尼尔·德蒙特](https://movie.douban.com/celebrity/1220645/) / [杰拉德·加纳](https://movie.douban.com/celebrity/1201628/) / [赛米·汉拉缇](https://movie.douban.com/celebrity/1049791/) / [达隆·亨廷顿](https://movie.douban.com/celebrity/1204567/) / [保罗·雅各布森](https://movie.douban.com/celebrity/1038132/) / [马克·约瑟夫](https://movie.douban.com/celebrity/1113609/) / [乔纳森·克特](https://movie.douban.com/celebrity/1317008/)
+
+上映日期: 2006-07-07(美国)
+
+片长: 151分钟
 
 ## 超人归来
 
@@ -19,6 +97,22 @@
 上映日期: 2006-07-11(中国大陆) / 2006-06-28(美国)
 
 片长: 154分钟
+
+## 加勒比海盗 3：世界的尽头
+
+![image-20240602092743849](./kehuan/image-20240602092743849.png)
+
+[豆瓣评分: 8.4](https://movie.douban.com/subject/1418192/)
+
+导演: [戈尔·维宾斯基](https://movie.douban.com/celebrity/1031987/)
+
+编剧: [泰德·艾略特](https://movie.douban.com/celebrity/1283130/) / [特里·鲁西奥](https://movie.douban.com/celebrity/1009677/)
+
+主演: [约翰尼·德普](https://movie.douban.com/celebrity/1054456/) / [杰弗里·拉什](https://movie.douban.com/celebrity/1010543/) / [奥兰多·布鲁姆](https://movie.douban.com/celebrity/1008069/) / [凯拉·奈特莉](https://movie.douban.com/celebrity/1054448/) / [杰克·达文波特](https://movie.douban.com/celebrity/1031865/) / [比尔·奈伊](https://movie.douban.com/celebrity/1041002/) / [乔纳森·普雷斯](https://movie.douban.com/celebrity/1019055/) / [李·阿伦伯格](https://movie.douban.com/celebrity/1010673/) / [麦肯锡·克鲁克](https://movie.douban.com/celebrity/1027264/) / [凯文·麦克纳利](https://movie.douban.com/celebrity/1123046/) / [大卫·拜利](https://movie.douban.com/celebrity/1315199/) / [斯特兰·斯卡斯加德](https://movie.douban.com/celebrity/1017918/) / [汤姆·霍兰德尔](https://movie.douban.com/celebrity/1049625/) / [娜奥米·哈里斯](https://movie.douban.com/celebrity/1049542/) / [马丁·科勒巴](https://movie.douban.com/celebrity/1010683/) / [大卫·斯科菲尔德](https://movie.douban.com/celebrity/1386016/) / [劳伦·马赫](https://movie.douban.com/celebrity/1343121/) / [德莫特·基尼](https://movie.douban.com/celebrity/1107468/) / [克里夫·阿什伯恩](https://movie.douban.com/celebrity/1331140/) / [克里斯托弗·亚当森](https://movie.douban.com/celebrity/1383902/) / [安迪·比克维奇](https://movie.douban.com/celebrity/1348311/) / [乔纳森·林斯利](https://movie.douban.com/celebrity/1124613/) / [周润发](https://movie.douban.com/celebrity/1044899/) / [基思·理查兹](https://movie.douban.com/celebrity/1036556/) / [加桑·马苏德](https://movie.douban.com/celebrity/1171817/) / [哈基姆·凯-卡西姆](https://movie.douban.com/celebrity/1109510/) / [多米尼克·斯科特·凯伊](https://movie.douban.com/celebrity/1045080/) / [瓦妮莎·布兰奇](https://movie.douban.com/celebrity/1000388/) / [雷吉·李](https://movie.douban.com/celebrity/1316002/) / [马绍尔·曼尼什](https://movie.douban.com/celebrity/1123996/) / [安格斯·巴尼特](https://movie.douban.com/celebrity/1429353/) / [Giles New](https://movie.douban.com/celebrity/1376701/) / [塔卡尤·费舍尔](https://movie.douban.com/celebrity/1087216/) / [马塞尔·尤勒斯](https://movie.douban.com/celebrity/1022933/) / [塞尔希奥·卡尔德龙](https://movie.douban.com/celebrity/1076522/) / [詹姆斯·兰开斯特](https://movie.douban.com/celebrity/1365282/) / [格雷格·埃利斯](https://movie.douban.com/celebrity/1081894/) / [布伦登·贝尔](https://movie.douban.com/celebrity/1252697/) / [谢鹤群](https://movie.douban.com/celebrity/1450533/) / [马克·约瑟夫](https://movie.douban.com/celebrity/1113609/) / [欧米德·吉亚李利](https://movie.douban.com/celebrity/1027280/) / [克里斯奥尔波特](https://movie.douban.com/celebrity/1058833/) / [Ned Wertimer](https://movie.douban.com/celebrity/1167925/) / [马克·海德斯](https://movie.douban.com/celebrity/1004667/) / [马修·沃尔夫](https://movie.douban.com/celebrity/1161921/) / [JB·布兰科](https://movie.douban.com/celebrity/1186083/) / [Gregory Allen](https://movie.douban.com/celebrity/1249507/) / [伊索·阿克瑞恩](https://movie.douban.com/celebrity/1313335/) / [拉斯蒂·格瑞斯登·博林](https://movie.douban.com/celebrity/1241469/) / [阿诺德·庄](https://movie.douban.com/celebrity/1028346/) / [杰森·T·克拉克](https://movie.douban.com/celebrity/1385035/) / [斯塔尼·科佩](https://movie.douban.com/celebrity/1355905/) / [Nicole Dionne](https://movie.douban.com/celebrity/1018324/) / [马克·卡西米尔·戴妮奇斯](https://movie.douban.com/celebrity/1254429/)
+
+上映日期: 2007-06-12(中国大陆) / 2007-05-25(美国)
+
+片长: 169分钟
 
 ## 第九区
 
@@ -83,7 +177,6 @@
 - 人猿星球
 - 未来水世界
 - 哈利波特
-- 指环王
 - 霍比特人
 - 黑夜传说
 - 2001太空漫游
