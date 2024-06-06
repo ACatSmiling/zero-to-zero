@@ -36,6 +36,14 @@
                 <version>1.18.30</version>
             </dependency>
 
+            <!-- 非Spring Boot模块，只引入lombok无法使用日志功能 -->
+            <!-- version与spring-boot-starter-web中引入的logback-classic保持一致 -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.4.14</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
