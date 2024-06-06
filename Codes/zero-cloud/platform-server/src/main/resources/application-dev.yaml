@@ -5,7 +5,6 @@ spring:
       - "classpath:conf/platform.yaml"
       - "classpath:conf/platform_thread_pool.yaml"
       - "classpath:conf/platform_kafka.yaml"
-      - "classpath:conf/test.properties"
 
 #logging:
 #  level:
