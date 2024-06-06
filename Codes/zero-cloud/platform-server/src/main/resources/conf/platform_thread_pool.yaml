@@ -1,0 +1,23 @@
+# Capacity configuration
+platform:
+  thread:
+    pool:
+      highConcurrentThreadSize: 20
+      lowConcurrentThreadSize: 6
+      keepAliveSeconds: 600
+      encryptionScene: FromTranscriptDB_Transcript
+      encryptionEnableSafeNet: true
+      toolPath: /opt/webex/wbxaibridge/tools
+      voiceaServiceBaseURL: https://discovery.cstage.vcra.co
+      voiceaDebug: true
+  task:
+    executor:
+      monitor:
+        enable: true
+        cron: 0 0 * * * ?
+    collector:
+      multiple:
+        thread:
+          enable: true
+      spec:
+        test: corePoolSize=2,maxPoolSize=10,keepLiveTime=60,waitQueueSize=100
