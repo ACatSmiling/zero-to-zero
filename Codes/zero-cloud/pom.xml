@@ -44,17 +44,29 @@
                 <version>1.4.14</version>
             </dependency>
 
+            <!-- version与spring-boot-starter-web引入的jackson-databind保持一致 -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.15.4</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.13.0</version>
             </dependency>
 
-            <!-- version与spring-boot-starter-web引入的jackson-databind保持一致 -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.15.4</version>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>33.2.1-jre</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
