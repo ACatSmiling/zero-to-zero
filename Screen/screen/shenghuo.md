@@ -2,9 +2,7 @@
 
 [豆瓣评分: ]()
 
-## 
 
-[豆瓣评分: ]()
 
 ## 五朵金花
 
@@ -38,6 +36,22 @@
 
 片长: 112分钟
 
+## 牧马人
+
+![image-20240608234623771](./shenghuo/image-20240608234623771.png)
+
+[豆瓣评分: 9.1](https://movie.douban.com/subject/1308038/)
+
+导演: [谢晋](https://movie.douban.com/celebrity/1042500/)
+
+编剧: [李凖](https://movie.douban.com/celebrity/1305477/)
+
+主演: [朱时茂](https://movie.douban.com/celebrity/1313275/) / [丛珊](https://movie.douban.com/celebrity/1047358/) / [刘琼](https://movie.douban.com/celebrity/1030875/) / [牛犇](https://movie.douban.com/celebrity/1275893/) / [雷仲谦](https://movie.douban.com/celebrity/1406047/) / [奇梦石](https://movie.douban.com/celebrity/1316147/)
+
+上映日期: 1982
+
+片长: 99分钟
+
 ## 洗澡
 
 ![image-20240512100732614](./shenghuo/image-20240512100732614.png)
@@ -69,22 +83,6 @@
 上映日期: 2003-10-03(美国)
 
 片长: 89分钟
-
-## 大兵小将
-
-![image-20240512100532887](./shenghuo/image-20240512100532887.png)
-
-[豆瓣评分: 6.9](https://movie.douban.com/subject/3279107/)
-
-导演: [丁晟](https://movie.douban.com/celebrity/1274856/)
-
-编剧: [丁晟](https://movie.douban.com/celebrity/1274856/)
-
-主演: [成龙](https://movie.douban.com/celebrity/1054531/) / [王力宏](https://movie.douban.com/celebrity/1045243/) / [刘承俊](https://movie.douban.com/celebrity/1314482/) / [杜玉明](https://movie.douban.com/celebrity/1317188/) / [林鹏](https://movie.douban.com/celebrity/1275739/) / [徐冬梅](https://movie.douban.com/celebrity/1316212/) / [王宝强](https://movie.douban.com/celebrity/1274388/) / [于荣光](https://movie.douban.com/celebrity/1274556/) / [卢惠光](https://movie.douban.com/celebrity/1032633/) / [晋松](https://movie.douban.com/celebrity/1315699/) / [吴樾](https://movie.douban.com/celebrity/1314321/) / [新七小福](https://movie.douban.com/subject_search?search_text=新七小福)
-
-上映日期: 2010-02-14(中国大陆)
-
-片长: 96分钟
 
 ## 千寻小姐
 
