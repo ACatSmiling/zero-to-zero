@@ -6,7 +6,7 @@
 
 [纯粹](./screen/chuncui.md)
 
-[动作](./screen/jianghu.md)
+[动作](./screen/dongzuo.md)
 
 [江湖](./screen/jianghu.md)
 
@@ -24,9 +24,9 @@
 
 [武侠](./screen/wuxia.md)
 
-[仙侠](./screen/xianxia.md)
-
 [喜剧](./screen/xiju.md)
+
+[仙侠](./screen/xianxia.md)
 
 [战争](./screen/zhanzheng.md)
 
