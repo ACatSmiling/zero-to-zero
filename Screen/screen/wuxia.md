@@ -233,9 +233,21 @@
 
 片长: 107分钟 / 98分钟(德国)
 
+## 给爸爸的信
 
+![image-20240608234915445](./wuxia/image-20240608234915445.png)
 
+[豆瓣评分: 8.1](https://movie.douban.com/subject/1299250/)
 
+导演: [元奎](https://movie.douban.com/celebrity/1289150/)
+
+编剧: [王晶](https://movie.douban.com/celebrity/1274331/) / [绍丽琼](https://movie.douban.com/subject_search?search_text=绍丽琼)
+
+主演: [李连杰](https://movie.douban.com/celebrity/1025146/) / [梅艳芳](https://movie.douban.com/celebrity/1047976/) / [谢苗](https://movie.douban.com/celebrity/1314627/) / [于荣光](https://movie.douban.com/celebrity/1274556/) / [刘松仁](https://movie.douban.com/celebrity/1028689/) / [柯受良](https://movie.douban.com/celebrity/1315099/) / [佘南南](https://movie.douban.com/celebrity/1342105/)
+
+上映日期: 1995-02-18(中国香港)
+
+片长: 104分钟
 
 ## 黄飞鸿之西域雄狮
 
@@ -245,15 +257,9 @@
 
 
 
-- 
 - 荒野大镖客
 - 黄昏双镖客
 - 霍元甲
 - 目中无人
-- 中南海保镖
-- 给爸爸的信
-- 
-- 
 - 唐山大兄
-- 
 - 陈真
