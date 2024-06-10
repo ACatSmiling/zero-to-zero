@@ -18,6 +18,7 @@ public class DeadLockDemo {
         new Thread(() -> {
             synchronized (a) {
                 log.info("thread {} holds lock a and attempts to acquire lock b", Thread.currentThread().getName());
+                // 暂停，保证此时线程t2已经启动拿到锁b
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
@@ -32,6 +33,7 @@ public class DeadLockDemo {
         new Thread(() -> {
             synchronized (b) {
                 log.info("thread {} holds lock b and attempts to acquire lock a", Thread.currentThread().getName());
+                // 暂停，保证此时线程t1已经启动拿到锁a
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
@@ -42,5 +44,12 @@ public class DeadLockDemo {
                 }
             }
         }, "t2").start();
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("thread {} is done", Thread.currentThread().getName());
     }
 }
