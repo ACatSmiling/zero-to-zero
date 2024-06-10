@@ -82,7 +82,6 @@
           
   结论：在main主线程结束后，守护线程会伴随着JVM一同结束工作，即使守护线程还有循环没有结束
   ```
-  
 
 ## 异步任务
 
@@ -92,11 +91,7 @@
 
 Future 接口结构：
 
-<img src="./java-juc/image-20240605230007600.png" alt="image-20240605230007600" style="zoom:80%;" />
-
-![image-20240609132300981](./java-juc/image-20240609132300981.png)
-
-<img src="java-juc/image-20240609132452561.png" alt="image-20240609132452561"  />
+<img src="java-util-concurrent/image-20240605230007600.png" alt="image-20240605230007600" style="zoom:80%;" />
 
 FutureTask 是 Future 的常用实现类：
 
@@ -198,7 +193,7 @@ JDK 8 设计出 CompletableFuture，CompletableFuture 提供了一种**观察者
 
 CompletableFuture 类继承关系：
 
-<img src="./java-juc/image-20240607222356022.png" alt="image-20240607222356022" style="zoom:80%;" />
+<img src="java-util-concurrent/image-20240607222356022.png" alt="image-20240607222356022" style="zoom:80%;" />
 
 - `CompletionStage 接口`
   - 代表异步计算过程中的某一个阶段，一个阶段完成以后可能会触发另外一个阶段。
@@ -211,7 +206,7 @@ CompletableFuture 类继承关系：
 
 [JDK 17 文档中](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/CompletableFuture.html)，可以查看 CompletableFuture 类的四个核心静态方法：
 
-![image-20240607224014410](./java-juc/image-20240607224014410.png)
+![image-20240607224014410](java-util-concurrent/image-20240607224014410.png)
 
 - 对于方法中 Executor 参数说明：如果没有指定，则使用默认的 [ForkJoinPool.commonPool()](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/ForkJoinPool.html#commonPool()) 作为它的线程池执行异步代码。
 
@@ -909,7 +904,7 @@ public class ReEntryLockDemo {
 
 `死锁`：是指两个或两个以上的线程在执行过程中，因抢夺资源而造成的一种互相等待的现象，若无外力干涉，则它们无法再继续推进下去。
 
-![image-20240609125946008](./java-juc/image-20240609125946008.png)
+![image-20240609125946008](java-util-concurrent/image-20240609125946008.png)
 
 - 系统资源不足。
 - 进程运行推进顺序不合适。
@@ -979,3 +974,4 @@ public class DeadLockDemo {
 ```
 
 - 结论：虽然 main 线程结束了，t1 和 t2 线程也各自运行，但因为彼此持有对方需要的锁，且一直没有释放，导致 t1 和 t2 线程一直阻塞，程序无法终止。
+
