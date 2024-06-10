@@ -94,7 +94,9 @@ Future 接口结构：
 
 <img src="./java-juc/image-20240605230007600.png" alt="image-20240605230007600" style="zoom:80%;" />
 
+![image-20240609132300981](./java-juc/image-20240609132300981.png)
 
+<img src="java-juc/image-20240609132452561.png" alt="image-20240609132452561"  />
 
 FutureTask 是 Future 的常用实现类：
 
@@ -906,3 +908,74 @@ public class ReEntryLockDemo {
 ### 死锁
 
 `死锁`：是指两个或两个以上的线程在执行过程中，因抢夺资源而造成的一种互相等待的现象，若无外力干涉，则它们无法再继续推进下去。
+
+![image-20240609125946008](./java-juc/image-20240609125946008.png)
+
+- 系统资源不足。
+- 进程运行推进顺序不合适。
+- 系统资源分配不当。
+
+```java
+package cn.zero.cloud.platform.juc.dead;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @since 2024/6/9 0:20
+ */
+@Slf4j
+public class DeadLockDemo {
+    public static void main(String[] args) {
+        final Object a = new Object();
+        final Object b = new Object();
+
+        new Thread(() -> {
+            synchronized (a) {
+                log.info("thread {} holds lock a and attempts to acquire lock b", Thread.currentThread().getName());
+                // 暂停，保证此时线程t2已经启动拿到锁b
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                synchronized (b) {
+                    log.info("thread {} has acquired lock b", Thread.currentThread().getName());
+                }
+            }
+        }, "t1").start();
+
+        new Thread(() -> {
+            synchronized (b) {
+                log.info("thread {} holds lock b and attempts to acquire lock a", Thread.currentThread().getName());
+                // 暂停，保证此时线程t1已经启动拿到锁a
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                synchronized (a) {
+                    log.info("thread {} has acquired lock a", Thread.currentThread().getName());
+                }
+            }
+        }, "t2").start();
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("thread {} is done", Thread.currentThread().getName());
+    }
+}
+
+输出结果：
+    2024-06-09 11:43:21.849 [t2] INFO  cn.zero.cloud.platform.juc.dead.DeadLockDemo - thread t2 holds lock b and attempts to acquire lock a
+    2024-06-09 11:43:21.849 [t1] INFO  cn.zero.cloud.platform.juc.dead.DeadLockDemo - thread t1 holds lock a and attempts to acquire lock b
+    2024-06-09 11:43:21.954 [main] INFO  cn.zero.cloud.platform.juc.dead.DeadLockDemo - thread main is done
+```
+
+- 结论：虽然 main 线程结束了，t1 和 t2 线程也各自运行，但因为彼此持有对方需要的锁，且一直没有释放，导致 t1 和 t2 线程一直阻塞，程序无法终止。
