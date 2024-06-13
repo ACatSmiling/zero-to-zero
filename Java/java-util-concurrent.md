@@ -975,3 +975,327 @@ public class DeadLockDemo {
 
 - 结论：虽然 main 线程结束了，t1 和 t2 线程也各自运行，但因为彼此持有对方需要的锁，且一直没有释放，导致 t1 和 t2 线程一直阻塞，程序无法终止。
 
+`死锁排查`：启动可能是死锁的程序，通过以下两种方式排查死锁。
+
+1. 命令行。
+
+   ```shell
+   (base) PS C:\Users\XiSun\NewVolume-D\zero_to_zero\Codes\zero-cloud> jps -l  
+   12480 org.jetbrains.idea.maven.server.RemoteMavenServer36
+   8432 
+   13636 org.jetbrains.jps.cmdline.Launcher
+   5604 jdk.jcmd/sun.tools.jps.Jps
+   13352 cn.zero.cloud.platform.juc.dead.DeadLockDemo
+   10316
+   (base) PS C:\Users\XiSun\NewVolume-D\zero_to_zero\Codes\zero-cloud> jstack 13352
+   2024-06-13 22:54:30
+   Full thread dump Java HotSpot(TM) 64-Bit Server VM (17.0.6+9-LTS-190 mixed mode, sharing):
+   
+   Threads class SMR info:
+   _java_thread_list=0x000001eaf34b10a0, length=16, elements={
+   0x000001eaf31c0c10, 0x000001eaf31c1990, 0x000001eaf31da450, 0x000001eaf31dbf20,
+   0x000001eaf31dc9e0, 0x000001eaf31df7b0, 0x000001eaf31e0450, 0x000001eaf31f1b60,
+   0x000001eaf3204c30, 0x000001eaf25f5d60, 0x000001eaf3410730, 0x000001eaf3411db0,
+   0x000001eaf40f9480, 0x000001eaf458d580, 0x000001eaf458ded0, 0x000001eac7d21fe0
+   }
+   
+   "Reference Handler" #2 daemon prio=10 os_prio=2 cpu=0.00ms elapsed=34.87s tid=0x000001eaf31c0c10 nid=0x12e0 waiting on condition  [0x0000008ed4afe000]
+      java.lang.Thread.State: RUNNABLE
+           at java.lang.ref.Reference.waitForReferencePendingList(java.base@17.0.6/Native Method)
+           at java.lang.ref.Reference.processPendingReferences(java.base@17.0.6/Reference.java:253)
+           at java.lang.ref.Reference$ReferenceHandler.run(java.base@17.0.6/Reference.java:215)
+   
+   "Finalizer" #3 daemon prio=8 os_prio=1 cpu=0.00ms elapsed=34.87s tid=0x000001eaf31c1990 nid=0x1154 in Object.wait()  [0x0000008ed4bfe000]
+      java.lang.Thread.State: WAITING (on object monitor)
+           at java.lang.Object.wait(java.base@17.0.6/Native Method)
+           - waiting on <0x000000064dc0d5c8> (a java.lang.ref.ReferenceQueue$Lock)
+           at java.lang.ref.ReferenceQueue.remove(java.base@17.0.6/ReferenceQueue.java:155)
+           - locked <0x000000064dc0d5c8> (a java.lang.ref.ReferenceQueue$Lock)
+           at java.lang.ref.ReferenceQueue.remove(java.base@17.0.6/ReferenceQueue.java:176)
+           at java.lang.ref.Finalizer$FinalizerThread.run(java.base@17.0.6/Finalizer.java:172)
+   
+   "Signal Dispatcher" #4 daemon prio=9 os_prio=2 cpu=0.00ms elapsed=34.86s tid=0x000001eaf31da450 nid=0x3048 waiting on condition  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "Attach Listener" #5 daemon prio=5 os_prio=2 cpu=0.00ms elapsed=34.86s tid=0x000001eaf31dbf20 nid=0x1d10 waiting on condition  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "Service Thread" #6 daemon prio=9 os_prio=0 cpu=0.00ms elapsed=34.86s tid=0x000001eaf31dc9e0 nid=0x279c runnable  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "Monitor Deflation Thread" #7 daemon prio=9 os_prio=0 cpu=0.00ms elapsed=34.86s tid=0x000001eaf31df7b0 nid=0x1c68 runnable  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "C2 CompilerThread0" #8 daemon prio=9 os_prio=2 cpu=15.62ms elapsed=34.86s tid=0x000001eaf31e0450 nid=0xe84 waiting on condition  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+      No compile task
+   
+   "C1 CompilerThread0" #16 daemon prio=9 os_prio=2 cpu=0.00ms elapsed=34.86s tid=0x000001eaf31f1b60 nid=0xdfc waiting on condition  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+      No compile task
+   
+   "Sweeper thread" #20 daemon prio=9 os_prio=2 cpu=0.00ms elapsed=34.86s tid=0x000001eaf3204c30 nid=0x5334 runnable  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "Common-Cleaner" #21 daemon prio=8 os_prio=1 cpu=0.00ms elapsed=34.84s tid=0x000001eaf25f5d60 nid=0x2074 in Object.wait()  [0x0000008ed53ff000]
+      java.lang.Thread.State: TIMED_WAITING (on object monitor)
+           at java.lang.Object.wait(java.base@17.0.6/Native Method)
+           - waiting on <0x000000064dd07008> (a java.lang.ref.ReferenceQueue$Lock)
+           at java.lang.ref.ReferenceQueue.remove(java.base@17.0.6/ReferenceQueue.java:155)
+           - locked <0x000000064dd07008> (a java.lang.ref.ReferenceQueue$Lock)
+           at jdk.internal.ref.CleanerImpl.run(java.base@17.0.6/CleanerImpl.java:140)
+           at java.lang.Thread.run(java.base@17.0.6/Thread.java:833)
+           at jdk.internal.misc.InnocuousThread.run(java.base@17.0.6/InnocuousThread.java:162)
+   
+   "Monitor Ctrl-Break" #22 daemon prio=5 os_prio=0 cpu=0.00ms elapsed=34.78s tid=0x000001eaf3410730 nid=0x1e28 runnable  [0x0000008ed57fe000]
+      java.lang.Thread.State: RUNNABLE
+           at sun.nio.ch.SocketDispatcher.read0(java.base@17.0.6/Native Method)
+           at sun.nio.ch.SocketDispatcher.read(java.base@17.0.6/SocketDispatcher.java:46)
+           at sun.nio.ch.NioSocketImpl.tryRead(java.base@17.0.6/NioSocketImpl.java:261)
+           at sun.nio.ch.NioSocketImpl.implRead(java.base@17.0.6/NioSocketImpl.java:312)
+           at sun.nio.ch.NioSocketImpl.read(java.base@17.0.6/NioSocketImpl.java:350)
+           at sun.nio.ch.NioSocketImpl$1.read(java.base@17.0.6/NioSocketImpl.java:803)
+           at java.net.Socket$SocketInputStream.read(java.base@17.0.6/Socket.java:966)
+           at sun.nio.cs.StreamDecoder.readBytes(java.base@17.0.6/StreamDecoder.java:270)
+           at sun.nio.cs.StreamDecoder.implRead(java.base@17.0.6/StreamDecoder.java:313)
+           at sun.nio.cs.StreamDecoder.read(java.base@17.0.6/StreamDecoder.java:188)
+           - locked <0x000000064dfc1378> (a java.io.InputStreamReader)
+           at java.io.InputStreamReader.read(java.base@17.0.6/InputStreamReader.java:177)
+           at java.io.BufferedReader.fill(java.base@17.0.6/BufferedReader.java:162)
+           at java.io.BufferedReader.readLine(java.base@17.0.6/BufferedReader.java:329)
+           - locked <0x000000064dfc1378> (a java.io.InputStreamReader)
+           at java.io.BufferedReader.readLine(java.base@17.0.6/BufferedReader.java:396)
+           at com.intellij.rt.execution.application.AppMainV2$1.run(AppMainV2.java:53)
+   
+   "Notification Thread" #23 daemon prio=9 os_prio=0 cpu=0.00ms elapsed=34.78s tid=0x000001eaf3411db0 nid=0x1300 runnable  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "AsyncAppender-Worker-ASYNC" #24 daemon prio=5 os_prio=0 cpu=0.00ms elapsed=34.42s tid=0x000001eaf40f9480 nid=0x31d4 waiting on condition  [0x0000008ed5aff000]
+      java.lang.Thread.State: WAITING (parking)
+           at jdk.internal.misc.Unsafe.park(java.base@17.0.6/Native Method)
+           - parking to wait for  <0x000000064d7c73f0> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+           at java.util.concurrent.locks.LockSupport.park(java.base@17.0.6/LockSupport.java:341)
+           at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.6/AbstractQueuedSynchronizer.java:506)
+           at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.6/ForkJoinPool.java:3463)
+           at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.6/ForkJoinPool.java:3434)
+           at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.6/AbstractQueuedSynchronizer.java:1623)
+           at java.util.concurrent.ArrayBlockingQueue.take(java.base@17.0.6/ArrayBlockingQueue.java:420)
+           at ch.qos.logback.core.AsyncAppenderBase$Worker.run(AsyncAppenderBase.java:298)
+   
+   "t1" #25 prio=5 os_prio=0 cpu=0.00ms elapsed=34.42s tid=0x000001eaf458d580 nid=0x2590 waiting for monitor entry  [0x0000008ed5bff000]
+      java.lang.Thread.State: BLOCKED (on object monitor)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo.lambda$main$0(DeadLockDemo.java:28)
+           - waiting to lock <0x000000064d7fa358> (a java.lang.Object)
+           - locked <0x000000064d7fa348> (a java.lang.Object)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo$$Lambda$119/0x0000000800cda5b8.run(Unknown Source)
+           at java.lang.Thread.run(java.base@17.0.6/Thread.java:833)
+   
+   "t2" #26 prio=5 os_prio=0 cpu=0.00ms elapsed=34.42s tid=0x000001eaf458ded0 nid=0x24e0 waiting for monitor entry  [0x0000008ed5cff000]
+      java.lang.Thread.State: BLOCKED (on object monitor)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo.lambda$main$1(DeadLockDemo.java:43)
+           - waiting to lock <0x000000064d7fa348> (a java.lang.Object)
+           - locked <0x000000064d7fa358> (a java.lang.Object)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo$$Lambda$120/0x0000000800cda7d8.run(Unknown Source)
+           at java.lang.Thread.run(java.base@17.0.6/Thread.java:833)
+   
+   "DestroyJavaVM" #27 prio=5 os_prio=0 cpu=93.75ms elapsed=34.31s tid=0x000001eac7d21fe0 nid=0x1cbc waiting on condition  [0x0000000000000000]
+      java.lang.Thread.State: RUNNABLE
+   
+   "VM Thread" os_prio=2 cpu=0.00ms elapsed=34.87s tid=0x000001eaf31bacf0 nid=0xaa0 runnable
+   
+   "GC Thread#0" os_prio=2 cpu=0.00ms elapsed=34.88s tid=0x000001eac7dc1150 nid=0x1508 runnable
+   
+   "G1 Main Marker" os_prio=2 cpu=0.00ms elapsed=34.88s tid=0x000001eac7dd0810 nid=0xebc runnable
+   
+   "G1 Conc#0" os_prio=2 cpu=0.00ms elapsed=34.88s tid=0x000001eac7dd2630 nid=0xadc runnable
+   
+   "G1 Refine#0" os_prio=2 cpu=0.00ms elapsed=34.88s tid=0x000001eac7dee440 nid=0xbe4 runnable
+   
+   "G1 Service" os_prio=2 cpu=0.00ms elapsed=34.88s tid=0x000001eaf24c5060 nid=0x30cc runnable
+   
+   "VM Periodic Task Thread" os_prio=2 cpu=0.00ms elapsed=34.78s tid=0x000001eaf33dcf50 nid=0x1608 waiting on condition
+   
+   JNI global refs: 23, weak refs: 0
+   
+   
+   Found one Java-level deadlock:
+   =============================
+   "t1":
+     waiting to lock monitor 0x000001eaf45d7090 (object 0x000000064d7fa358, a java.lang.Object),
+     which is held by "t2"
+   
+   "t2":
+     waiting to lock monitor 0x000001eaf45d6530 (object 0x000000064d7fa348, a java.lang.Object),
+     which is held by "t1"
+   
+   Java stack information for the threads listed above:
+   ===================================================
+   "t1":
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo.lambda$main$0(DeadLockDemo.java:28)
+           - waiting to lock <0x000000064d7fa358> (a java.lang.Object)
+           - locked <0x000000064d7fa348> (a java.lang.Object)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo$$Lambda$119/0x0000000800cda5b8.run(Unknown Source)
+           at java.lang.Thread.run(java.base@17.0.6/Thread.java:833)
+   "t2":
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo.lambda$main$1(DeadLockDemo.java:43)
+           - waiting to lock <0x000000064d7fa348> (a java.lang.Object)
+           - locked <0x000000064d7fa358> (a java.lang.Object)
+           at cn.zero.cloud.platform.juc.dead.DeadLockDemo$$Lambda$120/0x0000000800cda7d8.run(Unknown Source)
+           at java.lang.Thread.run(java.base@17.0.6/Thread.java:833)
+   
+   Found 1 deadlock.
+   ```
+
+2. 图形界面。
+
+   ```shell
+   (base) PS C:\Users\XiSun\NewVolume-D\zero_to_zero\Codes\zero-cloud> jconsole
+   ```
+
+   <img src="java-util-concurrent/image-20240613225637010.png" alt="image-20240613225637010" style="zoom:80%;" />
+
+   <img src="java-util-concurrent/image-20240613225723658.png" alt="image-20240613225723658" style="zoom:80%;" />
+
+## LockSupport 和线程中断机制
+
+### 线程中断机制
+
+什么是线程中断机制：
+
+- 首先，**一个线程不应该由其他线程来强制中断或停止，而是应该由线程自己自行停止。**所以，Thread.stop()、Thread.suspend()、Thread.resume() 都已经被废弃了。
+- 其次，在 Java 中没有办法立即停止一条线程，然而停止线程却显得尤为重要，例如取消一个耗时操作。因此，**Java 提供了一种用于停止线程的协商机制 —— 中断，也即中断标识协商机制。**
+  - 中断只是一种协作协商机制，Java 没有给中断增加任何语法，中断的过程需要由程序员自行实现。若要中断一个线程，你需要手动调用该线程 interrupt 方法，该方法也仅仅是**将该线程对象的中断标识设置为 true**，接着你需要自己写代码不断检测当前线程的标识位，如果为 true，表示别的线程请求这条线程中断，此时究竟应该做什么需要你自己写代码实现。
+  - 每个线程对象都有一个中断标识位，用于表示线程是否被中断；该标识位为 true 表示中断，为 false 表示未中断；通过调用线程对象的 interrupt 方法将该线程的标识位设置为 true；interrupt  方法可以在别的线程中调用，也可以在自己的线程中调用。
+
+线程中断的相关 API：
+
+1. `public void interrupt()`
+
+   - 实例方法：**仅仅是设置线程的中断状态为 true，发起一个协商而不会立刻停止线程。**
+
+2. ``public static boolean interrupted()`
+
+   - 静态方法：**判断线程是否被中断并清除当前中断状态（做了两件事情）。**
+     - 返回当前线程的中断状态，测试当前线程是否已被中断。
+     - 将当前线程的中断状态清零并重新设置为 false，清除线程的中断状态。
+
+   - 这个方法有点不好理解在于如果连续两次调用此方法，则第二次返回false，因为连续调用两次的结果可能不一样。
+
+3. `public boolean isInterrupted()`
+
+   - 实例方法：**判断当前线程是否被中断（通过检查中断标志位）。**
+
+如何停止中断运行中的线程：
+
+1. 通过 volatile 变量实现。
+
+   ```java
+   package cn.zero.cloud.platform.juc.interrupt;
+   
+   import lombok.extern.slf4j.Slf4j;
+   
+   import java.util.concurrent.TimeUnit;
+   
+   /**
+    * @author XiSun
+    * @version 1.0
+    * @since 2024/6/13 23:46
+    */
+   @Slf4j
+   public class InterruptByVolatileDemo {
+       // volatile表示的变量具有可见性
+       private static volatile boolean isStop = false;
+   
+       public static void main(String[] args) {
+           new Thread(() -> {
+               while (true) {
+                   if (isStop) {
+                       log.info("thread {} ends execution", Thread.currentThread().getName());
+                       break;
+                   }
+                   // 不要使用日志输出
+                   // log.info("thread {} is running", Thread.currentThread().getName());
+               }
+           }, "t1").start();
+   
+           try {
+               TimeUnit.MILLISECONDS.sleep(10);
+           } catch (InterruptedException e) {
+               throw new RuntimeException(e);
+           }
+   
+           new Thread(() -> {
+               isStop = true;
+               log.info("thread {} ends execution", Thread.currentThread().getName());
+           }, "t2").start();
+       }
+   }
+   ```
+
+   - 结论：以上程序，不使用 volatile 修饰 isStop 时，t2 线程结束后，t1 线程不会停止，使用 volatile 修饰 isStop 时，t2 线程结束后，t1 线程会随着结束运行。注意：t1 线程中不要使用日志输出等操作，否则会影响测试结果（t1 线程在运行一段时间后，会停止运行）。
+
+2. 通过 AutomicBoolean 实现。
+
+   ```java
+   package cn.zero.cloud.platform.juc.interrupt;
+   
+   import lombok.extern.slf4j.Slf4j;
+   
+   import java.util.concurrent.TimeUnit;
+   import java.util.concurrent.atomic.AtomicBoolean;
+   
+   /**
+    * @author XiSun
+    * @version 1.0
+    * @since 2024/6/13 23:56
+    */
+   @Slf4j
+   public class InterruptByAtomicBooleanDemo {
+       private static final AtomicBoolean ATOMIC_BOOLEAN = new AtomicBoolean(false);
+   
+       public static void main(String[] args) {
+           new Thread(() -> {
+               while (true) {
+                   if (ATOMIC_BOOLEAN.get()) {
+                       log.info("thread {} ends execution", Thread.currentThread().getName());
+                       break;
+                   }
+                   // 不要使用日志输出
+                   log.info("thread {} is running", Thread.currentThread().getName());
+                   
+                   try {
+                       TimeUnit.MILLISECONDS.sleep(2);
+                   } catch (InterruptedException e) {
+                       throw new RuntimeException(e);
+                   }
+               }
+           }, "t1").start();
+   
+           try {
+               TimeUnit.MILLISECONDS.sleep(10);
+           } catch (InterruptedException e) {
+               throw new RuntimeException(e);
+           }
+   
+           new Thread(() -> {
+               ATOMIC_BOOLEAN.set(true);
+               log.info("thread {} ends execution", Thread.currentThread().getName());
+           }, "t2").start();
+       }
+   }
+   
+   输出结果：
+       2024-06-13 23:58:59.185 [t1] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t1 is running
+       2024-06-13 23:58:59.192 [t1] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t1 is running
+       2024-06-13 23:58:59.194 [t1] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t1 is running
+       2024-06-13 23:58:59.197 [t1] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t1 is running
+       2024-06-13 23:58:59.199 [t2] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t2 ends execution
+       2024-06-13 23:58:59.200 [t1] INFO  c.z.c.p.juc.interrupt.InterruptByAtomicBooleanDemo - thread t1 ends execution
+   ```
+
+   - 结论：t2 线程结束后，ATOMIC_BOOLEAN 的值被修改为 true，t1 线程监测到值发生变化后，停止运行。
+
+3. 通过Thread类自带的中断API实例方法实现。
+
+### LockSupport
+
