@@ -21,9 +21,5 @@ public class PlatFormServerApplication {
         } else {
             System.out.println("No bean with name '" + beanName + "' is defined.");
         }
-
-        Object date = applicationContext.getBean("date");
-        System.out.println(date);
-
     }
 }
