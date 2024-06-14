@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
  */
 @Component
 @ConditionalOnProperty(
-        name = {"platform.task.executor.monitor.enable"},
+        name = {"zero.cloud.thread.task.executor.monitor.enable"},
         havingValue = "true",
         matchIfMissing = false
 )
@@ -50,7 +50,7 @@ public class ThreadPoolExecutorMonitor {
      * 1.   0 0 * * * ?  每隔1小时执行一次
      * 2.   0/30 * * * * ?  默认每隔30秒执行一次
      */
-    @Scheduled(cron = "${platform.task.executor.monitor.cron:0/30 * * * * ?}")
+    @Scheduled(cron = "${zero.cloud.thread.task.executor.monitor.cron:0/30 * * * * ?}")
     public void printThreadPoolStateLog() {
         if (CollectionUtils.isNotEmpty(taskCollectors)) {
             for (CommonTaskCollector commonTaskCollector : taskCollectors) {

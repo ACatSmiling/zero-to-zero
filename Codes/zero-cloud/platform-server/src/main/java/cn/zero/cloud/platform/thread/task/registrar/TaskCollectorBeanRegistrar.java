@@ -40,7 +40,7 @@ public class TaskCollectorBeanRegistrar implements BeanPostProcessor {
     public static final String KEY_VALUE_SEPARATOR = "=";
 
 
-    @Value("${platform.task.collector.multiple.thread.enable:true}")
+    @Value("${zero.cloud.thread.task.collector.multiple.thread.enable:true}")
     private boolean multiThreadEnable;
 
     /**

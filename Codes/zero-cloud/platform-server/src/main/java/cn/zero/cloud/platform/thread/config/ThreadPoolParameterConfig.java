@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * @author Xisun Wang
  * @since 2024/4/12 17:17
  */
-@ConfigurationProperties(prefix = "platform.thread.pool")
+@ConfigurationProperties(prefix = "zero.cloud.thread.pool")
 @Component
 public class ThreadPoolParameterConfig {
     private int highConcurrentThreadSize;
