@@ -1,4 +1,4 @@
-*date: 2022-05-13*
+*Since: 2022-05-13*
 
 
 
@@ -2418,11 +2418,11 @@ Since Redis 7.0.0, Redis uses a multi part AOF mechanism. That is, the original 
 
 <img src="redis/image-20230911183826679.png" alt="image-20230911183826679" style="zoom:67%;" />
 
-- ① Client 作为命令的来源，会有多个源头以及源源不断的请求命令。
-- ② 在这些命令到达 Redis Server 以后，并不是直接写入 AOF 文件，会将其这些命令先放入`AOF 缓存区`中进行保存。这里的 AOF 缓存区，实际上是内存中的一片区域，存在的目的是当这些命令达到一定量以后再写入磁盘，避免频繁的磁盘 I/O 操作。
-- ③ AOF 缓存会根据AOF缓存区`同步文件的三种写回策略`，将命令写入磁盘上的 AOF 文件。
-- ④ 随着写入 AOF 文件内容的增加，为避免文件膨胀，会根据规则进行命令的合并，又称`AOF 重写`，从而起到 AOF 文件压缩的目的。
-- ⑤ 当 Redis Server 服务器重启的时候，会从 AOF 文件载入数据。
+1. Client 作为命令的来源，会有多个源头以及源源不断的请求命令。
+2. 在这些命令到达 Redis Server 以后，并不是直接写入 AOF 文件，会将其这些命令先放入`AOF 缓存区`中进行保存。这里的 AOF 缓存区，实际上是内存中的一片区域，存在的目的是当这些命令达到一定量以后再写入磁盘，避免频繁的磁盘 I/O 操作。
+3. AOF 缓存会根据 AOF 缓存区`同步文件的三种写回策略`，将命令写入磁盘上的 AOF 文件。
+4. 随着写入 AOF 文件内容的增加，为避免文件膨胀，会根据规则进行命令的合并，又称`AOF 重写`，从而起到 AOF 文件压缩的目的。
+5. 当 Redis Server 服务器重启的时候，会从 AOF 文件载入数据。
 
 #### 写回策略
 
@@ -2752,7 +2752,7 @@ Redis Transactions allow the execution of a group of commands in a single step, 
 
 Starting with version 2.2, Redis allows for an extra guarantee to the above two, in the form of optimistic locking in a way very similar to a check-and-set (CAS) operation. 
 
-Redis 事务，可以一次性执行多个命令，`其本质是一组命令的集合`。一个事务中的所有命令都会序列化，按顺序的串行化执行，且不会被其他命令插入，不允许加塞。
+`Redis 事务`，可以一次性执行多个命令，`其本质是一组命令的集合`。一个事务中的所有命令都会序列化，按顺序的串行化执行，且不会被其他命令插入，不允许加塞。
 
 > Redis 事务：一个队列中，一次性、顺序性、排他性的执行一系列命令。
 
@@ -2914,10 +2914,10 @@ QUEUED
 QUEUED
 127.0.0.1:6379[2](TX)> INCR count
 QUEUED
-# 故意写错命令, 语法编译不通过
+# 故意写错命令，语法编译不通过
 127.0.0.1:6379[2](TX)> SET k3
 (error) ERR wrong number of arguments for 'set' command
-# 如果任何一个命令语法出错, Redis会直接返回错误, 事务中的所有命令都不会执行
+# 如果任何一个命令语法出错，Redis会直接返回错误，事务中的所有命令都不会执行
 127.0.0.1:6379[2](TX)> EXEC
 (error) EXECABORT Transaction discarded because of previous errors.
 
@@ -2944,7 +2944,7 @@ QUEUED
 QUEUED
 127.0.0.1:6379[2](TX)> GET email
 QUEUED
-# 事务中的所有命令语法都没有错误, 编译通过, 但是INCR email命令执行会报错, 因为类型不匹配
+# 事务中的所有命令语法都没有错误，编译通过，但是INCR email命令执行会报错，因为类型不匹配
 127.0.0.1:6379[2](TX)> INCR email
 QUEUED
 127.0.0.1:6379[2](TX)> GET count
@@ -2959,7 +2959,7 @@ QUEUED
 3) "abc"
 4) OK
 5) "abc@qq.com"
-# 事务实际执行时, 也可以看出, 其他命令都执行成功, 只有INCR email命令执行失败
+# 事务实际执行时，也可以看出，其他命令都执行成功，只有INCR email命令执行失败
 6) (error) ERR value is not an integer or out of range
 7) "1"
 8) (integer) 2
@@ -3033,7 +3033,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
 - `WATCH`：
 
   ```sh
-  # WATCH监控的key, 在EXEC命令之前, 没有其他地方修改, 则事务正常提交
+  # WATCH监控的key，在EXEC命令之前，没有其他地方修改，则事务正常提交
   127.0.0.1:6379[2]> WATCH balance
   OK
   127.0.0.1:6379[2]> MULTI
@@ -3058,7 +3058,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
   5) "100"
   6) "abc2"
   
-  # WATCH监控的key, 在EXEC命令之前, 存在其他地方修改, 则事务执行失败
+  # WATCH监控的key，在EXEC命令之前，存在其他地方修改，则事务执行失败
   
   # 客户端1
   # 顺序1
@@ -3086,7 +3086,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
   # 顺序3
   127.0.0.1:6379[2]> GET balance
   "100"
-  127.0.0.1:6379[2]> SET balance 150		# 因为客户端2修改balance的值早于客户端1中事务的执行, 客户端1中的事务提交时失败
+  127.0.0.1:6379[2]> SET balance 150		# 因为客户端2修改balance的值早于客户端1中事务的执行，客户端1中的事务提交时失败
   OK
   127.0.0.1:6379[2]> GET balance
   "150"
@@ -3095,7 +3095,7 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
 - `UNWATCH`：
 
   ```sh
-  # 客户端1, WATCH balance之后, 使用UNWATCH取消监控
+  # 客户端1，WATCH balance之后，使用UNWATCH取消监控
   # 顺序1
   127.0.0.1:6379[2]> WATCH balance
   OK
@@ -3141,14 +3141,14 @@ Redis 使用 WATCH 命令来提供`乐观锁定`，实现 CAS（Check-and-Set）
 
 Redis 事务与数据库事务有很大的不同：
 
-- `单独的隔离操作。`
+- `单独的隔离操作`
   - Redis 事务仅仅是保证事务里的操作会被连续独占的执行，Redis 命令执行是`单线程架构`，在执行完事务内所有指令前，是不可能再去同时执行其他客户端的请求的。
-- `没有隔离级别的概念。`
+- `没有隔离级别的概念`
   - 因为事务提交前任何指令都不会被实际执行，也就不存在 "事务内的查询要看到事务里的更新，在事务外查询不能看到" 这种问题了。
-- `不保证原子性。`
+- `不保证原子性`
   - Redis does not support rollbacks of transactions since supporting rollbacks would have a significant impact on the simplicity and performance of Redis.
   - Redis 事务不保证原子性，也就是不保证所有指令同时成功或同时失败，只有决定是否开始执行全部指令的能力，没有执行到一半进行回滚的能力。
-- `排它性。`
+- `排它性`
   - Redis 会保证一个事务内的命令依次执行，而不会被其它命令插入。
 
 ## Redis 管道（Pipelining）
@@ -3475,11 +3475,11 @@ c605af17235b   redis:7.0.11   "docker-entrypoint.s…"   17 minutes ago   Up 17 
 修改 redis-6376 的 redis.conf 配置：
 
 ```conf
-bind 0.0.0.0									# 任何主机都可以连接到当前Redis服务, 如果只允许特定主机访问, 将bind设置为该主机的ip
+bind 0.0.0.0									# 任何主机都可以连接到当前Redis服务，如果只允许特定主机访问，将bind设置为该主机的ip
 port 6379
 requirepass 123456								# 设置客户端连接后进行任何其他指定前需要使用的密码
-protected-mode no								# 是否开启保护模式, 默认开启, 要是配置里没有指定bind和密码, 开启该参数后, Redis只会本地进行访问, 拒绝外部访问
-daemonize no									# daemonize yes配置和docker run中-d参数冲突, 会导致容器一直启动失败
+protected-mode no								# 是否开启保护模式，默认开启，要是配置里没有指定bind和密码，开启该参数后，Redis只会本地进行访问，拒绝外部访问
+daemonize no									# daemonize yes配置和docker run中-d参数冲突，会导致容器一直启动失败
 appendonly yes
 aof-use-rdb-preamble yes
 ```
@@ -3497,7 +3497,7 @@ aof-use-rdb-preamble yes
 
 # 从库配置
 replicaof 192.168.3.145 6376					# slave连接master的地址和端口
-masterauth 123456								# 当master设置了密码保护时(用requirepass指定的密码), slave连接master时的密码
+masterauth 123456								# 当master设置了密码保护时(用requirepass指定的密码)，slave连接master时的密码
 ```
 
 >**主从身份验证：**
@@ -3774,7 +3774,7 @@ $ docker logs -f redis-6380
 (empty array)
 127.0.0.1:6379> REPLICAOF 192.168.3.145 6376
 OK
-127.0.0.1:6379> KEYS *															# 可以看到, 连接到master后, 当前从库把master的数据也复制过来了
+127.0.0.1:6379> KEYS *															# 可以看到，连接到master后, 当前从库把master的数据也复制过来了
 1) "master_key1"
 127.0.0.1:6379> INFO REPLICATION
 # Replication
@@ -4211,7 +4211,7 @@ Maven 引入依赖：
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>4.3.1</version>
+    <version>5.0.2</version>
 </dependency>
 ```
 
@@ -4250,7 +4250,7 @@ Maven 引入依赖：
 <dependency>
     <groupId>io.lettuce</groupId>
     <artifactId>lettuce-core</artifactId>
-    <version>6.2.1.RELEASE</version>
+    <version>6.3.2.RELEASE</version>
 </dependency>
 ```
 
@@ -4357,17 +4357,48 @@ Maven 添加 Redis 启动器：
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>
+    <version>3.2.4</version>
 </dependency>
+```
+
+redis.properties：
+
+```properties
+# redis config
+#spring.data.redis.username=redis
+spring.data.redis.password=123456
+spring.data.redis.database=0
+spring.data.redis.timeout=1000
+spring.data.redis.ssl.enabled=false
+
+# redis lettuce pool config
+spring.data.redis.lettuce.pool.max-active=8
+spring.data.redis.lettuce.pool.max-wait=-1
+spring.data.redis.lettuce.pool.min-idle=1
+spring.data.redis.lettuce.pool.max-idle=10
+spring.data.redis.lettuce.shutdown-timeout=100ms
+
+# redis stand-alone config
+spring.data.redis.host=192.168.1.20
+spring.data.redis.port=6379
 ```
 
 RedisConfig.java：
 
 ```java
+package cn.zero.cloud.platform.redis.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
 /**
  * @author XiSun
- * @since 2023/10/25 21:30
- * <p>
- * Redis配置类
+ * @version 1.0
+ * @since 2024/6/14 23:20
  */
 @Configuration
 public class RedisConfig {
@@ -4382,8 +4413,8 @@ public class RedisConfig {
      * this.redisTemplate.opsForHash(); // 提供了操作hash表的所有方法
      * this.redisTemplate.opsForZSet(); // 提供了操作zset的所有方法
      *
-     * @param lettuceConnectionFactory
-     * @return
+     * @param lettuceConnectionFactory lettuceConnectionFactory
+     * @return RedisTemplate
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
@@ -4408,15 +4439,29 @@ public class RedisConfig {
 OrderController.java：
 
 ```java
+package cn.zero.cloud.platform.redis.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 /**
  * @author XiSun
- * @since 2023/10/25 22:00
+ * @version 1.0
+ * @since 2024/6/14 23:21
  */
 @Slf4j
 @RestController
 public class OrderController {
-    @Resource
-    private OrderService orderService;
+    private final OrderService orderService;
+
+    @Autowired
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     @RequestMapping(value = "/order/add", method = RequestMethod.POST)
     public void addOrder() {
@@ -4433,18 +4478,32 @@ public class OrderController {
 OrderService.java：
 
 ```java
+package cn.zero.cloud.platform.redis.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * @author XiSun
- * @since 2023/10/25 22:01
+ * @version 1.0
+ * @since 2024/6/14 23:22
  */
 @Slf4j
 @Service
 public class OrderService {
-
     public static final String ORDER_KEY = "order:";
 
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    public OrderService(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public void addOrder() {
         int keyId = ThreadLocalRandom.current().nextInt(1000) + 1;
@@ -4461,15 +4520,19 @@ public class OrderService {
 
 #### 连接集群
 
-`// TODO`
+redis.properties：
+
+```properties
+# redis cluster config
+spring.data.redis.cluster.nodes=10.224.122.63:6379,10.224.122.19:6379,10.224.122.13:6379,10.224.122.65:6379,10.224.122.18:6379,10.224.122.60:6379
+spring.data.redis.cluster.max-redirects=5
+```
 
 ## Redis 的单线程和多线程
 
-
-
 ### Redis 的单线程指什么
 
-![image-20231025225715061](./redis/image-20231025225715061.png)
+<img src="./redis/image-20231025225715061.png" alt="image-20231025225715061" style="zoom:80%;" />
 
 
 
@@ -4481,7 +4544,7 @@ Redis 的版本很多，不同版本的架构也是不同的，如果不限定�
 
 **Redis 的`单线程`，主要是指 Redis 的`网络 I/O 和键值对读写`是由一个线程来完成的，Redis 在处理客户端的请求时，包括获取（Socket 读）、解析、执行、内容返回（socket 写）等，都由一个顺序串行的主线程处理，这就是所谓的 "单线程"。这也是 Redis 对外提供键值存储服务的主要流程。**
 
-<img src="./redis/image-20231025230522112.png" alt="image-20231025230522112" style="zoom:80%;" />
+<img src="./redis/image-20231025230522112.png" alt="image-20231025230522112" style="zoom:90%;" />
 
 但 Redis 的其他功能，比如持久化 RDB、AOF、异步删除、集群数据同步等等，其实是由额外的线程执行的。
 
@@ -4823,7 +4886,7 @@ errors: 0, replies: 1000000
 
 - List 类型：
 
-  - 使用`LTRIM `渐进式逐步删除，直到全部删除完成。
+  - 使用`LTRIM`渐进式逐步删除，直到全部删除完成。
 
   - 格式：`LTRIM key start stop`。
 
