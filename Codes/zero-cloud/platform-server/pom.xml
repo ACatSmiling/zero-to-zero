@@ -92,25 +92,20 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <!-- Spring Boot Cache Start，配合Caffeine一起使用 -->
+        <!-- Spring Boot Cache Start，常用的配合Caffeine，Redis等缓存组件一起使用 -->
+        <!-- 使用@EnableCaching注解激活缓存，并通过@Cacheable、@CachePut、@CacheEvict等注解在方法上声明缓存行为 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
-        <!-- Caffeine Cache -->
+        <!-- Caffeine Cache，高性能的本地缓存库，https://github.com/ben-manes/caffeine -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
 
-        <!-- Spring Boot Kafka Starter -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
-        <!-- Spring Boot Data Redis Starter -->
+        <!-- Spring Boot Data Redis Starter，可以配合spring-boot-starter-cache实现分布式缓存，可以自定义RedisCacheManager -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -122,10 +117,16 @@
             <artifactId>lettuce-core</artifactId>
         </dependency>-->
 
-        <!-- 如果需要使用Jedis，需额外添加以下依赖 -->
-        <dependency>
+        <!-- 如果需要使用Jedis，需额外添加以下依赖，并排除spring-boot-starter-data-redis中的lettuce-core依赖 -->
+        <!--<dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
+        </dependency>-->
+
+        <!-- Spring Boot Kafka Starter -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
         </dependency>
     </dependencies>
 
