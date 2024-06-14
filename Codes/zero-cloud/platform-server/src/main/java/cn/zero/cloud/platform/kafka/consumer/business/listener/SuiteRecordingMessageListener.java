@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Component
 public class SuiteRecordingMessageListener {
-    @Value("${platform.kafka.notification.message.suite-recording.ai-integration-group:ai_integration_group_6}")
+    @Value("${zero.cloud.kafka.notification.message.suite-recording.ai-integration-group:ai_integration_group_6}")
     private String AI_INTEGRATION_GROUP;
 
     private final SuiteRecordingMessageProcessor suiteRecordingMessageProcessor;
@@ -30,11 +30,11 @@ public class SuiteRecordingMessageListener {
     }
 
     @KafkaListener(
-            autoStartup = "${platform.kafka.notification.message.suite-recording.enable:false}",
+            autoStartup = "${zero.cloud.kafka.notification.message.suite-recording.enable:false}",
             topics = {
-                    "#{'${platform.kafka.notification.message.suite-recording.topic}'.split(',')}"
+                    "#{'${zero.cloud.kafka.notification.message.suite-recording.topic}'.split(',')}"
             },
-            groupId = "${platform.kafka.notification.message.suite-recording.ai-integration-group:ai_integration_group_6}",
+            groupId = "${zero.cloud.kafka.notification.message.suite-recording.ai-integration-group:ai_integration_group_6}",
             containerFactory = "rateLimitConcurrentKafkaListenerContainerFactory"
     )
     public void listen(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {

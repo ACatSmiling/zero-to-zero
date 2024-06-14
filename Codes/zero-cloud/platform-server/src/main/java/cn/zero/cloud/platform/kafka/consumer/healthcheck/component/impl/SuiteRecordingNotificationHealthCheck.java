@@ -16,7 +16,7 @@ public class SuiteRecordingNotificationHealthCheck extends KafkaConsumerHealthCh
     /**
      * 是否启用消息通知
      */
-    @Value("${platform.kafka.notification.message.suite-recording.enable:false}")
+    @Value("${zero.cloud.kafka.notification.message.suite-recording.enable:false}")
     private boolean messageNotificationEnable;
 
     @Override

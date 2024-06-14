@@ -15,20 +15,20 @@ import java.util.Map;
  */
 @Configuration
 public class KafkaParameterConfig {
-    @Value("${platform.kafka.notification.enabled:true}")
+    @Value("${zero.cloud.kafka.notification.enabled:true}")
     private boolean enabled;
 
-    @Value("${platform.kafka.notification.message.summary.topic:hf1_meeting_summary_webex_notification}")
+    @Value("${zero.cloud.kafka.notification.message.summary.topic:hf1_meeting_summary_webex_notification}")
     private String summaryNotificationTopic;
 
-    @Value("${platform.kafka.notification.message.summary-transcript.topic:hf1_meeting_summarytranscript_webex_notification}")
+    @Value("${zero.cloud.kafka.notification.message.summary-transcript.topic:hf1_meeting_summarytranscript_webex_notification}")
     private String summaryTranscriptNotificationTopic;
 
-    @Value("${platform.kafka.notification.message.suite-recording.topic:dmz1_suite_recording_webex_notification}")
+    @Value("${zero.cloud.kafka.notification.message.suite-recording.topic:dmz1_suite_recording_webex_notification}")
     private String suiteRecordingNotificationTopic;
 
     @Bean
-    @ConfigurationProperties(prefix = "platform.kafka.producer.resending")
+    @ConfigurationProperties(prefix = "zero.cloud.kafka.producer.resending")
     public RetryConfigItems retryConfigItems() {
         return new RetryConfigItems();
     }
