@@ -1,3 +1,7 @@
 spring:
   config:
-    import: file:/opt/zecloud/conf/platform_kafka_common.properties
+    import:
+      - file:/opt/zecloud/conf/cache.properties
+      - file:/opt/zecloud/conf/kafka.properties
+      - file:/opt/zecloud/conf/redis.properties
+      - file:/opt/zecloud/conf/thread.properties
