@@ -1,6 +1,6 @@
 <configuration>
     <property name="logging.path" value="./logs"/>
-    <property name="logging.level" value="DEBUG"/>
+    <property name="logging.level" value="INFO"/>
     <property name="message.format"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n%ex{full, DISPLAY_EX_EVAL}"/>
 
@@ -19,7 +19,7 @@
             <level>DEBUG</level>
         </filter>
         <file>
-            ${logging.path}/base.log
+            ${logging.path}/platform_basic.log
         </file>
         <encoder>
             <pattern>${message.format}</pattern>
