@@ -3,6 +3,7 @@ spring:
     import:
       - "classpath:conf/cache.properties"
       - "classpath:conf/kafka.properties"
+      - "classpath:conf/mysql.properties"
       - "classpath:conf/redis.properties"
       - "classpath:conf/thread.properties"
 
