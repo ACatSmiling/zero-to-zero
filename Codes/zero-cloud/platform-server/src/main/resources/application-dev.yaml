@@ -3,8 +3,10 @@ spring:
     import:
       - "classpath:conf/cache.properties"
       - "classpath:conf/kafka.properties"
+      - "classpath:conf/mybatis-plus.properties"
       - "classpath:conf/mysql.properties"
       - "classpath:conf/redis.properties"
+      - "classpath:conf/security.properties"
       - "classpath:conf/thread.properties"
 
 #logging:
