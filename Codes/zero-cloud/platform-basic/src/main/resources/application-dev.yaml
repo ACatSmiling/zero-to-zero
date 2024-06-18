@@ -3,3 +3,4 @@ spring:
     import:
       - "classpath:conf/redis.properties"
       - "classpath:conf/mysql.properties"
+      - "classpath:conf/sa-token.properties"
