@@ -89,6 +89,13 @@
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>3.5.7</version>
             </dependency>
+
+            <!-- sa-token -->
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>1.38.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
