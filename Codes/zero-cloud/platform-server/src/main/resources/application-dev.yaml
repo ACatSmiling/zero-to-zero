@@ -8,9 +8,3 @@ spring:
       - "classpath:conf/redis.properties"
       - "classpath:conf/security.properties"
       - "classpath:conf/thread.properties"
-
-#logging:
-#  level:
-#    org.apache.kafka.clients.consumer: DEBUG
-#    org.springframework.kafka.core.KafkaTemplate: DEBUG
-#    org.springframework.kafka.listener.KafkaMessageListenerContainer: DEBUG
