@@ -69,6 +69,13 @@
                 <version>4.4</version>
             </dependency>
 
+            <!-- sa-token -->
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>1.38.0</version>
+            </dependency>
+
             <!-- MySQL -->
             <dependency>
                 <groupId>mysql</groupId>
@@ -90,11 +97,11 @@
                 <version>3.5.7</version>
             </dependency>
 
-            <!-- sa-token -->
+            <!-- Redisson -->
             <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-spring-boot3-starter</artifactId>
-                <version>1.38.0</version>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>3.31.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
