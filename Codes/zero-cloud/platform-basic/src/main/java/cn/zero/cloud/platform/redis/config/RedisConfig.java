@@ -2,6 +2,7 @@ package cn.zero.cloud.platform.redis.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -25,14 +26,14 @@ public class RedisConfig {
      * this.redisTemplate.opsForHash(); // 提供了操作hash表的所有方法
      * this.redisTemplate.opsForZSet(); // 提供了操作zset的所有方法
      *
-     * @param lettuceConnectionFactory lettuceConnectionFactory
+     * @param redisConnectionFactory redisConnectionFactory
      * @return RedisTemplate
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
-        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
 
         // 设置key序列化方式String
         redisTemplate.setKeySerializer(new StringRedisSerializer());
