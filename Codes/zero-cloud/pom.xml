@@ -18,6 +18,7 @@
         <module>platform-server</module>
         <module>platform-common</module>
         <module>platform-basic</module>
+        <module>platform-redis-distributed-lock1</module>
     </modules>
 
     <properties>
