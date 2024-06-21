@@ -529,77 +529,82 @@ $ npm config set registry https://registry.npmmirror.com
 >
 >1. 卸载冲突包。
 >
->   ```sh
->   $ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
->   ```
+>  ```sh
+>  $ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
+>  ```
 >
->   - 卸载冲突包后，保存在`/var/lib/docker/`路径的镜像、容器、数据卷、网络等，不会自动删除，如果想彻底删除，参考：https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine。
+>  - 卸载冲突包后，保存在`/var/lib/docker/`路径的镜像、容器、数据卷、网络等，不会自动删除，如果想彻底删除，参考：https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine。
 >
 >2. 设置 docker 仓库。
 >
->   ```sh
->   # 更新apt软件包索引和安装包, 以允许apt使用HTTPS上的存储库
->   $ sudo apt-get update
->   $ sudo apt-get install ca-certificates curl gnupg
->   
->   # 添加docker的官方GPG密钥
->   $ sudo install -m 0755 -d /etc/apt/keyrings
->   $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
->   $ sudo chmod a+r /etc/apt/keyrings/docker.gpg
->   
->   # 设置仓库
->   $ echo \
->     "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
->     "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
->     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
->   ```
+>  ```sh
+>  # 更新apt软件包索引和安装包, 以允许apt使用HTTPS上的存储库
+>  $ sudo apt-get update
+>  $ sudo apt-get install ca-certificates curl gnupg
+>
+>  # 添加docker的官方GPG密钥
+>  $ sudo install -m 0755 -d /etc/apt/keyrings
+>  $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+>  $ sudo chmod a+r /etc/apt/keyrings/docker.gpg
+>
+>  # 设置仓库
+>  $ echo \
+>    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+>    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+>    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+>  ```
 >
 >3. 安装 docker 引擎。
 >
->   ```sh
->   $ sudo apt-get update
->   $ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
->   ```
+>  ```sh
+>  $ sudo apt-get update
+>  $ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+>  ```
 >
->   - 安装 dokcer 引擎的时候，也安装了 docker-compose 插件。
+>  - 安装 dokcer 引擎的时候，也安装了 docker-compose 插件。
 >
 >4. 设置镜像源。
 >
->   ```sh
->   # 设置镜像源，新建一个daemon.json文件，然后添加如下内容
->   $ sudo vim /etc/docker/daemon.json
->   $ sudo cat /etc/docker/daemon.json
->   {
->       "registry-mirrors": ["http://hub-mirror.c.163.com"]
->   }
->   ```
+>  ```sh
+>  # 设置镜像源，新建一个daemon.json文件，然后添加如下内容
+>  $ sudo vim /etc/docker/daemon.json
+>  $ sudo cat /etc/docker/daemon.json
+>  {
+>      "registry-mirrors": [
+>          "https://dockerproxy.com",
+>          "https://hub-mirror.c.163.com",
+>          "https://mirror.baidubce.com",
+>          "https://ccr.ccs.tencentyun.com"
+>      ]
+>  }
+>  ```
 >
 >5. 验证是否安装成功。
 >
->   ```sh
->   $ sudo docker run hello-world
->   ```
+>  ```sh
+>  $ sudo docker run hello-world
+>  ```
 >
 >6. 添加当前用户到 docker 组。
 >
->   ```sh
->   # 当前用户无权限
->   $ docker ps
->   permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
->   
->   # 添加当前用户到docker组
->   $ sudo gpasswd -a ${USER} docker
->   [sudo] password for xisun: 
->   Adding user xisun to group docker
->   
->   # 退出当前用户, 比如切换为root, 再切换为xisun
->   $ sudo su -
->   $ su xisun 
->   
->   # 有权限
->   $ docker ps
->   CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
->   ```
+>  ```sh
+>  # 当前用户无权限
+>  $ docker ps
+>  permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
+>
+>  # 添加当前用户到docker组
+>  $ sudo gpasswd -a ${USER} docker
+>  [sudo] password for xisun: 
+>  Adding user xisun to group docker
+>
+>  # 退出当前用户, 比如切换为root, 再切换为xisun
+>  $ sudo su -
+>  $ su xisun 
+>
+>  # 有权限
+>  $ docker ps
+>  CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+>  ```
 
 >官网：https://www.docker.com/
 >
@@ -666,12 +671,37 @@ $ npm config set registry https://registry.npmmirror.com
 > # 1. 查看最新版本
 > $ curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}'
 > 
-> # 2. 下载, 如需下载其他版本, 替换v2.24.7为最新的版本号即可
+> # 2. 下载，如需下载其他版本，替换v2.24.7为最新的版本号即可
 > $ sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 > 
 > # 3. 赋予二进制文件可执行权限
 > $ sudo chmod +x /usr/local/bin/docker-compose
 > ```
+
+### docker 配置 clash 代理
+
+国内镜像源偶尔会出现不能使用的情况，在已有代理的情况下，按如下方式配置：
+
+```sh
+# 1. 编辑daemon.json文件，添加代理，192.168.1.17:7890是宿主机局域网中的代理服务器地址（国内镜像源的配置需要删除）
+$ vim /etc/docker/daemon.json 
+{
+    "proxies": {
+        "http-proxy": "http://192.168.1.17:7890",
+        "https-proxy": "http://192.168.1.17:7890"
+    }
+}
+
+# 2. 生效配置
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker
+```
+
+代理配置完成后，需要设置防火墙的入站规则，否则可能出现无法拉取镜像，宿主机也无法 ping 通虚拟机的情况。
+
+<img src="deploy/image-20240621234809771.png" alt="image-20240621234809771" style="zoom:67%;" />
+
+![image-20240622001039962](deploy/image-20240622001039962.png)
 
 ### git 安装
 
