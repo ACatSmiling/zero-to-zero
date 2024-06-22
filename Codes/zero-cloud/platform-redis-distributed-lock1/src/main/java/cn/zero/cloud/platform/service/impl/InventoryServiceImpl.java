@@ -43,10 +43,10 @@ public class InventoryServiceImpl implements InventoryService {
             if (inventoryNumber > 0) {
                 redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
                 retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
-                System.out.println(retMessage);
             } else {
-                retMessage = "商品卖完了，o(╥﹏╥)o";
+                retMessage = "商品卖完了";
             }
+            log.info("retMessage: {}", retMessage);
         } finally {
             lock.unlock();
         }

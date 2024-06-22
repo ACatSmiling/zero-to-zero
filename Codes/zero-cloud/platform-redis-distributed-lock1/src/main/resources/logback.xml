@@ -19,7 +19,7 @@
             <level>DEBUG</level>
         </filter>
         <file>
-            ${logging.path}/platform_basic.log
+            ${logging.path}/platform_redis_lock.log
         </file>
         <encoder>
             <pattern>${message.format}</pattern>
