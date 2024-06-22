@@ -52,7 +52,7 @@ Your public key has been saved in /c/Users/XiSun/.ssh/id_rsa.pub
 
 第四步，进入 C:\Users\XiSun\\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，然后登陆 Github，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上：
 
-![image-20220527142655618](git/image-20220527142655618.png)
+<img src="git/image-20220527142655618.png" alt="image-20220527142655618" style="zoom:80%;" />
 
 > 此步骤可以省略，直接使用 HTTPS 连接下载。
 
@@ -325,7 +325,7 @@ $ git branch -a
 
 ```
 
-![image-20220425133819982](git/image-20220425133819982.png)
+<img src="git/image-20220425133819982.png" alt="image-20220425133819982" style="zoom: 80%;" />
 
 以上，后续修改时，直接推送到 main 分支即可。
 
@@ -395,9 +395,88 @@ $ git rm -r --cached .gitignore
 $ git rm -r --cached platform/src/main/resources/logback-spring.xml
 ```
 
-示例：
+## Gitee 自动同步 Github 仓库
 
-<img src="C:\Users\XiSun\AppData\Roaming\Typora\typora-user-images\image-20230427151329506.png" alt="image-20230427151329506" style="zoom:67%;" />
+第一步：导入 Github 仓库。
+
+<img src="git/image-20240622185853967.png" alt="image-20240622185853967" style="zoom:80%;" />
+
+第二步：生成 Gitee 公钥，部署公钥，并验证。
+
+```sh
+# 生成公钥
+$ C:\Users\XiSun>ssh-keygen -t ed25519 -C "xxx@qq.com"
+```
+
+<img src="git/image-20240622221355646.png" alt="image-20240622221355646" style="zoom:80%;" />
+
+<img src="git/image-20240622213827136.png" alt="image-20240622213827136" style="zoom:80%;" />
+
+```sh
+# 验证公钥
+$ C:\Users\XiSun>ssh -T git@gitee.com
+```
+
+第三步：生成 Gitee 私人令牌。
+
+<img src="git/image-20240622221505886.png" alt="image-20240622221505886" style="zoom:80%;" />
+
+第四步：在要同步的 Github 仓库中，选择 "Setting" ---> "Secrets and variables" ---> "Actions" ---> "New repository secret"，分别创建`GITEE_USER`，`GITEE_PRIVATE_KEY`和`GITEE_TOKEN`。
+
+![image-20240622190212953](git/image-20240622190212953.png)
+
+<img src="git/image-20240622221623849.png" alt="image-20240622221623849" style="zoom:80%;" />
+
+- GITEE_USER：name 为 GITEE_USER，value 为个人的 Gitee user id，比如 ACatSmiling。
+- GITEE_PRIVATE_KEY：name 为 GITEE_PRIVATE_KEY，value 为第二步生成的公钥。
+- GITEE_TOKEN：name 为 GITEE_TOKEN，value 为第三步生成的私人令牌。
+
+第五步：在 Github 对应仓库的根目录下，建立目录`.github/workflows` ，然后创建一个名为 sync2gitee.yml 的文件，填入以下内容，并提交到 Github 仓库。
+
+```yaml
+# 通过 Github actions， 在 Github 仓库的每一次 commit 后自动同步到 Gitee 上
+name: sync2gitee
+on:
+  push:
+    branches:
+      - master
+jobs:
+  repo-sync:
+    env:
+      dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+      dst_token: ${{ secrets.GITEE_TOKEN }}
+      gitee_user: ${{ secrets.GITEE_USER }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: sync github -> gitee
+        uses: Yikun/hub-mirror-action@master
+        if: env.dst_key && env.dst_token && env.gitee_user
+        with:
+          # 必选，需要同步的 Github 用户（源）
+          src: 'github/${{ github.repository_owner }}'
+          # 必选，需要同步到的 Gitee 用户（目的）
+          dst: 'gitee/${{ secrets.GITEE_USER }}'
+          # 必选，Gitee公钥对应的私钥，https://gitee.com/profile/sshkeys
+          dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          # 必选，Gitee对应的用于创建仓库的token，https://gitee.com/profile/personal_access_tokens
+          dst_token:  ${{ secrets.GITEE_TOKEN }}
+          # 如果是组织，指定组织即可，默认为用户 user
+          # account_type: org
+          # 直接取当前项目的仓库名
+          static_list: ${{ github.event.repository.name }}
+          # 还有黑、白名单，静态名单机制，可以用于更新某些指定库
+          # static_list: 'repo_name,repo_name2'
+          # black_list: 'repo_name,repo_name2'
+          # white_list: 'repo_name,repo_name2'
+```
+
+
+
+
 
 ## 异常处理
 
