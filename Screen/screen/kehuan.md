@@ -2,6 +2,38 @@
 
 [豆瓣评分: ]()
 
+## 终结者
+
+![image-20240623133413862](kehuan/image-20240623133413862.png)
+
+[豆瓣评分: 8.2](https://movie.douban.com/subject/1300656/)
+
+导演: [詹姆斯·卡梅隆](https://www.douban.com/personage/27228298/)
+
+编剧: [詹姆斯·卡梅隆](https://www.douban.com/personage/27228298/) / [盖尔·安妮·赫德](https://www.douban.com/personage/27246567/) / [小威廉·威谢尔](https://www.douban.com/personage/27529397/)
+
+主演: [阿诺·施瓦辛格](https://www.douban.com/personage/27241391/) / [迈克尔·比恩](https://www.douban.com/personage/27230922/) / [琳达·汉密尔顿](https://www.douban.com/personage/27233558/) / [保罗·温菲尔德](https://www.douban.com/personage/27224852/) / [兰斯·亨利克森](https://www.douban.com/personage/27253901/) / [里克·罗索维奇](https://www.douban.com/personage/27260934/) / [贝丝·莫塔](https://www.douban.com/personage/27342313/) / [阿尔·伯恩](https://www.douban.com/personage/27266973/) / [迪克·米勒](https://www.douban.com/personage/27222433/) / [弗兰科·哥伦布](https://www.douban.com/personage/27228690/) / [比尔·帕克斯顿](https://www.douban.com/personage/27253895/) / [布莱恩·汤普森](https://www.douban.com/personage/27255434/) / [小威廉·威谢尔](https://www.douban.com/personage/27529397/) / [菲利普·戈登](https://www.douban.com/personage/27513506/) / [哈丽特·梅丁](https://www.douban.com/personage/27332030/) / [玛丽安妮·穆勒雷尔](https://www.douban.com/personage/27338080/) / [达雷尔·马普森](https://www.douban.com/personage/27216791/) / [Shawn Schepps](https://movie.douban.com/subject_search?search_text=Shawn Schepps) / [Bruce M. Kerner](https://movie.douban.com/subject_search?search_text=Bruce M. Kerner) / [Brad Rearden](https://movie.douban.com/subject_search?search_text=Brad Rearden) / [斯坦·耶尔](https://www.douban.com/personage/27368726/) / [Norman Friedman](https://www.douban.com/personage/27290637/) / [Barbara Powers](https://www.douban.com/personage/27334193/) / [Chino 'Fats' Williams](https://www.douban.com/personage/27374541/)
+
+上映日期: 1992-06(中国大陆) / 1984-10-26(美国)
+
+片长: 107分钟
+
+## 终结者 2：审判日
+
+![image-20240623140302009](kehuan/image-20240623140302009.png)
+
+[豆瓣评分: 8.8](https://movie.douban.com/subject/1291844/)
+
+导演: [詹姆斯·卡梅隆](https://www.douban.com/personage/27228298/)
+
+编剧: [詹姆斯·卡梅隆](https://www.douban.com/personage/27228298/) / [小威廉·威谢尔](https://www.douban.com/personage/27529397/)
+
+主演: [阿诺·施瓦辛格](https://www.douban.com/personage/27241391/) / [琳达·汉密尔顿](https://www.douban.com/personage/27233558/) / [爱德华·福隆](https://www.douban.com/personage/27228327/) / [罗伯特·帕特里克](https://www.douban.com/personage/27246890/) / [阿尔·伯恩](https://www.douban.com/personage/27266973/) / [乔·莫顿](https://www.douban.com/personage/27233629/) / [埃帕莎·默克森](https://www.douban.com/personage/27242365/) / [卡斯图罗·格雷拉](https://www.douban.com/personage/27297243/) / [丹尼·库克塞](https://www.douban.com/personage/27284752/) / [詹妮特·戈德斯坦恩](https://www.douban.com/personage/27210396/) / [山德·贝克利](https://www.douban.com/personage/27242224/) / [莱思莉·汉密尔顿·格伦](https://www.douban.com/personage/27300112/) / [彼得·舒鲁姆](https://www.douban.com/personage/27346460/) / [唐·雷克](https://www.douban.com/personage/27242628/) / [吉姆·帕尔默](https://www.douban.com/personage/27522132/) / [格温达·迪肯](https://www.douban.com/personage/27499017/) / [科林·帕特里克·林奇](https://www.douban.com/personage/27215785/) / [妮基·考克斯](https://www.douban.com/personage/27223689/) / [德沃恩·尼克森](https://www.douban.com/personage/27494553/) / [阿卜杜勒·萨拉姆·埃尔·拉扎克](https://www.douban.com/personage/27286818/) / [迈克·马斯喀特](https://www.douban.com/personage/27224997/) / [迪恩·诺里斯](https://www.douban.com/personage/27488333/) / [查尔斯·A·坦伯罗](https://www.douban.com/personage/27527159/) / [丹尼·皮尔斯](https://www.douban.com/personage/27522794/) / [马克·克里斯托弗·劳伦斯](https://www.douban.com/personage/27319128/) / [林凡 ](https://www.douban.com/personage/27518392/)/ [乔尔·克莱默](https://www.douban.com/personage/27261666/) / [斯科特·肖](https://www.douban.com/personage/27261188/) / [史文-欧尔·托尔森](https://www.douban.com/personage/27233091/) / [小威廉·威谢尔](https://www.douban.com/personage/27529397/) / [Ken Gibbel](https://movie.douban.com/subject_search?search_text=Ken Gibbel) / [Robert Winley](https://movie.douban.com/subject_search?search_text=Robert Winley) / [Michael Edwards](https://www.douban.com/personage/27291128/) / [Don Stanton](https://www.douban.com/personage/27356331/) / [Dan Stanton](https://www.douban.com/personage/27356499/) / [Lisa Brinegar](https://www.douban.com/personage/27277967/) / [Dalton Abbott](https://www.douban.com/personage/27261058/) / [Bret A. Arnold](https://www.douban.com/personage/27263557/) / [Martin Deluca](https://www.douban.com/personage/27229474/)
+
+上映日期: 1991-07-03(美国) / 2017-02-17(柏林电影节 3D)
+
+片长: 137分钟 / 153分钟(特别版) / 156分钟(终极剪辑版)
+
 ## 黑客帝国
 
 ![image-20240622210302220](kehuan/image-20240622210302220.png)
@@ -17,6 +49,22 @@
 上映日期: 2000-01-14(中国大陆) / 1999-03-31(美国)
 
 片长: 136分钟
+
+## 异次元骇客
+
+![image-20240623143334980](kehuan/image-20240623143334980.png)
+
+[豆瓣评分: 8.4](https://movie.douban.com/subject/1300282/)
+
+导演: [约瑟夫·鲁斯纳克](https://www.douban.com/personage/27556643/)
+
+编剧: [约瑟夫·鲁斯纳克](https://www.douban.com/personage/27556643/) / [拉威尔·森特諾-罗德里格斯](https://www.douban.com/personage/36594777/)
+
+主演: [克雷格·比尔克](https://www.douban.com/personage/27228453/) / [阿明·缪勒-斯塔尔](https://www.douban.com/personage/27261513/) / [格瑞辰·摩尔](https://www.douban.com/personage/27246908/) / [文森特·多诺费奥](https://www.douban.com/personage/27216237/) / [丹尼斯·海斯伯特](https://www.douban.com/personage/27224780/) / [斯蒂文·沙博](https://www.douban.com/personage/27260712/) / [Jeremy Roberts](https://movie.douban.com/subject_search?search_text=Jeremy Roberts) / [里夫·霍顿](https://www.douban.com/personage/27311650/) / [莱昂·里皮](https://www.douban.com/personage/27350623/) / [珍妮特·麦克拉克伦](https://www.douban.com/personage/27321558/) / [布拉德·威廉姆·亨克](https://www.douban.com/personage/27208491/) / [伯特·布洛斯](https://www.douban.com/personage/27555960/) / [Venessia Valentino](https://movie.douban.com/subject_search?search_text=Venessia Valentino) / [霍华德·S·米勒](https://www.douban.com/personage/27556116/) / [蒂娅·德克萨达](https://www.douban.com/personage/27242348/) / [施瑞·阿普莱碧](https://www.douban.com/personage/27242108/) / [鲍勃·克莱德宁](https://www.douban.com/personage/27261915/) / [艾莉森·洛曼](https://www.douban.com/personage/27246746/) / [Hadda Brooks](https://www.douban.com/personage/27280684/) / [厄尼·里夫利](https://www.douban.com/personage/27212792/) / [托妮·索耶](https://www.douban.com/personage/27352003/) / [Brooks Almy](https://www.douban.com/personage/27265204/) / [李韦弗](https://www.douban.com/personage/27370911/) / [杰弗里·里瓦斯](https://www.douban.com/personage/27492337/) / [Travis Tedford](https://www.douban.com/personage/27360543/) / [杰夫·布鲁门克兰茨](https://www.douban.com/personage/27270691/) / [约翰尼·克劳福德](https://www.douban.com/personage/27283259/) / [Tracy Perry](https://www.douban.com/personage/27334699/) / [威尔·华莱士](https://www.douban.com/personage/27504692/)
+
+上映日期: 1999-05-28(美国)
+
+片长: 100分钟
 
 ## 指环王 1：护戒使者
 
@@ -65,6 +113,22 @@
 上映日期: 2003-07-18(中国大陆) / 2003-05-07(韦斯特伍德首映) / 2003-05-15(美国)
 
 片长: 138分钟
+
+## 终结者 3：机器的觉醒
+
+![image-20240623140610058](kehuan/image-20240623140610058.png)
+
+[豆瓣评分: 7.4](https://movie.douban.com/subject/1305333/)
+
+导演: [乔纳森·莫斯托](https://www.douban.com/personage/27242488/)
+
+编剧: [约翰·布兰卡托](https://www.douban.com/personage/27276218/) / [迈克尔·费里斯](https://www.douban.com/personage/27210915/) / [詹姆斯·卡梅隆](https://www.douban.com/personage/27228298/) / [盖尔·安妮·赫德](https://www.douban.com/personage/27246567/) / [Tedi Sarafian](https://movie.douban.com/subject_search?search_text=Tedi Sarafian)
+
+主演: [阿诺·施瓦辛格](https://www.douban.com/personage/27241391/) / [尼克·斯塔尔](https://www.douban.com/personage/27242152/) / [克莱尔·丹尼斯](https://www.douban.com/personage/27259350/) / [克里斯塔娜·洛肯](https://www.douban.com/personage/27232920/) / [大卫·安德鲁](https://www.douban.com/personage/27574582/) / [马克·法姆吉列蒂](https://www.douban.com/personage/27295393/) / [阿尔·伯恩](https://www.douban.com/personage/27266973/) / [茉拉哈瑞斯](https://www.douban.com/personage/27307183/) / [克里斯多福·劳福德](https://www.douban.com/personage/27206182/) / [卡罗琳·赫尼塞](https://www.douban.com/personage/27306107/) / [杰·阿克沃内](https://www.douban.com/personage/27262106/) / [迈克·康纳·盖尼](https://www.douban.com/personage/27306393/) / [布莱恩·斯特斯](https://www.douban.com/personage/27358024/) / [阿兰娜·库瑞](https://www.douban.com/personage/27251152/) / [罗伯特·阿隆佐](https://www.douban.com/personage/27265057/) / [迈克尔·帕帕约翰](https://www.douban.com/personage/27246611/) / [蒂莫斯·道灵](https://www.douban.com/personage/27247154/) / [乔恩·福斯特](https://www.douban.com/personage/27228381/) / [马克·希克斯](https://www.douban.com/personage/27514857/) / [马特·杰拉德](https://www.douban.com/personage/27492421/) / [威廉姆·奥利莱里](https://www.douban.com/personage/27332969/) / [丽贝卡·蒂尔尼](https://www.douban.com/personage/27357905/) / [克里斯·哈德维克](https://www.douban.com/personage/27306760/) / [埃里克·里特尔](https://www.douban.com/personage/27256828/) / [Chopper Bernet](https://movie.douban.com/subject_search?search_text=Chopper Bernet) / [Susan Merson](https://www.douban.com/personage/27321775/) / [Elizabeth Morehead](https://movie.douban.com/subject_search?search_text=Elizabeth Morehead) / [比利·D·卢卡斯](https://www.douban.com/personage/27518690/) / [Larry McCormick](https://www.douban.com/personage/27327884/) / [George A. Sack Jr.](https://www.douban.com/personage/27353128/)
+
+上映日期: 2003-08-29(中国大陆) / 2003-07-02(美国)
+
+片长: 109 分钟
 
 ## 加勒比海盗
 
@@ -178,6 +242,54 @@
 
 片长: 112分钟
 
+## 霍比特人 1：意外之旅
+
+![image-20240623145126101](kehuan/image-20240623145126101.png)
+
+[豆瓣评分: 8.5](https://movie.douban.com/subject/1966182/)
+
+导演: [彼得·杰克逊](https://www.douban.com/personage/27246278/)
+
+编剧: [弗兰·威尔士](https://www.douban.com/personage/27219706/) / [菲利帕·鲍恩斯](https://www.douban.com/personage/27507393/) / [彼得·杰克逊](https://www.douban.com/personage/27246278/) / [吉尔莫·德尔·托罗](https://www.douban.com/personage/27232917/) / [J.R.R.托尔金](https://www.douban.com/personage/27358730/)
+
+主演: [伊恩·麦克莱恩](https://www.douban.com/personage/27260178/) / [马丁·弗瑞曼](https://www.douban.com/personage/27255375/) / [理查德·阿米蒂奇](https://www.douban.com/personage/27228366/) / [肯·斯托特](https://www.douban.com/personage/27541291/) / [格拉汉姆·麦克泰维什](https://www.douban.com/personage/27503972/) / [詹姆斯·内斯比特](https://www.douban.com/personage/27219705/) / [迪恩·奥戈曼](https://www.douban.com/personage/27337773/) / [艾丹·特纳](https://www.douban.com/personage/27223886/) / [雨果·维文](https://www.douban.com/personage/27246749/) / [凯特·布兰切特](https://www.douban.com/personage/27260209/) / [安迪·瑟金斯](https://www.douban.com/personage/27208398/) / [西尔维斯特·迈可伊](https://www.douban.com/personage/27324507/) / [克里斯托弗·李](https://www.douban.com/personage/27260234/) / [伊利亚·伍德](https://www.douban.com/personage/27260163/) / [伊安·霍姆](https://www.douban.com/personage/27255357/) / [李·佩斯](https://www.douban.com/personage/27224699/)
+
+上映日期: 2013-02-22(中国大陆) / 2012-11-28(新西兰首映) / 2012-12-14(美国)
+
+片长: 169分钟 / 182分钟(加长版)
+
+## 霍比特人 2：史矛革之战
+
+![image-20240623145250440](kehuan/image-20240623145250440.png)
+
+[豆瓣评分: 8.5](https://movie.douban.com/subject/11606328/)
+
+导演: [彼得·杰克逊](https://www.douban.com/personage/27246278/)
+
+编剧: [J.R.R.托尔金](https://www.douban.com/personage/27358730/) / [弗兰·威尔士](https://www.douban.com/personage/27219706/) / [菲利帕·鲍恩斯](https://www.douban.com/personage/27507393/) / [彼得·杰克逊](https://www.douban.com/personage/27246278/) / [吉尔莫·德尔·托罗](https://www.douban.com/personage/27232917/)
+
+主演: [伊恩·麦克莱恩](https://www.douban.com/personage/27260178/) / [马丁·弗瑞曼](https://www.douban.com/personage/27255375/) / [理查德·阿米蒂奇](https://www.douban.com/personage/27228366/) / [本尼迪克特·康伯巴奇](https://www.douban.com/personage/27215096/) / [奥兰多·布鲁姆](https://www.douban.com/personage/27213760/) / [伊万杰琳·莉莉](https://www.douban.com/personage/27227690/) / [李·佩斯](https://www.douban.com/personage/27224699/) / [卢克·伊万斯](https://www.douban.com/personage/27480262/) / [斯蒂芬·弗雷](https://www.douban.com/personage/27255263/) / [肯·斯托特](https://www.douban.com/personage/27541291/) / [詹姆斯·内斯比特](https://www.douban.com/personage/27219705/) / [约翰·贝尔](https://www.douban.com/personage/27571256/) / [马努·贝内特](https://www.douban.com/personage/27270638/) / [杰德·布罗菲](https://www.douban.com/personage/27481376/) / [亚当·布朗](https://www.douban.com/personage/27481378/) / [约翰·凯伦](https://www.douban.com/personage/27481375/) / [瑞安·盖奇](https://www.douban.com/personage/27571255/) / [马克·哈德洛](https://www.douban.com/personage/27481377/) / [彼得·汉布尔顿](https://www.douban.com/personage/27514180/) / [斯蒂芬·亨特](https://www.douban.com/personage/27481374/) / [威廉·基尔舍](https://www.douban.com/personage/27516897/) / [西尔维斯特·迈可伊](https://www.douban.com/personage/27324507/) / [格拉汉姆·麦克泰维什](https://www.douban.com/personage/27503972/) / [迪恩·奥戈曼](https://www.douban.com/personage/27337773/) / [米卡埃尔·佩斯布兰特](https://www.douban.com/personage/27233240/) / [艾丹·特纳](https://www.douban.com/personage/27223886/)
+
+上映日期: 2014-02-21(中国大陆) / 2013-12-13(美国)
+
+片长: 161分钟 / 186分钟(加长版)
+
+## 霍比特人 3：五军之战
+
+![image-20240623145400536](kehuan/image-20240623145400536.png)
+
+[豆瓣评分: 8.6](https://movie.douban.com/subject/2973079/)
+
+导演: [彼得·杰克逊](https://www.douban.com/personage/27246278/)
+
+编剧: [弗兰·威尔士](https://www.douban.com/personage/27219706/) / [菲利帕·鲍恩斯](https://www.douban.com/personage/27507393/) / [彼得·杰克逊](https://www.douban.com/personage/27246278/) / [吉尔莫·德尔·托罗](https://www.douban.com/personage/27232917/) / [J.R.R.托尔金](https://www.douban.com/personage/27358730/)
+
+主演: [马丁·弗瑞曼](https://www.douban.com/personage/27255375/) / [伊恩·麦克莱恩](https://www.douban.com/personage/27260178/) / [理查德·阿米蒂奇](https://www.douban.com/personage/27228366/) / [伊万杰琳·莉莉](https://www.douban.com/personage/27227690/) / [李·佩斯](https://www.douban.com/personage/27224699/) / [卢克·伊万斯](https://www.douban.com/personage/27480262/) / [本尼迪克特·康伯巴奇](https://www.douban.com/personage/27215096/) / [肯·斯托特](https://www.douban.com/personage/27541291/) / [詹姆斯·内斯比特](https://www.douban.com/personage/27219705/) / [比利·康诺利](https://www.douban.com/personage/27242163/) / [凯特·布兰切特](https://www.douban.com/personage/27260209/) / [伊安·霍姆](https://www.douban.com/personage/27255357/) / [克里斯托弗·李](https://www.douban.com/personage/27260234/) / [雨果·维文](https://www.douban.com/personage/27246749/) / [奥兰多·布鲁姆](https://www.douban.com/personage/27213760/) / [马努·贝内特](https://www.douban.com/personage/27270638/) / [艾丹·特纳](https://www.douban.com/personage/27223886/) / [迪恩·奥戈曼](https://www.douban.com/personage/27337773/) / [格拉汉姆·麦克泰维什](https://www.douban.com/personage/27503972/) / [斯蒂芬·弗雷](https://www.douban.com/personage/27255263/) / [米卡埃尔·佩斯布兰特](https://www.douban.com/personage/27233240/)
+
+上映日期: 2015-01-23(中国大陆) / 2014-12-17(美国)
+
+片长: 144分钟 / 164分钟(加长版)
+
 ## 流浪地球
 
 ![image-20240512095325189](./kehuan/image-20240512095325189.png)
@@ -216,9 +328,7 @@
 - 星际迷航
 - 星河战队
 - 机械公敌
-- 终结者
 - 异次元骇客
-- 黑客帝国
 - 后天
 - 2012
 - 猩球觉醒
