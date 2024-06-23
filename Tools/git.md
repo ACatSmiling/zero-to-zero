@@ -20,64 +20,17 @@
 
 7. 开发人员在 Github 上 Mark done 确认开发完成，并关闭 issue。这一步在提交合并请求时，可以通过描述中填写“close #1”等字样，直接关闭 issue。
 
-## Git 配置
-
-第一步，配置用户名和邮箱地址：
-
-```bash
-$ git config --global user.name "ACatSmiling"
-
-$ git config --global user.email "xx123@qq.com"
-
-$ git config --list
-user.name=ACatSmiling
-user.email=xx123@qq.com
-```
-
-第二步，删除 C:\Users\XiSun\\.ssh 文件夹下的 known_hosts。
-
-第三步，在本地生成秘钥：
-
-```bash
-$ ssh-keygen -t rsa -C "xx123@qq.com"
-Generating public/private rsa key pair.
-Enter file in which to save the key (/c/Users/XiSun/.ssh/id_rsa):
-Created directory '/c/Users/XiSun/.ssh'.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /c/Users/XiSun/.ssh/id_rsa
-Your public key has been saved in /c/Users/XiSun/.ssh/id_rsa.pub
-...
-```
-
-第四步，进入 C:\Users\XiSun\\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，然后登陆 Github，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上：
-
-<img src="git/image-20220527142655618.png" alt="image-20220527142655618" style="zoom:80%;" />
-
-> 此步骤可以省略，直接使用 HTTPS 连接下载。
-
-第五步，验证：
-
-```bash
-$ ssh git@github.com
-PTY allocation request failed on channel 0
-Hi ACatSmiling! You've successfully authenticated, but GitHub does not provide shell access.
-Connection to github.com closed.
-```
-
-> 第一次输入时，需要点击 yes。
-
 ## Git 常用命令
 
 clone 远程仓库代码到本地：
 
-```bash
+```shell
 $ git clone <URL>
 ```
 
 拉取远程仓库的代码到本地：`git pull <REMOTENAME> <BRANCHNAME>`。例如：
 
-```bash
+```shell
 # 远程仓库: origin, 分支: master
 $ git pull origin master
 ```
@@ -86,7 +39,7 @@ $ git pull origin master
 
 推送本地代码到远程仓库：`git push <REMOTENAME> <BRANCHNAME>`。例如：
 
-```bash
+```shell
 # 添加待提交的代码到本地库, .表示添加全部, .也可以替换为指定的代码文件或文件夹
 $ git add .
 
@@ -101,7 +54,7 @@ $ git push origin master
 
 对于本地删除的文件，使用`git rm`命令，示例如下：
 
-```bash
+```shell
 Administrator@WIN-K11OM3VD9KL MINGW64 /g/Git Projects/zero_to_zero (main)
 $ git status
 On branch main
@@ -158,7 +111,7 @@ To https://github.com/ACatSmiling/zero_to_zero.git
 
 对于已经 add，但未 commit 的操作，使用`git reset <file>`或`git reset`命令还原，示例如下：
 
-```bash
+```shell
 # 还原所有add操作
 Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
 $ git reset
@@ -168,7 +121,7 @@ $ git reset
 
 第一步：在新代码路径下右键选择打开 Git Bash，并初始化。
 
-```bash
+```shell
 XiSun@DESKTOP-OM8IACS MINGW64 /d/JetBrainsWorkSpace/IDEAProjects/reaction-extractor-assistant
 $ git init
 Initialized empty Git repository in D:/JetBrainsWorkSpace/IDEAProjects/reaction-extractor-assistant/.git/
@@ -176,7 +129,7 @@ Initialized empty Git repository in D:/JetBrainsWorkSpace/IDEAProjects/reaction-
 
 第二步：添加对应的远程仓库地址。
 
-```bash
+```shell
 # 查看这个本地仓库当前的远程地址
 $ git remote -v
 
@@ -189,7 +142,7 @@ $ git remote add origin <URL>
 
 第三步：提交代码到本地仓库。
 
-```bash
+```shell
 # add操作
 $ git add .
 
@@ -202,7 +155,7 @@ $ git status
 
 第四步：本地创建新分支，并切换到该分支上（本地建立完分支，默认是在 master/main 分支上）。
 
-```bash
+```shell
 # 创建develop分支
 $ git branch develop
 
@@ -217,7 +170,7 @@ $ git checkout develop
 
 第五步：提交代码到远程仓库。
 
-```bash
+```shell
 $ git push origin develop
 ```
 
@@ -225,13 +178,13 @@ $ git push origin develop
 
 - 另外，还有一种方法，可以提交 develop 分支到远程仓库指定的某个分支上。如下，是将 develop 分支提交到远程仓库的 master 上面：
 
-  ```bash
+  ```shell
   $ git push origin develop:master
   ```
 
 ## Git 拉取远程次分支代码到本地
 
-```bash
+```shell
 # 本地分支
 $ git branch
 * master
@@ -263,25 +216,29 @@ $ git branch
 > $ git checkout origin/远程分支名
 > ```
 
+> 使用 IDEA 开发时，在拉取远程分支代码之前，使用`git fetch`命令，获取远程分支的最新改动，然后再更新远程分支到本地。
+>
+> <img src="git/image-20240623111532935.png" alt="image-20240623111532935" style="zoom:80%;" />
+
 ## Git 修改 master 分支为 main 
 
 因为一些原因，2020年10月1日后，Github 将所有新建的仓库的默认分支从`master`修改为`main`，这种情况下，为了避免麻烦，需要将旧仓库的 master 分支迁移到 main 分支上。
 
 第一步：克隆原仓库到本地。
 
-```bash
+```shell
 $ git clone <URL>
 ```
 
 第二步：创建并切换到 main。
 
-```bash
+```shell
 $ git checkout -b main
 ```
 
 第三步：推送到 main。
 
-```bash
+```shell
 $ git push origin main
 ```
 
@@ -291,7 +248,7 @@ $ git push origin main
 
 第五步：删除 master。
 
-```bash
+```shell
 # 删除本地master
 $ git branch -d master
 
@@ -301,7 +258,7 @@ $ git push origin :master
 
 示例：
 
-```bash
+```shell
 Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projects (main)
 $ git branch -a
 * main
@@ -374,14 +331,14 @@ $ git branch -a
 
 .gitignore 只能忽略那些原来没有被 track 的文件，如果某些文件已经被纳入了版本管理中，则修改 .gitignore 是无效的。解决方法就是先把本地缓存删除（改变成未track状态），然后再提交。
 
-```bash
+```shell
 # 删除所有本地缓存
 $ git rm -r --cached .
 $ git add .
 $ git commit -m 'update .gitignore'
 ```
 
-```bash
+```shell
 # 帮助
 $ git ls-files -h
 
@@ -395,26 +352,73 @@ $ git rm -r --cached .gitignore
 $ git rm -r --cached platform/src/main/resources/logback-spring.xml
 ```
 
+## Github 配置
+
+第一步：配置用户名和邮箱地址。
+
+```shell
+$ git config --global user.name "ACatSmiling"
+
+$ git config --global user.email "xx123@qq.com"
+
+$ git config --list
+user.name=ACatSmiling
+user.email=xx123@qq.com
+```
+
+第二步：删除 C:\Users\XiSun\\.ssh 文件夹下的 known_hosts。
+
+第三步：在本地生成秘钥。
+
+```shell
+$ ssh-keygen -t rsa -C "xx123@qq.com"
+Generating public/private rsa key pair.
+Enter file in which to save the key (/c/Users/XiSun/.ssh/id_rsa):
+Created directory '/c/Users/XiSun/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /c/Users/XiSun/.ssh/id_rsa
+Your public key has been saved in /c/Users/XiSun/.ssh/id_rsa.pub
+...
+```
+
+第四步：进入 C:\Users\XiSun\\.ssh 目录，打开 id_rsa.pub 文件，复制自己的公钥，然后登陆 Github，再依次点击 Settings ---> SSH and GPG keys ---> New SSH key，将公钥配置在自己的 Github 上。
+
+<img src="git/image-20220527142655618.png" alt="image-20220527142655618" style="zoom:80%;" />
+
+> 此步骤可以省略，直接使用 HTTPS 连接下载。
+
+第五步：验证。
+
+```shell
+$ ssh -T git@github.com
+PTY allocation request failed on channel 0
+Hi ACatSmiling! You've successfully authenticated, but GitHub does not provide shell access.
+Connection to github.com closed.
+```
+
+> 第一次输入时，需要点击 yes。
+
 ## Gitee 自动同步 Github 仓库
 
-第一步：导入 Github 仓库。
+第一步：在 Gitee 导入 Github 仓库。
 
 <img src="git/image-20240622185853967.png" alt="image-20240622185853967" style="zoom:80%;" />
 
-第二步：生成 Gitee 公钥，部署公钥，并验证。
+第二步：生成 Gitee 公钥，部署公钥，并验证。（如果已有，则跳过）
 
-```sh
+```shell
 # 生成公钥
-$ C:\Users\XiSun>ssh-keygen -t ed25519 -C "xxx@qq.com"
+$ ssh-keygen -t rsa -C "xx123@qq.com"
 ```
 
-<img src="git/image-20240622221355646.png" alt="image-20240622221355646" style="zoom:80%;" />
+<img src="git/image-20240623110016201.png" alt="image-20240623110016201" style="zoom:80%;" />
 
 <img src="git/image-20240622213827136.png" alt="image-20240622213827136" style="zoom:80%;" />
 
-```sh
+```shell
 # 验证公钥
-$ C:\Users\XiSun>ssh -T git@gitee.com
+$ ssh -T git@gitee.com
 ```
 
 第三步：生成 Gitee 私人令牌。
@@ -434,12 +438,18 @@ $ C:\Users\XiSun>ssh -T git@gitee.com
 第五步：在 Github 对应仓库的根目录下，建立目录`.github/workflows` ，然后创建一个名为 sync2gitee.yml 的文件，填入以下内容，并提交到 Github 仓库。
 
 ```yaml
-# 通过 Github actions， 在 Github 仓库的每一次 commit 后自动同步到 Gitee 上
+# 通过Github actions，在Github仓库的每一次commit后自动同步到Gitee上
 name: sync2gitee
 on:
   push:
     branches:
-      - master
+      # 需要同步的分支名
+      - main
+  # workflow_dispatch:
+  # watch:
+  #   types: started
+  # repository_dispatch:
+  #   types: manual_sync2gitee
 jobs:
   repo-sync:
     env:
@@ -456,15 +466,15 @@ jobs:
         uses: Yikun/hub-mirror-action@master
         if: env.dst_key && env.dst_token && env.gitee_user
         with:
-          # 必选，需要同步的 Github 用户（源）
+          # 必选，需要同步的Github用户（源）
           src: 'github/${{ github.repository_owner }}'
-          # 必选，需要同步到的 Gitee 用户（目的）
+          # 必选，需要同步到的Gitee用户（目的）
           dst: 'gitee/${{ secrets.GITEE_USER }}'
           # 必选，Gitee公钥对应的私钥，https://gitee.com/profile/sshkeys
           dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           # 必选，Gitee对应的用于创建仓库的token，https://gitee.com/profile/personal_access_tokens
           dst_token:  ${{ secrets.GITEE_TOKEN }}
-          # 如果是组织，指定组织即可，默认为用户 user
+          # 如果是组织，指定组织即可，默认为用户user
           # account_type: org
           # 直接取当前项目的仓库名
           static_list: ${{ github.event.repository.name }}
@@ -474,9 +484,9 @@ jobs:
           # white_list: 'repo_name,repo_name2'
 ```
 
+第六步：commit 并 push 到 Github 仓库，本次操作即可自动触发 Action，后续每次 push 到 main 分支的操作，都会自动触发 Action，并同步到 Gitee。
 
-
-
+![image-20240623111038412](git/image-20240623111038412.png)
 
 ## 异常处理
 
@@ -501,6 +511,8 @@ https://www.cnblogs.com/hyhy904/p/11097338.html
 https://www.cxyzjd.com/article/qq_23518283/100578030
 
 https://stackoverflow.com/questions/9008309/how-do-i-set-git-ssl-no-verify-for-specific-repos-only
+
+https://gyx8899.gitbook.io/blog/share/syncgithubtogitee
 
 ## 声明
 
