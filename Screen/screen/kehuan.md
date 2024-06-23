@@ -2,6 +2,22 @@
 
 [豆瓣评分: ]()
 
+## 黑客帝国
+
+![image-20240622210302220](kehuan/image-20240622210302220.png)
+
+[豆瓣评分: 9.1](https://movie.douban.com/subject/1291843/)
+
+导演: [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/) / [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/)
+
+编剧: [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/) / [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/)
+
+主演: [基努·里维斯](https://www.douban.com/personage/27213761/) / [劳伦斯·菲什伯恩](https://www.douban.com/personage/27228323/) / [凯瑞-安·莫斯](https://www.douban.com/personage/27228308/) / [雨果·维文](https://www.douban.com/personage/27246749/) / [格洛丽亚·福斯特](https://www.douban.com/personage/27246580/) / [乔·潘托里亚诺](https://www.douban.com/personage/27255320/) / [马库斯·钟](https://www.douban.com/personage/27276607/) / [朱利安·阿拉汗加](https://www.douban.com/personage/27261933/) / [马特·多兰](https://www.douban.com/personage/27286427/) / [贝琳达·麦克洛里](https://www.douban.com/personage/27519756/) / [安东尼·雷·帕克](https://www.douban.com/personage/27333483/) / [罗伯特·泰勒](https://www.douban.com/personage/27551636/) / [阿达·尼科德莫](https://www.douban.com/personage/27334707/) / [罗温·维特](https://www.douban.com/personage/27367641/) / [塔玛拉·布朗](https://www.douban.com/personage/27274329/) / [纳塔莉·特珍](https://www.douban.com/personage/27363441/) / [比尔·扬](https://www.douban.com/personage/27225028/) / [克里斯·斯科特](https://www.douban.com/personage/27346710/) / [纳许·埃哲顿](https://www.douban.com/personage/27222480/)
+
+上映日期: 2000-01-14(中国大陆) / 1999-03-31(美国)
+
+片长: 136分钟
+
 ## 指环王 1：护戒使者
 
 ![image-20240602093656744](./kehuan/image-20240602093656744.png)
