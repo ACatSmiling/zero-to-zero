@@ -5570,7 +5570,7 @@ public void deleteOrderData2(Order order) {
 
 通过上述策略，可以有效地减轻缓存击穿对数据库造成的压力，保障系统的稳定性和可靠性。
 
-## Redis 分布式锁
+## 手写 Redis 分布式锁
 
 锁的种类：
 
@@ -5584,6 +5584,529 @@ public void deleteOrderData2(Order order) {
 - **防死锁**：杜绝死锁，必须有超时控制机制或者撤销操作，要有锁最终释放的机制。
 - **不乱抢**：防止张冠李戴，一个线程不能私下释放其他线程的锁，只能是自己的锁自己释放。
 - **可重入**：同一个节点的同一个线程，如果获取锁之后，可以再次获取这个锁。
+
+### 基础案例
+
+业务框架：
+
+<img src="redis/image-20240623154209632.png" alt="image-20240623154209632" style="zoom: 67%;" />
+
+>Synchronized 或者 Lock 接口，二者都是 JVM 级别的锁，对于单机服务，能够很好的实现并发控制，但是对于分布式服务，这二者是无法完成并发控制的。此时，需要借助第三方组件，实现锁的控制，第三方组件可以是 MySQL，Redis，Zookeeper 等。下面，就对此进行模拟演进。
+
+创建 Spring Boot 项目，platform-redis-distributed-lock1。
+
+pom.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.zero.cloud</groupId>
+        <artifactId>platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>platform-redis-distributed-lock1</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+application.yaml：
+
+```yaml
+server:
+  port: 3786
+  servlet:
+    context-path: /redis
+
+spring:
+  profiles:
+    default: dev
+
+logging:
+  level:
+    root: INFO
+```
+
+application-dev.yaml：
+
+```yaml
+spring:
+  config:
+    import:
+      - "classpath:conf/redis.properties"
+```
+
+redis.properties：
+
+```properties
+# redis config
+#spring.data.redis.username=redis
+spring.data.redis.password=123456
+spring.data.redis.database=0
+spring.data.redis.timeout=1000
+spring.data.redis.ssl.enabled=false
+
+# redis lettuce pool config
+spring.data.redis.lettuce.pool.max-active=8
+spring.data.redis.lettuce.pool.max-wait=-1
+spring.data.redis.lettuce.pool.min-idle=1
+spring.data.redis.lettuce.pool.max-idle=10
+spring.data.redis.lettuce.shutdown-timeout=100ms
+
+# redis stand-alone config
+spring.data.redis.host=192.168.1.20
+spring.data.redis.port=6379
+```
+
+RedisConfig.java：
+
+```java
+package cn.zero.cloud.platform.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @since 2024/6/14 23:20
+ */
+@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+        // 设置key序列化方式String
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        // 设置value的序列化方式JSON，使用GenericJackson2JsonRedisSerializer替换默认序列化
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
+    }
+}
+```
+
+InventoryController.java：
+
+```java
+package cn.zero.cloud.platform.controller;
+
+import cn.zero.cloud.platform.service.InventoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @since 2024/6/21 22:20
+ */
+@RestController
+@RequestMapping(value = "/distributed/lock")
+public class InventoryController {
+    private final InventoryService inventoryService;
+
+    @Autowired
+    public InventoryController(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
+    }
+
+    @GetMapping(value = "/inventory/sale", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public String sale() {
+        return inventoryService.sale();
+    }
+}
+```
+
+InventoryServiceImpl.java：
+
+```java
+package cn.zero.cloud.platform.service.impl;
+
+import cn.zero.cloud.platform.service.InventoryService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * @author XiSun
+ * @version 1.0
+ * @since 2024/6/21 22:22
+ */
+@Slf4j
+@Service
+public class InventoryServiceImpl implements InventoryService {
+    @Value("${server.port}")
+    private String port;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    public InventoryServiceImpl(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    private final Lock lock = new ReentrantLock();
+
+    @Override
+    public String sale() {
+        String retMessage;
+        lock.lock();
+        try {
+            // 1 查询库存信息
+            String result = (String) redisTemplate.opsForValue().get("inventory001");
+            // 2 判断库存是否足够
+            int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            // 3 扣减库存
+            if (inventoryNumber > 0) {
+                redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+            } else {
+                retMessage = "商品卖完了";
+            }
+            log.info("retMessage: {}", retMessage);
+        } finally {
+            lock.unlock();
+        }
+        return retMessage + "\t" + "服务端口号：" + port;
+    }
+}
+```
+
+启动服务，浏览器访问 http://localhost:3786/redis/distributed/lock/inventory/sale，不断刷新，可以发现，服务可以正常运行。
+
+<img src="redis/image-20240623160146258.png" alt="image-20240623160146258" style="zoom:80%;" />
+
+### 分布式服务
+
+以 platform-redis-distributed-lock1 为模板，新建 platform-redis-distributed-lock2，用来模拟分布式服务，除端口外，其他相同。
+
+- platform-redis-distributed-lock1 端口为 3786。
+- platform-redis-distributed-lock2 端口为 3787。
+
+使用 Nginx 负载均衡配置：
+
+```shell
+upstream redislock {
+    server 192.168.1.17:3786 weight=1;
+    server 192.168.1.17:3787 weight=2;
+}
+
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  redis.zeloud.cn;
+
+    location / {
+        #root   /apps/html;
+        proxy_pass  http://redislock;
+        index  index.html index.htm;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /apps/html;
+    }
+}
+```
+
+- redis.zeloud.cn 是我个人域名，指向本机的虚拟机地址。
+
+- 因为 Nginx 是部署在本机的虚拟机上，而微服务运行在本机的 IDEA，需要注意防火墙策略，否则可能虚拟机上的 Nginx 无法访问本机的服务端口。
+
+  ![image-20240623161105462](redis/image-20240623161105462.png)
+
+  ![image-20240623161212769](redis/image-20240623161212769.png)
+
+ 启动两个服务，浏览器访问 http://redis.zeloud.cn/redis/distributed/lock/inventory/sale，不断刷新，可以发现，服务在两个端口间切换。
+
+<img src="redis/image-20240623155754817.png" alt="image-20240623155754817" style="zoom:80%;" />
+
+<img src="redis/image-20240623160321817.png" alt="image-20240623160321817" style="zoom:80%;" />
+
+- 在非高并发的情况下，上面的代码，看起来功能是正常的。
+
+将 Redis 库存量 inventory001 的值重新设置为 200，然后使用 [jmeter](https://jmeter.apache.org/) 进行高并发测试（线程数设置的也是 200，如果程序正常，最后库存应该为 0）：
+
+![image-20240623163156012](redis/image-20240623163156012.png)
+
+![image-20240623163225664](redis/image-20240623163225664.png)
+
+jmeter 测试完成后，查看 Redis 中库存量（每次测试的库存量可能不相同，但很少会为 0）：
+
+<img src="redis/image-20240623164003575.png" alt="image-20240623164003575" style="zoom:80%;" />
+
+通过日志也可以发现，同一个订单号的商品，在不同的端口上进行了售卖：
+
+![image-20240623164200260](redis/image-20240623164200260.png)
+
+![image-20240623164241783](redis/image-20240623164241783.png)
+
+由以上测试，可以发现，高并发情况下，商品出现了超卖的异常情况。分析其原因：
+
+1. 在单机环境下，可以使用 Synchronized 或 Lock 来实现并发锁控制。 
+2. 但是在分布式系统中，因为竞争的线程可能不在同一个节点上（即不再同一个 JVM 中），所以需要一个让所有进程都能访问到的锁来实现（比如 Redis 或者 Zookeeper）。
+3. 结论：不同进程 JVM 层面的锁就不管用了，那么可以利用第三方的一个组件来获取锁，未获取到锁，则阻塞当前想要运行的线程。
+
+### 分布式锁
+
+#### 改进版本一
+
+通过**递归重试**的方式，不断尝试获取锁，直到成功：
+
+```java
+// 改进版本一：使用递归重试的方式，不断获取锁，直到成功。存在问题：递归容易导致StackOverflowError，不推荐
+@Override
+public String sale() {
+    String retMessage = "";
+    String key = "RedisDistributedLock";
+    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+
+    Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, uuidValue);
+    if (Boolean.FALSE.equals(flag)) {
+        // 暂停20毫秒后递归调用
+        try {
+            TimeUnit.MILLISECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.info("thread sleep error: ", e);
+        }
+
+        // 如果没拿到锁，则递归重试
+        sale();
+    } else {
+        try {
+            // 1 查询库存信息
+            String result = (String) redisTemplate.opsForValue().get("inventory001");
+            // 2 判断库存是否足够
+            int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            // 3 扣减库存
+            if (inventoryNumber > 0) {
+                redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+            } else {
+                retMessage = "商品卖完了";
+            }
+            log.info("retMessage: {}", retMessage);
+        } finally {
+            redisTemplate.delete(key);
+        }
+    }
+    return retMessage + "\t" + "服务端口号：" + port;
+}
+```
+
+启动服务，使用 jmeter 测试 3000 并发量，最终库存量为 0，程序也无异常：
+
+![image-20240623224635384](redis/image-20240623224635384.png)
+
+![image-20240623224702702](redis/image-20240623224702702.png)
+
+<img src="redis/image-20240623224804183.png" alt="image-20240623224804183" style="zoom:80%;" />
+
+>考虑到 Nginx 的 worker_connections 设置的是 1024，因此不宜做太高的并发量测试，否则会出现因 Nginx 连接不足导致的异常，最终导致测试结果异常：
+>
+>```shell
+>2024/06/23 21:41:59 [alert] 28#28: *38666 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3787/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>2024/06/23 21:41:59 [alert] 24#24: *38667 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3787/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>2024/06/23 21:41:59 [alert] 22#22: *38668 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3786/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>2024/06/23 21:41:59 [alert] 25#25: *38669 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3787/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>2024/06/23 21:41:59 [alert] 26#26: *38670 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3787/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>2024/06/23 21:41:59 [alert] 29#29: *38671 1024 worker_connections are not enough while connecting to upstream, client: 192.168.1.17, server: redis.zeloud.cn, request: "GET /redis/distributed/lock/inventory/sale HTTP/1.1", upstream: "http://192.168.1.17:3787/redis/distributed/lock/inventory/sale", host: "redis.zeloud.cn"
+>```
+>
+>![image-20240623225132213](redis/image-20240623225132213.png)
+>
+><img src="redis/image-20240623225321337.png" alt="image-20240623225321337" style="zoom:80%;" />
+>
+>如果需要测试更大的并发量，需要同步调整 worker_connections 的大小。
+
+#### 改进版本二
+
+在改进版本一中，使用递归重试的方法，虽然能够正确获取结果，但是容易导致 StackOverflowError（高并发情形，严禁使用递归重试），因此不太推荐此方式。**同时，也为了防止虚假唤醒，使用 while 替代 if，用自旋替代递归重试：**
+
+```java
+// 改进版本二：使用while替换if，自旋替换递归重试。存在问题：程序异常可能导致finally模块代码不能正常执行，进而导致锁不能正常释放，需要给锁添加过期时间
+@Override
+public String sale() {
+    String retMessage = "";
+    String key = "RedisDistributedLock";
+    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+
+    while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue))) {
+        // 暂停20毫秒，类似CAS自旋
+        try {
+            TimeUnit.MILLISECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.info("thread sleep error: ", e);
+        }
+    }
+    try {
+        // 1 查询库存信息
+        String result = (String) redisTemplate.opsForValue().get("inventory001");
+        // 2 判断库存是否足够
+        int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+        // 3 扣减库存
+        if (inventoryNumber > 0) {
+            redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+            retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+        } else {
+            retMessage = "商品卖完了";
+        }
+        log.info("retMessage: {}", retMessage);
+    } finally {
+        redisTemplate.delete(key);
+    }
+    return retMessage + "\t" + "服务端口号：" + port;
+}
+```
+
+启动服务，使用 jmeter 测试 3000 并发量，最终库存量为 0，程序也无异常。
+
+#### 改进版本三
+
+在改进版本二中，如果程序执行过程中发生异常，导致代码没有成功执行 finally，也就无法删除锁。因此，**需要给锁添加一个过期时间，即使程序发生异常，锁也能正常释放，同时，需要保证加锁和设置锁过期时间的原子性。**
+
+```java
+// 改进版本三：设置锁的过期时间，并保证和加锁操作的原子性。存在问题：如果某一个线程业务执行的时间，超过了锁的有效期，那么当这个线程执行完成，删除锁时，会删除其他正常线程的锁
+@Override
+public String sale() {
+    String retMessage = "";
+    String key = "RedisDistributedLock";
+    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+
+    // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
+    while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
+        // 暂停20毫秒，类似CAS自旋
+        try {
+            TimeUnit.MILLISECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.info("thread sleep error: ", e);
+        }
+    }
+    try {
+        // 1 查询库存信息
+        String result = (String) redisTemplate.opsForValue().get("inventory001");
+        // 2 判断库存是否足够
+        int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+        // 3 扣减库存
+        if (inventoryNumber > 0) {
+            redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+            retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+        } else {
+            retMessage = "商品卖完了";
+        }
+        log.info("retMessage: {}", retMessage);
+    } finally {
+        redisTemplate.delete(key);
+    }
+    return retMessage + "\t" + "服务端口号：" + port;
+}
+```
+
+#### 改进版本四
+
+在改进版本三中，虽然保证了加锁和设置锁的过期时间的原子性，但是，如果某一个线程业务执行的时间，超过了锁的有效期，那么当这个线程执行完成，删除锁时，会删除其他正常线程的锁。即，存在锁误删的问题。因此，**在删除锁的时候，需要保证，只能删除自己持有的锁。**
+
+<img src="redis/image-20240623233949568.png" alt="image-20240623233949568" style="zoom: 67%;" />
+
+```java
+// 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁。存在问题：释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性
+@Override
+public String sale() {
+    String retMessage = "";
+    String key = "RedisDistributedLock";
+    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+
+    // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
+    while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
+        // 暂停20毫秒，类似CAS自旋
+        try {
+            TimeUnit.MILLISECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.info("thread sleep error: ", e);
+        }
+    }
+    try {
+        // 1 查询库存信息
+        String result = (String) redisTemplate.opsForValue().get("inventory001");
+        // 2 判断库存是否足够
+        int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+        // 3 扣减库存
+        if (inventoryNumber > 0) {
+            redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+            retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+        } else {
+            retMessage = "商品卖完了";
+        }
+        log.info("retMessage: {}", retMessage);
+    } finally {
+        // 判断加锁与解锁是不是同一个客户端，同一个才行，判断value值，自己只能删除自己的锁，不误删他人的
+        String value = (String) redisTemplate.opsForValue().get(key);
+        if (StringUtils.isNotBlank(value) && value.equalsIgnoreCase(uuidValue)) {
+            redisTemplate.delete(key);
+        }
+    }
+    return retMessage + "\t" + "服务端口号：" + port;
+}
+```
+
+#### 改进版本五
+
+在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，采用 LUA 脚本保证释放锁过程的原子性。
 
 
 
