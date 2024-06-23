@@ -50,6 +50,22 @@
 
 片长: 180分钟 / 223分钟(加长版) / 235分钟(蓝光加长版)
 
+## 黑客帝国 2：重装上阵
+
+![image-20240623084442583](kehuan/image-20240623084442583.png)
+
+[豆瓣评分: 8.7](https://movie.douban.com/subject/1304141/)
+
+导演: [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/) / [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/)
+
+编剧: [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/) / [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/)
+
+主演: [基努·里维斯](https://www.douban.com/personage/27213761/) / [劳伦斯·菲什伯恩](https://www.douban.com/personage/27228323/) / [凯瑞-安·莫斯](https://www.douban.com/personage/27228308/) / [雨果·维文](https://www.douban.com/personage/27246749/) / [莫妮卡·贝鲁奇](https://www.douban.com/personage/27230888/) / [赫尔穆特·巴凯蒂斯](https://www.douban.com/personage/27264642/) / [斯蒂夫·巴什托尼](https://www.douban.com/personage/27238124/) / [克里斯汀·阿努](https://www.douban.com/personage/27584853/) / [丹尼尔·伯哈特](https://www.douban.com/personage/27255652/) / [约瑟芬·白内斯](https://www.douban.com/personage/27220313/) / [安迪·阿尼斯](https://www.douban.com/personage/27220340/) / [贾达·萍克特·史密斯](https://www.douban.com/personage/27259922/) / [邹兆龙](https://www.douban.com/personage/27228548/) / [埃茜·戴维斯](https://www.douban.com/personage/27510181/) / [纳许·埃哲顿](https://www.douban.com/personage/27222480/) / [格洛丽亚·福斯特](https://www.douban.com/personage/27246580/) / [大卫·富兰克林](https://www.douban.com/personage/27251053/) / [诺娜·加耶](https://www.douban.com/personage/27300408/) / [小罗伊·琼斯](https://www.douban.com/personage/27397691/) / [大卫·基尔德](https://www.douban.com/personage/27516803/) / [兰德尔·杜克·金](https://www.douban.com/personage/27233019/) / [克里斯托弗·卡比](https://www.douban.com/personage/27565708/) / [纳撒尼尔·利斯](https://www.douban.com/personage/30241294/) / [哈里·列尼斯](https://www.douban.com/personage/27330967/) / [罗伯特·马莫内](https://www.douban.com/personage/27570319/) / [马特·麦科姆](https://www.douban.com/personage/27547248/) / [罗宾·奈文](https://www.douban.com/personage/27340378/) / [大卫·诺](https://www.douban.com/personage/27243178/) / [吉娜薇·欧瑞丽](https://www.douban.com/personage/27503139/) / [苏格拉底·奥图](https://www.douban.com/personage/27552642/) / [哈罗德·佩里诺](https://www.douban.com/personage/27335947/) / [阿德里安·雷梅特](https://www.douban.com/personage/27405174/) / [尼尔·雷梅特](https://www.douban.com/personage/27382118/) / [鲁伯特·雷德](https://www.douban.com/personage/27556053/) / [大卫·罗伯茨](https://www.douban.com/personage/27524038/) / [凯文·斯科特](https://www.douban.com/personage/27525363/) / [尼坎德罗·托马斯](https://www.douban.com/personage/27403890/) / [吉娜·托瑞斯](https://www.douban.com/personage/27253896/) / [史蒂夫·维拉](https://www.douban.com/personage/27403475/) / [克莱顿·华生](https://www.douban.com/personage/27206328/) / [康奈尔·韦斯特](https://www.douban.com/personage/27373125/) / [雷·沃纳尔](https://www.douban.com/personage/27219737/) / [伯纳德·怀特](https://www.douban.com/personage/27370702/) / [朗贝尔·维尔森](https://www.douban.com/personage/27230996/) / [安东尼·布兰登·黄](https://www.douban.com/personage/27372119/) / [安东尼·泽比](https://www.douban.com/personage/27253964/)
+
+上映日期: 2003-07-18(中国大陆) / 2003-05-07(韦斯特伍德首映) / 2003-05-15(美国)
+
+片长: 138分钟
+
 ## 加勒比海盗
 
 ![image-20240602092550862](./kehuan/image-20240602092550862.png)
@@ -65,6 +81,22 @@
 上映日期: 2003-11-21(中国大陆) / 2003-07-09(美国)
 
 片长: 143 分钟
+
+## 黑客帝国 3：矩阵革命
+
+![image-20240623084645265](kehuan/image-20240623084645265.png)
+
+[豆瓣评分: 8.8](https://movie.douban.com/subject/1302467/)
+
+导演: [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/) / [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/)
+
+编剧: [莉莉·沃卓斯基](https://www.douban.com/personage/27219605/) / [拉娜·沃卓斯基](https://www.douban.com/personage/27366900/)
+
+主演: [基努·里维斯](https://www.douban.com/personage/27213761/) / [劳伦斯·菲什伯恩](https://www.douban.com/personage/27228323/) / [凯瑞-安·莫斯](https://www.douban.com/personage/27228308/) / [雨果·维文](https://www.douban.com/personage/27246749/) / [贾达·萍克特·史密斯](https://www.douban.com/personage/27259922/) / [凯特·宾汉](https://www.douban.com/personage/27233190/) / [玛丽·爱丽丝](https://www.douban.com/personage/27242631/) / [莫妮卡·贝鲁奇](https://www.douban.com/personage/27230888/) / [埃茜·戴维斯](https://www.douban.com/personage/27510181/) / [克里斯托弗·卡比](https://www.douban.com/personage/27565708/) / [罗伯特·马莫内](https://www.douban.com/personage/27570319/) / [罗宾·奈文](https://www.douban.com/personage/27340378/) / [吉娜薇·欧瑞丽](https://www.douban.com/personage/27503139/) / [诺娜·加耶](https://www.douban.com/personage/27300408/) / [纳撒尼尔·利斯](https://www.douban.com/personage/30241294/) / [哈里·列尼斯](https://www.douban.com/personage/27330967/) / [哈罗德·佩里诺](https://www.douban.com/personage/27335947/) / [鲁伯特·雷德](https://www.douban.com/personage/27556053/) / [凯文·迈克尔·理查德森](https://www.douban.com/personage/27348581/) / [大卫·罗伯茨](https://www.douban.com/personage/27524038/) / [布鲁斯·斯宾斯](https://www.douban.com/personage/27255445/) / [吉娜·托瑞斯](https://www.douban.com/personage/27253896/) / [克莱顿·华生](https://www.douban.com/personage/27206328/) / [赫尔穆特·巴凯蒂斯](https://www.douban.com/personage/27264642/) / [邹兆龙](https://www.douban.com/personage/27228548/) / [乔·曼宁](https://www.douban.com/personage/27328342/) / [Tanveer K. Atwal](https://www.douban.com/personage/27393484/) / [拉黑·休姆](https://www.douban.com/personage/27319745/) / [康奈尔·韦斯特](https://www.douban.com/personage/27373125/) / [伯纳德·怀特](https://www.douban.com/personage/27370702/) / [朗贝尔·维尔森](https://www.douban.com/personage/27230996/) / [安东尼·布兰登·黄](https://www.douban.com/personage/27372119/) / [安东尼·泽比](https://www.douban.com/personage/27253964/) / [克雷格·沃克](https://www.douban.com/personage/27369702/)
+
+上映日期: 2003-11-05(美国/中国大陆)
+
+片长: 129 分钟
 
 ## 指环王 3：王者无敌
 
