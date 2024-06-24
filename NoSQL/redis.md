@@ -788,6 +788,18 @@ Redis Stream 主要用于消息队列（MQ，Message Queue），Redis 本身是�
   (error) ERR Operation against a key holding the wrong kind of value
   ```
 
+- **在指定的 key 不存在时，为 key 设置指定的值**：`SETNX <key_name> <value>`。设置成功，返回 1，设置失败，返回 0。（**SET** if **N**ot e**X**ists）
+
+  ```shell
+  # key不存在，设置成功，返回1
+  127.0.0.1:6379> SETNX key value
+  (integer) 1
+  
+  # key已存在，设置失败，返回0
+  127.0.0.1:6379> SETNX key value
+  (integer) 0
+  ```
+  
 - **将值 value 关联到 key ，并将 key 的过期时间设为 seconds（以秒为单位）**：`SETEX <key_name> <timeout> <value>`。在设置操作成功完成后，返回 OK。
 
   ```sh
@@ -5904,17 +5916,19 @@ jmeter 测试完成后，查看 Redis 中库存量（每次测试的库存量可
 
 ### 分布式锁
 
+
+
 #### 改进版本一
 
 通过**递归重试**的方式，不断尝试获取锁，直到成功：
 
 ```java
-// 改进版本一：使用递归重试的方式，不断获取锁，直到成功。存在问题：递归容易导致StackOverflowError，不推荐
+// 改进版本一：使用递归重试的方式，不断获取锁，直到成功。存在的问题：递归容易导致StackOverflowError，不推荐
 @Override
 public String sale() {
     String retMessage = "";
     String key = "RedisDistributedLock";
-    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+    String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
     Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, uuidValue);
     if (Boolean.FALSE.equals(flag)) {
@@ -5979,12 +5993,12 @@ public String sale() {
 在改进版本一中，使用递归重试的方法，虽然能够正确获取结果，但是容易导致 StackOverflowError（高并发情形，严禁使用递归重试），因此不太推荐此方式。**同时，也为了防止虚假唤醒，使用 while 替代 if，用自旋替代递归重试：**
 
 ```java
-// 改进版本二：使用while替换if，自旋替换递归重试。存在问题：程序异常可能导致finally模块代码不能正常执行，进而导致锁不能正常释放，需要给锁添加过期时间
+// 改进版本二：使用while替换if，自旋替换递归重试。存在的问题：程序异常可能导致finally模块代码不能正常执行，进而导致锁不能正常释放，需要给锁添加过期时间
 @Override
 public String sale() {
     String retMessage = "";
     String key = "RedisDistributedLock";
-    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+    String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
     while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue))) {
         // 暂停20毫秒，类似CAS自旋
@@ -6021,12 +6035,12 @@ public String sale() {
 在改进版本二中，如果程序执行过程中发生异常，导致代码没有成功执行 finally，也就无法删除锁。因此，**需要给锁添加一个过期时间，即使程序发生异常，锁也能正常释放，同时，需要保证加锁和设置锁过期时间的原子性。**
 
 ```java
-// 改进版本三：设置锁的过期时间，并保证和加锁操作的原子性。存在问题：如果某一个线程业务执行的时间，超过了锁的有效期，那么当这个线程执行完成，删除锁时，会删除其他正常线程的锁
+// 改进版本三：设置锁的过期时间，并保证和加锁操作的原子性。存在的问题：如果某一个线程业务执行的时间，超过了锁的有效期，那么当这个线程执行完成，删除锁时，会删除其他正常线程的锁
 @Override
 public String sale() {
     String retMessage = "";
     String key = "RedisDistributedLock";
-    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+    String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
     // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
     while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
@@ -6064,12 +6078,12 @@ public String sale() {
 <img src="redis/image-20240623233949568.png" alt="image-20240623233949568" style="zoom: 67%;" />
 
 ```java
-// 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁。存在问题：释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性
+// 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁。存在的问题：释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性
 @Override
 public String sale() {
     String retMessage = "";
     String key = "RedisDistributedLock";
-    String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+    String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
     // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
     while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
@@ -6106,7 +6120,159 @@ public String sale() {
 
 #### 改进版本五
 
-在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，采用 LUA 脚本保证释放锁过程的原子性。
+在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，**采用 LUA 脚本保证释放锁过程的原子性。**
+
+```java
+// 改进版本五：使用LUA脚本，保证释放锁过程的原子性。存在的问题：
+@Override
+public String sale() {
+    String retMessage = "";
+    String key = "RedisDistributedLock";
+    String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
+
+    // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
+    while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
+        // 暂停20毫秒，类似CAS自旋
+        try {
+            TimeUnit.MILLISECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.info("thread sleep error: ", e);
+        }
+    }
+    try {
+        // 1 查询库存信息
+        String result = (String) redisTemplate.opsForValue().get("inventory001");
+        // 2 判断库存是否足够
+        int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+        // 3 扣减库存
+        if (inventoryNumber > 0) {
+            redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+            retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+        } else {
+            retMessage = "商品卖完了";
+        }
+        // log.info("retMessage: {}", retMessage);
+    } finally {
+        // 将判断+删除自己的合并为lua脚本保证原子性
+        String luaScript =
+                "if (redis.call('get',KEYS[1]) == ARGV[1]) then " +
+                        "return redis.call('del',KEYS[1]) " +
+                        "else " +
+                        "return 0 " +
+                        "end";
+        Boolean execute = redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+        log.info("Trace of redis distributed lock, release lock: {}", execute);
+    }
+    return retMessage + "\t" + "服务端口号：" + port;
+}
+```
+
+#### 改进版本六
+
+在改进版本五中，保证了释放锁过程的原子性，但获取锁的时候，使用 SETNX 命令，无法实现锁的可重入性。因此，**使用 HSET 命令，替换 SETNX 命令，实现可重入性。**
+
+利用 HSET 命令实现可重入时时，加锁和解锁有下面一系列的执行操作：
+
+```shell
+# EXISTS命令：判断锁是否存在
+127.0.0.1:6379> EXISTS RedisDistributedLock
+(integer) 0
+
+# HSET命令：锁不存在，第一次加锁
+127.0.0.1:6379> HSET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 1
+(integer) 1
+
+# HINCRBY命令：锁已存在，可重入
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 1
+(integer) 2
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 1
+(integer) 3
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 1
+(integer) 4
+
+# HET命令：判断出锁重入4次
+127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+"4"
+
+# HINCRBY命令：对可重入的锁，解锁（加锁几次，解锁几次，一一对应）
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 -1
+(integer) 3
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 -1
+(integer) 2
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 -1
+(integer) 1
+127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 -1
+(integer) 0
+
+# DEL命令：可重入锁释放完成，删除锁
+127.0.0.1:6379> DEL RedisDistributedLock
+(integer) 1
+```
+
+为了满足原子性，需要将上面的加锁命令，和解锁命令，使用 Lua 脚本完成。
+
+**加锁命令：**
+
+- Version 1：
+
+  ```lua
+  if redis.call('exists',KEYS[1]) == 0 then
+    redis.call('hset',KEYS[1],ARGV[1],1)
+    redis.call('expire',KEYS[1],ARGV[2])
+    return 1
+  elseif redis.call('hexists',KEYS[1],ARGV[1]) == 1 then
+    redis.call('hincrby',KEYS[1],ARGV[1],1)
+    redis.call('expire',KEYS[1],ARGV[2])
+    return 1
+  else
+    return 0
+  end
+  ```
+
+- Version 2：简化脚本，使用 hincrby 命令替代 hset 命令。
+
+  ```lua
+  if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then
+    redis.call('hincrby',KEYS[1],ARGV[1],1)
+    redis.call('expire',KEYS[1],ARGV[2])
+    return 1
+  else
+    return 0
+  end
+  ```
+
+  - KEYS[1]：锁的 key。
+  - ARGV[1]：锁的 value。
+  - ARGV[2]：锁的 TTL。
+
+- 测试 Lua 脚本：
+
+  ```lua
+  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  (integer) 1
+  127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  "1"
+  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  (integer) 1
+  127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  "2"
+  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  (integer) 1
+  127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  "3"
+  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  (integer) 1
+  127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  "4"
+  ```
+
+  - 通过测试，Lua 脚本可以正常执行加锁功能，并实现了锁的可重入。
+
+**解锁命令：**
+
+
+
+在 Java 语言中，关于锁的特性，最规范的即为 JUC。为了
 
 
 
