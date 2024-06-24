@@ -62,7 +62,7 @@ public class InventoryServiceImpl implements InventoryService {
             } else {
                 retMessage = "商品卖完了";
             }
-            log.info("retMessage: {}", retMessage);
+            // log.info("retMessage: {}", retMessage);
         } finally {
             // 将判断+删除自己的合并为lua脚本保证原子性
             String luaScript =
@@ -71,7 +71,8 @@ public class InventoryServiceImpl implements InventoryService {
                             "else " +
                             "return 0 " +
                             "end";
-            redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+            Boolean execute = redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+            log.info("Trace of redis distributed lock, release lock: {}", execute);
         }
         return retMessage + "\t" + "服务端口号：" + port;
     }

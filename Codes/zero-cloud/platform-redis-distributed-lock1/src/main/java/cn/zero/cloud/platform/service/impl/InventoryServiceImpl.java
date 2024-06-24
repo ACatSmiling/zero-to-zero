@@ -1,5 +1,6 @@
 package cn.zero.cloud.platform.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.zero.cloud.platform.service.InventoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -34,12 +35,58 @@ public class InventoryServiceImpl implements InventoryService {
         this.redisTemplate = redisTemplate;
     }
 
+    // 改进版本六：实现锁的可重入
+    @Override
+    public String sale() {
+        String retMessage = "";
+        String key = "RedisDistributedLock";
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
+
+        // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
+        // 实现锁的可重入：使用HSET命令，替换掉SETNX命令
+        // while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
+        while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
+            // 暂停20毫秒，类似CAS自旋
+            try {
+                TimeUnit.MILLISECONDS.sleep(20);
+            } catch (InterruptedException e) {
+                log.info("thread sleep error: ", e);
+            }
+        }
+        try {
+            // 1 查询库存信息
+            String result = (String) redisTemplate.opsForValue().get("inventory001");
+            // 2 判断库存是否足够
+            int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            // 3 扣减库存
+            if (inventoryNumber > 0) {
+                redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品，库存剩余: " + inventoryNumber;
+            } else {
+                retMessage = "商品卖完了";
+            }
+            // log.info("retMessage: {}", retMessage);
+        } finally {
+            // 将判断+删除自己的合并为lua脚本保证原子性
+            String luaScript =
+                    "if (redis.call('get',KEYS[1]) == ARGV[1]) then " +
+                            "return redis.call('del',KEYS[1]) " +
+                            "else " +
+                            "return 0 " +
+                            "end";
+            Boolean execute = redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+            log.info("Trace of redis distributed lock, release lock: {}", execute);
+        }
+        return retMessage + "\t" + "服务端口号：" + port;
+    }
+
+    /*
     // 改进版本五：使用LUA脚本，保证释放锁过程的原子性
     @Override
     public String sale() {
         String retMessage = "";
         String key = "RedisDistributedLock";
-        String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
         // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
         while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
@@ -62,7 +109,7 @@ public class InventoryServiceImpl implements InventoryService {
             } else {
                 retMessage = "商品卖完了";
             }
-            log.info("retMessage: {}", retMessage);
+            // log.info("retMessage: {}", retMessage);
         } finally {
             // 将判断+删除自己的合并为lua脚本保证原子性
             String luaScript =
@@ -71,10 +118,11 @@ public class InventoryServiceImpl implements InventoryService {
                             "else " +
                             "return 0 " +
                             "end";
-            redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+            Boolean execute = redisTemplate.execute(new DefaultRedisScript<>(luaScript, Boolean.class), List.of(key), uuidValue);
+            log.info("Trace of redis distributed lock, release lock: {}", execute);
         }
         return retMessage + "\t" + "服务端口号：" + port;
-    }
+    }*/
 
     /*
     // 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁
@@ -82,7 +130,7 @@ public class InventoryServiceImpl implements InventoryService {
     public String sale() {
         String retMessage = "";
         String key = "RedisDistributedLock";
-        String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
         // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
         while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
@@ -122,7 +170,7 @@ public class InventoryServiceImpl implements InventoryService {
     public String sale() {
         String retMessage = "";
         String key = "RedisDistributedLock";
-        String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
         // 加锁和设置锁的过期时间，必须保证原子性，不能分开写：redisTemplate.opsForValue().setIfAbsent(key, uuidValue);和redisTemplate.expire(key, 30L, TimeUnit.SECONDS);
         while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue, 30L, TimeUnit.SECONDS))) {
@@ -158,7 +206,7 @@ public class InventoryServiceImpl implements InventoryService {
     public String sale() {
         String retMessage = "";
         String key = "RedisDistributedLock";
-        String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
         while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(key, uuidValue))) {
             // 暂停20毫秒，类似CAS自旋
@@ -193,7 +241,7 @@ public class InventoryServiceImpl implements InventoryService {
     public String sale() {
         String retMessage = "";
         String key = "RedisDistributedLock";
-        String uuidValue = UUID.randomUUID() + ":" + Thread.currentThread().getId();
+        String uuidValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
 
         Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, uuidValue);
         if (Boolean.FALSE.equals(flag)) {
