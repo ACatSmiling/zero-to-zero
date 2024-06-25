@@ -10,3 +10,6 @@ spring:
 logging:
   level:
     root: INFO
+
+lock:
+  type: redis
