@@ -6120,7 +6120,7 @@ public String sale() {
 
 #### 改进版本五
 
-在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，**采用 LUA 脚本保证释放锁过程的原子性。**
+在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，**采用 Lua 脚本保证释放锁过程的原子性。**
 
 ```java
 // 改进版本五：使用LUA脚本，保证释放锁过程的原子性。存在的问题：
@@ -6155,8 +6155,8 @@ public String sale() {
     } finally {
         // 将判断+删除自己的合并为lua脚本保证原子性
         String luaScript =
-                "if (redis.call('get',KEYS[1]) == ARGV[1]) then " +
-                        "return redis.call('del',KEYS[1]) " +
+                "if (redis.call('GET',KEYS[1]) == ARGV[1]) then " +
+                        "return redis.call('DEL',KEYS[1]) " +
                         "else " +
                         "return 0 " +
                         "end";
@@ -6190,7 +6190,7 @@ public String sale() {
 127.0.0.1:6379> HINCRBY RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 1
 (integer) 4
 
-# HET命令：判断出锁重入4次
+# HET命令：获取锁重入的次数为4次
 127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
 "4"
 
@@ -6216,25 +6216,25 @@ public String sale() {
 - Version 1：
 
   ```lua
-  if redis.call('exists',KEYS[1]) == 0 then
-    redis.call('hset',KEYS[1],ARGV[1],1)
-    redis.call('expire',KEYS[1],ARGV[2])
+  if redis.call('EXISTS',KEYS[1]) == 0 then
+    redis.call('HSET',KEYS[1],ARGV[1],1)
+    redis.call('EXPIRE',KEYS[1],ARGV[2])
     return 1
-  elseif redis.call('hexists',KEYS[1],ARGV[1]) == 1 then
-    redis.call('hincrby',KEYS[1],ARGV[1],1)
-    redis.call('expire',KEYS[1],ARGV[2])
+  elseif redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then
+    redis.call('HINCRBY',KEYS[1],ARGV[1],1)
+    redis.call('EXPIRE',KEYS[1],ARGV[2])
     return 1
   else
     return 0
   end
   ```
 
-- Version 2：简化脚本，使用 hincrby 命令替代 hset 命令。
+- Version 2：简化脚本，使用 hincrby 命令替代 hset 命令。（key 不存在时，hincrby 命令也可以设置值）
 
   ```lua
-  if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then
-    redis.call('hincrby',KEYS[1],ARGV[1],1)
-    redis.call('expire',KEYS[1],ARGV[2])
+  if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then
+    redis.call('HINCRBY',KEYS[1],ARGV[1],1)
+    redis.call('EXPIRE',KEYS[1],ARGV[2])
     return 1
   else
     return 0
@@ -6248,19 +6248,19 @@ public String sale() {
 - 测试 Lua 脚本：
 
   ```lua
-  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  127.0.0.1:6379> EVAL "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then redis.call('HINCRBY',KEYS[1],ARGV[1],1) redis.call('EXPIRE',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
   (integer) 1
   127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
   "1"
-  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  127.0.0.1:6379> EVAL "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then redis.call('HINCRBY',KEYS[1],ARGV[1],1) redis.call('EXPIRE',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
   (integer) 1
   127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
   "2"
-  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  127.0.0.1:6379> EVAL "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then redis.call('HINCRBY',KEYS[1],ARGV[1],1) redis.call('EXPIRE',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
   (integer) 1
   127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
   "3"
-  127.0.0.1:6379> EVAL "if redis.call('exists',KEYS[1]) == 0 or redis.call('hexists',KEYS[1],ARGV[1]) == 1 then redis.call('hincrby',KEYS[1],ARGV[1],1) redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
+  127.0.0.1:6379> EVAL "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then redis.call('HINCRBY',KEYS[1],ARGV[1],1) redis.call('EXPIRE',KEYS[1],ARGV[2]) return 1 else return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1 30
   (integer) 1
   127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
   "4"
@@ -6270,9 +6270,39 @@ public String sale() {
 
 **解锁命令：**
 
+- Lua 脚本：
 
+  ```java
+  if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then
+   return nil
+  elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then
+   return redis.call('del',KEYS[1])
+  else 
+   return 0
+  end
+  ```
 
-在 Java 语言中，关于锁的特性，最规范的即为 JUC。为了
+- 测试 Lua 脚本：
+
+  ```shell
+  127.0.0.1:6379> TTL RedisDistributedLock
+  (integer) 25
+  127.0.0.1:6379> EVAL "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then return nil elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then return redis.call('del',KEYS[1]) else  return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  (integer) 0
+  127.0.0.1:6379> EVAL "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then return nil elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then return redis.call('del',KEYS[1]) else  return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  (integer) 0
+  127.0.0.1:6379> EVAL "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then return nil elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then return redis.call('del',KEYS[1]) else  return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  (integer) 0
+  127.0.0.1:6379> EVAL "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then return nil elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then return redis.call('del',KEYS[1]) else  return 0 end" 1 RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  (integer) 1
+  127.0.0.1:6379> HGET RedisDistributedLock c3de0046cbd647abba9e6eec94ee7686:1
+  (nil)
+  ```
+
+在以上分析的基础上，新建 RedisDistributedLockUtil，并实现 Lock 接口，满足 Lock 接口的规范：
+
+```java
+```
 
 
 
