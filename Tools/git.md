@@ -117,6 +117,28 @@ Administrator@WIN-K11OM3VD9KL MINGW64 /e/projects/IDEAProjects/XiSun_Java_Projec
 $ git reset
 ```
 
+## Git 初始化一个新项目
+
+create a new repository on the command line：
+
+```shell
+$ echo "# zero-cloud" >> README.md
+$ git init
+$ git add README.md
+$ git commit -m "first commit"
+$ git branch -M main
+$ git remote add origin https://github.com/ACatSmiling/zero-cloud.git
+$ git push -u origin main
+```
+
+or push an existing repository from the command line：
+
+```shell
+$ git remote add origin https://github.com/ACatSmiling/zero-cloud.git
+$ git branch -M main
+$ git push -u origin main
+```
+
 ## Git 提交代码到新分支
 
 第一步：在新代码路径下右键选择打开 Git Bash，并初始化。
@@ -432,7 +454,7 @@ $ ssh -T git@gitee.com
 <img src="git/image-20240622221623849.png" alt="image-20240622221623849" style="zoom:80%;" />
 
 - GITEE_USER：name 为 GITEE_USER，value 为个人的 Gitee user id，比如 ACatSmiling。
-- GITEE_PRIVATE_KEY：name 为 GITEE_PRIVATE_KEY，value 为第二步生成的公钥。
+- GITEE_PRIVATE_KEY：name 为 GITEE_PRIVATE_KEY，value 为第二步生成的私钥。
 - GITEE_TOKEN：name 为 GITEE_TOKEN，value 为第三步生成的私人令牌。
 
 第五步：在 Github 对应仓库的根目录下，建立目录`.github/workflows` ，然后创建一个名为 sync2gitee.yml 的文件，填入以下内容，并提交到 Github 仓库。
