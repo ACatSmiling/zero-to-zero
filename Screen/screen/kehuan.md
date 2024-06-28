@@ -34,6 +34,22 @@
 
 片长: 137分钟 / 153分钟(特别版) / 156分钟(终极剪辑版)
 
+## 星河战队
+
+![image-20240626220304026](kehuan/image-20240626220304026.png)
+
+[豆瓣评分: 7.9](https://movie.douban.com/subject/1295384/)
+
+导演: [保罗·范霍文](https://www.douban.com/personage/27261687/)
+
+编剧: [爱德华·诺麦尔](https://www.douban.com/personage/27521354/) / [罗伯特·A·海因莱因](https://www.douban.com/personage/27215449/)
+
+主演: [卡斯帕·范·迪恩](https://www.douban.com/personage/27242148/) / [迪娜·迈耶](https://www.douban.com/personage/27242106/) / [丹妮丝·理查兹](https://www.douban.com/personage/27210291/) / [杰克·布塞](https://www.douban.com/personage/27223720/) / [尼尔·帕特里克·哈里斯](https://www.douban.com/personage/27223620/) / [克兰西·布朗](https://www.douban.com/personage/27219521/) / [塞斯·吉列姆](https://www.douban.com/personage/27297954/) / [帕特里克·茂顿](https://www.douban.com/personage/27233080/) / [迈克尔·艾恩塞德](https://www.douban.com/personage/27212691/) / [露·麦克拉纳罕](https://www.douban.com/personage/27237543/) / [马绍尔·贝尔](https://www.douban.com/personage/27271229/) / [埃里克·布鲁斯科特尔](https://www.douban.com/personage/27283763/) / [马特·莱文](https://www.douban.com/personage/27206219/) / [布蕾克·林斯利](https://www.douban.com/personage/27327451/) / [安东尼·瑞维瓦](https://www.douban.com/personage/27351074/) / [布兰达·斯特朗](https://www.douban.com/personage/27208432/) / [迪恩·诺里斯](https://www.douban.com/personage/27488333/) / [克里斯托弗·柯里](https://www.douban.com/personage/27274450/) / [莱诺尔·卡斯多夫](https://www.douban.com/personage/27309112/) / [罗伯特·斯莫特](https://www.douban.com/personage/27358566/) / [斯蒂芬·福特](https://www.douban.com/personage/27251003/) / [罗伯特·大卫·豪尔](https://www.douban.com/personage/27246481/) / [艾米·斯马特](https://www.douban.com/personage/27205738/) / [蒂莫西·奥门德森](https://www.douban.com/personage/27338809/) / [代尔·戴](https://www.douban.com/personage/27233627/)
+
+上映日期: 1997-11-07
+
+片长: 129 分钟
+
 ## 黑客帝国
 
 ![image-20240622210302220](kehuan/image-20240622210302220.png)
@@ -178,6 +194,38 @@
 
 片长: 201分钟 / 254分钟(加长版) / 263分钟(蓝光加长版)
 
+## 星河战队 2：联邦英雄
+
+![image-20240626220541256](kehuan/image-20240626220541256.png)
+
+[豆瓣评分: 5.5](https://movie.douban.com/subject/1422938/)
+
+导演: [菲尔·蒂贝特](https://www.douban.com/personage/27527628/)
+
+编剧: [爱德华·诺麦尔](https://www.douban.com/personage/27521354/)
+
+主演: [比利·布朗](https://www.douban.com/personage/27546758/) / [理查德·布基](https://www.douban.com/personage/27228479/) / [凯莉·卡尔森](https://www.douban.com/personage/27210343/) / [何家蓓](https://www.douban.com/personage/27246459/) / [埃德·劳特尔](https://www.douban.com/personage/27317392/) / [J·P·马诺克斯](https://www.douban.com/personage/27260616/) / [劳伦斯·莫努森](https://www.douban.com/personage/27322260/) / [柯琳·波奇](https://www.douban.com/personage/30241628/) / [德鲁·鲍威尔](https://www.douban.com/personage/27335901/) / [爱德·奎恩](https://www.douban.com/personage/27237784/) / [杰森-沙恩·斯科特](https://www.douban.com/personage/27220092/) / [布兰达·斯特朗](https://www.douban.com/personage/27208432/) / [布莱恩·泰](https://www.douban.com/personage/27237887/) / [斯蒂芬·斯坦顿](https://www.douban.com/personage/27552683/) / [乔恩·戴维森](https://www.douban.com/personage/27215666/) / [Jesse Grce](https://www.douban.com/personage/27418426/) / [Oliver Keller](https://www.douban.com/personage/27382350/) / [乔纳森·帕索](https://www.douban.com/personage/27408763/) / [Ty Williams](https://www.douban.com/personage/27374598/)
+
+上映日期: 2004-04-24
+
+片长: 92分钟
+
+## 我，机器人
+
+![image-20240626221905423](kehuan/image-20240626221905423.png)
+
+[豆瓣评分: 8.2](https://movie.douban.com/subject/1308843/)
+
+导演: [亚历克斯·普罗亚斯](https://www.douban.com/personage/27233082/)
+
+编剧: [杰夫·温塔](https://www.douban.com/personage/27567327/) / [阿齐瓦·高斯曼](https://www.douban.com/personage/27215198/) / [艾萨克·阿西莫夫](https://www.douban.com/personage/27219962/)
+
+主演: [威尔·史密斯](https://www.douban.com/personage/27232873/) / [布里吉特·莫伊纳汉](https://www.douban.com/personage/27250624/) / [艾伦·图代克](https://www.douban.com/personage/27237596/) / [詹姆斯·克伦威尔](https://www.douban.com/personage/27212683/) / [布鲁斯·格林伍德](https://www.douban.com/personage/27230938/) / [Adrian Ricard](https://movie.douban.com/subject_search?search_text=Adrian Ricard) / [齐·麦克布赖德](https://www.douban.com/personage/27322353/) / [杰瑞·瓦塞尔曼](https://www.douban.com/personage/27370217/) / [Fiona Hogan](https://movie.douban.com/subject_search?search_text=Fiona Hogan) / [彼得·新田](https://www.douban.com/personage/34893000/) / [特瑞·陈](https://www.douban.com/personage/27210375/) / [戴维·哈索姆](https://www.douban.com/personage/27307980/) / [Scott Heindl](https://movie.douban.com/subject_search?search_text=Scott Heindl) / [Sharon Wilkins](https://movie.douban.com/subject_search?search_text=Sharon Wilkins) / [Craig March](https://movie.douban.com/subject_search?search_text=Craig March) / [阿伦·道格拉斯](https://www.douban.com/personage/27291525/) / [艾米丽·坦南特](https://www.douban.com/personage/27569416/) / [希亚·拉博夫](https://www.douban.com/personage/27227727/) / [Tiffany Lyndall-Knight](https://www.douban.com/personage/27319181/) / [安吉拉·穆尔](https://www.douban.com/personage/30168648/) / [Aaron Joseph](https://www.douban.com/personage/27319481/) / [西蒙·本克](https://www.douban.com/personage/27263513/) / [菲利普·米切尔](https://www.douban.com/personage/27520517/) / [琳娜·泽格](https://www.douban.com/personage/27585240/)
+
+上映日期: 2004-07-16(美国)
+
+片长: 115 分钟
+
 ## 加勒比海盗 2：亡灵的宝藏
 
 ![image-20240602092535701](./kehuan/image-20240602092535701.png)
@@ -226,6 +274,22 @@
 
 片长: 169分钟
 
+## 星河战队 3：掠夺者 
+
+![image-20240626220703661](kehuan/image-20240626220703661.png)
+
+[豆瓣评分: 5.4](https://movie.douban.com/subject/3006123/)
+
+导演: [爱德华·诺麦尔](https://www.douban.com/personage/27521354/)
+
+编剧: [爱德华·诺麦尔](https://www.douban.com/personage/27521354/)
+
+主演: [卡斯帕·范·迪恩](https://www.douban.com/personage/27242148/) / [乔琳纳·布拉洛克](https://www.douban.com/personage/27237630/) / [斯蒂芬·霍根](https://www.douban.com/personage/27502429/) / [波瑞斯·科乔](https://www.douban.com/personage/27237699/) / [阿曼达·多诺休](https://www.douban.com/personage/27261189/) / [玛内特·帕特森](https://www.douban.com/personage/27260464/) / [斯特里奥·萨万特](https://www.douban.com/personage/27348621/) / [坦娅·范·格拉恩](https://www.douban.com/personage/27452856/) / [Antonio Summerton](https://www.douban.com/personage/27413106/) / [Nicole Salandra](https://www.douban.com/personage/27565325/) / [柯基·法尔考](https://www.douban.com/personage/27555994/) / [史蒂芬·詹宁斯](https://www.douban.com/personage/35157945/) / [Rob Vega](https://www.douban.com/personage/27419779/) / [格兰特·斯旺比](https://www.douban.com/personage/27358675/) / [Damon Berry](https://www.douban.com/personage/27486901/) / [乔·瓦兹](https://www.douban.com/personage/27380698/) / [卡尔·桑宁](https://www.douban.com/personage/27445024/) / [蒂龙·基奥](https://www.douban.com/personage/27593303/) / [凯文·奥托](https://www.douban.com/personage/27554630/) / [劳伦·麦格雷](https://www.douban.com/personage/27469162/) / [Tarryn Page](https://www.douban.com/personage/27486899/) / [邦戈·姆布图马](https://www.douban.com/personage/27486573/) / [科里·伯顿](https://www.douban.com/personage/27275348/) / [凯瑟琳·奥克森伯格](https://www.douban.com/personage/27261496/)
+
+上映日期: 2008-08-05(美国)
+
+片长: 105分钟
+
 ## 第九区
 
 ![image-20240512093229186](./kehuan/image-20240512093229186.png)
@@ -241,6 +305,22 @@
 上映日期: 2009-11-27(中国大陆) / 2009-08-14(美国)
 
 片长: 112分钟
+
+## 星河战队：入侵
+
+![image-20240626221157424](kehuan/image-20240626221157424.png)
+
+[豆瓣评分: 6.7](https://movie.douban.com/subject/7162552/)
+
+导演: [荒牧伸志](https://www.douban.com/personage/27265956/)
+
+编剧: [罗伯特·A·海因莱因](https://www.douban.com/personage/27215449/) / [Flint Dille](https://movie.douban.com/subject_search?search_text=Flint Dille)
+
+主演: [Leraldo Anzaldua](https://movie.douban.com/subject_search?search_text=Leraldo Anzaldua) / [Luci Christian](https://movie.douban.com/subject_search?search_text=Luci Christian) / [Melissa Davis](https://movie.douban.com/subject_search?search_text=Melissa Davis)
+
+上映日期: 2012-07-21
+
+片长: 89分钟
 
 ## 霍比特人 1：意外之旅
 
@@ -290,6 +370,22 @@
 
 片长: 144分钟 / 164分钟(加长版)
 
+## 星河战队：火星叛国者
+
+![image-20240626221311478](kehuan/image-20240626221311478.png)
+
+[豆瓣评分: 6.1](https://movie.douban.com/subject/27064923/)
+
+导演: [荒牧伸志](https://www.douban.com/personage/27265956/) / [松本松子](https://www.douban.com/personage/27586066/)
+
+编剧: [爱德华·诺麦尔](https://www.douban.com/personage/27521354/)
+
+主演: [卡斯帕·范·迪恩](https://www.douban.com/personage/27242148/) / [迪娜·迈耶](https://www.douban.com/personage/27242106/) / [德雷·戴维斯](https://www.douban.com/personage/27565690/) / [露西·克里斯蒂安](https://www.douban.com/personage/27275490/)
+
+上映日期: 2017-08-21(美国)
+
+片长: 88分钟
+
 ## 流浪地球
 
 ![image-20240512095325189](./kehuan/image-20240512095325189.png)
@@ -326,8 +422,6 @@
 
 - 星球大战
 - 星际迷航
-- 星河战队
-- 机械公敌
 - 后天
 - 2012
 - 猩球觉醒
