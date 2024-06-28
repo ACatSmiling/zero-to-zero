@@ -1,8 +1,0 @@
-spring:
-  config:
-    import:
-      - "classpath:conf/cache.properties"
-      - "classpath:conf/kafka.properties"
-      - "classpath:conf/redis.properties"
-      - "classpath:conf/security.properties"
-      - "classpath:conf/thread.properties"

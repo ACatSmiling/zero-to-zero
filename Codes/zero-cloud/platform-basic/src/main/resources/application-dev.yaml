@@ -1,7 +1,0 @@
-spring:
-  config:
-    import:
-      - "classpath:conf/mybatis-plus.properties"
-      - "classpath:conf/mysql.properties"
-      - "classpath:conf/redis.properties"
-      - "classpath:conf/sa-token.properties"
