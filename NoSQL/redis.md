@@ -5708,16 +5708,17 @@ RedisConfig.java：
 ```java
 package cn.zero.cloud.platform.config;
 
+import cn.hutool.core.util.ReflectUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
- * @author XiSun
- * @version 1.0
+ * @author Xisun Wang
  * @since 2024/6/14 23:20
  */
 @Configuration
@@ -5728,16 +5729,25 @@ public class RedisConfig {
 
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
-        // 设置key序列化方式String
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        // 设置value的序列化方式JSON，使用GenericJackson2JsonRedisSerializer替换默认序列化
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // 使用String序列化方式，序列化key
+        redisTemplate.setKeySerializer(RedisSerializer.string());
+        redisTemplate.setHashKeySerializer(RedisSerializer.string());
 
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // 使用JSON序列化方式(使用的是Jackson库)，序列化value
+        redisTemplate.setValueSerializer(buildRedisSerializer());
+        redisTemplate.setHashValueSerializer(buildRedisSerializer());
 
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
+    }
+
+    public static RedisSerializer<?> buildRedisSerializer() {
+        RedisSerializer<Object> json = RedisSerializer.json();
+
+        // 解决LocalDateTime的序列化
+        ObjectMapper objectMapper = (ObjectMapper) ReflectUtil.getFieldValue(json, "mapper");
+        objectMapper.registerModules(new JavaTimeModule());
+        return json;
     }
 }
 ```
@@ -6299,10 +6309,474 @@ public String sale() {
   (nil)
   ```
 
-在以上分析的基础上，新建 RedisDistributedLockUtil，并实现 Lock 接口，满足 Lock 接口的规范：
+在以上分析的基础上，新建 RedisDistributedLock.java，实现 Lock 接口，并满足 Lock 接口的规范：
 
 ```java
+package cn.zero.cloud.platform.lock;
+
+import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/6/25 22:42
+ */
+@Slf4j
+public class RedisDistributedLock implements Lock {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final String lockName;
+    private final Object lockValue;
+    private long expireTime;
+
+    public RedisDistributedLock(RedisTemplate<String, Object> redisTemplate, String lockName, Object lockValue, long expireTime) {
+        this.redisTemplate = redisTemplate;
+        this.lockName = lockName;
+        this.lockValue = lockValue;
+        this.expireTime = expireTime;
+    }
+
+    @Override
+    public void lock() {
+        boolean isLock = tryLock();
+        log.info("Trace of redis distributed lock, GetLockResult, lockName: {}, lockValue: {}, expireTime: {}, isLock: {}", lockName, lockValue, expireTime, isLock);
+    }
+
+    @Override
+    public void lockInterruptibly() throws InterruptedException {
+        // Redis分布式锁用不到此方法，无需实现
+    }
+
+    @Override
+    public boolean tryLock() {
+        try {
+            return tryLock(-1L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.info("Trace of redis distributed lock, GetLockError, lockName: {}, lockValue: {}, error message: ", lockName, lockValue, e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean tryLock(long time, @Nonnull TimeUnit unit) throws InterruptedException {
+        if (time != -1L) {
+            this.expireTime = unit.toSeconds(time);
+        }
+
+        String script =
+                "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then " +
+                        "redis.call('HINCRBY',KEYS[1],ARGV[1],1) " +
+                        "redis.call('EXPIRE',KEYS[1],ARGV[2]) " +
+                        "return 1 " +
+                        "else " +
+                        "return 0 " +
+                        "end";
+
+        while (Boolean.FALSE.equals(redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), List.of(lockName), lockValue, expireTime))) {
+            TimeUnit.MILLISECONDS.sleep(50);
+        }
+
+        return true;
+    }
+
+    @Override
+    public void unlock() {
+        String script = "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then " +
+                "return nil " +
+                "elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then " +
+                "return redis.call('del',KEYS[1]) " +
+                "else " +
+                "return 0 " +
+                "end";
+
+        Boolean isUnlock = redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), Collections.singletonList(lockName), lockValue);
+        log.info("Trace of redis distributed lock, DeleteLockResult, lockName: {}, lockValue: {}, expireTime: {}, isUnlock: {}", lockName, lockValue, expireTime, isUnlock);
+
+        if (isUnlock == null) {
+            throw new RuntimeException("This lock '" + lockName + "' doesn't EXIST");
+        }
+    }
+
+    @Override
+    public Condition newCondition() {
+        // Redis分布式锁用不到此方法，无需实现
+        return null;
+    }
+}
 ```
+
+新建 RedisDistributedLockFactory.java，实现按需扩展：
+
+```java
+package cn.zero.cloud.platform.factory;
+
+import cn.zero.cloud.platform.lock.RedisDistributedLock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.locks.Lock;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/6/25 23:11
+ */
+@Component
+public class RedisDistributedLockFactory {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    public RedisDistributedLockFactory(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public Lock getDistributedLock(String lockType, String lockName, Object lockValue, long expireTime) {
+        if (lockType == null) {
+            return null;
+        }
+
+        if ("REDIS".equalsIgnoreCase(lockType)) {
+            return new RedisDistributedLock(redisTemplate, lockName, lockValue, expireTime);
+        } else if ("ZOOKEEPER".equalsIgnoreCase(lockType)) {
+            // TODO zookeeper版本的分布式锁实现
+            return null;
+        } else if ("MYSQL".equalsIgnoreCase(lockType)) {
+            // TODO mysql版本的分布式锁实现
+            return null;
+        }
+
+        return null;
+    }
+}
+```
+
+InventoryServiceImpl.java：
+
+```java
+package cn.zero.cloud.platform.service.impl;
+
+import cn.hutool.core.util.IdUtil;
+import cn.zero.cloud.platform.factory.RedisDistributedLockFactory;
+import cn.zero.cloud.platform.service.InventoryService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.locks.Lock;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/6/21 22:22
+ */
+@Slf4j
+@Service
+public class InventoryServiceImpl implements InventoryService {
+    @Value("${server.port}")
+    private String port;
+
+    @Value("${lock.type}")
+    private String lockType;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final RedisDistributedLockFactory redisDistributedLockFactory;
+
+
+    @Autowired
+    public InventoryServiceImpl(RedisTemplate<String, Object> redisTemplate, RedisDistributedLockFactory redisDistributedLockFactory) {
+        this.redisTemplate = redisTemplate;
+        this.redisDistributedLockFactory = redisDistributedLockFactory;
+    }
+
+    // 改进版本六：实现锁的可重入
+    @Override
+    public String sale() {
+        String lockName = "RedisDistributedLock";
+        // 注意，对于可重入锁，订单号，也就是lockValue，需要保持一致
+        String lockValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
+        long expireTime = 30L;
+
+        Lock lock = redisDistributedLockFactory.getDistributedLock(lockType, lockName, lockValue, expireTime);
+        lock.lock();
+        String retMessage;
+        try {
+            // 1 查询库存信息
+            String result = (String) redisTemplate.opsForValue().get("inventory001");
+            // 2 判断库存是否足够
+            int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            // 3 扣减库存
+            if (inventoryNumber > 0) {
+                redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品，库存剩余：" + inventoryNumber;
+            } else {
+                retMessage = "商品卖完了";
+            }
+
+            testReEnter(lockName, lockValue, expireTime);
+        } finally {
+            lock.unlock();
+        }
+        return retMessage + "\t" + "订单号：" + lockValue + "\t" + "服务端口号：" + port;
+    }
+
+    private void testReEnter(String lockName, Object lockValue, long expireTime) {
+        Lock lock = redisDistributedLockFactory.getDistributedLock(lockType, lockName, lockValue, expireTime);
+        lock.lock();
+        try {
+            log.info("################测试可重入锁1####################################");
+            testReEnter2(lockName, lockValue, expireTime);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void testReEnter2(String lockName, Object lockValue, long expireTime) {
+        Lock lock = redisDistributedLockFactory.getDistributedLock(lockType, lockName, lockValue, expireTime);
+        lock.lock();
+        try {
+            log.info("################测试可重入锁2####################################");
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+#### 改进版本七
+
+在改进版本六中，实现了锁的可重入性。但是，一个线程获取锁后，会设置锁的有效期，如果在有效期内业务未执行完，锁就会失效，其他线程可以继续获取锁，这个时候，业务上可能就会出现异常。因此，**为了确保锁的过期时间大于业务的执行时间，需要给锁添加续期功能。**
+
+对于 Redis 锁的续期功能，可以由 Lua 脚本实现：
+
+```lua
+if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then
+  return redis.call('expire',KEYS[1],ARGV[2])
+else
+  return 0
+end
+```
+
+RedisDistributedLock.java：
+
+```java
+package cn.zero.cloud.platform.lock;
+
+import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/6/25 22:42
+ */
+@Slf4j
+public class RedisDistributedLock implements Lock {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final String lockName;
+    private final Object lockValue;
+    private long expireTime;
+
+    public RedisDistributedLock(RedisTemplate<String, Object> redisTemplate, String lockName, Object lockValue, long expireTime) {
+        this.redisTemplate = redisTemplate;
+        this.lockName = lockName;
+        this.lockValue = lockValue;
+        this.expireTime = expireTime;
+    }
+
+    @Override
+    public void lock() {
+        boolean isLock = tryLock();
+        log.info("Trace of redis distributed lock, GetLockResult, lockName: {}, lockValue: {}, expireTime: {}, isLock: {}", lockName, lockValue, expireTime, isLock);
+    }
+
+    @Override
+    public void lockInterruptibly() throws InterruptedException {
+        // Redis分布式锁用不到此方法，无需实现
+    }
+
+    @Override
+    public boolean tryLock() {
+        try {
+            return tryLock(-1L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.info("Trace of redis distributed lock, GetLockError, lockName: {}, lockValue: {}, error message: ", lockName, lockValue, e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean tryLock(long time, @Nonnull TimeUnit unit) throws InterruptedException {
+        if (time != -1L) {
+            this.expireTime = unit.toSeconds(time);
+        }
+
+        String script =
+                "if redis.call('EXISTS',KEYS[1]) == 0 or redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then " +
+                        "redis.call('HINCRBY',KEYS[1],ARGV[1],1) " +
+                        "redis.call('EXPIRE',KEYS[1],ARGV[2]) " +
+                        "return 1 " +
+                        "else " +
+                        "return 0 " +
+                        "end";
+
+        while (Boolean.FALSE.equals(redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), List.of(lockName), lockValue, expireTime))) {
+            TimeUnit.MILLISECONDS.sleep(50);
+        }
+
+        // 自动续期
+        renewExpire();
+
+        return true;
+    }
+
+    @Override
+    public void unlock() {
+        String script = "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 0 then " +
+                "return nil " +
+                "elseif redis.call('HINCRBY',KEYS[1],ARGV[1],-1) == 0 then " +
+                "return redis.call('del',KEYS[1]) " +
+                "else " +
+                "return 0 " +
+                "end";
+
+        Boolean isUnlock = redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), Collections.singletonList(lockName), lockValue);
+        log.info("Trace of redis distributed lock, DeleteLockResult, lockName: {}, lockValue: {}, expireTime: {}, isUnlock: {}", lockName, lockValue, expireTime, isUnlock);
+
+        if (isUnlock == null) {
+            throw new RuntimeException("This lock '" + lockName + "' doesn't EXIST");
+        }
+    }
+
+    /**
+     * 锁的自动续期
+     */
+    private void renewExpire() {
+        String script =
+                "if redis.call('HEXISTS',KEYS[1],ARGV[1]) == 1 then " +
+                        "return redis.call('EXPIRE',KEYS[1],ARGV[2]) " +
+                        "else " +
+                        "return 0 " +
+                        "end";
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (Boolean.TRUE.equals(redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), Collections.singletonList(lockName), lockValue, expireTime))) {
+                    renewExpire();
+                }
+            }
+        }, (this.expireTime * 1000) / 3);
+    }
+
+    @Override
+    public Condition newCondition() {
+        // Redis分布式锁用不到此方法，无需实现
+        return null;
+    }
+}
+```
+
+InventoryServiceImpl.java：
+
+```java
+package cn.zero.cloud.platform.service.impl;
+
+import cn.hutool.core.util.IdUtil;
+import cn.zero.cloud.platform.factory.RedisDistributedLockFactory;
+import cn.zero.cloud.platform.service.InventoryService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/6/21 22:22
+ */
+@Slf4j
+@Service
+public class InventoryServiceImpl implements InventoryService {
+    @Value("${server.port}")
+    private String port;
+
+    @Value("${lock.type}")
+    private String lockType;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final RedisDistributedLockFactory redisDistributedLockFactory;
+
+
+    @Autowired
+    public InventoryServiceImpl(RedisTemplate<String, Object> redisTemplate, RedisDistributedLockFactory redisDistributedLockFactory) {
+        this.redisTemplate = redisTemplate;
+        this.redisDistributedLockFactory = redisDistributedLockFactory;
+    }
+
+    // 改进版本七：实现锁的自动续期，后台自定义扫描程序，如果规定时间内没有完成业务逻辑，会调用加钟自动续期的脚本
+    @Override
+    public String sale() {
+        String lockName = "RedisDistributedLock";
+        // 注意，对于可重入锁，订单号，也就是lockValue，需要保持一致
+        String lockValue = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
+        long expireTime = 30L;
+
+        Lock lock = redisDistributedLockFactory.getDistributedLock(lockType, lockName, lockValue, expireTime);
+        lock.lock();
+        String retMessage;
+        try {
+            // 1 查询库存信息
+            String result = (String) redisTemplate.opsForValue().get("inventory001");
+            // 2 判断库存是否足够
+            int inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            // 3 扣减库存
+            if (inventoryNumber > 0) {
+                redisTemplate.opsForValue().set("inventory001", String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品，库存剩余：" + inventoryNumber;
+            } else {
+                retMessage = "商品卖完了";
+            }
+
+            // 暂停120s，测试自动续期
+            try {
+                TimeUnit.SECONDS.sleep(120);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            lock.unlock();
+        }
+        return retMessage + "\t" + "订单号：" + lockValue + "\t" + "服务端口号：" + port;
+    }
+}
+```
+
+启动服务，因为程序要等待 120 秒，远大于锁的过期时间，观察 Redis 中的锁，可以发现，每过 10 秒，锁的过期时间都会重新设置。当程序最终完成时会删除锁，自动续期的任务也会完成。
+
+至此，完成了 Redis 分布式锁的手写。
+
+## Redlock 算法和底层原码分析
 
 
 
