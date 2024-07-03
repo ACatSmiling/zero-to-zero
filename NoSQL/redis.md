@@ -4440,8 +4440,6 @@ d3a8ac6a0660e37902d6e97bc1ed503cc4f72cfe 192.168.1.20:6374@16374 slave ff96a8cfd
 ff96a8cfd415cd542eae2bc0b23d4f019033047d 192.168.1.20:6372@16372 master - 0 1719708804000 2 connected 5461-10922
 ```
 
-
-
 ## Spring Boot 集成 Redis
 
 ### Jedis
@@ -8067,11 +8065,11 @@ public class InventoryServiceImpl implements InventoryService {
 
 设置 Redis 内存的两种方式：
 
-1. 修改配置文件 redis.conf 中 maxmemory 的值。
+1. 修改配置文件 redis.conf 中 maxmemory 的值。（永久）
 
    <img src="redis/image-20240701232720321.png" alt="image-20240701232720321" style="zoom:80%;" />
 
-2. 通过命令行修改：
+2. 通过命令行修改（当前有效）：
 
    ```shell
    127.0.0.1:6379> config get maxmemory
@@ -8194,9 +8192,35 @@ OK
 
 这两种缺陷，都可能导致大量过期的 key 堆积在内存中，最终导致 Redis 内存空间不足。因此，**对于过期的 key，必须要有一个更好的方案，这就是 Redis 缓存淘汰策略。**
 
-Redis 中，有八种缓存淘汰策略：
+**Redis 中，有八种缓存淘汰策略：**
 
+<img src="redis/image-20240703234311477.png" alt="image-20240703234311477" style="zoom:80%;" />
 
+1. `volatile-lru`：对所有设置了过期时间的 key 使用 LRU 算法进行删除。
+2. `allkeys-lru`：对所有 key 使用 LRU 算法进行删除。
+3. `volatile-lfu`：对所有设置了过期时间的 key 使用 LFU 算法进行删除。
+4. `allkeys-lfu`：对所有 key 使用 LFU 算法进行删除。
+5. `volatile-random`：对所有设置了过期时间的 key 随机删除。
+6. `allkeys-random`：对所有 key 随机删除。
+7. `volatile-ttl`：删除马上要过期的 key。
+8. `noeviction`：不会删除任何 key，表示即使内存达到上限也不进行置换，此时，所有能引起内存增加的命令都会返回 error。
+
+>**LRU 算法 vs LFU 算法：**
+>
+>- `LRU`：**最近最少使用页面置换算法。**淘汰最长时间未被使用的页面，看页面最后一次被使用到发生调度的时间长短，首先淘汰最长时间未被使用的页面。
+>- `LFU`：**最近最不常用页面置换算法。**淘汰一定时期内被访问次数最少的页，看一定时间段内页面被使用的频率，淘汰一定时期内被访问次数最少的页。
+>- 示例：某次时期 Time 为 10 分钟，如果每分钟进行一次调页，主存块为 3，若所需页面走向为 2 1 2 1 2 3 4，假设到页面 4 时会发生缺页中断，若按 LRU 算法，应换页面 1（1 页面最久未被使用），但按 LFU 算法应换页面 3（十分钟内，页面 3 只使用了一次）。**可见 LRU 算法的关键是看页面最后一次被使用到发生调度的时间长短，而 LFU 算法的关键是看一定时间段内页面被使用的频率。**
+
+日常工作中，Redis 缓存淘汰策略的选择方法：
+
+1. 如果所有的 key 都是最近经常使用的，那么可以选择 allkeys-lru 策略。（如果不确定使用什么策略，推荐使用 allkeys-lru 策略）
+2. 如果所有的 key 的访问概率差不多，那么可以选择 allkeys-random 策略。
+3. 如果对数据有足够的了解，能够为 key 指定 hint（命中，通过 expire/ttl 指定），那么可以选择 volatile-ttl 策略。
+
+缓存淘汰策略的设置方式：
+
+1. 修改配置文件 redis.conf。
+2. 命令行修改。
 
 ## 本文参考
 
