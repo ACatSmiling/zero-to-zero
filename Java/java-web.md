@@ -1,8 +1,6 @@
-*date: 2023-11-22*
+*`Author: ACatSmiling`*
 
-
-
-[TOC]
+*`Since: 2023-11-22`*
 
 ## B/S 和 C/S
 
