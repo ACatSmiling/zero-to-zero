@@ -1,4 +1,6 @@
-*date: 2023-06-15*
+*`Author: ACatSmiling`*
+
+*`Since: 2023-06-15`*
 
 ## 概述
 
@@ -3765,3 +3767,12 @@ new Vue({
 
 > 目前网页打开会报错，浏览器不支持直接 import 导入（main.js:1 Uncaught SyntaxError: Cannot use import statement outside a module (at main.js:1:1)），等学完脚手架即可处理。
 
+// TODO
+
+## 本文参考
+
+https://www.bilibili.com/video/BV1Zy4y1K7SH
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
