@@ -1,8 +1,6 @@
-*date: 2022-01-04*
+*`Author: ACatSmiling`*
 
-
-
-[TOC]
+*`Since: 2022-01-04`*
 
 ## Git 代码开发的一般流程
 
