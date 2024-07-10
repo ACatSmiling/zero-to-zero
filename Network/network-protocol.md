@@ -1,8 +1,6 @@
-*date: 2022-11-08 ~ 2023-08-26*
+*`Author: ACatSmiling`*
 
-
-
-[TOC]
+*`Since: 2022-11-08`*
 
 ## 概述
 
@@ -1892,7 +1890,7 @@ cwnd 随时间变化示意图：
     - 假设 Client 先发出了第一个连接请求报文段，因为网络延迟，Server 迟迟未收到请求。
     - 因为第一个连接请求没有收到回复，Client 发出了第二个连接请求报文段，Server 收到，并与 Client 做正常的交互，之后，Server 释放资源，连接断开。
     - 在连接释放以后的某个时间，Server 收到 Client 发送的第一个连接请求报文。本来这是一个早已失效的连接请求，但 Server 收到此失效的请求后，误认为是 Client 再次发出的一个新的连接请求。于是，Server 就向 Client 发出确认报文段，同意建立连接。
-    - 如果不采用 3 次握手，那么只要 Server 发出确认，新的连接就建立了。
+    - **如果不采用 3 次握手，那么只要 Server 发出确认，新的连接就建立了。**
     - 由于现在 Client 并没有真正想连接服务器的意愿，因此不会理睬 Server 的确认，也不会向 Server 发送数据。但 Server 却认为新的连接已经建立，并一直等待 Client 发来数据，这样，Server 的很多资源就白白浪费掉了。
   - 采用 3 次握手的方式，可以避免上述现象的发生：第 2 次握手之后，因为 Client 没有向 Server 的确认发出确认，Server 由于收不到确认，就知道 Client 并没有要求建立连接，也就会把资源进行释放。
 
@@ -2621,11 +2619,11 @@ CORS 的实现需要客户端和服务器同时支持：
 
 - 客户端：
   - 所有的浏览器都支持。（IE 至少是 IE 10 版本）
-  - `Cookie`：在客户端（浏览器）存储一些数据，存储到本地磁盘（硬盘），服务器可以返回 Cookie 交给客户端去存储。
+  - `Cookie`：**在客户端（浏览器）存储一些数据，存储到本地磁盘（硬盘），服务器可以返回 Cookie 交给客户端去存储。**
 - 服务器：
   - 需要返回相应的响应头，比如 Access-Control-Allow-Origin。
   - 告知浏览器这是一个允许跨域访问的请求。
-  - `Session`：在服务器存储一些数据，存储到内存中。
+  - `Session`：**在服务器存储一些数据，存储到内存中。**
 
 Cookie 和 Session 的简略流程：
 
@@ -2707,7 +2705,7 @@ Fiddler、Charles 等抓包工具的原理：在客户端启动了正向代理�
 
 ### CDN
 
-CDN，Content Delivery Network 或 Content Distribution Network，即`内容分发网络`。CND 可以利用最靠近每位用户的服务器，更快更可靠的将音乐、图片、视频等资源文件（一般是静态资源）传递给用户。
+CDN，Content Delivery Network 或 Content Distribution Network，即`内容分发网络`。CDN 可以利用最靠近每位用户的服务器，更快更可靠的将音乐、图片、视频等资源文件（一般是静态资源）传递给用户。
 
 <img src="network-protocol/image-20230807221027769.png" alt="image-20230807221027769" style="zoom:67%;" />
 
@@ -2867,7 +2865,7 @@ ARP 欺骗的防护措施：
 
 DoS 攻击，Denial-of-Service attack，即`拒绝服务攻击`。
 
-- 使目标电脑的网络或系统资源耗尽，使服务暂时中断或停止，导致其正常用户无法访问。
+- **使目标电脑的网络或系统资源耗尽，使服务暂时中断或停止，导致其正常用户无法访问。**
 
 DDoS 攻击，Distributed Denial-of-Service attack，即`分布式拒绝服务攻击`。
 
