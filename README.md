@@ -1,5 +1,3 @@
-<img src="README/image-20231108204551666.png" alt="image-20231108204551666" style="zoom:67%;" />
-
 [思维导图总结](R~U~N.emmx)
 
 - <font color="#FFC000">**网络篇**</font>
