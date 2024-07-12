@@ -1,6 +1,4 @@
-*`Author: ACatSmiling`*
-
-*`Since: 2024-07-04`*
+*Since: 2024-07-04*
 
 ## 概述
 
@@ -403,21 +401,23 @@ spring.security.user.name=admin
 spring.security.user.password=admin
 ```
 
-## 底层原理
+## 系统架构
 
 官方文档：https://docs.spring.io/spring-security/reference/servlet/architecture.html
 
 This section discusses Spring Security’s high-level architecture within Servlet based applications. We build on this high-level understanding within the [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/index.html#servlet-authentication), [Authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/index.html#servlet-authorization), and [Protection Against Exploits](https://docs.spring.io/spring-security/reference/servlet/exploits/index.html#servlet-exploits) sections of the reference.
 
+本节是基于 Servlet 的应用程序中 Spring Security 的架构描述，在 Authentication，Authorization 和 Protection Against Exploits 三个章节中，有对架构的具体实现。
+
 ### Filter
 
 Spring Security’s Servlet support is based on Servlet Filters, so it is helpful to look at the role of Filters generally first. The following image shows the typical layering of the handlers for a single HTTP request.
 
-Spring Security 之所以默认帮助我们做了那么多事情，它的**底层原理是传统的 Servlet 过滤器**。下图展示了处理一个 Http 请求时，过滤器和 Servlet 的工作流程：
+Spring Security 之所以默认帮助我们做了那么多事情，它的**`底层原理是传统的 Servlet 过滤器`**。下图展示了处理一个 Http 请求时，过滤器和 Servlet 的工作流程：
 
 <img src="spring-security/filterchain.png" alt="filterchain" style="zoom:80%;" />
 
-`FilterChain`, which contains the `Filter` instances and `Servlet` that should process the `HttpServletRequest`, based on the path of the request URI. In a Spring MVC application, the `Servlet` is an instance of [`DispatcherServlet`](https://docs.spring.io/spring-framework/docs/6.1.9/reference/html/web.html#mvc-servlet). At most, one Servlet can handle a single HttpServletRequest and HttpServletResponse. However, more than one Filter can be used to:
+`FilterChain`, which contains the Filter instances and Servlet that should process the HttpServletRequest, based on the path of the request URI. In a Spring MVC application, the Servlet is an instance of [DispatcherServlet](https://docs.spring.io/spring-framework/docs/6.1.9/reference/html/web.html#mvc-servlet). At most, one Servlet can handle a single HttpServletRequest and HttpServletResponse. However, more than one Filter can be used to:
 
 - Prevent downstream Filter instances or the Servlet from being invoked. In this case, the Filter typically writes the HttpServletResponse.
 - Modify the HttpServletRequest or HttpServletResponse used by the downstream Filter instances and the Servlet.
@@ -436,19 +436,17 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 }
 ```
 
-Since a `Filter` impacts only downstream `Filter` instances and the `Servlet`, the order in which each `Filter` is invoked is extremely important.
-
-**由于过滤器只影响下游过滤器实例和 Servlet，因此，调用每个过滤器的顺序极为重要。**
+> 由于过滤器只影响下游过滤器实例和 Servlet，因此，调用每个过滤器的顺序极为重要。
 
 ### DelegatingFilterProxy
 
-Spring provides a Filter implementation named [`DelegatingFilterProxy`](https://docs.spring.io/spring-framework/docs/6.1.9/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html) that allows bridging between the Servlet container’s lifecycle and Spring’s `ApplicationContext`. The Servlet container allows registering Filter instances by using its own standards, but it is not aware of Spring-defined Beans. You can register DelegatingFilterProxy through the standard Servlet container mechanisms but delegate all the work to a Spring Bean that implements Filter.
+Spring provides a Filter implementation named [`DelegatingFilterProxy`](https://docs.spring.io/spring-framework/docs/6.1.9/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html) that allows bridging between the Servlet container’s lifecycle and Spring’s ApplicationContext. The Servlet container allows registering Filter instances by using its own standards, but it is not aware of Spring-defined Beans. You can register DelegatingFilterProxy through the standard Servlet container mechanisms but delegate all the work to a Spring Bean that implements Filter.
 
 Here is a picture of how DelegatingFilterProxy fits into the [Filter instances and the FilterChain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filters-review).
 
-**DelegatingFilterProxy 是 Spring Security 提供的一个 Filter 实现，可以在 Servlet 容器和 Spring 容器之间建立桥梁。通过使用 DelegatingFilterProxy，就可以将 Servlet 容器中的 Filter 实例放在 Spring 容器中管理。**
+**`DelegatingFilterProxy`是 Spring Security 提供的一个 Filter 实现，可以在 Servlet 容器和 Spring 容器之间建立桥梁。通过使用 DelegatingFilterProxy，就可以将 Servlet 容器中的 Filter 实例放在 Spring 容器中管理。**
 
-下面的图片展示了 DelegatingFilterProxy 是如何与过滤器实例和 FilterChain 相结合的：
+下图展示了 DelegatingFilterProxy 是如何与过滤器实例和 FilterChain 相结合的：
 
 <img src="spring-security/delegatingfilterproxy.png" alt="delegatingfilterproxy" style="zoom:80%;" />
 
@@ -463,7 +461,7 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 }
 ```
 
-Another benefit of DelegatingFilterProxy is that it allows delaying looking up Filter bean instances. This is important because the container needs to register the Filter instances before the container can start up. However, Spring typically uses a `ContextLoaderListener` to load the Spring Beans, which is not done until after the Filter instances need to be registered.
+Another benefit of DelegatingFilterProxy is that it allows delaying looking up Filter bean instances. This is important because the container needs to register the Filter instances before the container can start up. However, Spring typically uses a ContextLoaderListener to load the Spring Beans, which is not done until after the Filter instances need to be registered.
 
 **DelegatingFilterProxy 的另一个好处是可以延迟查找过滤器 bean 实例。**这一点很重要，因为容器需要在启动之前注册过滤器实例。不过，Spring 通常使用 ContextLoaderListener 来加载 Spring Beans，而这要等到需要注册过滤器实例之后才能完成。
 
@@ -471,9 +469,11 @@ Another benefit of DelegatingFilterProxy is that it allows delaying looking up F
 
 Spring Security’s Servlet support is contained within `FilterChainProxy`. FilterChainProxy is a special Filter provided by Spring Security that allows delegating to many Filter instances through [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain). Since FilterChainProxy is a Bean, it is typically wrapped in a [DelegatingFilterProxy](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-delegatingfilterproxy).
 
-Spring Security 的 Servlet 支持包含在 FilterChainProxy 中。**FilterChainProxy 是 Spring Security 提供的一种特殊过滤器，允许通过 SecurityFilterChain 委托多个过滤器实例。**FilterChainProxy 是一个 Bean，它通常也会被封装在 DelegatingFilterProxy 中。
+Spring Security 的 Servlet 支持包含在 FilterChainProxy 中。**`FilterChainProxy`是 Spring Security 提供的一种特殊过滤器，允许通过`SecurityFilterChain`委托多个过滤器实例。**
 
-The following image shows the role of FilterChainProxy.
+> FilterChainProxy 是一个 Bean，它通常也会被封装在 DelegatingFilterProxy 中。
+
+下图展示了 FilterChainProxy 的作用：
 
 <img src="spring-security/filterchainproxy.png" alt="filterchainproxy" style="zoom:80%;" />
 
@@ -481,9 +481,9 @@ The following image shows the role of FilterChainProxy.
 
 [`SecurityFilterChain`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/SecurityFilterChain.html) is used by [FilterChainProxy](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filterchainproxy) to determine which Spring Security Filter instances should be invoked for the current request.
 
-SecurityFilterChain 被 FilterChainProxy 使用，负责查找当前的请求需要执行的 Security Filter 列表。
+`SecurityFilterChain`被 FilterChainProxy 使用，负责查找当前的请求需要执行的 Security Filter 列表。
 
-The following image shows the role of SecurityFilterChain.
+下图展示了 SecurityFilterChain 的作用：
 
 <img src="spring-security/securityfilterchain.png" alt="securityfilterchain" style="zoom:80%;" />
 
@@ -495,11 +495,11 @@ First, it provides a starting point for all of Spring Security’s Servlet suppo
 
 **首先，它为 Spring Security 的所有 Servlet 支持提供了一个起点。**因此，如果你想检查 Spring Security Servlet 支持的故障，在 FilterChainProxy 中添加调试点是一个很好的开始。
 
-Second, since FilterChainProxy is central to Spring Security usage, it can perform tasks that are not viewed as optional. For example, it clears out the SecurityContext to avoid memory leaks. It also applies Spring Security’s [`HttpFirewall`](https://docs.spring.io/spring-security/reference/servlet/exploits/firewall.html#servlet-httpfirewall) to protect applications against certain types of attacks.
+Second, since FilterChainProxy is central to Spring Security usage, it can perform tasks that are not viewed as optional. For example, it clears out the SecurityContext to avoid memory leaks. It also applies Spring Security’s [HttpFirewall](https://docs.spring.io/spring-security/reference/servlet/exploits/firewall.html#servlet-httpfirewall) to protect applications against certain types of attacks.
 
 **其次，由于 FilterChainProxy 是 Spring Security 使用的核心，因此它可以执行一些不被视为可选的任务。**例如，它会清除 SecurityContext 以避免内存泄漏。它还会应用 Spring Security 的 HttpFirewall 来保护应用程序免受某些类型的攻击。
 
-In addition, it provides more flexibility in determining when a SecurityFilterChain should be invoked. In a Servlet container, Filter instances are invoked based upon the URL alone. However, FilterChainProxy can determine invocation based upon anything in the HttpServletRequest by using the `RequestMatcher` interface.
+In addition, it provides more flexibility in determining when a SecurityFilterChain should be invoked. In a Servlet container, Filter instances are invoked based upon the URL alone. However, FilterChainProxy can determine invocation based upon anything in the HttpServletRequest by using the RequestMatcher interface.
 
 **此外，它还能更灵活地确定何时调用 SecurityFilterChain。**在 Servlet 容器中，过滤器实例仅根据 URL 调用。但是，FilterChainProxy 可以通过使用 RequestMatcher 接口，根据 HttpServletRequest 中的任何内容确定调用。
 
@@ -522,7 +522,7 @@ Notice that SecurityFilterChain~0~ has only three security Filter instances conf
 
 ### Security Filters
 
-The Security Filters are inserted into the [FilterChainProxy](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filterchainproxy) with the [SecurityFilterChain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) API. Those filters can be used for a number of different purposes, like [authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/index.html), [authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/index.html), [exploit protection](https://docs.spring.io/spring-security/reference/servlet/exploits/index.html), and more. The filters are executed in a specific order to guarantee that they are invoked at the right time, for example, the Filter that performs authentication should be invoked before the Filter that performs authorization. It is typically not necessary to know the ordering of Spring Security’s Filters. However, there are times that it is beneficial to know the ordering, if you want to know them, you can check the [`FilterOrderRegistration` code](https://github.com/spring-projects/spring-security/tree/6.3.1/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java).
+The Security Filters are inserted into the [FilterChainProxy](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filterchainproxy) with the [SecurityFilterChain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) API. Those filters can be used for a number of different purposes, like [authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/index.html), [authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/index.html), [exploit protection](https://docs.spring.io/spring-security/reference/servlet/exploits/index.html), and more. The filters are executed in a specific order to guarantee that they are invoked at the right time, for example, the Filter that performs authentication should be invoked before the Filter that performs authorization. It is typically not necessary to know the ordering of Spring Security’s Filters. However, there are times that it is beneficial to know the ordering, if you want to know them, you can check the [FilterOrderRegistration code](https://github.com/spring-projects/spring-security/tree/6.3.1/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java).
 
 安全过滤器通过 SecurityFilterChain API 插入到过滤器链代理中。这些过滤器可用于多种不同目的，如身份验证、授权、漏洞保护等。过滤器按特定顺序执行，以确保在正确的时间调用，例如，执行身份验证的过滤器应在执行授权的过滤器之前调用。通常情况下，没有必要知道 Spring Security 过滤器的顺序。不过，有时知道排序是有好处的，如果你想知道，可以查看 FilterOrderRegistration 代码。
 
@@ -557,9 +557,9 @@ public class SecurityConfig {
 | [BasicAuthenticationFilter](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/basic.html) | `HttpSecurity#httpBasic`             |
 | [AuthorizationFilter](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html) | `HttpSecurity#authorizeHttpRequests` |
 
-- First, the `CsrfFilter` is invoked to protect against [CSRF attacks](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html).
+- First, the CsrfFilter is invoked to protect against [CSRF attacks](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html).
 - Second, the authentication filters are invoked to authenticate the request.
-- Third, the `AuthorizationFilter` is invoked to authorize the request.
+- Third, the AuthorizationFilter is invoked to authorize the request.
 
 > There might be other Filter instances that are not listed above. If you want to see the list of filters invoked for a particular request, you can print them. 
 
@@ -638,7 +638,7 @@ By adding the filter before the AuthorizationFilter we are making sure that the 
 
 And that’s it, now the TenantFilter will be invoked in the filter chain and will check if the current user has access to the tenant id.
 
-通过在授权过滤器（AuthorizationFilter）之前添加过滤器，我们可以确保在身份验证过滤器之后调用租户过滤器（TenantFilter）。**你也可以使用 HttpSecurity#addFilterAfter 在特定过滤器之后添加过滤器，或者使用 HttpSecurity#addFilterAt 在过滤器链中的特定过滤器位置添加过滤器。**
+通过在授权过滤器（AuthorizationFilter）之前添加过滤器，我们可以确保在身份验证过滤器之后调用租户过滤器（TenantFilter）。**也可以使用 HttpSecurity#addFilterAfter 在特定过滤器之后添加过滤器，或者使用 HttpSecurity#addFilterAt 在过滤器链中的特定过滤器位置添加过滤器。**
 
 就这样，现在 TenantFilter 将在过滤器链中被调用，并检查当前用户是否拥有租户 ID 的访问权限。
 
@@ -646,7 +646,7 @@ Be careful when you declare your filter as a Spring bean, either by annotating i
 
 **值得注意的是，当将过滤器声明为 Spring Bean 时，无论是使用 @Component 注解，还是在配置中将其声明为 Bean，因为 Spring Boot 会自动将其注册到嵌入式容器中，这可能会导致过滤器被调用两次，一次由容器调用，一次由 Spring Security 调用，而且调用顺序不同。**
 
-If you still want to declare your filter as a Spring bean to take advantage of dependency injection for example, and avoid the duplicate invocation, you can tell Spring Boot to not register it with the container by declaring a `FilterRegistrationBean` bean and setting its `enabled` property to `false`。
+If you still want to declare your filter as a Spring bean to take advantage of dependency injection for example, and avoid the duplicate invocation, you can tell Spring Boot to not register it with the container by declaring a FilterRegistrationBean bean and setting its enabled property to false。
 
 如果仍想将过滤器声明为 Spring Bean 以利用依赖注入等功能，并避免重复调用，可以通过**声明一个 FilterRegistrationBean Bean，并将其启用属性设置为 false，从而告诉 Spring Boot 不要将其注册到容器中。**
 
@@ -661,24 +661,24 @@ public FilterRegistrationBean<TenantFilter> tenantFilterRegistration(TenantFilte
 
 ### Handling Security Exceptions
 
-The [`ExceptionTranslationFilter`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/access/ExceptionTranslationFilter.html) allows translation of [`AccessDeniedException`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/access/AccessDeniedException.html) and [`AuthenticationException`](https://docs.spring.io/spring-security/site/docs/6.3.1/api//org/springframework/security/core/AuthenticationException.html) into HTTP responses.
+The [ExceptionTranslationFilter](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/access/ExceptionTranslationFilter.html) allows translation of [AccessDeniedException](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/access/AccessDeniedException.html) and [AuthenticationException](https://docs.spring.io/spring-security/site/docs/6.3.1/api//org/springframework/security/core/AuthenticationException.html) into HTTP responses.
 
 ExceptionTranslationFilter is inserted into the [FilterChainProxy](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filterchainproxy) as one of the [Security Filters](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-security-filters).
 
-ExceptionTranslationFilter 作为安全过滤器之一插入到过滤器链代理中，它可以将 AccessDeniedException 和 AuthenticationException 转换为 HTTP 响应。
+**ExceptionTranslationFilter 作为安全过滤器之一插入到过滤器链代理中，它可以将 AccessDeniedException 和 AuthenticationException 转换为 HTTP 响应。**
 
 The following image shows the relationship of ExceptionTranslationFilter to other components:
 
 <img src="spring-security/exceptiontranslationfilter.png" alt="exceptiontranslationfilter" style="zoom:80%;" />
 
-1. First, the `ExceptionTranslationFilter` invokes `FilterChain.doFilter(request, response)` to invoke the rest of the application.
+1. First, the ExceptionTranslationFilter invokes FilterChain.doFilter(request, response) to invoke the rest of the application.
 2. If the user is not authenticated or it is an AuthenticationException, then *Start Authentication*.（如果用户未通过身份验证或出现身份验证异常，则启动身份验证。）
    - The [SecurityContextHolder](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontextholder) is cleared out.
    - The HttpServletRequest is [saved](https://docs.spring.io/spring-security/reference/servlet/architecture.html#savedrequests) so that it can be used to replay the original request once authentication is successful.
    - The AuthenticationEntryPoint is used to request credentials from the client. For example, it might redirect to a log in page or send a WWW-Authenticate header.
 3. Otherwise, if it is an AccessDeniedException, then *Access Denied*. The AccessDeniedHandler is invoked to handle access denied.（如果是 AccessDeniedException，则表示拒绝访问。 调用 AccessDeniedHandler 来处理拒绝访问。）
 
-> If the application does not throw an `AccessDeniedException` or an `AuthenticationException`, then `ExceptionTranslationFilter` does not do anything.
+> If the application does not throw an AccessDeniedException or an AuthenticationException, then ExceptionTranslationFilter does not do anything.
 >
 > 如果应用程序没有抛出 AccessDeniedException 或 AuthenticationException，则 ExceptionTranslationFilter 不会执行任何操作。
 
@@ -696,23 +696,23 @@ try {
 }
 ```
 
-1. As described in [A Review of Filters](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filters-review), invoking FilterChain.doFilter(request, response) is the equivalent of invoking the rest of the application. This means that if another part of the application, ([`FilterSecurityInterceptor`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-authorization-filtersecurityinterceptor) or method security) throws an AuthenticationException or AccessDeniedException it is caught and handled here.
+1. As described in [A Review of Filters](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filters-review), invoking FilterChain.doFilter(request, response) is the equivalent of invoking the rest of the application. This means that if another part of the application, ([FilterSecurityInterceptor](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-authorization-filtersecurityinterceptor) or method security) throws an AuthenticationException or AccessDeniedException it is caught and handled here.
 2. If the user is not authenticated or it is an AuthenticationException, *Start Authentication*.
 3. Otherwise, *Access Denied*.
 
 ### Saving Requests Between Authentication
 
-As illustrated in [Handling Security Exceptions](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-exceptiontranslationfilter), when a request has no authentication and is for a resource that requires authentication, there is a need to save the request for the authenticated resource to re-request after authentication is successful. In Spring Security this is done by saving the HttpServletRequest using a [`RequestCache`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcache) implementation.
+As illustrated in [Handling Security Exceptions](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-exceptiontranslationfilter), when a request has no authentication and is for a resource that requires authentication, there is a need to save the request for the authenticated resource to re-request after authentication is successful. In Spring Security this is done by saving the HttpServletRequest using a [RequestCache](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcache) implementation.
 
 如 Handling Security Exceptions 章节所示，当请求没有经过身份验证，但请求的资源需要身份验证时，就需要保存身份验证资源的请求，以便在身份验证成功后重新请求。 在 Spring Security 中，这是通过使用 RequestCache 保存 HttpServletRequest 来实现的。
 
 #### RequestCache
 
-The HttpServletRequest is saved in the [`RequestCache`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/RequestCache.html). When the user successfully authenticates, the RequestCache is used to replay the original request. The [`RequestCacheAwareFilter`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcacheawarefilter) uses the RequestCache to get the saved HttpServletRequest after the user authenticates, while the ExceptionTranslationFilter uses the RequestCache to save the HttpServletRequest after it detects AuthenticationException, before redirecting the user to the login endpoint.
+The HttpServletRequest is saved in the [RequestCache](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/RequestCache.html). When the user successfully authenticates, the RequestCache is used to replay the original request. The [RequestCacheAwareFilter](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcacheawarefilter) uses the RequestCache to get the saved HttpServletRequest after the user authenticates, while the ExceptionTranslationFilter uses the RequestCache to save the HttpServletRequest after it detects AuthenticationException, before redirecting the user to the login endpoint.
 
 HttpServletRequest 保存在 RequestCache 中。当用户成功通过身份验证后，RequestCache 将用于重放原始请求。RequestCacheAwareFilter 会在用户通过身份验证后使用 RequestCache 获取已保存的 HttpServletRequest，而 ExceptionTranslationFilter 会在检测到 AuthenticationException 后使用 RequestCache 保存 HttpServletRequest，然后再将用户重定向到登录端点。
 
-By default, an `HttpSessionRequestCache` is used. The code below demonstrates how to customize the RequestCache implementation that is used to check the `HttpSession` for a saved request if the parameter named `continue` is present.
+By default, an HttpSessionRequestCache is used. The code below demonstrates how to customize the RequestCache implementation that is used to check the HttpSession for a saved request if the parameter named continue is present.
 
 **默认情况下，使用的是 HttpSessionRequestCache。**下面的代码演示了如何自定义 RequestCache 的实现，该实现用于在名为 continue 的参数存在时检查 HttpSession 是否存在已保存的请求。
 
@@ -736,7 +736,7 @@ DefaultSecurityFilterChain springSecurity(HttpSecurity http) throws Exception {
 
 There are a number of reasons you may want to not store the user’s unauthenticated request in the session. You may want to offload that storage onto the user’s browser or store it in a database. Or you may want to shut off this feature since you always want to redirect the user to the home page instead of the page they tried to visit before login.
 
-To do that, you can use [the `NullRequestCache` implementation](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/NullRequestCache.html).
+To do that, you can use [the NullRequestCache implementation](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/NullRequestCache.html).
 
 某些时候，可能并不希望在 session 中存储用户未经身份验证的请求，此时，可以使用 NullRequestCache 实现：
 
@@ -755,7 +755,7 @@ SecurityFilterChain springSecurity(HttpSecurity http) throws Exception {
 
 #### RequestCacheAwareFilter
 
-The [`RequestCacheAwareFilter`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/RequestCacheAwareFilter.html) uses the [`RequestCache`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcache) to replay the original request.
+The [RequestCacheAwareFilter](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/savedrequest/RequestCacheAwareFilter.html) uses the [RequestCache](https://docs.spring.io/spring-security/reference/servlet/architecture.html#requestcache) to replay the original request.
 
 ### Logging
 
@@ -845,7 +845,7 @@ The SecurityContextHolder is where Spring Security stores the details of who is 
 
 The simplest way to indicate a user is authenticated is to set the SecurityContextHolder directly.
 
-SecurityContextHolder 是存储 Spring Security 存储身份验证详细信息的地方，Spring Security 并不关心 SecurityContextHolder 是如何填充的，如果它包含一个值，就会被用作当前通过验证的用户。
+`SecurityContextHolder`是**存储 Spring Security 存储身份验证详细信息的地方**，Spring Security 并不关心 SecurityContextHolder 是如何填充的，如果它包含一个值，就会被用作当前通过验证的用户。
 
 表明用户已通过身份验证的最简单方法，是直接设置 SecurityContextHolder：
 
@@ -900,57 +900,57 @@ The [SecurityContext](https://docs.spring.io/spring-security/site/docs/6.3.1/api
 
 #### Authentication
 
-The [`Authentication`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/core/Authentication.html) interface serves two main purposes within Spring Security:
+The [Authentication](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/core/Authentication.html) interface serves two main purposes within Spring Security:
 
 - An input to [AuthenticationManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationmanager) to provide the credentials a user has provided to authenticate. When used in this scenario, isAuthenticated() returns false.
 - Represent the currently authenticated user. You can obtain the current Authentication from the [SecurityContext](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontext).
 
-在 Spring Security 中，Authentication 接口有两个主要用途：
+在 Spring Security 中，`Authentication`接口有两个主要用途：
 
-1. 作为 AuthenticationManager 的输入，提供用户为进行身份验证而提供的凭证，在这种情况下使用时，isAuthenticated() 返回 false。（即未验证的用户信息）
-2. 表示当前通过身份验证的用户，可以从 SecurityContext 获取当前的身份验证。（即已验证的用户信息）
+1. **作为 AuthenticationManager 的输入，提供用户为进行身份验证而提供的凭证，在这种情况下使用时，isAuthenticated() 返回 false。（即未验证的用户信息）**
+2. **表示当前通过身份验证的用户，可以从 SecurityContext 获取当前的身份验证。（即已验证的用户信息）**
 
 The Authentication contains:
 
-- principal: Identifies the user. When authenticating with a username/password this is often an instance of [`UserDetails`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details.html#servlet-authentication-userdetails).
+- principal: Identifies the user. When authenticating with a username/password this is often an instance of [UserDetails](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details.html#servlet-authentication-userdetails).
 - credentials: Often a password. In many cases, this is cleared after the user is authenticated, to ensure that it is not leaked.
 - authorities: The [GrantedAuthority](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-granted-authority) instances are high-level permissions the user is granted. Two examples are roles and scopes.
 
 Authentication 包括：
 
-- `principal`：**用户标识**。当使用用户名/密码进行身份验证时，这通常是 UserDetails 的一个实例。
+- `principal`：**用户标识**。当使用用户名/密码进行身份验证时，这通常是`UserDetails`的一个实例。
 - `credentials`：通常是**密码**。在许多情况下，用户通过身份验证后，密码就会被清除，以确保不会泄露。
 - `authorities`：GrantedAuthority 实例，是用户被授予的高级权限，**角色和作用域**就是两个例子。
 
 #### GrantedAuthority
 
-[`GrantedAuthority`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/core/GrantedAuthority.html) instances are high-level permissions that the user is granted. Two examples are roles and scopes.
+[GrantedAuthority](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/core/GrantedAuthority.html) instances are high-level permissions that the user is granted. Two examples are roles and scopes.
 
-You can obtain GrantedAuthority instances from the [`Authentication.getAuthorities()`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) method. This method provides a Collection of GrantedAuthority objects. A GrantedAuthority is, not surprisingly, an authority that is granted to the principal. Such authorities are usually “roles”, such as ROLE_ADMINISTRATOR or ROLE_HR_SUPERVISOR. These roles are later configured for web authorization, method authorization, and domain object authorization. Other parts of Spring Security interpret these authorities and expect them to be present. When using username/password based authentication GrantedAuthority instances are usually loaded by the [`UserDetailsService`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html#servlet-authentication-userdetailsservice).
+You can obtain GrantedAuthority instances from the [Authentication.getAuthorities()](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) method. This method provides a Collection of GrantedAuthority objects. A GrantedAuthority is, not surprisingly, an authority that is granted to the principal. Such authorities are usually “roles”, such as ROLE_ADMINISTRATOR or ROLE_HR_SUPERVISOR. These roles are later configured for web authorization, method authorization, and domain object authorization. Other parts of Spring Security interpret these authorities and expect them to be present. When using username/password based authentication GrantedAuthority instances are usually loaded by the [UserDetailsService](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html#servlet-authentication-userdetailsservice).
 
 Usually, the GrantedAuthority objects are application-wide permissions. They are not specific to a given domain object. Thus, you would not likely have a GrantedAuthority to represent a permission to Employee object number 54, because if there are thousands of such authorities you would quickly run out of memory (or, at the very least, cause the application to take a long time to authenticate a user). Of course, Spring Security is expressly designed to handle this common requirement, but you should instead use the project’s domain object security capabilities for this purpose.
 
-GrantedAuthority 实例是用户被授予的高级权限，角色和作用域就是两个例子。
+`GrantedAuthority`实例是用户被授予的高级权限，角色和作用域就是两个例子。
 
-**通过 Authentication.getAuthorities() 方法，可以获取 GrantedAuthority 实例，该方法提供了一个 GrantedAuthority 对象的集合。**不难理解，GrantedAuthority 就是授予委托人的权限。这种授权通常是 "角色"，如 ROLE_ADMINISTRATOR 或 ROLE_HR_SUPERVISOR。这些角色随后会被配置为 Web 授权、方法授权和域对象授权。Spring Security 的其他部分会解释这些授权，并希望它们存在。 当使用基于用户名/密码的身份验证时，GrantantedAuthority 实例通常由 UserDetailsService 加载。
+**通过 Authentication.getAuthorities() 方法，可以获取 GrantedAuthority 实例，该方法提供了一个 GrantedAuthority 对象的集合。**不难理解，GrantedAuthority 就是授予委托人的权限。这种授权通常是 "角色"，如 ROLE_ADMINISTRATOR 或 ROLE_HR_SUPERVISOR。这些角色随后会被配置为 Web 授权、方法授权和域对象授权。Spring Security 的其他部分会解释这些授权，并希望它们存在。**当使用基于用户名/密码的身份验证时，GrantantedAuthority 实例通常由 UserDetailsService 加载。**
 
 通常，GrantantedAuthority 对象是应用程序范围内的权限。 它们并非特定于某个域对象。因此，不可能用 GrantedAuthority 来表示雇员对象 54 的权限，因为如果有成千上万个这样的权限，内存很快就会用完（或者，至少会导致应用程序花费很长时间来验证用户）。当然，Spring Security 是专门为处理这种常见需求而设计的，但应该使用项目的域对象安全功能来实现这一目的。
 
 #### AuthenticationManager
 
-[`AuthenticationManager`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/AuthenticationManager.html) is the API that defines how Spring Security’s Filters perform [authentication](https://docs.spring.io/spring-security/reference/features/authentication/index.html#authentication). The [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) that is returned is then set on the [SecurityContextHolder](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontextholder) by the controller (that is, by [Spring Security’s Filters instances](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-security-filters)) that invoked the AuthenticationManager. If you are not integrating with Spring Security’s Filters instances, you can set the SecurityContextHolder directly and are not required to use an AuthenticationManager.
+[AuthenticationManager](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/AuthenticationManager.html) is the API that defines how Spring Security’s Filters perform [authentication](https://docs.spring.io/spring-security/reference/features/authentication/index.html#authentication). The [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) that is returned is then set on the [SecurityContextHolder](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontextholder) by the controller (that is, by [Spring Security’s Filters instances](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-security-filters)) that invoked the AuthenticationManager. If you are not integrating with Spring Security’s Filters instances, you can set the SecurityContextHolder directly and are not required to use an AuthenticationManager.
 
-While the implementation of AuthenticationManager could be anything, the most common implementation is [`ProviderManager`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager).
+While the implementation of AuthenticationManager could be anything, the most common implementation is [ProviderManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager).
 
-**AuthenticationManager 是定义 Spring Security 过滤器如何执行身份验证的 API。**然后，调用 AuthenticationManager 的控制器（即 Spring Security 的过滤器实例），会在 SecurityContextHolder 上设置返回的 Authentication。如果不与 Spring Security 的过滤器实例集成，则可以直接设置 SecurityContextHolder，而无需使用 AuthenticationManager。
+**`AuthenticationManager`是定义 Spring Security 过滤器如何执行身份验证的 API。**然后，调用 AuthenticationManager 的控制器（即 Spring Security 的过滤器实例），会在 SecurityContextHolder 上设置返回的 Authentication。如果不与 Spring Security 的过滤器实例集成，则可以直接设置 SecurityContextHolder，而无需使用 AuthenticationManager。
 
 **AuthenticationManager 的实现可以是任何东西，但最常见的实现是 ProviderManager。**
 
 #### ProviderManager
 
-[`ProviderManager`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/ProviderManager.html) is the most commonly used implementation of [AuthenticationManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationmanager). ProviderManager delegates to a List of [`AuthenticationProvider`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationprovider) instances. Each AuthenticationProvider has an opportunity to indicate that authentication should be successful, fail, or indicate it cannot make a decision and allow a downstream AuthenticationProvider to decide. If none of the configured AuthenticationProvider instances can authenticate, authentication fails with a ProviderNotFoundException, which is a special AuthenticationException that indicates that the ProviderManager was not configured to support the type of Authentication that was passed into it.
+[ProviderManager](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/ProviderManager.html) is the most commonly used implementation of [AuthenticationManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationmanager). ProviderManager delegates to a List of [AuthenticationProvider](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationprovider) instances. Each AuthenticationProvider has an opportunity to indicate that authentication should be successful, fail, or indicate it cannot make a decision and allow a downstream AuthenticationProvider to decide. If none of the configured AuthenticationProvider instances can authenticate, authentication fails with a ProviderNotFoundException, which is a special AuthenticationException that indicates that the ProviderManager was not configured to support the type of Authentication that was passed into it.
 
-ProviderManager 是 AuthenticationManager 最常用的实现，ProviderManager 委托给一个 AuthenticationProvider 实例的列表。每个 AuthenticationProvider 都可以表明 Authentication 应该成功、失败，或表明自己无法做出决定，并允许下游 AuthenticationProvider 做出决定。如果所配置的 AuthenticationProvider 实例都无法进行身份验证，那么 Authentication 会抛出 ProviderNotFoundException 异常，这是一种特殊的 AuthenticationException 异常，表示 ProviderManager 未配置为支持传入的身份验证类型。
+`ProviderManager`**是 AuthenticationManager 最常用的实现，ProviderManager 委托给一个 AuthenticationProvider 实例的列表。**每个 AuthenticationProvider 都可以表明 Authentication 应该成功、失败，或表明自己无法做出决定，并允许下游 AuthenticationProvider 做出决定。如果所配置的 AuthenticationProvider 实例都无法进行身份验证，那么 Authentication 会抛出 ProviderNotFoundException 异常，这是一种特殊的 AuthenticationException 异常，表示 ProviderManager 未配置为支持传入的身份验证类型。
 
 <img src="spring-security/image-20240706192953779.png" alt="image-20240706192953779" style="zoom:80%;" />
 
@@ -958,7 +958,7 @@ In practice each AuthenticationProvider knows how to perform a specific type of 
 
 ProviderManager also allows configuring an optional parent AuthenticationManager, which is consulted in the event that no AuthenticationProvider can perform authentication. The parent can be any type of AuthenticationManager, but it is often an instance of ProviderManager.
 
-实际上，每个 AuthenticationProvider 都知道如何执行特定类型的身份验证。例如，一个 AuthenticationProvider 可以验证用户名/密码，而另一个 AuthenticationProvider 则可以验证 SAML 断言。这样，**每个 AuthenticationProvider 都可以进行一个特定类型的身份验证，继而支持多种类型的身份验证，并且，对外只暴露一个 AuthenticationManager Bean。**
+**每个 AuthenticationProvider 都是一种特定类型的身份验证**，例如，一个 AuthenticationProvider 可以验证用户名/密码，而另一个 AuthenticationProvider 则可以验证 SAML 断言。这样，**每个 AuthenticationProvider 都可以进行一个特定类型的身份验证，继而支持多种类型的身份验证，并且，对外只暴露一个 AuthenticationManager Bean。**
 
 ProviderManager 还允许配置一个可选的父 AuthenticationManager，在没有 AuthenticationProvider 可以执行身份验证时，可以咨询父 AuthenticationManager。父级 AuthenticationManager 可以是任何类型的 AuthenticationManager，但通常是 ProviderManager 的实例。
 
@@ -966,13 +966,13 @@ ProviderManager 还允许配置一个可选的父 AuthenticationManager，在没
 
 In fact, multiple ProviderManager instances might share the same parent AuthenticationManager. This is somewhat common in scenarios where there are multiple [SecurityFilterChain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) instances that have some authentication in common (the shared parent AuthenticationManager), but also different authentication mechanisms (the different ProviderManager instances).
 
-事实上，多个 ProviderManager 实例可能共享同一个父 AuthenticationManager。这种情况在有多个 SecurityFilterChain 实例的情况下比较常见，这些实例有一些共同的身份验证（共享父 AuthenticationManager），但也有不同的身份验证机制（不同的 ProviderManager 实例）。
+多个 ProviderManager 实例可能共享同一个父 AuthenticationManager，这种情况在有多个 SecurityFilterChain 实例的情况下比较常见，这些实例有一些共同的身份验证（共享父 AuthenticationManager），但也有不同的身份验证机制（不同的 ProviderManager 实例）。
 
 <img src="spring-security/image-20240706193343638.png" alt="image-20240706193343638" style="zoom:80%;" />
 
 By default, ProviderManager tries to clear any sensitive credentials information from the Authentication object that is returned by a successful authentication request. This prevents information, such as passwords, being retained longer than necessary in the HttpSession.
 
-This may cause issues when you use a cache of user objects, for example, to improve performance in a stateless application. If the Authentication contains a reference to an object in the cache (such as a UserDetails instance) and this has its credentials removed, it is no longer possible to authenticate against the cached value. You need to take this into account if you use a cache. An obvious solution is to first make a copy of the object, either in the cache implementation or in the AuthenticationProvider that creates the returned Authentication object. Alternatively, you can disable the `eraseCredentialsAfterAuthentication` property on ProviderManager. See the Javadoc for the [ProviderManager](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/ProviderManager.html) class.
+This may cause issues when you use a cache of user objects, for example, to improve performance in a stateless application. If the Authentication contains a reference to an object in the cache (such as a UserDetails instance) and this has its credentials removed, it is no longer possible to authenticate against the cached value. You need to take this into account if you use a cache. An obvious solution is to first make a copy of the object, either in the cache implementation or in the AuthenticationProvider that creates the returned Authentication object. Alternatively, you can disable the eraseCredentialsAfterAuthentication property on ProviderManager. See the Javadoc for the [ProviderManager](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/ProviderManager.html) class.attemptAuthentication
 
 默认情况下，ProviderManager 会尝试清除认证请求成功后返回的认证对象中的任何敏感凭证信息，这样可以防止密码等信息在 HttpSession 中保留时间过长，超过其必须存在的期限。
 
@@ -980,13 +980,13 @@ This may cause issues when you use a cache of user objects, for example, to impr
 
 #### AuthenticationProvider
 
-You can inject multiple [`AuthenticationProvider`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/AuthenticationProvider.html) instances into [ProviderManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager). Each AuthenticationProvider performs a specific type of authentication. For example, [DaoAuthenticationProvider](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/dao-authentication-provider.html#servlet-authentication-daoauthenticationprovider) supports username/password-based authentication, while JwtAuthenticationProvider supports authenticating a JWT token.
+You can inject multiple [AuthenticationProvider](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/authentication/AuthenticationProvider.html) instances into [ProviderManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager). Each AuthenticationProvider performs a specific type of authentication. For example, [DaoAuthenticationProvider](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/dao-authentication-provider.html#servlet-authentication-daoauthenticationprovider) supports username/password-based authentication, while JwtAuthenticationProvider supports authenticating a JWT token.
 
 **可以向 ProviderManager 注入多个 AuthenticationProvider 实例，每个 AuthenticationProvider 都执行特定类型的身份验证。**例如，DaoAuthenticationProvider 支持基于用户名/密码的身份验证，而 JwtAuthenticationProvider 则支持 JWT 令牌的身份验证。
 
 #### Request Credentials with AuthenticationEntryPoint
 
-[`AuthenticationEntryPoint`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/AuthenticationEntryPoint.html) is used to send an HTTP response that requests credentials from a client.
+[AuthenticationEntryPoint](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/AuthenticationEntryPoint.html) is used to send an HTTP response that requests credentials from a client.
 
 Sometimes, a client proactively includes credentials (such as a username and password) to request a resource. In these cases, Spring Security does not need to provide an HTTP response that requests credentials from the client, since they are already included.
 
@@ -1000,11 +1000,11 @@ In other cases, a client makes an unauthenticated request to a resource that the
 
 #### AbstractAuthenticationProcessingFilter
 
-[`AbstractAuthenticationProcessingFilter`](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/authentication/AbstractAuthenticationProcessingFilter.html) is used as a base Filter for authenticating a user’s credentials. Before the credentials can be authenticated, Spring Security typically requests the credentials by using [`AuthenticationEntryPoint`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationentrypoint).
+[AbstractAuthenticationProcessingFilter](https://docs.spring.io/spring-security/site/docs/6.3.1/api/org/springframework/security/web/authentication/AbstractAuthenticationProcessingFilter.html) is used as a base Filter for authenticating a user’s credentials. Before the credentials can be authenticated, Spring Security typically requests the credentials by using [AuthenticationEntryPoint](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationentrypoint).
 
-Next, the `AbstractAuthenticationProcessingFilter` can authenticate any authentication requests that are submitted to it.
+Next, the AbstractAuthenticationProcessingFilter can authenticate any authentication requests that are submitted to it.
 
-AbstractAuthenticationProcessingFilter 用作验证用户凭据的基本过滤器。在验证凭据之前，Spring Security 通常使用 AuthenticationEntryPoint 请求凭据。
+`AbstractAuthenticationProcessingFilter`用作验证用户凭据的基本过滤器。在验证凭据之前，Spring Security 通常使用 AuthenticationEntryPoint 请求凭据。
 
 接下来，AbstractAuthenticationProcessingFilter 可以验证提交给它的任何身份验证请求。
 
@@ -1012,7 +1012,7 @@ AbstractAuthenticationProcessingFilter 用作验证用户凭据的基本过滤�
 
 1. When the user submits their credentials, the AbstractAuthenticationProcessingFilter creates an [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) from the HttpServletRequest to be authenticated. The type of Authentication created depends on the subclass of AbstractAuthenticationProcessingFilter. For example, [UsernamePasswordAuthenticationFilter](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html#servlet-authentication-usernamepasswordauthenticationfilter) creates a UsernamePasswordAuthenticationToken from a *username* and *password* that are submitted in the HttpServletRequest.
    - 当用户提交其凭证时，AbstractAuthenticationProcessingFilter 会根据要进行身份验证的 HttpServletRequest 创建 Authentication，创建的 Authentication 类型取决于 AbstractAuthenticationProcessingFilter 的子类。例如，UsernamePasswordAuthenticationFilter 会根据在 HttpServletRequest 中提交的用户名和密码创建 UsernamePasswordAuthenticationToken。
-2. Next, the [`Authentication`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) is passed into the [`AuthenticationManager`](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationmanager) to be authenticated.
+2. Next, the [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) is passed into the [AuthenticationManager](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authenticationmanager) to be authenticated.
    - 然后，将 Authentication 传递进 AuthenticationManager 进行身份验证。
 3. If authentication fails, then *Failure*.
    - The [SecurityContextHolder](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontextholder) is cleared out.（清空 SecurityContextHolder）
@@ -1040,10 +1040,6 @@ AbstractAuthenticationProcessingFilter 用作验证用户凭据的基本过滤�
 - [Pre-Authentication Scenarios](https://docs.spring.io/spring-security/reference/servlet/authentication/preauth.html#servlet-preauth) - authenticate with an external mechanism such as [SiteMinder](https://www.siteminder.com/) or Java EE security but still use Spring Security for authorization and protection against common exploits.
 - [X509 Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/x509.html#servlet-x509) - X509 Authentication.
 
-#### Username and Password
-
-
-
 ## 授权（Authorization）
 
 官方文档：https://docs.spring.io/spring-security/reference/features/authorization/index.html
@@ -1054,7 +1050,154 @@ Spring Security 为 Authorization 提供全面支持，Authorization 决定谁�
 
 ### Request Based Authorization
 
-Spring Security provides authorization based upon the request for both [Servlet](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html) and [WebFlux](https://docs.spring.io/spring-security/reference/reactive/authorization/authorize-http-requests.html) environments.
+Spring Security allows you to [model your authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/index.html) at the request level. For example, with Spring Security you can say that all pages under `/admin` require one authority while all other pages simply require authentication.
+
+By default, Spring Security requires that every request be authenticated. That said, any time you use [an HttpSecurity instance](https://docs.spring.io/spring-security/reference/servlet/configuration/java.html#jc-httpsecurity), it’s necessary to declare your authorization rules.
+
+Spring Security 允许在 Request 级别建模授权。例如，使用 Spring Security，你可以说 /admin 下的所有页面都需要一个权限，而所有其他页面只需要身份验证。
+
+默认情况下，Spring Security 要求每个请求都经过身份验证。也就是说，每当ni使用 HttpSecurity 实例时，都需要声明授权规则。
+
+Whenever you have an HttpSecurity instance, you should at least do:
+
+```java
+http
+    .authorizeHttpRequests((authorize) -> authorize
+        .anyRequest().authenticated()
+    )
+```
+
+This tells Spring Security that any endpoint in your application requires that the security context at a minimum be authenticated in order to allow it.
+
+以上配置是告诉 Spring Security，应用程序中的任何端点都要求至少对安全上下文进行身份验证才能允许它。
+
+In many cases, your authorization rules will be more sophisticated than that, so please consider the following use cases:
+
+- I have an app that uses authorizeRequests and I want to [migrate it to authorizeHttpRequests](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#migrate-authorize-requests)
+- I want to [understand how the AuthorizationFilter components work](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#request-authorization-architecture)
+- I want to [match requests](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#match-requests) based on a pattern; specifically [regex](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#match-by-regex)
+- I want to match request, and I map Spring MVC to [something other than the default servlet](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#mvc-not-default-servlet)
+- I want to [authorize requests](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#authorize-requests)
+- I want to [match a request programmatically](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#match-by-custom)
+- I want to [authorize a request programmatically](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#authorize-requests)
+- I want to [delegate request authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#remote-authorization-manager) to a policy agent
+
+#### Understanding How Request Authorization Components Work
+
+>This section builds on [Servlet Architecture and Implementation](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-architecture) by digging deeper into how [authorization](https://docs.spring.io/spring-security/reference/servlet/authorization/index.html#servlet-authorization) works at the request level in Servlet-based applications.
+
+![img](https://docs.spring.io/spring-security/reference/_images/servlet/authorization/authorizationfilter.png)
+
+1. First, the `AuthorizationFilter` constructs a Supplier that retrieves an [Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) from the [SecurityContextHolder](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-securitycontextholder).
+2. Second, it passes the Supplier<Authentication> and the HttpServletRequest to the [`AuthorizationManager`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#authz-authorization-manager). The AuthorizationManager matches the request to the patterns in authorizeHttpRequests, and runs the corresponding rule.
+   - If authorization is denied, [an `AuthorizationDeniedEvent` is published](https://docs.spring.io/spring-security/reference/servlet/authorization/events.html), and an AccessDeniedException is thrown. In this case the [`ExceptionTranslationFilter`](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-exceptiontranslationfilter) handles the AccessDeniedException.
+   - If access is granted, [an `AuthorizationGrantedEvent` is published](https://docs.spring.io/spring-security/reference/servlet/authorization/events.html) and AuthorizationFilter continues with the [FilterChain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filters-review) which allows the application to process normally.
+
+##### AuthorizationFilter Is Last By Default
+
+The AuthorizationFilter is last in [the Spring Security filter chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filterchain-figure) by default. This means that Spring Security’s [authentication filters](https://docs.spring.io/spring-security/reference/servlet/authentication/index.html), [exploit protections](https://docs.spring.io/spring-security/reference/servlet/exploits/index.html), and other filter integrations do not require authorization. If you add filters of your own before the AuthorizationFilter, they will also not require authorization; otherwise, they will.
+
+A place where this typically becomes important is when you are adding [Spring MVC](https://docs.spring.io/spring-framework/docs/6.1.9/reference/html/web.html#spring-web) endpoints. Because they are executed by the [DispatcherServlet](https://docs.spring.io/spring-framework/docs/6.1.9/reference/html/web.html#mvc-servlet) and this comes after the AuthorizationFilter, your endpoints need to be [included in authorizeHttpRequests to be permitted](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#authorizing-endpoints).
+
+AuthorizationFilter 默认位于 Spring Security 过滤器链的最后。这意味着 Spring Security 的身份验证过滤器、漏洞保护和其他过滤器集成不需要授权。如果在 AuthorizationFilter 之前添加自己的过滤器，它们也不需要授权；否则，它们会需要授权。
+
+当在添加 Spring MVC 端点时，这会变的很重要。因为它们是由 DispatcherServlet 执行的，并且位于 AuthorizationFilter 之后，所以添加的端点需要包含在 authorizeHttpRequests 中才能获得许可。
+
+##### All Dispatches Are Authorized
+
+The AuthorizationFilter runs not just on every request, but on every dispatch. This means that the REQUEST dispatch needs authorization, but also FORWARDs, ERRORs, and INCLUDEs.
+
+AuthorizationFilter 不仅作用于每个 request，也作用于每个 dispatch，这意味着不仅 REQUEST 调度需要授权，FORWARD、ERROR 和 INCLUDE 也需要授权。
+
+For example, [Spring MVC](https://docs.spring.io/spring-framework/docs/6.1.9/reference/html/web.html#spring-web) can FORWARD the request to a view resolver that renders a Thymeleaf template, like so:
+
+```java
+@Controller
+public class MyController {
+    @GetMapping("/endpoint")
+    public String endpoint() {
+        return "endpoint";
+    }
+}
+```
+
+In this case, authorization happens twice; once for authorizing `/endpoint` and once for forwarding to Thymeleaf to render the "endpoint" template.
+
+For that reason, you may want to [`permit all FORWARD dispatches`](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#match-by-dispatcher-type).
+
+Another example of this principle is [how Spring Boot handles errors](https://docs.spring.io/spring-boot/docs/3.1.1/reference/html/web.html#web.servlet.spring-mvc.error-handling). If the container catches an exception, say like the following:
+
+```java
+@Controller
+public class MyController {
+    @GetMapping("/endpoint")
+    public String endpoint() {
+        throw new UnsupportedOperationException("unsupported");
+    }
+}
+```
+
+then Boot will dispatch it to the ERROR dispatch.
+
+In that case, authorization also happens twice; once for authorizing `/endpoint` and once for dispatching the error.
+
+For that reason, you may want to [`permit all ERROR dispatches`](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#match-by-dispatcher-type).
+
+##### Authentication Lookup is Deferred
+
+Remember that [the AuthorizationManager API uses a Supplier](https://docs.spring.io/spring-security/reference/servlet/authorization/architecture.html#_the_authorizationmanager).
+
+This matters with authorizeHttpRequests when requests are [always permitted or always denied](https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#authorize-requests). In those cases, [the Authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-authentication) is not queried, making for a faster request.
+
+#### Authorizing an Endpoint
+
+You can configure Spring Security to have different rules by adding more rules in order of precedence.
+
+If you want to require that `/endpoint` only be accessible by end users with the `USER` authority, then you can do:
+
+```java
+@Bean
+public SecurityFilterChain web(HttpSecurity http) throws Exception {
+    http
+        .authorizeHttpRequests((authorize) -> authorize
+	    .requestMatchers("/endpoint").hasAuthority("USER") // USER权限的用户，才可以访问/endpoint
+            .anyRequest().authenticated()
+        )
+        // ...
+
+    return http.build();
+}
+```
+
+As you can see, the declaration can be broken up in to pattern/rule pairs.
+
+AuthorizationFilter processes these pairs in the order listed, applying only the first match to the request. This means that even though `/**` would also match for `/endpoint` the above rules are not a problem. The way to read the above rules is "if the request is `/endpoint`, then require the USER authority; else, only require authentication".
+
+Spring Security supports several patterns and several rules; you can also programmatically create your own of each.
+
+Once authorized, you can test it using [Security’s test support](https://docs.spring.io/spring-security/reference/servlet/test/method.html#test-method-withmockuser) in the following way:
+
+```java
+@WithMockUser(authorities="USER")
+@Test
+void endpointWhenUserAuthorityThenAuthorized() {
+    this.mvc.perform(get("/endpoint"))
+        .andExpect(status().isOk());
+}
+
+@WithMockUser
+@Test
+void endpointWhenNotUserAuthorityThenForbidden() {
+    this.mvc.perform(get("/endpoint"))
+        .andExpect(status().isForbidden());
+}
+
+@Test
+void anyWhenUnauthenticatedThenUnauthorized() {
+    this.mvc.perform(get("/any"))
+        .andExpect(status().isUnauthorized());
+}
+```
 
 
 
@@ -1071,6 +1214,211 @@ Spring Security provides authorization based on the method invocation for both [
 
 
 
+
+## 会话超时管理
+
+在Spring Security中，用户登录后的会话(session)确实有时效性。这种时效性通常由两个方面控制：
+1. 会话超时（Session Timeout）：
+默认情况下，HTTP会话（session）有一个固定的超时时间。在Java的Servlet容器中，例如Tomcat，这个默认值通常设置为30分钟。这意味着如果用户在一段时间内没有与服务器进行任何交互（即"非活动状态"），那么他们的会话将被认为是过期的，并且用户必须重新登录。这个时间可以通过Web服务器的设置或Spring Security的配置来调整。在Spring Security中，你可以通过以下方式自定义会话超时：@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        // ... 其他配置 ...
+        .sessionManagement()
+            .invalidSessionUrl("/login?invalid-session=true") // 设置会话失效后的跳转URL
+            .maximumSessions(1) // 指定同一账号的最大并发登录数量
+            .maxSessionsPreventsLogin(true) // 当达到最大会话数时阻止新会话登录
+            .expiredUrl("/login?expired=true"); // 设置会话过期后的跳转URL
+}
+2. 安全令牌（Security Token）过期：
+对于使用像JWT（JSON Web Tokens）这样的无状态认证机制的应用程序，通常有一个令牌过期机制。令牌过期时间是在令牌被创建时定义的，并且一旦过期，用户就需要获取一个新的令牌来继续访问资源。对于传统的基于会话的认证，Spring Security提供了一些钩子（hooks），允许你在认证成功后创建和管理一个安全令牌，并在需要时刷新该令牌。
+注意：除了会话超时外，Spring Security还提供了其他的安全特性，比如"记住我"（Remember-Me）功能，它允许用户在关闭浏览器后再次打开时无需重新登录，只要他们在之前的会话中选择了"记住我"。尽管这种方法可以提供额外的便利性，但它也延长了用户登录状态的持续时间，并且需要仔细管理以确保安全。
+总的来说，会话的时效性是一个重要的安全特性，因为它有助于减少用户账号被未经授权访问的风险。Spring Security提供了灵活的配置选项，让开发人员可以根据具体的应用需求设置合适的会话超时策略。
+
+
+
+
+
+
+
+在Spring Security中，sessionManagement()方法允许你定制会话管理相关的安全设置。特别地，.sessionCreationPolicy(SessionCreationPolicy.STATELESS)表示你正在指定应用程序的会话创建策略为“无状态（STATELESS）”。
+SessionCreationPolicy.STATELESS的含义是Spring Security将不会创建也不会使用HTTP session来存储用户的安全上下文。这通常用于REST API和微服务应用程序，其中安全上下文在每个请求中都是通过令牌（如JWT）来传递的，而不依赖于传统的HTTP session。
+当你设置会话策略为STATELESS时，这意味着：
+Spring Security不会使用HttpSession来获取或存储安全上下文。
+任何由Spring Security创建的SecurityContext将仅在当前请求的生命周期内存在。
+由于不使用HttpSession，Spring Security不会管理会话超时，也不会在用户之间保持会话状态。
+此配置适用于那些不希望使用Cookies或其他会话持久化机制的应用程序。
+在使用SessionCreationPolicy.STATELESS时，通常会搭配使用无状态认证机制（比如JWT）。在每次请求中，客户端需要在HTTP头中发送令牌，服务器将验证该令牌以确定用户的身份和权限。
+这是一个例子，展示了如何在Spring Security配置类中设置会话创建策略为无状态：
+
+```java
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        // ... 其他的配置 ...
+        .sessionManagement(sessionManagement ->
+            sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        // ... 其他的配置 ...
+        ;
+}
+```
+
+这段配置是Java配置的一种风格，使用了Lambda表达式来配置sessionManagement，这使得代码更简洁。你也可以使用传统的配置风格来达到相同的效果：
+
+```java
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        // ... 其他的配置 ...
+        .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        // ... 其他的配置 ...
+        ;
+}
+```
+
+无论使用哪种风格，目的都是告诉Spring Security该应用程序是无状态的，且不应依赖于HTTP session。
+
+
+
+
+
+在Spring Security中使用JWT（JSON Web Token）验证机制通常涉及以下步骤：
+1. 引入依赖：
+  对于一个基于Spring Boot的项目，你需要在pom.xml（Maven）或build.gradle（Gradle）中添加JWT库的依赖。一个常用的库是java-jwt，由Auth0提供。Maven依赖示例：
+
+  ```xml
+  <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>YOUR_JAVA_JWT_VERSION</version>
+  </dependency>
+  ```
+
+2. 配置JWT解析和验证：
+  创建一个工具类或服务来处理JWT的解析、验证和生成。这通常包括验证签名、检查令牌是否过期，以及可能的一些其他检查，如受众（audience）和发行者（issuer）。
+
+3. 定义JWT入口点：
+  创建一个实现OncePerRequestFilter的自定义过滤器，以便在Spring Security过滤器链中拦截请求。在这个过滤器中，你需要提取、解析和验证JWT。示例代码：
+
+  ```xml
+  public class JwtTokenFilter extends OncePerRequestFilter {
+      @Override
+      protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+              throws ServletException, IOException {
+          // 提取JWT（例如从HTTP头的Authorization字段）
+          // 验证JWT
+          // 如果JWT有效，设置认证信息到SecurityContext
+          chain.doFilter(request, response);
+      }
+  }
+  ```
+
+4. 配置Spring Security：
+  在Spring Security配置类中配置JWT过滤器和其他相关的安全设置。示例代码
+
+5. 编写认证端点：
+  创建一个用于用户登录的端点（例如/login），在用户成功登录后生成JWT并返回。
+
+  ```java
+  @EnableWebSecurity
+  public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  
+      @Override
+      protected void configure(HttpSecurity http) throws Exception {
+          http
+              // 禁用CSRF保护，因为我们不使用session
+              .csrf().disable()
+              // 设置会话管理为无状态
+              .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+              .and()
+              // 添加我们自定义的JWT过滤器
+              .addFilterBefore(new JwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+              // 配置其他安全规则
+              // ...
+              ;
+      }
+  }
+  ```
+
+6. 处理认证失败和成功的事件：
+  可以通过定制AuthenticationFailureHandler和AuthenticationSuccessHandler来处理认证失败和成功的事件，以发送适当的HTTP响应。
+
+记得，JWT的处理需要非常小心，特别是在处理安全敏感的操作时。要确保采用合适的算法签名你的JWT，并且永远不要在JWT中暴露敏感信息。
+
+## 自定义身份认证
+
+官方文档：https://docs.spring.io/spring-security/reference/servlet/configuration/java.html
+
+
+
+### 基于内存的身份认证
+
+创建 Spring Security 配置文件：
+
+```java
+package cn.zero.cloud.security.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+/**
+ * @author Xisun Wang
+ * @since 7/4/2024 15:29
+ */
+@Configuration
+@EnableWebSecurity // 启用 Spring Security 的 Web 安全配置，Spring Boot 项目可以省略，默认在 AutoConfiguration 时已添加
+public class WebSecurityConfig {
+    @Bean
+    @Primary
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    /**
+     * 基于内存的身份认证 Authentication
+     *
+     * @return UserDetailsService
+     */
+    @Bean
+    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+        // 创建基于内存的用户信息管理器
+        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+
+        // 使用 manager 管理 UserDetails
+        manager.createUser(
+                // 创建 UserDetails，用于管理用户名称、用户密码、用户角色、用户权限等，此账号密码，会替换掉配置文件中默认的用户名称和密码
+                // withDefaultPasswordEncoder() 已 Deprecated，新方法要注入一个 PasswordEncoder
+                // User.withDefaultPasswordEncoder().username("user").password("abcde").roles("USER").build()
+                User.withUsername("user").password(passwordEncoder.encode("abcde")).authorities("USER").build()
+        );
+
+        return manager;
+    }
+}
+```
+
+> `UserDetailsService`用来管理用户信息，**InMemoryUserDetailsManager 是 UserDetailsService 的一个实现，用来管理基于内存的用户信息。**
+
+启动项目，使用 user/abcde 登录测试。
+
+身份认证流程：
+
+- 程序启动时：
+  - 创建 InMemoryUserDetailsManager 对象。
+  - 创建 User 对象，封装用户名密码。
+  - 使用 InMemoryUserDetailsManager 将 User 存入内存。
+- 校验用户时：
+  - 在`UsernamePasswordAuthenticationFilter`过滤器中的`attemptAuthentication`方法中将用户输入的用户名密码和从内存中获取到的用户信息进行比较，进行身份认证。
+  - SpringSecurity自动使用`InMemoryUserDetailsManager`的`loadUserByUsername`方法从`内存中`获取User对象
+  - 
 
 
 
@@ -1125,13 +1473,7 @@ public class WebSecurityConfig {
 
 ### 1.2、基于内存的用户认证流程
 
-- 程序启动时：
-  - 创建`InMemoryUserDetailsManager`对象
-  - 创建`User`对象，封装用户名密码
-  - 使用InMemoryUserDetailsManager`将User存入内存`
-- 校验用户时：
-  - SpringSecurity自动使用`InMemoryUserDetailsManager`的`loadUserByUsername`方法从`内存中`获取User对象
-  - 在`UsernamePasswordAuthenticationFilter`过滤器中的`attemptAuthentication`方法中将用户输入的用户名密码和从内存中获取到的用户信息进行比较，进行用户认证
+- 
 
 
 
