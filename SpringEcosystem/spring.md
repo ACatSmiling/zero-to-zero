@@ -222,17 +222,17 @@ public class SpringTest {
 
   ![image-20210413155020623](spring/image-20210413155020623.png)
 
-> 测试说明：`Spring 在创建 IoC 容器时，就已经完成了 Bean 的创建和属性的赋值。`
->
-> 注意：当根据类型获取bean时，要求IOC容器中指定类型的bean有且只能有一个。当IOC容器中一共配置了两个，根据类型获取时会抛出异常：
->
-> ```java
-> org.springframework.beans.factory.NoUniqueBeanDefinitionException: No qualifying bean of type 'cn.xisun.spring.bean.Student' available: expected single matching bean but found 2: studentOne,studentTwo.
-> ```
->
-> 根据类型来获取 Bean 时，在满足 Bean 唯一性的前提下，其实只是看 "对象 instanceof 指定的类型" 的返回结果，只要返回的是 true 就可以认定为和类型匹配，能够获取到。
->
-> Java中，instanceof 运算符用于判断前面的对象是否是后面的类，或其子类、实现类的实例。如果是返回 true，否则返回 false。也就是说，用 instanceof 关键字做判断时，instanceof 操作符的左右操作必须有继承或实现关系。
+测试说明：`Spring 在创建 IoC 容器时，就已经完成了 Bean 的创建和属性的赋值。`
+
+注意：当根据类型获取 Bean 时，要求 IoC 容器中指定类型的 Bean 有且只能有一个。当 IoC 容器中一共配置了两个，根据类型获取时会抛出异常：
+
+```java
+org.springframework.beans.factory.NoUniqueBeanDefinitionException: No qualifying bean of type 'cn.xisun.spring.bean.Student' available: expected single matching bean but found 2: studentOne,studentTwo.
+```
+
+根据类型来获取 Bean 时，在满足 Bean 唯一性的前提下，其实只是看 "对象 instanceof 指定的类型" 的返回结果，只要返回的是 true 就可以认定为和类型匹配，能够获取到。
+
+Java中，instanceof 运算符用于判断前面的对象是否是后面的类，或其子类、实现类的实例。如果是返回 true，否则返回 false。也就是说，用 instanceof 关键字做判断时，instanceof 操作符的左右操作必须有继承或实现关系。
 
 ## Spring 基本语法
 
@@ -1091,17 +1091,17 @@ IoC 控制反转的思想：
 - 在应用程序中的组件需要获取资源时，传统的方式是组件主动的从容器中获取所需要的资源，在这样的模式下，开发人员往往需要知道在具体容器中特定资源的获取方式。比如 ClassA 中需要用到 ClassB 的对象，一般情况下，需要在 ClassA 的代码中显式的 new 一个 ClassB 的对象。
 - **控制反转的思想完全颠覆了应用程序组件获取资源的传统方式：反转了资源的获取方向 ---> 改由容器主动的将资源推送给需要的组件，开发人员不需要知道容器是如何创建资源对象的，只需要提供接收资源的方式即可。**采用依赖注入技术之后，ClassA 的代码只需要定义一个私有的 ClassB 对象属性，不需要直接 new 来获得这个对象，而是通过相关的容器控制程序来将 ClassB 对象在外部 new 出来并注入到 ClassA 类里的引用中。而具体获取的方法、对象被获取时的状态由配置文件（如 XML）来指定。
 - 控制反转反转的是：
-  - 将对象的创建权利交出去，交给第三方容器负责。
-  - 将对象和对象之间关系的维护权交出去，交给第三方容器负责。
+  - **将对象的创建权利交出去，交给第三方容器负责。**
+  - **将对象和对象之间关系的维护权交出去，交给第三方容器负责。**
 
 
 DI 依赖注入：Dependency Injection，可以将 DI 看作是 IoC 的一种实现方式 ---> **即组件以一些预先定义好的方式（例如 setter 方法）接受来自于容器的资源注入。**相对于 IoC 而言，这种表述更直接：**IoC 容器在 Spring 中的实现。**
 
-依赖注入常见的实现方式包括两种：
+**依赖注入常见的实现方式包括两种：**
 
-- 第一种：set 注入。
+- 第一种：`setter 注入`。
 
-- 第二种：构造注入。
+- 第二种：`构造注入`。
 
 >Bean 管理说的是： Bean 对象的创建，以及 Bean 对象中属性的赋值（或者叫做 Bean 对象之间关系的维护）。
 
@@ -1185,7 +1185,7 @@ BeanFactory 接口的实现类：
 
 **BeanFactory 的子接口 ，`面向 Spring 的使用者`，提供了更多功能，一般由开发人员进行使用。几乎所有场合都使用 ApplicationContext 而不是底层的 BeanFactory。**
 
-**`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**（在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 Web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭)
+**`ApplicationContext 在加载配置文件的时候，就会把配置文件中配置的对象进行创建。`**（在服务启动的时候，就把加载对象等耗时的工作全部完成，而不是在用到的时候才创建，这对于 Web 项目等的使用者，会有比较好的效果，因为一般项目部署到服务器启动后，都尽量不再关闭。）
 
 ApplicationContext 接口的重要子接口和实现类：
 
@@ -4097,6 +4097,8 @@ Spring 中，可以通过指定`@Transactional`注解的 propagation 属性的�
 | REPEATABLE READ（可重复读）  |  无  |     无     |     有     |
 |    SERIALIZABLE（串行化）    |  无  |     无     |     无     |
 
+> **这个是 SQL 中的标准，不同的数据库实现可能不同，在 MySQL 中，REPEATABLE READ 隔离级别就已经解决了幻读的问题。**
+
 **各种数据库产品对事务隔离级别的支持程度：**
 
 |     隔离级别     | Oracle |   MySQL   |
@@ -4667,11 +4669,296 @@ Spring 5 框架自带了通用的日志封装。
       }
       ```
 
+## Spring 中的循环依赖
+
+在 Spring 中，[官方文档](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)对`Circular dependencies`进行了明确的说明（当前最新版本为 6.1.11）：
+
+```tex
+If you use predominantly constructor injection, it is possible to create an unresolvable circular dependency scenario.
+
+For example: Class A requires an instance of class B through constructor injection, and class B requires an instance of class A through constructor injection. If you configure beans for classes A and B to be injected into each other, the Spring IoC container detects this circular reference at runtime, and throws a BeanCurrentlyInCreationException.
+
+One possible solution is to edit the source code of some classes to be configured by setters rather than constructors. Alternatively, avoid constructor injection and use setter injection only. In other words, although it is not recommended, you can configure circular dependencies with setter injection.
+
+Unlike the typical case (with no circular dependencies), a circular dependency between bean A and bean B forces one of the beans to be injected into the other prior to being fully initialized itself (a classic chicken-and-egg scenario).
+```
+
+**Spring 中的依赖注入，主要有两种方式：setter 注入和构造注入。如果使用构造注入，有可能会造成无法解决的循环依赖问题，因此，`推荐使用 setter 注入来解决循环依赖`。**
+
+### 案例演示
+
+pom.xml：
+
+```x
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.zero.cloud</groupId>
+        <artifactId>zeloud-self-studies</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>zeloud-self-study-spring</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+- 此处使用的 spring-context 版本为 6.1.5。
+
+创建两个类 A 和 B：
+
+```java
+package cn.zero.cloud.spring.circular;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/7/13 14:46
+ */
+public class A {
+    private B b;
+
+    public A() {
+        System.out.println("Class A was created successfully");
+    }
+
+    public B getB() {
+        return b;
+    }
+
+    public void setB(B b) {
+        this.b = b;
+    }
+}
+```
+
+```java
+package cn.zero.cloud.spring.circular;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/7/13 14:46
+ */
+public class B {
+    private A a;
+
+    public B() {
+        System.out.println("Class B was created successfully");
+    }
+
+    public A getA() {
+        return a;
+    }
+
+    public void setA(A a) {
+        this.a = a;
+    }
+}
+```
+
+创建 Spring 配置文件 applicationContext.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="a" class="cn.zero.cloud.spring.circular.A" scope="singleton">
+        <property name="b" ref="b"/>
+    </bean>
+
+    <bean id="b" class="cn.zero.cloud.spring.circular.B" scope="singleton">
+        <property name="a" ref="a"/>
+    </bean>
+</beans>
+```
+
+- scope 默认为 singleton。
+
+创建 Spring 容器测试类：
+
+```java
+package cn.zero.cloud.spring.circular;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * Spring 容器测试类
+ *
+ * @author Xisun Wang
+ * @since 2024/7/13 21:16
+ */
+public class ClientSpringContainer {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        A a = context.getBean("a", A.class);
+        B b = context.getBean("b", B.class);
+    }
+}
+```
+
+输出结果：
+
+```java
+2024-07-14 09:00:25.888 [main] DEBUG o.s.context.support.ClassPathXmlApplicationContext - Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@3745e5c6
+2024-07-14 09:00:26.046 [main] DEBUG o.s.beans.factory.xml.XmlBeanDefinitionReader - Loaded 2 bean definitions from class path resource [applicationContext.xml]
+2024-07-14 09:00:26.082 [main] DEBUG o.s.b.factory.support.DefaultListableBeanFactory - Creating shared instance of singleton bean 'a'
+Class A was created successfully
+2024-07-14 09:00:26.095 [main] DEBUG o.s.b.factory.support.DefaultListableBeanFactory - Creating shared instance of singleton bean 'b'
+Class B was created successfully
+```
+
+修改配置文件中 A 和 B 的 scope 为 prototype：
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="a" class="cn.zero.cloud.spring.circular.A" scope="prototype">
+        <property name="b" ref="b"/>
+    </bean>
+
+    <bean id="b" class="cn.zero.cloud.spring.circular.B" scope="prototype">
+        <property name="a" ref="a"/>
+    </bean>
+</beans>
+```
+
+重新运行测试类，输出结果：
+
+```java
+2024-07-14 09:01:18.855 [main] DEBUG o.s.context.support.ClassPathXmlApplicationContext - Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@3745e5c6
+2024-07-14 09:01:18.984 [main] DEBUG o.s.beans.factory.xml.XmlBeanDefinitionReader - Loaded 2 bean definitions from class path resource [applicationContext.xml]
+Class A was created successfully
+Class B was created successfully
+Exception in thread "main" org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'a' defined in class path resource [applicationContext.xml]: Cannot resolve reference to bean 'b' while setting bean property 'b'
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:377)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:135)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1685)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1434)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:599)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:344)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:205)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1240)
+	at cn.zero.cloud.spring.circular.ClientSpringContainer.main(ClientSpringContainer.java:14)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'b' defined in class path resource [applicationContext.xml]: Cannot resolve reference to bean 'a' while setting bean property 'a'
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:377)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:135)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1685)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1434)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:599)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:344)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:365)
+	... 9 more
+Caused by: org.springframework.beans.factory.BeanCurrentlyInCreationException: Error creating bean with name 'a': Requested bean is currently in creation: Is there an unresolvable circular reference?
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:266)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:365)
+	... 17 more
+```
+
+通过以上测试，可以发现，当 Spring 容器中 Bean 的 scope 为 prototype 时，循环依赖的问题无法解决，Spring 容器创建对象时，抛出了`BeanCurrentlyInCreationException`。由此，可以得出结论：**Spring 容器中，默认的单例（Singleton）场景，支持循环依赖，原型（Prototype）场景，不支持循环依赖，会抛出 BeanCurrentlyInCreationException。**
+
+### DefaultSingletonBeanRegistry
+
+`DefaultSingletonBeanRegistry`中，定义了三个 Map，俗称`三级缓存`，这就是 Spring 解决循环依赖的方法：
+
+```java
+/**
+ * Generic registry for shared bean instances, implementing the
+ * {@link org.springframework.beans.factory.config.SingletonBeanRegistry}.
+ * Allows for registering singleton instances that should be shared
+ * for all callers of the registry, to be obtained via bean name.
+ *
+ * <p>Also supports registration of
+ * {@link org.springframework.beans.factory.DisposableBean} instances,
+ * (which might or might not correspond to registered singletons),
+ * to be destroyed on shutdown of the registry. Dependencies between
+ * beans can be registered to enforce an appropriate shutdown order.
+ *
+ * <p>This class mainly serves as base class for
+ * {@link org.springframework.beans.factory.BeanFactory} implementations,
+ * factoring out the common management of singleton bean instances. Note that
+ * the {@link org.springframework.beans.factory.config.ConfigurableBeanFactory}
+ * interface extends the {@link SingletonBeanRegistry} interface.
+ *
+ * <p>Note that this class assumes neither a bean definition concept
+ * nor a specific creation process for bean instances, in contrast to
+ * {@link AbstractBeanFactory} and {@link DefaultListableBeanFactory}
+ * (which inherit from it). Can alternatively also be used as a nested
+ * helper to delegate to.
+ *
+ * @author Juergen Hoeller
+ * @since 2.0
+ * @see #registerSingleton
+ * @see #registerDisposableBean
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+ */
+public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
+	/** Cache of singleton objects: bean name to bean instance. */
+	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+
+	/** Cache of singleton factories: bean name to ObjectFactory. */
+	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
+
+	/** Cache of early singleton objects: bean name to bean instance. */
+	private final Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(16);
+}
+```
+
+- `singletonObjects`：**第一级缓存，也叫单利池，是一个 ConcurrentHashMap，key 为 String（即 Bean 名称），value 为 Object（即 Bean 实例），存放的是`已经经历了完整生命周期的 Bean 对象`（`已初始化`，即属性已经填充完整的`成品`）。**
+- `earlySingletonObjects`：**第二级缓存，是一个 ConcurrentHashMap，key 为 String（即 Bean 名称），value 为 Object（即 Bean 实例），存放的是`早期暴露出来的 Bean 对象`，Bean 的生命周期未结束（`实例化但未初始化`，即属性还未填充完整的`半成品`）。**
+- `singletonFactories`：**第三级缓存，是一个 HashMap，key 为 String（即 Bean 名称），value 为 ObjectFactory<?>（即 Bean 工厂），存放的是`可以生成 Bean 的工厂`（假设 A 类实现了 FactoryBean，那么依赖注入的时候不是 A 类，而是类 A 产生的 Bean）。**
+
+**结论：Spring 容器中，`只有单例的 Bean 会通过三级缓存提前暴露来解决循环依赖的问题`，而非单例的 Bean，每次从容器中获取的都是一个新的对象，即都会重新创建，所以非单例的 Bean 是没有缓存的，不会将其放到三级缓存中，也就无法解决缓存依赖的问题。**
+
+### 前置知识
+
+**三个 Map 和四大方法：**
+
+<img src="spring/image-20240714083121172.png" alt="image-20240714083121172" style="zoom: 60%;" />
+
+**A/B 两个对象在三级缓存中的迁移说明：**
+
+1. A 创建过程中需要 B，于是 A 将自己放到三级缓存里面，然后去实例化 B；
+2. B 实例化的时候发现需要 A，于是 B 先查一级缓存，发现没有，再查二级缓存，还是没有，继续查三级缓存，找到了 A，然后把三级缓存里面的这个 A 放到二级缓存里面，并删除三级缓存里面的 A；
+3. B 完成初始化，将自己放到一级缓存里面（但此时 B 里面的属性 A 仍然是创建中的状态，即未完成初始化），然后回来继续创建 A，此时 B 已经创建结束，A 直接从一级缓存中拿到 B，完成创建，再将 A 自己放到一级缓存里面（此时 A 也完成了初始化）。
+
+### 源码 Debug
+
+
+
 ## 本文参考
 
 https://www.bilibili.com/video/BV1Vf4y127N5
 
-https://blog.csdn.net/oneby1314/article/details/114259893
+https://www.bilibili.com/video/BV1Hy4y1B78T?p=32&vd_source=abe35c34385e7b56d2e426c30e25e646
 
 ## 声明
 
