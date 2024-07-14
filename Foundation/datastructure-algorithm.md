@@ -1,6 +1,10 @@
 
 
-[TOC]
+
+
+*`Author: ACatSmiling`*
+
+*`Since: 2024-01-16`*
 
 ## 数据结构
 
@@ -1388,3 +1392,10 @@ public class SparseArray {
 
 
 
+## 本文参考
+
+《大话数据结构》
+
+## 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
