@@ -4952,7 +4952,495 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 ### 源码 Debug
 
+在 ClientSpringContainer.java 测试类中，创建 ApplicationContext 的时候，设置断点：
 
+```java
+// 断点 1
+ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+```
+
+快捷键 F7 Step Into 方法内部，定位到 ClassPathXmlApplicationContext.java 的构造方法，调用`refresh()`方法：
+
+```java
+public ClassPathXmlApplicationContext(
+       String[] configLocations, boolean refresh, @Nullable ApplicationContext parent)
+       throws BeansException {
+
+    super(parent);
+    setConfigLocations(configLocations);
+    if (refresh) {
+       // 断点 2
+       refresh();
+    }
+}
+```
+
+F7 Step Into，定位到 org.springframework.context.support.AbstractApplicationContext#refresh，调用`finishBeanFactoryInitialization(beanFactory)`方法：
+
+```java
+@Override
+public void refresh() throws BeansException, IllegalStateException {
+    this.startupShutdownLock.lock();
+    try {
+       ...
+
+       try {
+          ...
+
+          // 断点 3
+          // Instantiate all remaining (non-lazy-init) singletons.
+          finishBeanFactoryInitialization(beanFactory);
+
+       }
+
+       ...
+}
+```
+
+F7 Step Into，定位到 org.springframework.context.support.AbstractApplicationContext#finishBeanFactoryInitialization，调用`preInstantiateSingletons()`方法：
+
+```java
+protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+    ...
+        
+    // 断点 4
+    // Instantiate all remaining (non-lazy-init) singletons.
+    beanFactory.preInstantiateSingletons();
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultListableBeanFactory#preInstantiateSingletons，调用`getBean(beanName)`方法：
+
+```java
+@Override
+public void preInstantiateSingletons() throws BeansException {
+    if (logger.isTraceEnabled()) {
+       logger.trace("Pre-instantiating singletons in " + this);
+    }
+
+    // Iterate over a copy to allow for init methods which in turn register new bean definitions.
+    // While this may not be part of the regular factory bootstrap, it does otherwise work fine.
+    List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
+
+    // Trigger initialization of all non-lazy singleton beans...
+    for (String beanName : beanNames) {
+       RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+       // bd.isSingleton()：要求是单例的 Bean
+       // bd.isLazyInit()：判断 Bean 是否是延迟加载
+       if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+          if (isFactoryBean(beanName)) {
+             Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
+             if (bean instanceof SmartFactoryBean<?> smartFactoryBean && smartFactoryBean.isEagerInit()) {
+                getBean(beanName);
+             }
+          }
+          else {
+             // 断点 5
+             getBean(beanName);
+          }
+       }
+    }
+
+    // Trigger post-initialization callback for all applicable beans...
+    for (String beanName : beanNames) {
+       Object singletonInstance = getSingleton(beanName);
+       if (singletonInstance instanceof SmartInitializingSingleton smartSingleton) {
+          StartupStep smartInitialize = getApplicationStartup().start("spring.beans.smart-initialize")
+                .tag("beanName", beanName);
+          smartSingleton.afterSingletonsInstantiated();
+          smartInitialize.end();
+       }
+    }
+}
+```
+
+>此时，可以看到，所有需要初始化，且非延迟加载的单例 Bean 对象列表（优先创建的是 a）：
+>
+><img src="spring/image-20240715133616260.png" alt="image-20240715133616260" style="zoom:67%;" />
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，调用`getSingleton(beanName)`方法，**这是前置知识中四大方法中的第一个**：
+
+```java
+protected <T> T doGetBean(
+       String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
+       throws BeansException {
+
+    // 处理 Bean 别名解析
+    String beanName = transformedBeanName(name);
+    Object beanInstance;
+
+    // 断点 6
+    // Eagerly check singleton cache for manually registered singletons.
+    Object sharedInstance = getSingleton(beanName);
+    if (sharedInstance != null && args == null) {
+       if (logger.isTraceEnabled()) {
+          if (isSingletonCurrentlyInCreation(beanName)) {
+             logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
+                   "' that is not fully initialized yet - a consequence of a circular reference");
+          }
+          else {
+             logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
+          }
+       }
+       beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+    }
+}
+```
+
+- **Spring 源码中，以 doXXX 开头的方法，往往都是实际的业务处理方法。**
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, boolean)，此时，对于 Bean a，一级缓存 singletonObjects 中明显不存在，同时，isSingletonCurrentlyInCreation(beanName) 也为 false（Bean a 此时还未处于创建的状态），因此，getSingleton 方法直接 return 一个 null：
+
+```java
+@Nullable
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    // 检查 singletonObjects，即一级缓存中是否存在 Bean a，很明显，此时不存在，singletonObject 为 null
+    // Quick check for existing instance without full singleton lock
+    Object singletonObject = this.singletonObjects.get(beanName);
+    // 此时，判断条件为 false，方法直接返回 singletonObject，是一个 null
+    if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+       ...
+    }
+    return singletonObject;
+}
+```
+
+><img src="spring/image-20240715135451936.png" alt="image-20240715135451936" style="zoom:67%;" />
+
+**getSingleton 方法返回了一个 null，说明 Spring 容器中暂时不存在 Bean a，接下来，我们需要创建一个 Bean a。**此时，程序执行回到断点 6 处：
+
+<img src="spring/image-20240715155948401.png" alt="image-20240715155948401" style="zoom:67%;" />
+
+F8 Step Over 继续往下执行：
+
+<img src="spring/image-20240715160308622.png" alt="image-20240715160308622" style="zoom:67%;" />
+
+F8 Step Over 继续往下执行，最终定位到如下位置：
+
+```java
+// Create bean instance.
+if (mbd.isSingleton()) {
+    // 断点 7
+    sharedInstance = getSingleton(beanName, () -> {
+       try {
+          return createBean(beanName, mbd, args);
+       }
+       catch (BeansException ex) {
+          // Explicitly remove instance from singleton cache: It might have been put there
+          // eagerly by the creation process, to allow for circular reference resolution.
+          // Also remove any beans that received a temporary reference to the bean.
+          destroySingleton(beanName);
+          throw ex;
+       }
+    });
+    beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, org.springframework.beans.factory.ObjectFactory<?>)，调用`singletonFactory.getObject()`方法：
+
+```java
+public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(beanName, "Bean name must not be null");
+    synchronized (this.singletonObjects) {
+       Object singletonObject = this.singletonObjects.get(beanName);
+       // 因为一级缓存中仍不存在 Bean a，方法继续往下执行
+       if (singletonObject == null) {
+           ...
+               
+           try {
+                // 断点 8
+                singletonObject = singletonFactory.getObject();
+                newSingleton = true;
+            }
+           
+           ...
+       }
+       return singletonObject;
+    }
+}
+```
+
+><img src="spring/image-20240715162943761.png" alt="image-20240715162943761" style="zoom:67%;" />
+
+F7 Step Into，进入 singletonFactory.getObject() 方法内部，会回到断点 7 处，也就是说，在断点 7 处，如果 getSingleton() 方法没有获取到 Bean a，就会调用第二个参数，最终调用`createBean(beanName, mbd, args)`方法：
+
+<img src="spring/image-20240715164851536.png" alt="image-20240715164851536" style="zoom:67%;" />
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])，调用`doCreateBean(beanName, mbdToUse, args)`方法，**这是前置知识中四大方法中的第二个**，开始创建 Bean a：
+
+```java
+@Override
+protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+       throws BeanCreationException {
+
+    ...
+
+    try {
+       // 断点 9
+       Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+       if (logger.isTraceEnabled()) {
+          logger.trace("Finished creating instance of bean '" + beanName + "'");
+       }
+       return beanInstance;
+    }
+    
+    ...
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#doCreateBean，调用`createBeanInstance(beanName, mbd, args)`：
+
+```java
+protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+       throws BeanCreationException {
+
+    // Instantiate the bean.
+    BeanWrapper instanceWrapper = null;
+    if (mbd.isSingleton()) {
+       instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
+    }
+    if (instanceWrapper == null) {
+       // 断点 10
+       instanceWrapper = createBeanInstance(beanName, mbd, args);
+    }
+    
+    ...
+}
+```
+
+>F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance，此方法内部没有什么特殊说明。
+
+F8 Step Over，可以看到，Spring 对于单例的 Bean，默认支持循环依赖：
+
+<img src="spring/image-20240715171407533.png" alt="image-20240715171407533" style="zoom:67%;" />
+
+F8 Step Over，调用`addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean))`：
+
+```java
+protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+       throws BeanCreationException {
+    ...
+    // Eagerly cache singletons to be able to resolve circular references
+    // even when triggered by lifecycle interfaces like BeanFactoryAware.
+    boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
+            isSingletonCurrentlyInCreation(beanName));
+    if (earlySingletonExposure) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Eagerly caching bean '" + beanName +
+                    "' to allow for resolving potential circular references");
+        }
+        // 断点 11
+        addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+    }
+    
+    ...
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#addSingletonFactory，**在此方法中，会将 Bean a 对应的 ObjectFactory<?>，添加到三级缓存 singletonFactories 中**：
+
+```java
+/**
+ * Add the given singleton factory for building the specified singleton
+ * if necessary.
+ * <p>To be called for eager registration of singletons, e.g. to be able to
+ * resolve circular references.
+ * @param beanName the name of the bean
+ * @param singletonFactory the factory for the singleton object
+ */
+protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(singletonFactory, "Singleton factory must not be null");
+    synchronized (this.singletonObjects) {
+       if (!this.singletonObjects.containsKey(beanName)) {
+          this.singletonFactories.put(beanName, singletonFactory);
+          this.earlySingletonObjects.remove(beanName);
+          this.registeredSingletons.add(beanName);
+       }
+    }
+}
+```
+
+<img src="spring/image-20240715172614646.png" alt="image-20240715172614646" style="zoom:67%;" />
+
+<img src="spring/image-20240715172402670.png" alt="image-20240715172402670" style="zoom:67%;" />
+
+<img src="spring/image-20240715172747569.png" alt="image-20240715172747569" style="zoom:67%;" />
+
+断点 11 处执行完后，继续 F8 Step Over，调用`populateBean(beanName, mbd, instanceWrapper)`方法，开始属性填充：
+
+```java
+protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+       throws BeanCreationException {
+    ...
+        
+    // Initialize the bean instance.
+    Object exposedObject = bean;
+    try {
+        // 断点 12，属性填充
+        populateBean(beanName, mbd, instanceWrapper);
+        exposedObject = initializeBean(beanName, exposedObject, mbd);
+    }
+    
+    ...
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
+
+![image-20240715231717678](spring/image-20240715231717678.png)
+
+```java
+protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
+    ...
+
+    // Bean a 中有一个属性 b 需要填充
+    PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
+
+    ...
+
+    if (pvs != null) {
+       // 断点 13
+       applyPropertyValues(beanName, mbd, bw, pvs);
+    }
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues，调用`valueResolver.resolveValueIfNecessary(pv, originalValue)`方法：
+
+```java
+protected void applyPropertyValues(String beanName, BeanDefinition mbd, BeanWrapper bw, PropertyValues pvs) {
+    ...
+
+    // Create a deep copy, resolving any references for values.
+    List<PropertyValue> deepCopy = new ArrayList<>(original.size());
+    boolean resolveNecessary = false;
+    for (PropertyValue pv : original) {
+       if (pv.isConverted()) {
+          deepCopy.add(pv);
+       }
+       else {
+          String propertyName = pv.getName();
+          Object originalValue = pv.getValue();
+          if (originalValue == AutowiredPropertyMarker.INSTANCE) {
+             Method writeMethod = bw.getPropertyDescriptor(propertyName).getWriteMethod();
+             if (writeMethod == null) {
+                throw new IllegalArgumentException("Autowire marker for property without write method: " + pv);
+             }
+             originalValue = new DependencyDescriptor(new MethodParameter(writeMethod, 0), true);
+          }
+          // 断点 14
+          Object resolvedValue = valueResolver.resolveValueIfNecessary(pv, originalValue);
+          Object convertedValue = resolvedValue;
+          boolean convertible = isConvertibleProperty(propertyName, bw);
+          
+          ...
+       }
+    }
+    
+    ...
+}
+```
+
+> ![image-20240715233252072](spring/image-20240715233252072.png)
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary，调用`resolveReference(argName, ref)`方法：
+
+```java
+@Nullable
+public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
+    // We must check each value to see whether it requires a runtime reference
+    // to another bean to be resolved.
+    if (value instanceof RuntimeBeanReference ref) {
+       // 断点 15
+       return resolveReference(argName, ref);
+    }
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveReference，调用`this.beanFactory.getBean(resolvedName)`方法：
+
+```java
+@Nullable
+private Object resolveReference(Object argName, RuntimeBeanReference ref) {
+    try {
+       ...
+           
+       else {
+          String resolvedName;
+          if (beanType != null) {
+             NamedBeanHolder<?> namedBean = this.beanFactory.resolveNamedBean(beanType);
+             bean = namedBean.getBeanInstance();
+             resolvedName = namedBean.getBeanName();
+          }
+          else {
+             resolvedName = String.valueOf(doEvaluate(ref.getBeanName()));
+             // 断点 16
+             bean = this.beanFactory.getBean(resolvedName);
+          }
+          this.beanFactory.registerDependentBean(resolvedName, this.beanName);
+       }
+       if (bean instanceof NullBean) {
+          bean = null;
+       }
+       return bean;
+    }
+    
+    ...
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，回到了最初创建 Bean a 一样的地方：
+
+```java
+@Override
+public Object getBean(String name) throws BeansException {
+    return doGetBean(name, null, null, false);
+}
+```
+
+>![image-20240715233907571](spring/image-20240715233907571.png)
+
+F7 Step Into，继续执行，再次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，继续调用`getSingleton(beanName)`方法，回到了断点 6：
+
+```java
+protected <T> T doGetBean(
+       String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
+       throws BeansException {
+    // 处理 Bean 别名解析
+    String beanName = transformedBeanName(name);
+    Object beanInstance;
+
+    // 断点 6
+    // Eagerly check singleton cache for manually registered singletons.
+    Object sharedInstance = getSingleton(beanName);
+    if (sharedInstance != null && args == null) {
+       if (logger.isTraceEnabled()) {
+          if (isSingletonCurrentlyInCreation(beanName)) {
+             logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
+                   "' that is not fully initialized yet - a consequence of a circular reference");
+          }
+          else {
+             logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
+          }
+       }
+       beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+    }
+}
+```
+> ![image-20240715234324097](spring/image-20240715234324097.png)
+
+后续的流程，重复创建 Bean a 的过程，此处不再赘述，直到 Bean b 的属性需要填充 a 的时候：
+
+![image-20240715235436613](spring/image-20240715235436613.png)
+
+在断点 12 处，F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
+
+
+
+### 源码流程图
+
+![image-20240716000111672](spring/image-20240716000111672.png)
 
 ## 本文参考
 
