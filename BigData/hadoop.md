@@ -1,8 +1,6 @@
-*date: 2021-08-25*
+*`Author: ACatSmiling`*
 
-
-
-[TOC]
+*`Since: 2021-08-25`*
 
 ## 大数据
 
