@@ -5056,7 +5056,7 @@ public void preInstantiateSingletons() throws BeansException {
 
 >此时，可以看到，所有需要初始化，且非延迟加载的单例 Bean 对象列表（优先创建的是 a）：
 >
-><img src="spring/image-20240715133616260.png" alt="image-20240715133616260" style="zoom:67%;" />
+>![image-20240717223635336](spring/image-20240717223635336.png)
 
 F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，调用`getSingleton(beanName)`方法，**这是前置知识中四大方法中的第一个**：
 
@@ -5105,15 +5105,15 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 }
 ```
 
-><img src="spring/image-20240715135451936.png" alt="image-20240715135451936" style="zoom:67%;" />
+>![image-20240717224044981](spring/image-20240717224044981.png)
 
 **getSingleton 方法返回了一个 null，说明 Spring 容器中暂时不存在 Bean a，接下来，我们需要创建一个 Bean a。**此时，程序执行回到断点 6 处：
 
-<img src="spring/image-20240715155948401.png" alt="image-20240715155948401" style="zoom:67%;" />
+![image-20240717224305609](spring/image-20240717224305609.png)
 
 F8 Step Over 继续往下执行：
 
-<img src="spring/image-20240715160308622.png" alt="image-20240715160308622" style="zoom:67%;" />
+![image-20240717224412688](spring/image-20240717224412688.png)
 
 F8 Step Over 继续往下执行，最终定位到如下位置：
 
@@ -5161,11 +5161,11 @@ public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 }
 ```
 
-><img src="spring/image-20240715162943761.png" alt="image-20240715162943761" style="zoom:67%;" />
+>![image-20240717224639161](spring/image-20240717224639161.png)
 
 F7 Step Into，进入 singletonFactory.getObject() 方法内部，会回到断点 7 处，也就是说，在断点 7 处，如果 getSingleton() 方法没有获取到 Bean a，就会调用第二个参数，最终调用`createBean(beanName, mbd, args)`方法：
 
-<img src="spring/image-20240715164851536.png" alt="image-20240715164851536" style="zoom:67%;" />
+![image-20240717225806529](spring/image-20240717225806529.png)
 
 F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])，调用`doCreateBean(beanName, mbdToUse, args)`方法，**这是前置知识中四大方法中的第二个**，开始创建 Bean a：
 
@@ -5213,7 +5213,7 @@ protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable
 
 F8 Step Over，可以看到，Spring 对于单例的 Bean，默认支持循环依赖：
 
-<img src="spring/image-20240715171407533.png" alt="image-20240715171407533" style="zoom:67%;" />
+![image-20240717230114684](spring/image-20240717230114684.png)
 
 F8 Step Over，调用`addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean))`：
 
@@ -5261,11 +5261,11 @@ protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFa
 }
 ```
 
-<img src="spring/image-20240715172614646.png" alt="image-20240715172614646" style="zoom:67%;" />
+![image-20240717230448601](spring/image-20240717230448601.png)
 
-<img src="spring/image-20240715172402670.png" alt="image-20240715172402670" style="zoom:67%;" />
+![image-20240717230609212](spring/image-20240717230609212.png)
 
-<img src="spring/image-20240715172747569.png" alt="image-20240715172747569" style="zoom:67%;" />
+![image-20240717231005816](spring/image-20240717231005816.png)
 
 断点 11 处执行完后，继续 F8 Step Over，调用`populateBean(beanName, mbd, instanceWrapper)`方法，开始属性填充：
 
@@ -5286,9 +5286,9 @@ protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable
 }
 ```
 
-F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终会调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
 
-![image-20240715231717678](spring/image-20240715231717678.png)
+![image-20240717231514828](spring/image-20240717231514828.png)
 
 ```java
 protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
@@ -5342,7 +5342,7 @@ protected void applyPropertyValues(String beanName, BeanDefinition mbd, BeanWrap
 }
 ```
 
-> ![image-20240715233252072](spring/image-20240715233252072.png)
+> ![image-20240717232451128](spring/image-20240717232451128.png)
 
 F7 Step Into，定位到 org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary，调用`resolveReference(argName, ref)`方法：
 
