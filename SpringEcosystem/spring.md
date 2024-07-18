@@ -5056,7 +5056,7 @@ public void preInstantiateSingletons() throws BeansException {
 
 >此时，可以看到，所有需要初始化，且非延迟加载的单例 Bean 对象列表（优先创建的是 a）：
 >
->![image-20240717223635336](spring/image-20240717223635336.png)
+>![image-20240718201346496](spring/image-20240718201346496.png)
 
 F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，调用`getSingleton(beanName)`方法，**这是前置知识中四大方法中的第一个**：
 
@@ -5084,6 +5084,8 @@ protected <T> T doGetBean(
        }
        beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
     }
+    
+    ...
 }
 ```
 
@@ -5209,7 +5211,7 @@ protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable
 }
 ```
 
->F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance，此方法内部没有什么特殊说明。
+>F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance，此方法内部可以看到 Spring 使用了大量反射。
 
 F8 Step Over，可以看到，Spring 对于单例的 Bean，默认支持循环依赖：
 
@@ -5267,7 +5269,7 @@ protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFa
 
 ![image-20240717231005816](spring/image-20240717231005816.png)
 
-断点 11 处执行完后，继续 F8 Step Over，调用`populateBean(beanName, mbd, instanceWrapper)`方法，开始属性填充：
+断点 11 处执行完后，继续 F8 Step Over，调用`populateBean(beanName, mbd, instanceWrapper)`方法，开始属性填充，**这是前置知识中四大方法中的第三个**：
 
 ```java
 protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
@@ -5277,7 +5279,7 @@ protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable
     // Initialize the bean instance.
     Object exposedObject = bean;
     try {
-        // 断点 12，属性填充
+        // 断点 12，Bean a 属性填充
         populateBean(beanName, mbd, instanceWrapper);
         exposedObject = initializeBean(beanName, exposedObject, mbd);
     }
@@ -5375,7 +5377,7 @@ private Object resolveReference(Object argName, RuntimeBeanReference ref) {
           }
           else {
              resolvedName = String.valueOf(doEvaluate(ref.getBeanName()));
-             // 断点 16
+             // 断点 16，Bean a 需要获取 Bean b
              bean = this.beanFactory.getBean(resolvedName);
           }
           this.beanFactory.registerDependentBean(resolvedName, this.beanName);
@@ -5390,7 +5392,9 @@ private Object resolveReference(Object argName, RuntimeBeanReference ref) {
 }
 ```
 
-F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，回到了最初创建 Bean a 一样的地方：
+>
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，回到了最初获取 Bean a 一样的地方**（从此处开始，暂时变为了 Bean b 的获取和创建流程）**：
 
 ```java
 @Override
@@ -5411,7 +5415,7 @@ protected <T> T doGetBean(
     String beanName = transformedBeanName(name);
     Object beanInstance;
 
-    // 断点 6
+    // 断点 6，Bean b
     // Eagerly check singleton cache for manually registered singletons.
     Object sharedInstance = getSingleton(beanName);
     if (sharedInstance != null && args == null) {
@@ -5426,17 +5430,288 @@ protected <T> T doGetBean(
        }
        beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
     }
+    
+    ...
 }
 ```
 > ![image-20240715234324097](spring/image-20240715234324097.png)
 
-后续的流程，重复创建 Bean a 的过程，此处不再赘述，直到 Bean b 的属性需要填充 a 的时候：
+后续的流程，重复和创建 Bean a 一样的过程，此处不再赘述，直到 Bean b 的属性需要填充 a 的时候：
 
 ![image-20240715235436613](spring/image-20240715235436613.png)
 
 在断点 12 处，F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
 
+![image-20240718204551241](spring/image-20240718204551241.png)
 
+```java
+protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
+    ...
+
+    // Bean b 中有一个属性 a 需要填充
+    PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
+
+    ...
+
+    if (pvs != null) {
+       // 断点 13，Bean b
+       applyPropertyValues(beanName, mbd, bw, pvs);
+    }
+}
+```
+
+F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues，调用`valueResolver.resolveValueIfNecessary(pv, originalValue)`方法：
+
+```java
+protected void applyPropertyValues(String beanName, BeanDefinition mbd, BeanWrapper bw, PropertyValues pvs) {
+    ...
+
+    // Create a deep copy, resolving any references for values.
+    List<PropertyValue> deepCopy = new ArrayList<>(original.size());
+    boolean resolveNecessary = false;
+    for (PropertyValue pv : original) {
+       if (pv.isConverted()) {
+          deepCopy.add(pv);
+       }
+       else {
+          String propertyName = pv.getName();
+          Object originalValue = pv.getValue();
+          if (originalValue == AutowiredPropertyMarker.INSTANCE) {
+             Method writeMethod = bw.getPropertyDescriptor(propertyName).getWriteMethod();
+             if (writeMethod == null) {
+                throw new IllegalArgumentException("Autowire marker for property without write method: " + pv);
+             }
+             originalValue = new DependencyDescriptor(new MethodParameter(writeMethod, 0), true);
+          }
+          // 断点 14，Bean b
+          Object resolvedValue = valueResolver.resolveValueIfNecessary(pv, originalValue);
+          Object convertedValue = resolvedValue;
+          boolean convertible = isConvertibleProperty(propertyName, bw);
+          
+          ...
+       }
+    }
+    
+    ...
+}
+```
+
+>![image-20240718223029446](spring/image-20240718223029446.png)
+
+F7 Step Into，再次定位到 org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveValueIfNecessary，调用`resolveReference(argName, ref)`方法：
+
+```java
+@Nullable
+public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
+    // We must check each value to see whether it requires a runtime reference
+    // to another bean to be resolved.
+    if (value instanceof RuntimeBeanReference ref) {
+       // 断点 15，Bean b
+       return resolveReference(argName, ref);
+    }
+}
+```
+
+F7 Step Into，再次定位到 org.springframework.beans.factory.support.BeanDefinitionValueResolver#resolveReference，调用`this.beanFactory.getBean(resolvedName)`方法：
+
+```java
+@Nullable
+private Object resolveReference(Object argName, RuntimeBeanReference ref) {
+    try {
+       ...
+           
+       else {
+          String resolvedName;
+          if (beanType != null) {
+             NamedBeanHolder<?> namedBean = this.beanFactory.resolveNamedBean(beanType);
+             bean = namedBean.getBeanInstance();
+             resolvedName = namedBean.getBeanName();
+          }
+          else {
+             resolvedName = String.valueOf(doEvaluate(ref.getBeanName()));
+             // 断点 16，Bean b 需要获取 Bean a
+             bean = this.beanFactory.getBean(resolvedName);
+          }
+          this.beanFactory.registerDependentBean(resolvedName, this.beanName);
+       }
+       if (bean instanceof NullBean) {
+          bean = null;
+       }
+       return bean;
+    }
+    
+    ...
+}
+```
+
+>![image-20240718224338020](spring/image-20240718224338020.png)
+
+F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，再次执行此方法，此处是为了获取 Bean a：
+
+```java
+@Override
+public Object getBean(String name) throws BeansException {
+    return doGetBean(name, null, null, false);
+}
+```
+
+F7 Step Into，继续执行，第三次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，第三次调用`getSingleton(beanName)`方法，回到了断点 6：
+
+```java
+protected <T> T doGetBean(
+       String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
+       throws BeansException {
+    // 处理 Bean 别名解析
+    String beanName = transformedBeanName(name);
+    Object beanInstance;
+
+    // 断点 6，Bean a
+    // Eagerly check singleton cache for manually registered singletons.
+    Object sharedInstance = getSingleton(beanName);
+    if (sharedInstance != null && args == null) {
+       if (logger.isTraceEnabled()) {
+          if (isSingletonCurrentlyInCreation(beanName)) {
+             logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
+                   "' that is not fully initialized yet - a consequence of a circular reference");
+          }
+          else {
+             logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
+          }
+       }
+       beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+    }
+    
+    ...
+}
+```
+
+> ![image-20240718225215816](spring/image-20240718225215816.png)
+
+F7 Step Into，第三次定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, boolean)，此时，对于 Bean a，一级缓存 singletonObjects 和二级缓存 earlySingletonObjects 中仍不存在，但此时，isSingletonCurrentlyInCreation(beanName) 为 true（Bean a 此时处于创建的状态），因此，最终在三级缓存 singletonFactories 中找到 Bean a：
+
+```java
+@Nullable
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    // Quick check for existing instance without full singleton lock
+    Object singletonObject = this.singletonObjects.get(beanName);
+    if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+       singletonObject = this.earlySingletonObjects.get(beanName);
+       if (singletonObject == null && allowEarlyReference) {
+          synchronized (this.singletonObjects) {
+             // Consistent creation of early reference within full singleton lock
+             singletonObject = this.singletonObjects.get(beanName);
+             if (singletonObject == null) {
+                singletonObject = this.earlySingletonObjects.get(beanName);
+                if (singletonObject == null) {
+                   // 三级缓存中有 Bean a
+                   ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+                   if (singletonFactory != null) {
+                      // F7 Step Into 进入此方法，
+                      singletonObject = singletonFactory.getObject();
+                      // 将 Bean a 放入二级缓存
+                      this.earlySingletonObjects.put(beanName, singletonObject);
+                      // 移除三级缓存中的 Bean a
+                      this.singletonFactories.remove(beanName);
+                   }
+                }
+             }
+          }
+       }
+    }
+    return singletonObject;
+}
+```
+
+>![image-20240718230355483](spring/image-20240718230355483.png)
+>
+>![image-20240718230719723](spring/image-20240718230719723.png)
+>
+>![image-20240718231058234](spring/image-20240718231058234.png)
+
+- **`此时，Bean a 从三级缓存，移入到二级缓存中。`**
+
+F8 Step Over，一路返回，直到 Bean b 属性填充的地方`populateBean(beanName, mbd, instanceWrapper)`方法，此时，属性 a 填充完成，下一步，执行 Bean b 的初始化`initializeBean(beanName, exposedObject, mbd)`方法：
+
+![image-20240718232145274](spring/image-20240718232145274.png)
+
+![image-20240718233048712](spring/image-20240718233048712.png)
+
+F7 Step Into initializeBean(beanName, exposedObject, mbd) 方法，在此方法中，实现了 Bean b 的初始化，和后置处理器的相关方法调用：
+
+![image-20240718232804604](spring/image-20240718232804604.png)
+
+F8 Step Over，一路回到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, org.springframework.beans.factory.ObjectFactory<?>)，Bean b 创建完成，调用`addSingleton(beanName, singletonObject)`方法，**这是前置知识中四大方法中的第四个**：
+
+```java
+public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+	try {
+        // 断点 8
+        singletonObject = singletonFactory.getObject();
+        newSingleton = true;
+    }
+    catch (IllegalStateException ex) {
+        // Has the singleton object implicitly appeared in the meantime ->
+        // if yes, proceed with it since the exception indicates that state.
+        singletonObject = this.singletonObjects.get(beanName);
+        if (singletonObject == null) {
+            throw ex;
+        }
+    }
+    catch (BeanCreationException ex) {
+        if (recordSuppressedExceptions) {
+            for (Exception suppressedException : this.suppressedExceptions) {
+                ex.addRelatedCause(suppressedException);
+            }
+        }
+        throw ex;
+    }
+    finally {
+        if (recordSuppressedExceptions) {
+            this.suppressedExceptions = null;
+        }
+        afterSingletonCreation(beanName);
+    }
+    if (newSingleton) {
+        // 断点 17
+        addSingleton(beanName, singletonObject);
+    }
+}
+```
+
+F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#addSingleton，此时，会将 Bean b 放入一级缓存，并移除二级缓存和三级缓存中的 Bean b（**实际上，二级缓存中并没有 Bean b，只有 Bean a，而此时的三级缓存中也只有 Bean b，没有 Bean a**）：
+
+```java
+protected void addSingleton(String beanName, Object singletonObject) {
+    synchronized (this.singletonObjects) {
+       this.singletonObjects.put(beanName, singletonObject);
+       this.singletonFactories.remove(beanName);
+       this.earlySingletonObjects.remove(beanName);
+       this.registeredSingletons.add(beanName);
+    }
+}
+```
+
+> ![image-20240718234403064](spring/image-20240718234403064.png)
+>
+> ![image-20240718234457498](spring/image-20240718234457498.png)
+
+- **可以看到，Bean b 是直接从三级缓存移入一级缓存中的，它没有出现在二级缓存中。而 Bean a 则是从三级缓存到二级缓存，再到一级缓存的变化过程。**
+
+F8 Step Over，一路返回，直到 Bean a 属性填充的地方`populateBean(beanName, mbd, instanceWrapper)`方法，此时，属性 b 填充完成，下一步，执行 Bean a 的初始化`initializeBean(beanName, exposedObject, mbd)`方法：
+
+![image-20240719001323411](spring/image-20240719001323411.png)
+
+![image-20240719001511439](spring/image-20240719001511439.png)
+
+F8 Step Over，一路返回，直到调用`addSingleton(beanName, singletonObject)`方法，即断点 17 处，F7 Step Into，此时，会将 Bean a 放入一级缓存，并移除二级缓存和三级缓存中的 Bean a：
+
+![image-20240719001945202](spring/image-20240719001945202.png)
+
+![image-20240719002254145](spring/image-20240719002254145.png)
+
+![image-20240719002153279](spring/image-20240719002153279.png)
+
+至此，循环依赖的 Bean a 和 Bean b，通过三级缓存机制，都完成了创建。
 
 ### 源码流程图
 
