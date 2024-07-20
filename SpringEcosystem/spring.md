@@ -4952,6 +4952,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 ### 源码 Debug
 
+> 所有断点的位置：
+>
+> <img src="spring/image-20240719234234607.png" alt="image-20240719234234607" style="zoom: 80%;" />
+
 在 ClientSpringContainer.java 测试类中，创建 ApplicationContext 的时候，设置断点：
 
 ```java
@@ -5089,7 +5093,7 @@ protected <T> T doGetBean(
 }
 ```
 
-- **Spring 源码中，以 doXXX 开头的方法，往往都是实际的业务处理方法。**
+> **Spring 源码中，以 doXxx 开头的方法，往往都是实际的业务处理方法。**
 
 F7 Step Into，定位到 org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, boolean)，此时，对于 Bean a，一级缓存 singletonObjects 中明显不存在，同时，isSingletonCurrentlyInCreation(beanName) 也为 false（Bean a 此时还未处于创建的状态），因此，getSingleton 方法直接 return 一个 null：
 
@@ -5377,7 +5381,7 @@ private Object resolveReference(Object argName, RuntimeBeanReference ref) {
           }
           else {
              resolvedName = String.valueOf(doEvaluate(ref.getBeanName()));
-             // 断点 16，Bean a 需要获取 Bean b
+             // 断点 16，Bean a 需要获取 Bean b 进行属性填充
              bean = this.beanFactory.getBean(resolvedName);
           }
           this.beanFactory.registerDependentBean(resolvedName, this.beanName);
@@ -5392,8 +5396,6 @@ private Object resolveReference(Object argName, RuntimeBeanReference ref) {
 }
 ```
 
->
-
 F7 Step Into，定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，回到了最初获取 Bean a 一样的地方**（从此处开始，暂时变为了 Bean b 的获取和创建流程）**：
 
 ```java
@@ -5403,7 +5405,7 @@ public Object getBean(String name) throws BeansException {
 }
 ```
 
->![image-20240715233907571](spring/image-20240715233907571.png)
+>![image-20240719211427187](spring/image-20240719211427187.png)
 
 F7 Step Into，继续执行，再次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean，继续调用`getSingleton(beanName)`方法，回到了断点 6：
 
@@ -5434,11 +5436,11 @@ protected <T> T doGetBean(
     ...
 }
 ```
-> ![image-20240715234324097](spring/image-20240715234324097.png)
+> ![image-20240719211606571](spring/image-20240719211606571.png)
 
 后续的流程，重复和创建 Bean a 一样的过程，此处不再赘述，直到 Bean b 的属性需要填充 a 的时候：
 
-![image-20240715235436613](spring/image-20240715235436613.png)
+![image-20240719211806400](spring/image-20240719211806400.png)
 
 在断点 12 处，F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean，最终调用`applyPropertyValues(beanName, mbd, bw, pvs)`方法：
 
@@ -5546,7 +5548,7 @@ private Object resolveReference(Object argName, RuntimeBeanReference ref) {
 
 >![image-20240718224338020](spring/image-20240718224338020.png)
 
-F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，再次执行此方法，此处是为了获取 Bean a：
+F7 Step Into，再次定位到 org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)，又一次执行此方法，此处是为了获取 Bean a：
 
 ```java
 @Override
@@ -5606,9 +5608,8 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
                    // 三级缓存中有 Bean a
                    ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
                    if (singletonFactory != null) {
-                      // F7 Step Into 进入此方法，
                       singletonObject = singletonFactory.getObject();
-                      // 将 Bean a 放入二级缓存
+                      // 将 Bean a 放入二级缓存，如果是 AOP 进行切面代理的 Bean，此时是第一次调用 singletonFactory.getObject()，直接存入二级缓存
                       this.earlySingletonObjects.put(beanName, singletonObject);
                       // 移除三级缓存中的 Bean a
                       this.singletonFactories.remove(beanName);
@@ -5628,7 +5629,7 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 >
 >![image-20240718231058234](spring/image-20240718231058234.png)
 
-- **`此时，Bean a 从三级缓存，移入到二级缓存中。`**
+> **`此时，Bean a 从三级缓存，移入到二级缓存中。`**
 
 F8 Step Over，一路返回，直到 Bean b 属性填充的地方`populateBean(beanName, mbd, instanceWrapper)`方法，此时，属性 a 填充完成，下一步，执行 Bean b 的初始化`initializeBean(beanName, exposedObject, mbd)`方法：
 
