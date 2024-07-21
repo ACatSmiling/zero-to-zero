@@ -6321,7 +6321,7 @@ public String sale() {
 <img src="redis/image-20240623233949568.png" alt="image-20240623233949568" style="zoom: 67%;" />
 
 ```java
-// 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁。存在的问题：释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性
+// 改进版本四：只能释放当前线程设置的锁，不能误删其他线程的锁。存在的问题：释放锁的时候，判断锁是否是当前线程设置的、以及删除锁的操作，二者不是原子性
 @Override
 public String sale() {
     String retMessage = "";
@@ -6366,7 +6366,7 @@ public String sale() {
 在改进版本四中，解决了误删其他线程持有的锁的问题，但是释放锁的时候，判断锁是否是当前线程设置的，以及删除锁的操作不是原子性。因此，**采用 Lua 脚本保证释放锁过程的原子性。**
 
 ```java
-// 改进版本五：使用LUA脚本，保证释放锁过程的原子性。存在的问题：
+// 改进版本五：使用Lua脚本，保证释放锁过程的原子性。存在的问题：获取锁时不可重入
 @Override
 public String sale() {
     String retMessage = "";
@@ -6731,7 +6731,7 @@ public class InventoryServiceImpl implements InventoryService {
         this.redisDistributedLockFactory = redisDistributedLockFactory;
     }
 
-    // 改进版本六：实现锁的可重入
+    // 改进版本六：实现锁的可重入。存在的问题：锁没有自动续期功能
     @Override
     public String sale() {
         String lockName = "RedisDistributedLock";
@@ -7782,7 +7782,7 @@ services:
 
 redis.properties 添加 3 台 Redis 服务器的配置：
 
-```pro
+```properties
 # redis config
 #spring.data.redis.username=redis
 spring.data.redis.password=123456
