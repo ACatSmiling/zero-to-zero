@@ -126,13 +126,44 @@ Asia/Shanghai
 # 复制
 $ sudo cp /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
 
-# 设置24小时制
+# 设置 24 小时制
 $ sudo vim /etc/default/locale
 LC_TIME=en_DK.utf-8
 
 # 重启
 $ sudo reboot
 ```
+
+### 设置 apt 镜像源
+
+```shell
+# 备份 sources.list
+$ cd /etc/apt
+$ sudo cp sources.list sources.list.bak
+
+# 删除 sources.list 文件中原内容，替换成下面的阿里云镜像源（对应的是 ubuntu 23.04 (lunar)）
+$ sudo vim sources.list
+deb https://mirrors.aliyun.com/ubuntu/ lunar main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ lunar main restricted universe multiverse
+
+deb https://mirrors.aliyun.com/ubuntu/ lunar-security main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ lunar-security main restricted universe multiverse
+
+deb https://mirrors.aliyun.com/ubuntu/ lunar-updates main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ lunar-updates main restricted universe multiverse
+
+# deb https://mirrors.aliyun.com/ubuntu/ lunar-proposed main restricted universe multiverse
+# deb-src https://mirrors.aliyun.com/ubuntu/ lunar-proposed main restricted universe multiverse
+
+deb https://mirrors.aliyun.com/ubuntu/ lunar-backports main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ lunar-backports main restricted universe multiverse
+
+# 更新配置
+$ sudo apt update
+$ sudo apt upgrade
+```
+
+>阿里云 Ubuntu 镜像源：https://developer.aliyun.com/mirror/ubuntu/
 
 ### 传输工具安装
 
@@ -266,9 +297,9 @@ $ npm config set registry https://registry.npmmirror.com
    #!/bin/bash
    
    set -u
-   # docker官网下载地址
+   # docker 官网下载地址
    url='https://download.docker.com/linux/static/stable/x86_64/'
-   # 获取最新版的docker包名
+   # 获取最新版的 docker 包名，地址：https://download.docker.com/linux/static/stable/x86_64/
    tarFile=$(curl -s ${url} | grep -E '.*docker-[0-9]*\.[0-9]*\.[0-9]*\.tgz' | tail -n 1 | awk -F '"' '{print $2}')
    # 拼接完整url并下载
    curl -o docker.tgz "${url}${tarFile}"
@@ -277,7 +308,7 @@ $ npm config set registry https://registry.npmmirror.com
    tar xf docker.tgz
    mv docker/* /usr/local/bin/
    
-   # 创建docker的数据目录
+   # 创建 docker 的数据目录
    mkdir -p /home/data/docker
    ```
 
@@ -379,18 +410,19 @@ $ npm config set registry https://registry.npmmirror.com
 8. 普通用户如需使用二进制方式安装的 docker，可参考以下步骤，假设普通用户的用户名为 admin。
 
    ```sh
-   # 1. 创建docker用户组
-   $ groupadd docker
-   # 2. 将admin用户加到docker用户组
-   $ usermod admin -a -G docker
-   # 3. 重启docker
+   # 1. 创建 docker 用户组
+   $ sudo groupadd docker
+   # 2. 将 admin 用户加到 docker 用户组
+   $ sudo usermod admin -a -G docker
+   # 3. 重启 docker
    $ systemctl restart docker
-   # 4. admin用户执行docker命令进行测试
+   # 4. admin 用户执行 docker 命令进行测试
    ```
 
 9. 如果安装过程中出现错误，使用命令查看详细的错误日志。
 
    ```sh
+   $ systemctl status docker.service
    $ journalctl -xeu docker | less
    ```
 
@@ -398,35 +430,35 @@ $ npm config set registry https://registry.npmmirror.com
 >
 > ```bash
 > #!/bin/bash
-> # description: 国内联网情况下通过docker二进制包安装docker和docker-compose
+> # description: 国内联网情况下通过 docker 二进制包安装 docker 和 docker-compose
 > 
 > set -u
 > dataDir='/home/apps/docker'
 > 
 > downloadDocker(){
->     # docker官网下载地址
+>     # docker 官网下载地址
 >     local url='https://download.docker.com/linux/static/stable/x86_64/'
->     # 获取最新版的docker包名
+>     # 获取最新版的 docker 包名
 >     local tarFile=$(curl -s ${url} | grep -E '.*docker-[0-9]*\.[0-9]*\.[0-9]*\.tgz' | tail -n 1 | awk -F '"' '{print $2}')
->     # 拼接完整url并下载
+>     # 拼接完整 url 并下载
 >     curl -s -o docker.tgz "${url}${tarFile}"
 > 
 >     # 解压，将压缩包内的文件挪到 /usr/local/bin
 >     tar xf docker.tgz
 >     mv docker/* /usr/local/bin/
 > 
->     # 创建docker的数据目录
+>     # 创建 docker 的数据目录
 >     mkdir -p ${dataDir}
 >     echo -e "\n\t>>> docker data dir: ${dataDir} <<<\n"
 > 
->     # (可选)创建docker用户组
+>     # （可选）创建 docker 用户组
 >     groupadd docker
 > }
 > 
 > downloadDockerCompose() {
->     # 获取最新版tag
+>     # 获取最新版 tag
 >     local tag=$(curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}')
->     # 通过ghproxy的代理拼接下载url
+>     # 通过 ghproxy 的代理拼接下载 url
 >     local url="https://ghproxy.com/https://github.com/docker/compose/releases/download/${tag}/docker-compose-linux-x86_64"
 > 
 >     curl -s -o docker-compose ${url}
@@ -472,7 +504,7 @@ $ npm config set registry https://registry.npmmirror.com
 >     systemctl enable docker
 > }
 > 
-> # 生成docker的配置文件
+> # 生成 docker 的配置文件
 > createDockerConfig() {
 >     if [ ! -d "/etc/docker" ]; then
 >         echo -e "\n\t>>> /etc/docker is not exist. <<<\n"
@@ -504,7 +536,7 @@ $ npm config set registry https://registry.npmmirror.com
 >         exit 1
 >     fi
 > 
->     # 检测docker是否已安装
+>     # 检测 docker 是否已安装
 >     docker --version > /dev/null 2>&1
 >     if [ $? -eq 0 ]; then
 >         echo -e "\n\t\033[31m>>> Docker is already installed. <<<\033[0m"
@@ -538,11 +570,11 @@ $ npm config set registry https://registry.npmmirror.com
 >2. 设置 docker 仓库。
 >
 >  ```sh
->  # 更新apt软件包索引和安装包, 以允许apt使用HTTPS上的存储库
+>  # 更新 apt 软件包索引和安装包, 以允许 apt 使用 HTTPS 上的存储库
 >  $ sudo apt-get update
 >  $ sudo apt-get install ca-certificates curl gnupg
 >
->  # 添加docker的官方GPG密钥
+>  # 添加 docker 的官方 GPG 密钥
 >  $ sudo install -m 0755 -d /etc/apt/keyrings
 >  $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 >  $ sudo chmod a+r /etc/apt/keyrings/docker.gpg
@@ -566,7 +598,7 @@ $ npm config set registry https://registry.npmmirror.com
 >4. 设置镜像源。
 >
 >  ```sh
->  # 设置镜像源，新建一个daemon.json文件，然后添加如下内容
+>  # 设置镜像源，新建一个 daemon.json 文件，然后添加如下内容
 >  $ sudo vim /etc/docker/daemon.json
 >  $ sudo cat /etc/docker/daemon.json
 >  {
@@ -592,12 +624,12 @@ $ npm config set registry https://registry.npmmirror.com
 >  $ docker ps
 >  permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
 >
->  # 添加当前用户到docker组
+>  # 添加当前用户到 docker 组
 >  $ sudo gpasswd -a ${USER} docker
 >  [sudo] password for xisun: 
 >  Adding user xisun to group docker
 >
->  # 退出当前用户, 比如切换为root, 再切换为xisun
+>  # 退出当前用户, 比如切换为 root, 再切换为 xisun
 >  $ sudo su -
 >  $ su xisun 
 >
@@ -650,7 +682,7 @@ $ npm config set registry https://registry.npmmirror.com
    
    chmod +x docker-compose
    
-   # 将docker-compose挪到PATH环境变量的路径
+   # 将 docker-compose 挪到 PATH 环境变量的路径
    mv docker-compose /usr/local/bin/
    
    # 验证并查看版本
@@ -671,7 +703,7 @@ $ npm config set registry https://registry.npmmirror.com
 > # 1. 查看最新版本
 > $ curl -s "https://api.github.com/repos/docker/compose/tags" | grep '"name":' | head -n 1 | awk -F '"' '{print $4}'
 > 
-> # 2. 下载，如需下载其他版本，替换v2.24.7为最新的版本号即可
+> # 2. 下载，如需下载其他版本，替换 v2.24.7 为最新的版本号即可
 > $ sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 > 
 > # 3. 赋予二进制文件可执行权限
@@ -683,7 +715,7 @@ $ npm config set registry https://registry.npmmirror.com
 国内镜像源偶尔会出现不能使用的情况，在已有代理的情况下，按如下方式配置：
 
 ```sh
-# 1. 编辑daemon.json文件，添加代理，192.168.1.17:7890是宿主机局域网中的代理服务器地址（国内镜像源的配置需要删除）
+# 1. 编辑 daemon.json 文件，添加代理，192.168.1.17:7890 是宿主机局域网中的代理服务器地址（国内镜像源的配置需要删除）
 $ vim /etc/docker/daemon.json 
 {
     "proxies": {
