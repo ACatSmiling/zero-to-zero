@@ -1,4 +1,6 @@
-*date: 2021-09-06*
+> `Author: ACatSmiling`
+>
+> `Since: 2021-09-06`
 
 ## 计算机基础知识
 
@@ -399,7 +401,7 @@ Pycharm 引用新创建的 py38 环境：
 
 官网下载 Miniconda Linux 安装程序：
 
-![image-20220215160307231](img/python/image-20220215160307231.png)
+![image-20220215160307231](python/image-20220215160307231.png)
 
 WSL 中创建 Python 3.8 环境：
 
