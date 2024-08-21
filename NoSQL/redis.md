@@ -5122,7 +5122,6 @@ errors: 0, replies: 1000000
 
   - 给出一个 key 和它的值在 RAM 中所占用的字节数。对于嵌套数据类型，可以使用选项 SAMPLES，其中 count 表示抽样的元素个数，默认值为 5。当需要抽样所有元素时，使用 SAMPLE 0。
 
-
 **BigKey 如何删除：**
 
 - String 类型：
