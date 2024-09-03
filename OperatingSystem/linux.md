@@ -72,6 +72,10 @@ Linux vs Windows：
 
 #### Hyper-V 虚拟机安装
 
+打开控制面板，找到程序`启用或关闭 Windows 功能`，开启 Hyper-V：
+
+<img src="linux/image-20240902213506399.png" alt="image-20240902213506399" style="zoom: 80%;" />
+
 win + R 快捷键，输入`virtmgmt.msc`，打开 Hyper-V 管理器，新建虚拟机：
 
 <img src="linux/image-20240810232300618.png" alt="image-20240810232300618" style="zoom: 80%;" />
@@ -2774,7 +2778,7 @@ ks-script-_qoglS  test  yum.log
 >如果环境是 Minimal Install 安装时，需要自行安装：
 >
 >```shell
->$ yum -y install zip unzip
+>$ yum install -y zip unzip
 >```
 
 ##### tar
@@ -3278,7 +3282,7 @@ $ pstree [选项]
 > pstree 命令需要安装：
 >
 > ```shell
-> $ yum -y install psmisc
+> $ yum install -y psmisc
 > ```
 
 示例：
@@ -3402,7 +3406,7 @@ tcp6       0      0 ::1:25                  :::*                    LISTEN      
 >命令安装：
 >
 >```shell
->$ yum -y install netstat
+>$ yum install -y netstat
 >```
 
 ##### lsof
@@ -3437,7 +3441,7 @@ sshd    1140 zeloud    3u  IPv4  18007      0t0  TCP centos:ssh->192.168.1.25:66
 > 命令安装：
 >
 > ```shell
-> $ yum -y install lsof
+> $ yum install -y lsof
 > ```
 
 #### 系统定时任务
@@ -3714,7 +3718,7 @@ wget.x86_64                                                         1.14-18.el7_
 >wget 安装：
 >
 >```shell
->$ yum -y install wget
+>$ yum install -y wget
 >```
 >
 >如果不使用镜像源，使用 YUM 时，可能会有以下 error：
