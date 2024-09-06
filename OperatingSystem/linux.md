@@ -1,6 +1,6 @@
->`Author: ACatSmiling`
+>**$\textcolor{RubineRed}{Author: ACatSmiling}$**
 >
->`Since: 2024-08-09`
+>**$\color{RubineRed}{Since: 2024-08-09}$**
 
 ## 入门篇
 
@@ -1897,7 +1897,7 @@ anaconda-ks.cfg
 基本语法：
 
 ```shell
-# 只删除用户，不擅长该用户的主目录
+# 只删除用户，不删除该用户的主目录
 $ userdel 用户名
 
 # 删除用户，同时删除该用户的主目录
@@ -3464,8 +3464,6 @@ Aug 20 21:09:59 centos crond[539]: (CRON) INFO (RANDOM_DELAY will be scaled with
 Aug 20 21:09:59 centos crond[539]: (CRON) INFO (running with inotify support)
 ```
 
-
-
 ##### crontab 定时任务设置
 
 基本语法：
@@ -3499,7 +3497,6 @@ $ crontab [选项]
   - `40 4 * * 1-5 命令`：每周一到周五的凌晨 4 点 40 分执行一次命令。
   - `*/10 4 * * * 命令`：每天的凌晨 4 点，每隔 10 分钟执行一次命令。
   - `0 0 1,15 * 1 命令`：每月 1 号和 15 号，每周一的 0 点 0 分，都会执行一次命令。注意：星期几和几号最好不要同时出现，因为它们定义的都是天，非常容易让人混乱。
-- s
 
 示例：
 
