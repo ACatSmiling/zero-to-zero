@@ -324,14 +324,51 @@ Status 表示`对象的实际状态`，该属性由 kubernetes 自己维护，ku
 服务器要求：
 
 - k8s-master：192.168.1.120。
-- k8s-node1：
+- k8s-node1：192.168.1.121。
+- k8s-node1：192.168.1.122。
 
 每台服务器最低配置：2 核、2G 内存、20G 硬盘。
+
+> 使用 Hyper-V 时，注意配置动态内存的最小值：
+>
+> <img src="kubernetes/image-20240902213655950.png" alt="image-20240902213655950" style="zoom:80%;" />
+
+### 操作系统
+
+```shell
+[root@k8s-master k8s]# cat /etc/centos-release
+CentOS Linux release 7.9.2009 (Core)
+[root@k8s-master k8s]# uname -r
+3.10.0-1160.el7.x86_64
+[root@k8s-master k8s]# uname -a
+Linux k8s-master 3.10.0-1160.el7.x86_64 #1 SMP Mon Oct 19 16:18:59 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+### 设置 hostname
+
+```shell
+[root@k8s-master ~]# hostnamectl set-hostname k8s-master
+```
+
+- 修改 hostname 后，需要重启虚拟机。
+
+### 设置 hosts
+
+```shell
+[root@k8s-master ~]# vim /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+192.168.1.120 k8s-master
+192.168.1.121 k8s-node1
+192.168.1.122 k8s-node2
+```
 
 ### 关闭防火墙
 
 ```shell
-[root@master ~]# systemctl status firewalld
+# 查看防火墙状态
+[root@k8s-master ~]# systemctl status firewalld
 ● firewalld.service - firewalld - dynamic firewall daemon
    Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
    Active: active (running) since Tue 2024-08-27 23:20:58 CST; 21min ago
@@ -345,12 +382,12 @@ Aug 27 23:20:58 master systemd[1]: Started firewalld - dynamic firewall daemon.
 Aug 27 23:20:58 master firewalld[549]: WARNING: AllowZoneDrifting is enabled. This is considered an insecure configuration option. It will... it now.
 Hint: Some lines were ellipsized, use -l to show in full.
 # 关闭防火墙
-[root@master ~]# systemctl stop firewalld
+[root@k8s-master ~]# systemctl stop firewalld
 # 禁止防火墙开机自启
-[root@master ~]# systemctl disable firewalld
+[root@k8s-master ~]# systemctl disable firewalld
 Removed symlink /etc/systemd/system/multi-user.target.wants/firewalld.service.
 Removed symlink /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
-[root@master ~]# systemctl status firewalld
+[root@k8s-master ~]# systemctl status firewalld
 ● firewalld.service - firewalld - dynamic firewall daemon
    Loaded: loaded (/usr/lib/systemd/system/firewalld.service; disabled; vendor preset: enabled)
    Active: inactive (dead)
@@ -364,10 +401,65 @@ Aug 27 23:42:28 master systemd[1]: Stopped firewalld - dynamic firewall daemon.
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
+> ```shell
+> $ systemctl stop firewalld
+> $ systemctl disable firewalld
+> ```
+
+### 关闭 swap
+
+```shell
+[root@k8s-master ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           3950        2286         918           8         745        1437
+Swap:          4095           0        4095
+
+[root@k8s-master ~]# cat /etc/fstab 
+
+#
+# /etc/fstab
+# Created by anaconda on Thu Aug 22 23:53:48 2024
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=f724baab-c349-497d-ba1f-da8f619fdf89 /                       xfs     defaults        0 0
+UUID=F0B8-EAC5          /boot/efi               vfat    umask=0077,shortname=winnt 0 0
+UUID=94ca6141-23b0-4eff-ab4f-ae74b1cfe406 swap                    swap    defaults        0 0
+# 永久关闭 swap
+[root@k8s-master ~]# sed -ri 's/.*swap.*/#&/' /etc/fstab
+[root@k8s-master ~]# cat /etc/fstab 
+
+#
+# /etc/fstab
+# Created by anaconda on Thu Aug 22 23:53:48 2024
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=f724baab-c349-497d-ba1f-da8f619fdf89 /                       xfs     defaults        0 0
+UUID=F0B8-EAC5          /boot/efi               vfat    umask=0077,shortname=winnt 0 0
+#UUID=94ca6141-23b0-4eff-ab4f-ae74b1cfe406 swap                    swap    defaults        0 0
+
+# 关闭 swap 后，一定要重启虚拟机
+[root@k8s-master ~]# reboot
+[root@k8s-master ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           3950         198        3671           8          79        3593
+Swap:             0           0           0
+```
+
+- 临时关闭：`swapoff -a`。
+
+>```shell
+>$ sed -ri 's/.*swap.*/#&/' /etc/fstab
+>$ reboot
+>```
+
 ### 关闭 selinux
 
 ```shell
-[root@master ~]# cat /etc/selinux/config 
+[root@k8s-master ~]# cat /etc/selinux/config 
 
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
@@ -383,8 +475,9 @@ SELINUXTYPE=targeted
 
 
 # 永久关闭
-[root@master ~]# sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config 
-[root@master ~]# cat /etc/selinux/config 
+[root@k8s-master ~]# sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+
+[root@k8s-master ~]# cat /etc/selinux/config 
 
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
@@ -403,69 +496,55 @@ SELINUXTYPE=targeted
 
 - 临时关闭：`setenforce 0`。
 
-### 关闭 swap
-
-```shell
-[root@master ~]# free -m
-              total        used        free      shared  buff/cache   available
-Mem:           3950        2286         918           8         745        1437
-Swap:          4095           0        4095
-
-[root@master ~]# cat /etc/fstab 
-
-#
-# /etc/fstab
-# Created by anaconda on Thu Aug 22 23:53:48 2024
-#
-# Accessible filesystems, by reference, are maintained under '/dev/disk'
-# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
-#
-UUID=f724baab-c349-497d-ba1f-da8f619fdf89 /                       xfs     defaults        0 0
-UUID=F0B8-EAC5          /boot/efi               vfat    umask=0077,shortname=winnt 0 0
-UUID=94ca6141-23b0-4eff-ab4f-ae74b1cfe406 swap                    swap    defaults        0 0
-# 永久关闭 swap
-[root@master ~]# sed -ri 's/.*swap.*/#&/' /etc/fstab
-[root@master ~]# cat /etc/fstab 
-
-#
-# /etc/fstab
-# Created by anaconda on Thu Aug 22 23:53:48 2024
-#
-# Accessible filesystems, by reference, are maintained under '/dev/disk'
-# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
-#
-UUID=f724baab-c349-497d-ba1f-da8f619fdf89 /                       xfs     defaults        0 0
-UUID=F0B8-EAC5          /boot/efi               vfat    umask=0077,shortname=winnt 0 0
-#UUID=94ca6141-23b0-4eff-ab4f-ae74b1cfe406 swap                    swap    defaults        0 0
-# 关闭 swap 后，一定要重启虚拟机
-[root@master ~]# reboot
-[root@master ~]# free -m
-              total        used        free      shared  buff/cache   available
-Mem:           3950         198        3671           8          79        3593
-Swap:             0           0           0
-```
-
-- 临时关闭：`swapoff -a`。
-
-### 设置 hostname
-
-```shell
-[root@master ~]# hostnamectl set-hostname k8s-master
-```
-
-- 修改 hostname 后，需要重启虚拟机。
-
-### 设置 hosts
-
-```shell
-[root@k8s-master ~]# vim /etc/hosts
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-
-192.168.1.120 k8s-master
-192.168.1.121 k8s-node1
-192.168.1.122 k8s-node2
-```
+>SELinux 是一个为 Linux 提供访问控制安全策略的安全模块，它通过定义和执行安全策略来限制进程对系统资源的访问，从而增强系统的安全性。然而，K8s 集群的某些组件或配置可能与 SELinux 的默认策略不兼容，导致安装或运行过程中出现权限问题。
+>
+>- 临时关闭
+>
+>```shell
+># 此命令将 SELinux 设置为宽容模式（permissive mode），在这种模式下，SELinux 会记录违反策略的行为但不会阻止它们
+>$ setenforce 0
+>```
+>
+>- 永久关闭
+>
+>```shell
+>$ sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+>
+>$ sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+>
+>$ reboot
+>```
+>
+>需要注意的是，关闭 SELinux 会降低系统的安全性。因此，在关闭 SELinux 之前，应该仔细评估潜在的安全风险，并确保已经采取了其他适当的安全措施来保护系统。
+>
+>**在 K8s 集群中，关闭 Swap 和 SELinux 是出于性能和稳定性方面的考虑。**
+>
+>为什么要关闭 Swap？
+>
+>- 性能问题：
+>  - Swap 内存通常比物理内存慢很多。当系统内存不足时，Linux 会将部分内存内容交换到磁盘上的 Swap 分区中，这会导致应用程序的性能显著下降。在 K8s 集群中，容器应用对性能有较高要求，频繁的 Swap 操作会严重影响这些应用的运行效率。
+>  - 关闭 Swap 可以避免这种性能损失，确保容器应用能够直接从物理内存中获取所需资源，从而提高整体性能。
+>
+>- 稳定性问题：
+>  - K8s 对容器运行环境的要求比较高，关闭 Swap 可以减少因为内存兑换（即内存与 Swap 之间的数据交换）引起的异常现象。这有助于确保集群的稳定性，避免因为内存问题导致的容器崩溃或系统不稳定。
+>
+>- 资源管理：
+>  - K8s 本身对内存的管理非常严格，它通过资源配额（Resource Quotas）和限制（Limits）来确保容器不会超出其分配的资源范围。如果启用 Swap，这些管理机制可能无法有效发挥作用，因为 Swap 允许容器在物理内存不足时继续运行，但性能会大幅下降。
+>
+>
+>为什么要关闭 SELinux？
+>
+>- 兼容性问题：
+>  - SELinux 是一种安全增强型的 Linux 内核安全模块，它可以提供强大的访问控制机制。然而，在某些情况下，SELinux 可能会与 K8s 的某些组件或特性不兼容，导致集群运行不稳定或出现权限问题。
+>
+>- 简化部署和管理：
+>  - 关闭 SELinux 可以简化 K8s 的部署和管理过程。在没有 SELinux 的情况下，管理员可以更容易地配置和调试集群，而无需担心 SELinux 的安全策略可能会干扰集群的正常运行。
+>
+>- 安全风险：
+>  - 虽然 SELinux 可以增强系统的安全性，但在某些情况下，它也可能成为安全漏洞的源头。例如，如果 SELinux 的策略配置不当，可能会允许未授权的访问或操作。因此，在某些情况下，关闭 SELinux 可能是一种更安全的选择，特别是当管理员能够确保通过其他方式（如网络隔离、身份验证等）来保护系统时。
+>
+>
+>**综上所述，关闭 Swap 和 SELinux 是 K8s 集群部署中的常见做法，旨在提高集群的性能和稳定性，并简化部署和管理过程。然而，这些决策也需要在安全性和性能之间做出权衡，并根据具体的业务需求和安全策略来确定是否适用。**
 
 ### 将桥接的 IPv4 流量传递到 iptables 的链
 
@@ -476,6 +555,7 @@ Swap:             0           0           0
 > net.bridge.bridge-nf-call-iptables = 1
 > vm.swappiness = 0
 > EOF
+
 # 生效配置
 [root@k8s-master ~]# sysctl --system
 * Applying /usr/lib/sysctl.d/00-system.conf ...
@@ -499,6 +579,17 @@ net.ipv4.ip_forward = 1
 vm.swappiness = 0
 * Applying /etc/sysctl.conf ...
 ```
+
+>```shell
+>$ cat > /etc/sysctl.d/k8s.conf << EOF
+>net.ipv4.ip_forward = 1
+>net.bridge.bridge-nf-call-ip6tables = 1
+>net.bridge.bridge-nf-call-iptables = 1
+>vm.swappiness = 0
+>EOF
+>
+>$ sysctl --system
+>```
 
 ### 时间同步
 
@@ -545,9 +636,17 @@ Complete!
 28 Aug 00:08:27 ntpdate[1077]: adjust time server 52.231.114.183 offset 0.248979 sec
 ```
 
+> ```shell
+> $ yum -y install ntpdate
+> 
+> $ ntpdate time.windows.com
+> ```
+>
+
 ### Docker 安装
 
 ```shell
+# 切换镜像源
 [root@k8s-master ~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo
 --2024-08-28 00:18:09--  https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 Resolving mirrors.aliyun.com (mirrors.aliyun.com)... 124.238.242.241, 117.68.48.82, 117.68.48.80, ...
@@ -560,6 +659,7 @@ Saving to: ‘/etc/yum.repos.d/docker-ce.repo’
 
 2024-08-28 00:18:09 (684 MB/s) - ‘/etc/yum.repos.d/docker-ce.repo’ saved [2081/2081]
 
+# 查看当前镜像源中支持的 Docker 版本
 [root@k8s-master ~]# yum list docker-ce --showduplicates
 Loaded plugins: fastestmirror
 Loading mirror speeds from cached hostfile
@@ -669,6 +769,8 @@ docker-ce.x86_64                                               3:26.1.1-1.el7   
 docker-ce.x86_64                                               3:26.1.2-1.el7                                                        docker-ce-stable
 docker-ce.x86_64                                               3:26.1.3-1.el7                                                        docker-ce-stable
 docker-ce.x86_64                                               3:26.1.4-1.el7                                                        docker-ce-stable
+
+# 安装特定版本的 docker-ce
 [root@k8s-master ~]# yum -y install --setopt=obsoletes=0 docker-ce-18.06.3.ce-3.el7
 Loaded plugins: fastestmirror
 Loading mirror speeds from cached hostfile
@@ -794,26 +896,16 @@ Dependency Installed:
 
 Complete!
 
+# 添加一个配置文件
 [root@k8s-master ~]# mkdir /etc/docker/
 [root@k8s-master ~]# cat <<EOF> /etc/docker/daemon.json
 > {
 >     "exec-opts": ["native.cgroupdriver=systemd"],
->     "proxies": {
->         "http-proxy": "http://192.168.1.25:7890",
->         "https-proxy": "http://192.168.1.25:7890"
->     }
+>     "registry-mirrors": ["https://kn0t2bca.mirror.aliyuncs.com"]
 > }
 > EOF
-```
 
-```shell
-cat <<EOF> /etc/docker/daemon.json
-{
-    "exec-opts": ["native.cgroupdriver=systemd"],
-    "registry-mirrors": ["https://kn0t2bca.mirror.aliyuncs.com"]
-}
-EOF
-
+# 生效配置
 [root@k8s-master ~]# systemctl daemon-reload
 [root@k8s-master ~]# systemctl restart docker
 [root@k8s-master ~]# systemctl enable docker
@@ -841,21 +933,57 @@ Aug 28 23:50:07 k8s-master systemd[1]: Started Docker Application Container Engi
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
+> Docker 在默认情况下使用 Vgroup Driver 为 cgroupfs，而 kubernetes 推荐使用 systemd 来替代 cgroupfs。
+>
 
+>```shell
+>$ wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo
+>
+>$ yum list docker-ce --showduplicates
+>
+>$ yum -y install --setopt=obsoletes=0 docker-ce-18.06.3.ce-3.el7
+>
+>$ mkdir /etc/docker/
+>$ cat <<EOF> /etc/docker/daemon.json
+>{
+>	"exec-opts": ["native.cgroupdriver=systemd"],
+>	"registry-mirrors": ["https://kn0t2bca.mirror.aliyuncs.com"]
+>}
+>EOF
+>
+>$ systemctl daemon-reload
+>$ systemctl restart docker
+>$ systemctl enable docker
+>$ systemctl status docker
+>```
+
+### 配置 kubernetes 镜像源
 
 ```shell
-cat > /etc/yum.repos.d/kubernetes.repo << EOF
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=0
-repo_gpgcheck=0
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
+[root@k8s-master yum.repos.d]# cat > /etc/yum.repos.d/kubernetes.repo << EOF
+> [kubernetes]
+> name=Kubernetes
+> baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+> enabled=1
+> gpgcheck=0
+> repo_gpgcheck=0
+> gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+> EOF
 ```
 
+> ```shell
+> $ cat > /etc/yum.repos.d/kubernetes.repo << EOF
+> [kubernetes]
+> name=Kubernetes
+> baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+> enabled=1
+> gpgcheck=0
+> repo_gpgcheck=0
+> gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+> EOF
+> ```
 
+### 安装 kubeadm、kubelet 和 kubectl
 
 ```shell
 [root@k8s-master yum.repos.d]# yum install -y --setopt=obsoletes=0 kubeadm-1.23.6 kubelet-1.23.6 kubectl-1.23.6
@@ -970,11 +1098,11 @@ Dependency Installed:
 Complete!
 ```
 
+> ```shell
+> $ yum install -y --setopt=obsoletes=0 kubeadm-1.23.6 kubelet-1.23.6 kubectl-1.23.6
+> ```
 
-
-
-
-
+### 设置 kubelet 开机自启
 
 ```shell
 [root@k8s-master yum.repos.d]# systemctl enable kubelet
@@ -988,24 +1116,15 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/kubelet.service
      Docs: https://kubernetes.io/docs/
 ```
 
+> ```shell
+> $ systemctl enable kubelet
+> $ systemctl status kubelet
+> ```
 
-
-
-
-```shell
-kubeadm init \
-	--apiserver-advertise-address=192.168.1.120 \
-	--image-repository registry.aliyuncs.com/google_containers \
-	--kubernetes-version=v1.23.6 \
-	--service-cidr=10.96.0.0/12 \
-	--pod-network-cidr=10.244.0.0/16
-```
-
-
-
-
+### 集群 Master 节点初始化
 
 ```shell
+# 此操作只在 master 节点执行
 [root@k8s-master yum.repos.d]# kubeadm init \
 > --apiserver-advertise-address=192.168.1.120 \
 > --image-repository registry.aliyuncs.com/google_containers \
@@ -1086,13 +1205,255 @@ kubeadm join 192.168.1.120:6443 --token rczo3l.hgi643ox3vzw4ttr \
         --discovery-token-ca-cert-hash sha256:714d757f758bbf794c88d48078fcceaca6993a71c32a2e0f131f17ded0099f75
 ```
 
+>注意结合自己的实际情况，修改对应的参数配置：
+>
+>```shell
+>$ kubeadm init \
+>--apiserver-advertise-address=192.168.1.120 \
+>--image-repository registry.aliyuncs.com/google_containers \
+>--kubernetes-version=v1.23.6 \
+>--service-cidr=10.96.0.0/12 \
+>--pod-network-cidr=10.244.0.0/16
+>```
+>
+>- `apiserver-advertise-address`：指定 Api Server 地址。
+>- `image-repository`：镜像仓库地址。
+>- `kubernetes-version`：kubernetes 版本。
+>- `service-cidr`：Service 的网络 IP 地址段。
+>- `pod-network-cidr`：Pod 的网络 IP 地址段。
 
+当看到`Your Kubernetes control-plane has initialized successfully!`提示，说明集群 Master 节点初始化成功，按照提示，依次执行以下命令：
 
 ```shell
 [root@k8s-master ~]# mkdir -p $HOME/.kube
 [root@k8s-master ~]# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@k8s-master ~]# sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
+
+Master 节点初始化成功后，可以查看启动的 Docker 容器：
+
+```shell
+[root@k8s-master ~]# docker ps
+CONTAINER ID        IMAGE                                               COMMAND                  CREATED             STATUS              PORTS               NAMES
+516411b3e4f9        df7b72818ad2                                        "kube-controller-man…"   About an hour ago   Up About an hour                        k8s_kube-controller-manager_kube-controller-manager-k8s-master_kube-system_cf39bc9bfe4da000c1780f37274acf68_3
+2ed3b58d0c11        595f327f224a                                        "kube-scheduler --au…"   About an hour ago   Up About an hour                        k8s_kube-scheduler_kube-scheduler-k8s-master_kube-system_ad30b41672979e80f74f72181c1c9762_3
+85de5232c506        4c0375452406                                        "/usr/local/bin/kube…"   2 hours ago         Up 2 hours                              k8s_kube-proxy_kube-proxy-m2nbx_kube-system_199d9d71-dd85-4363-8c46-addd357aac3b_1
+9394d7715a75        registry.aliyuncs.com/google_containers/pause:3.6   "/pause"                 2 hours ago         Up 2 hours                              k8s_POD_kube-proxy-m2nbx_kube-system_199d9d71-dd85-4363-8c46-addd357aac3b_1
+a4c2a7a80eb7        8fa62c12256d                                        "kube-apiserver --ad…"   2 hours ago         Up 2 hours                              k8s_kube-apiserver_kube-apiserver-k8s-master_kube-system_f844c52da54beeb845dab75e338dce7a_1
+82c2e3320e5f        25f8c7f3da61                                        "etcd --advertise-cl…"   2 hours ago         Up 2 hours                              k8s_etcd_etcd-k8s-master_kube-system_2f6b828b40e9edd50c7cb676b0b4bacf_1
+84f3a53a6139        registry.aliyuncs.com/google_containers/pause:3.6   "/pause"                 2 hours ago         Up 2 hours                              k8s_POD_kube-scheduler-k8s-master_kube-system_ad30b41672979e80f74f72181c1c9762_1
+ca132ea49edc        registry.aliyuncs.com/google_containers/pause:3.6   "/pause"                 2 hours ago         Up 2 hours                              k8s_POD_kube-apiserver-k8s-master_kube-system_f844c52da54beeb845dab75e338dce7a_1
+848d64a5403d        registry.aliyuncs.com/google_containers/pause:3.6   "/pause"                 2 hours ago         Up 2 hours                              k8s_POD_kube-controller-manager-k8s-master_kube-system_cf39bc9bfe4da000c1780f37274acf68_1
+435f1caea216        registry.aliyuncs.com/google_containers/pause:3.6   "/pause"                 2 hours ago         Up 2 hours                              k8s_POD_etcd-k8s-master_kube-system_2f6b828b40e9edd50c7cb676b0b4bacf_1
+```
+
+### 集群 Node 节点 join
+
+在两个 Node 节点，执行以下命令：
+
+```shell
+[root@k8s-node1 ~]# kubeadm join 192.168.1.120:6443 --token y4a0gj.5iaxcci7uqkdjcf0 --discovery-token-ca-cert-hash sha256:714d757f758bbf794c88d48078fcceaca6993a71c32a2e0f131f17ded0099f75
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+```
+
+- `--toke`：Master 节点初次 init 时，在 init 成功后，会在最后输出 Node 节点 join 的命令。在后续操作时，如果没有 token，可以通过以下方式获取：
+
+  ```shell
+  # 查看没有过期的 token 列表
+  [root@k8s-master ~]# kubeadm token list
+  
+  # 重新申请 token
+  [root@k8s-master ~]# kubeadm token create
+  y4a0gj.5iaxcci7uqkdjcf0
+  [root@k8s-master ~]# kubeadm token list
+  TOKEN                     TTL         EXPIRES                USAGES                   DESCRIPTION                                                EXTRA GROUPS
+  y4a0gj.5iaxcci7uqkdjcf0   23h         2024-09-05T15:40:56Z   authentication,signing   <none>                                                     system:bootstrappers:kubeadm:default-node-token
+  ```
+
+- `--discovery-token-ca-cert-hash`：SSL 证书对应的 Hash 值。同样的，Master 节点初次 init 时，也会输出，如果后续没有了，通过以下命令获取，再将获得的值，拼接上 "sha256:"，即可获得 Hash 值为 "sha256:714d757f758bbf794c88d48078fcceaca6993a71c32a2e0f131f17ded0099f75"。
+
+  ```shell
+  $ [root@k8s-master ~]# openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl sha256 -hex | sed 's/^.* //'
+  714d757f758bbf794c88d48078fcceaca6993a71c32a2e0f131f17ded0099f75
+  ```
+
+  - `openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt`：从 kubernetes 的 CA 证书（位于`/etc/kubernetes/pki/ca.crt`）中提取公钥。
+  - `| openssl rsa -pubin -outform der 2>/dev/null`：将公钥转换为 DER 格式。2>/dev/null 用于重定向错误输出，以保持命令行整洁。
+  - `| openssl sha256 -hex`：对 DER 格式的公钥进行 SHA-256 哈希计算，并以十六进制形式输出。
+  - `| sed 's/^.* //'`：使用 sed 工具删除输出中的任何前导文本，只留下哈希值。
+
+> 如果是 Ubuntu 系统，使用以下命令：
+>
+> ```shell
+> $ openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+> ```
+
+此时，可以查看 Node 节点上启动的容器：
+
+```shell
+[root@k8s-node1 yum.repos.d]# docker ps
+CONTAINER ID        IMAGE                                                COMMAND                  CREATED             STATUS              PORTS               NAMES
+6caa9ae8a696        registry.aliyuncs.com/google_containers/kube-proxy   "/usr/local/bin/kube…"   11 minutes ago      Up 11 minutes                           k8s_kube-proxy_kube-proxy-6xntx_kube-system_a0a43318-a317-46a8-9a01-a510218b93f7_0
+58126cacdd00        registry.aliyuncs.com/google_containers/pause:3.6    "/pause"                 11 minutes ago      Up 11 minutes                           k8s_POD_kube-proxy-6xntx_kube-system_a0a43318-a317-46a8-9a01-a510218b93f7_0
+```
+
+同时，在 Master 节点上，查看集群的状态，仍处于 NotReady 的状态：
+
+```shell
+[root@k8s-master ~]# kubectl get nodes
+NAME         STATUS     ROLES                  AGE     VERSION
+k8s-master   NotReady   control-plane,master   6d23h   v1.23.6
+k8s-node1    NotReady   <none>                 56s     v1.23.6
+k8s-node2    NotReady   <none>                 53s     v1.23.6
+```
+
+### 集群 Master 节点安装网络插件
+
+在 Node 节点 join 之后，执行以下命令查看 Component 和 Pod 的状态：
+
+```shell
+[root@k8s-master ~]# kubectl get componentstatus
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS    MESSAGE                         ERROR
+controller-manager   Healthy   ok                              
+scheduler            Healthy   ok                              
+etcd-0               Healthy   {"health":"true","reason":""}
+
+[root@k8s-master ~]# kubectl get pods -n kube-system
+NAME                                 READY   STATUS    RESTARTS       AGE
+coredns-6d8c4cb4d-7m22g              0/1     Pending   0              7d23h
+coredns-6d8c4cb4d-q22dm              0/1     Pending   0              7d23h
+etcd-k8s-master                      1/1     Running   4 (23h ago)    7d23h
+kube-apiserver-k8s-master            1/1     Running   4 (23h ago)    7d23h
+kube-controller-manager-k8s-master   1/1     Running   7 (105m ago)   7d23h
+kube-proxy-6xntx                     1/1     Running   1 (23h ago)    23h
+kube-proxy-m2nbx                     1/1     Running   5 (105m ago)   7d23h
+kube-proxy-vzsp7                     1/1     Running   1 (23h ago)    23h
+kube-scheduler-k8s-master            1/1     Running   6 (23h ago)    7d23h
+```
+
+可以看到，Component 的状态都是 Healthy，说明集群是正常的，但是 "coredns-6d8c4cb4d-7m22g" 和 "coredns-6d8c4cb4d-q22dm" 都是 Pending 状态，造成这种现象的原因，就是因为网络。因此，下面在 Master 节点上安装网络插件。
+
+```shell
+$ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+
+如果无法通过 wget 下载，可以直接访问 https://github.com/flannel-io/flannel/tree/master/Documentation/kube-flannel.yml，复制文件内容，然后在 /opt/k8s 路径下，创建 kube-flannel.yml 文件，再将复制的内容粘贴。
+
+```shell
+[root@k8s-master k8s]# pwd
+/opt/k8s
+[root@k8s-master k8s]# ls
+kube-flannel.yml
+# 需要下载的镜像
+[root@k8s-master k8s]# grep image kube-flannel.yml 
+        image: docker.io/flannel/flannel-cni-plugin:v1.5.1-flannel2
+        image: docker.io/flannel/flannel:v0.25.6
+        image: docker.io/flannel/flannel:v0.25.6
+        
+# 将 docker.io 替换为空，否则到官方下载镜像，可能很慢
+[root@k8s-master k8s]# sed -i 's#docker.io/##g' kube-flannel.yml 
+[root@k8s-master k8s]# grep image kube-flannel.yml 
+        image: flannel/flannel-cni-plugin:v1.5.1-flannel2
+        image: flannel/flannel:v0.25.6
+        image: flannel/flannel:v0.25.6
+        
+# 应用网络插件
+[root@k8s-master k8s]# kubectl apply -f kube-flannel.yml
+namespace/kube-flannel created
+clusterrole.rbac.authorization.k8s.io/flannel created
+clusterrolebinding.rbac.authorization.k8s.io/flannel created
+serviceaccount/flannel created
+configmap/kube-flannel-cfg created
+daemonset.apps/kube-flannel-ds created
+```
+
+等待一段时间，再次查看 Pod 的状态，可以看到，"coredns-6d8c4cb4d-7m22g" 和 "coredns-6d8c4cb4d-q22dm" 都是 Running 的状态：
+
+```shell
+[root@k8s-master ~]# kubectl get pod -n kube-system
+NAME                                 READY   STATUS    RESTARTS       AGE
+coredns-6d8c4cb4d-7m22g              1/1     Running   0              7d23h
+coredns-6d8c4cb4d-q22dm              1/1     Running   0              7d23h
+etcd-k8s-master                      1/1     Running   4 (23h ago)    7d23h
+kube-apiserver-k8s-master            1/1     Running   4 (23h ago)    7d23h
+kube-controller-manager-k8s-master   1/1     Running   7 (129m ago)   7d23h
+kube-proxy-6xntx                     1/1     Running   1 (23h ago)    23h
+kube-proxy-m2nbx                     1/1     Running   5 (129m ago)   7d23h
+kube-proxy-vzsp7                     1/1     Running   1 (23h ago)    23h
+kube-scheduler-k8s-master            1/1     Running   6 (23h ago)    7d23h
+```
+
+> 如果需要查看某个 Pod 的详细信息，可以使用以下命令：
+>
+> ```shell
+> $ kubectl describe pod coredns-6d8c4cb4d-7m22g -n kube-system
+> ```
+
+> 此处使用的是 Flannel 网络插件，也可以使用 CNI 网路插件，访问 https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml，复制文件内容，然后在 /opt/k8s 路径下，创建 calico.yaml，再将复制的内容粘贴。
+>
+> 1. 修改 CALICO_IPV4POOL_CIDR 配置，该配置默认是注释掉的，如果不是注释掉的，将其修改为与 Master 节点 init 时的 "--pod-network-cidr=10.244.0.0/16" 保持一致。
+>
+>    <img src="kubernetes/image-20240906230815028.png" alt="image-20240906230815028" style="zoom:80%;" />
+>
+> 2. 将文件中需要下载的镜像前面的 docker.io 替换为空。
+>
+> 3. 应用 CNI 插件，使用命令`kubectl apply -f calico.yaml`。
+
+### 查看集群状态
+
+使用以下命令，查看集群状态，当 STATUS 全部为 Ready 时，才可继续后面的操作（此过程可能需耗费较长时间）：
+
+```shell
+[root@k8s-master ~]# kubectl get nodes
+NAME         STATUS   ROLES                  AGE     VERSION
+k8s-master   Ready    control-plane,master   7d23h   v1.23.6
+k8s-node1    Ready    <none>                 24h     v1.23.6
+k8s-node2    Ready    <none>                 24h     v1.23.6
+```
+
+>如果 Flannel 需检查网络情况，重新进行如下操作：
+>
+>`kubectl delete -f kube-flannel.yml` ---> 再次下载文件 ---> `kubectl apply -f kube-flannel.yml`。
+
+### 测试 kubenetes 集群
+
+```shell
+# 创建部署一个 Nginx 服务
+[root@k8s-master k8s]# kubectl create deployment nginx --image=nginx
+deployment.apps/nginx created
+# 暴露容器内的端口
+[root@k8s-master k8s]# kubectl expose deployment nginx --port=80 --type=NodePort
+service/nginx exposed
+# 查看 Pod 以及服务信息，容器内端口 80，对应宿主机的端口 31173
+[root@k8s-master k8s]# kubectl get pod,svc
+root@k8s-master k8s]# kubectl get pod,svc
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/nginx-85b98978db-j4sjq   1/1     Running   0          10m
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        8d
+service/nginx        NodePort    10.98.189.130   <none>        80:31173/TCP   10m
+```
+
+查看 Nginx 服务：
+
+```shell
+```
+
+
 
 
 
@@ -1107,3 +1468,17 @@ kubeadm join 192.168.1.120:6443 --token rczo3l.hgi643ox3vzw4ttr \
 ## 高级调度
 
 ## 身份认证与权限
+
+
+
+# 本文参考
+
+https://www.bilibili.com/video/BV1MT411x7GH
+
+https://znunwm.top/archives/k8s-xiang-xi-jiao-cheng
+
+https://www.cnblogs.com/XY-Heruo/p/14669097.html
+
+# 声明
+
+写作本文初衷是个人学习记录，鉴于本人学识有限，如有侵权或不当之处，请联系 [wdshfut@163.com](mailto:wdshfut@163.com)。
