@@ -1432,14 +1432,13 @@ k8s-node2    Ready    <none>                 24h     v1.23.6
 
 ```shell
 # 创建部署一个 Nginx 服务
-[root@k8s-master k8s]# kubectl create deployment nginx --image=nginx
+[root@k8s-master ~]# kubectl create deployment nginx --image=nginx
 deployment.apps/nginx created
 # 暴露容器内的端口
-[root@k8s-master k8s]# kubectl expose deployment nginx --port=80 --type=NodePort
+[root@k8s-master ~]# kubectl expose deployment nginx --port=80 --type=NodePort
 service/nginx exposed
 # 查看 Pod 以及服务信息，容器内端口 80，对应宿主机的端口 31173
-[root@k8s-master k8s]# kubectl get pod,svc
-root@k8s-master k8s]# kubectl get pod,svc
+[root@k8s-master ~]# kubectl get pod,svc
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/nginx-85b98978db-j4sjq   1/1     Running   0          10m
 
@@ -1451,6 +1450,47 @@ service/nginx        NodePort    10.98.189.130   <none>        80:31173/TCP   10
 查看 Nginx 服务：
 
 ```shell
+[root@k8s-master ~]# curl 192.168.1.120:31173
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+- "curl 192.168.1.121:31173" 和 "curl 192.168.1.122:31173" 具有相同的效果。
+
+页面访问 192.168.1.120:31173：
+
+<img src="kubernetes/image-20240907192611766.png" alt="image-20240907192611766" style="zoom:80%;" />
+
+- 访问 192.168.1.121:31173 和 192.168.1.122:31173 具有相同的效果。
+
+### 命令行工具 kubectl
+
+kubectl 工具，默认只在 Master 节点上有效，在 Node 节点上执行无效：
+
+```shell
+[root@k8s-node1 ~]# kubectl get nodes
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
 
 
