@@ -8,6 +8,8 @@
 
 ### 什么是 kubernetes
 
+官方网站：https://kubernetes.io
+
 **`kubernetes`**，是 Google 严格保密十几年的秘密武器 **Borg 系统**的一个开源版本，于 2014 年 9 月发布第一个版本，2015 年 7 月发布第一个正式版本。**kubernetes 是一个全新的基于容器技术的分布式架构领先方案，提供了应用部署、规划、更新和维护的一种机制，用于管理云平台中多个主机上的容器化的应用，其目标是让部署容器化的应用简单且高效。**
 
 kubernetes 这个名字源于希腊语，意为 "舵手" 或 "飞行员"，简称 K8s，是用 8 代替 8 个字符 "ubernete" 而成的缩写。
@@ -1486,6 +1488,8 @@ Commercial support is available at
 
 ### 命令行工具 kubectl
 
+kubectl 是使用 kubernetes API 与 kubernetes 集群进行通信的命令行工具。
+
 kubectl 工具，默认只在 Master 节点上有效，在 Node 节点上执行无效：
 
 ```shell
@@ -1493,23 +1497,89 @@ kubectl 工具，默认只在 Master 节点上有效，在 Node 节点上执行�
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
 
+其原因是，在 Master 节点上，有用户认证相关的设置，并且 kubectl 工具调用时，知道调用的 Api 的服务器地址（https://192.168.1.120:6443）：
 
+```shell
+[root@k8s-master .kube]# pwd
+/root/.kube
+[root@k8s-master .kube]# cat config 
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJME1EZ3lPREUyTVRReE5Gb1hEVE0wTURneU5qRTJNVFF4TkZvd0ZURVRNQkVHQTFVRQpBeE1LY99886776SnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS01rCjlmMWRYY2k2TUc5ZkpBUVN2Y1JqM2QwaWk1b0NockcyNGxUSmJha3c3dzV4TVhmUU9qM21FdUFROVkvYkpacnYKaytSUGVvSVlsdUYzbytPbHdWSktRLzBvbnZVbXM2YTFCMi9MRmVLNTRmUGllcXVmSVZDMElGalhvQVBiRTZOZQphc1lRbjV0SDQ2MDV3TjA3OFNHVzk4L1JuVjlkYTlDenEvb1BTYmNpUTRnbU1UYm0rSzU2eTJ0MWdOM0krUW91ClVHaFlucWZJa0VZTzNsTm1VbWtpOFUzaWNHaXhHWkVRYjA0UVowQ0JEck14MGV6anRWS1hrbVFMWW9zVjlhOFcKM1Bkb3AySXlqdkVCVTZxR001aE9BVlA3QUcrQ1hDSTVCVDBxVm1aeXVzYXVuekVnaTVOcWhKZ1hQZGdMWXNpUQprY2Rzc1lyWkFsRnhoenFTdGhzQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZQNlQ4aE5aTnMrcjUzWm1Cd3Q0UURvOVJIa0ZNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBQWg0QWZKTnU1YWxLbVJrSmJCOAppZ2wzZm53YVNkTXZCVUFFaE5JYWt0NytTWGZKdGNnLy9zanpPYlhIQVVDcHgrbnNualhVUW40Uzl1OW9IQlBOCnFUbGxSelBDZ0U4MXRRMnBVekU0T3BGSDQwblRucjYzRWtsbGNoZFU0QzlyMXcwbDJLS296UmJaV3ZCajBZa20KNmh3SlpzVzZyMW9iUjI2VzlFcXpLUXFweWRVcHZFR3lUcDk4YXBsTXFKazNlUS9hYkVOS1k3TW0vNll2K3FicwpCc1dSTVJuMEhzbTZ0dWNlZ21GOFNOZUxvSU5SdExSc1Y4VWZTU0F6WmJTSTVjY1VSTDFycGp2c0NBZUFkWGdECkh4a2l1Ny9IRW5wNmpoM05mRkZKZ0FIL2hvdW52RS9hODk3VmduTHBpcE8xZjBFKzR4YUFMNC9tVWozVm9DRTQKUVRBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    server: https://192.168.1.120:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJZWpxb29NcVhGS3d3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TkRBNE1qZ3hOakUwTVRSYUZ3MHlOVEE0TWpneE5qRTBNVFZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXVVbys0dkhnZmNLeGxmdWMKeHkhj56hfh0ZHd1JCU2F6MVRaMmdKV1dUeEtrTE5XemtET3BjWk5oUkdlVGozaVlvdjAvdWxkZGJzdml2LwpSQ2tjUTZrWGdVaXdGSytNUkdKR3dKbmFCY0QwSFdzc0tqMUh6RjVYMm5kbUFvNXhsTThQcms0TWYyREtnbjBHClRiaG5uc1ZERk9tWG5JSTRucFJFMXA4SFIrQUQvTkdDOXhIbVRkV0szSVZOWERvYXhIZXY3VmoxVHk1TkNUWEwKWmQraEJEa0h1NHRwTzM0bGpuWlU4elBua0ljcHJMeU5wdjNCb2UvUjR1WXZIdkFrUG1qYXRUWHMvaGc5QXVSegpKcDcrODFiR3Voc3A2cVZBbzlwOUJsNHovck1XUk9qR3JxdDNEWnFKU2tVTVpqVWdaZHFyY0kzNHJiTWJySlMwCmtqdUpHd0lEQVFBQm8xWXdWREFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RBWURWUjBUQVFIL0JBSXdBREFmQmdOVkhTTUVHREFXZ0JUK2svSVRXVGJQcStkMlpnY0xlRUE2UFVSNQpCVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBbnNMVzNpaU9XMTBFbEtVVXlaM3NIRkpzeW1oSUxpOVpJdmE2ClRDVmh5S3huZVEyY1daKzRFTWZJT3RJTi92WitMak96WmVYbzMzRDlybUdBOUtSMi9udTJ6b2pmbzZEdnJLL2YKMVVPOGFWNnlHMFBoeFlCT1dXeUhNczFzd1dzNU8yY01PRGR5TU9JcUIzZHJ3eVEzWkZrblgxa3UwZ1NqeVdheApWR2VQN1grSFowZ1RpSUtGWFdaVjdHWCtlSEdQZHBIZVBkR0doMXdGbUJCcTRVOUdoZERoTVBtenNZMkFpMjJrClpZOTFxYmtucGF4blEvNlRBN0lwdkcya0wwT2N6ZFpoQXh0NWZFRWVmTDZ2M1VVM1c4c3lYTnd0M3ROamJlQk4KZTdRSitaQjcwYjdQQi9lSFZQTmlxRThRdVYySzlIQjRUS3ZkdlNJZTZ1VHN6VXJDZ0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcFFJQkFBS0NBUUVBdVVvKzR2SGdmY0t4bGZ1Y3hySUhIOEM0SEtGR3dSQlNhejFUWjJnSldXVHhLa0xOCld6a0RPcGNaTmhSR2VUajNpWW92MC91bGRkYnN2aXYvUkNrY1E2a1hnVWl3RksrTVJHSkd3Sm5hQmNEMEhXc3MKS2oxSHpGNVgybmRtQW81eGxNOFByazRNZjJES2duMEdUYmhubnNWREZPbVhuSUk0bnBSRTFwOEhSK0FEL05HQwo5eEhtVGRXSzNJVk5YRG9heEhldjdWajFUeTVOQ1RYTFpkK2hCRGtIdTR0cE8zNGxqblpVOHpQbmtJY3ByTHlOCnB2M0JvZS9SNHVZdkh2QWtQbWphdFRYcy9oZzlBdVJ6SnA3KzgxYkd1aHNwNnFWQW85cDlCbDR6L3JNV1JPakcKcnF0M0RacUpTa1VNWmpVZ1pkcXJjSTM0cmJNYnJKUzBranVKR3dJREFRQUJBb0lCQVFDTkdONitqeFkyYmpZeApVa05XZzJjdFpPSk8ydms0TjZlcmhpMm5CdkJucEppSmFBbGRPQk1mWU1TUUMreUdqenpnL2R2aC96VkdnUDRTCjZ3b2Q2M2hjaGIwaWRDbXg5dVJIaHRiOS82cW95d0NhRG15NVZhVUJHYTZvN0ZkQUJ4eXpCdUtZQjFNNUJJbngKeUNjdXRBZ2tQVzhSMDdmaU5ML004bmRoUUFTWlU4NlpNTUJyUjB6cS9DNy9PS2lITDJZdjI5eng3ek5TSGUxUQozNkwrWmhzVXlsclYvdnMwWFY4cHBQaCsvVEFVREZkeXVXNlJsQ1lNQXF2U2RxVEp4M2dOK3Rva3R3VWF5NVk1ClVFV0srODMwQjYyNE5lRVJqSHBmOFhVYmJ1UFovcXBnbmxLSjBiRWM4RENvb2szQVBBUEtSMkU0eTBlRHBMWFQKV0xhR05wY2hBb0dCQU96RldFWG5OYWVMY2JtZzFuaXFkQms4anBBOWowUVVkR0lBZkpMMnA5cE1RVnFrVHlMdApCaE9MVEY4RUVHS1dsN0ticDhZZXVyM2gycnlmNldVa2svTTRIMWhFbE9FdGp3aFpWa1hGMENPUzFoSjJRSUlmCm10SFFSUENuZFg0TTdmekIvUmptSE9KWVdWM3BOVjZ3ZE5KOS9PSjghfsdfs3sFJ1VE1xMmpYWTRKQW9HQkFNaFcKa3FSOFZVM0J4Mm9oWHFBQTUxb1ZKbVg3L2p2akhhUXJTRHhQOFNJcVVnVjJaQ3EyWDBRTlRLV0lSVDhhcmsrYQpvaGd2ZytnVWlIcjZDQUdYWmRESTluWEFYbG40aGVyaUYzNVJSMkRVbzhndHpIaDFyNUVad2pEOG1DTlFhMkZaCndidWgreGxPVzRSeU1IY2Jkb1QzUDlFTGdrWHRSU1pRa0pyYlk2Y0RBb0dCQU5VUVZYbzZNTWMvcmF4TXR4TkkKMkVicGZxVUFNSThrRlFNbnl2SjVNZDA0cDhzSWR3cEgzeUx4UkYxd2k4b2NHQkNyRDlReVRQdVlaYjA5N2NxTgptdkhRdkN3ek13SmJmQTRZVHBGbERBTW5IS3JxYk94cndtY3lrd2M0dW5zZTZYNTlsdU8wRjZQN3V4Zk9SNitZCi9OZDZkbm1CdXdWeFIzUk1CdHZJV2VUNUFvR0FMMWhHVDVrU2o4MjcwdGtRQThBeTdKY1MvQWNSamhXZWE2M08KNUhJQUNwTDF6MVNyVjJ6Q0Z0TU55aERxVEgrQnNrNVpBRjQ2VGg2TUlvUDBZR3ZuSS9CYVRubW4wcHRwQ3Bsago4L1pCYUNEWWsvWSszRGp6eE5iUmpjSWtNalJQTERLS0ZrMnhpY2w2MTFJbElnRGJnWkR0QS9vMFQxSkRoVXFFCjRoUDIrUUVDZ1lFQWd2U1owOFRrS2VKM1Z1dkdIeU4wWUk3Umx1Q284ZVVVY3IrOEFvR0MrNjRHbmQ1WFc1eGcKZFViQ1lxN3h2OERjN2MzTkt1RVNKSmg4czYyRllXVjRmQkxGckwrYzRreVpxYnRxdDExN3ZnZklvZU1MNkxTdwpINmc2R3Ria01Fand1eldPQUFlSllsNEptMUUzSDB3eGVBZUlWeldoZ2I5NWF4aFZkWlZlT2VZPQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+```
+
+如果需要在 Node 节点使用 kubectl 工具，需要进行如下配置：
+
+1. 拷贝 Master 节点中 "/etc/kubernetes/admin.conf" 文件到对应的 Node 节点服务器的 "/etc/kubernetes" 目录中：
+
+   ```shell
+   [root@k8s-master .kube]# scp /etc/kubernetes/admin.conf root@k8s-node1:/etc/kubernetes/
+   The authenticity of host 'k8s-node1 (192.168.1.121)' can't be established.
+   ECDSA key fingerprint is SHA256:1wcmZ7fQ/AJ9ak1Hu/qURBJMFWuqvu66TbMV8OUD9us.
+   ECDSA key fingerprint is MD5:ce:5e:b8:01:2d:f6:ee:77:87:33:b4:7d:4b:64:a5:d9.
+   Are you sure you want to continue connecting (yes/no)? yes
+   Warning: Permanently added 'k8s-node1,192.168.1.121' (ECDSA) to the list of known hosts.
+   root@k8s-node1's password: 
+   admin.conf                                                                                                         100% 5641     4.7MB/s   00:00
+   ```
+
+2. 在对应的 Node 服务器上配置环境变量：
+
+   ```shell
+   [root@k8s-node1 ~]# echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile 
+   [root@k8s-node1 ~]# source ~/.bash_profile 
+   [root@k8s-node1 ~]# kubectl get nodes
+   NAME         STATUS   ROLES                  AGE     VERSION
+   k8s-master   Ready    control-plane,master   11d     v1.23.6
+   k8s-node1    Ready    <none>                 4d23h   v1.23.6
+   k8s-node2    Ready    <none>                 4d23h   v1.23.6
+   ```
+
+kubectl 工具的常用的命令和功能如下，更多查看官网：https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands
+
+![1725896605275](kubernetes/1725896605275.jpg)
 
 
 
 ## 深入 Pod
 
+`Todo`
+
 ## 资源调度
+
+`Todo`
 
 ## 服务发布
 
+`Todo`
+
 ## 配置与存储
+
+`Todo`
 
 ## 高级调度
 
+`Todo`
+
 ## 身份认证与权限
 
-
+`Todo`
 
 # 本文参考
 
