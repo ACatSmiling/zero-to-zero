@@ -259,7 +259,7 @@ function 函数名() {
 语法：
 
 ```javascript
-const 变量 = function() {
+const 变量名 = function() {
     语句...
 }
 ```
@@ -270,12 +270,307 @@ const 变量 = function() {
 #### 箭头函数
 
 ```javascript
-const 变量 = () => {
+const 变量名 = () => {
     语句...
 }
 ```
 
 - 匿名函数定义方式。
+
+### 函数的参数
+
+`形式参数`：
+
+1. 在定义函数时，可以在函数中指定数量不等的形式参数（形参）。
+2. 在函数中定义形参，就相当于在函数内部声明了对应的变量，但是没有赋值。
+
+`实际参数`：
+
+1. 在调用函数时，可以在函数的 () 中传递数量不等的实际参数（实参）。
+2. 实参的个数：
+   - **如果实参和形参数量相同，则对应的实参赋值给对应的形参。**
+   - **如果实参多于形参，则多余的实参不会使用。**
+   - **如果形参多于实参，则多余的形参为 undefined。**
+3. 实参的类型：
+   - **JavaScript 中不会检查参数的类型，可以传递任何类型的值作为参数。**
+
+参数定义：
+
+```javascript
+// 函数声明
+function 函数名([参数]){
+    语句...
+}
+
+// 函数表达式
+const 变量名 = function([参数]){
+    语句...
+}
+
+// 箭头函数
+const 变量名 = ([参数]) => {
+    语句...
+}
+```
+
+### 箭头函数的参数
+
+```javascript
+const fn = (a, b) => {
+    console.log("a = ", a);
+    console.log("b = ", b);
+}
+fn(1, 2)
+
+// 当箭头函数中只有一个参数时，可以省略 ()
+const fn2 = a => {
+    console.log("a = ", a);
+}
+fn2(123)
+
+// 定义参数时，可以为参数指定默认值，默认值会在没有对应实参时生效
+const fn3 = (a = 10, b = 20, c = 30) => {
+    console.log("a = ", a);
+    console.log("b = ", b);
+    console.log("c = ", c);
+}
+fn3(1, 2)
+```
+
+### 对象作为参数
+
+对象可以作为参数传递，传递实参时，传递并不是变量本身，而是变量中存储的值。
+
+```javascript
+function fn(a) {
+    console.log("a = ", a.name)
+
+    // a = {} // 如果重新定义了 a，则修改变量时，只会影响当前的变量
+    a.name = "猪八戒" // 修改对象时，如果有其他变量指向该对象则所有指向该对象的变量都会受到影响
+    console.log("a = ", a.name)
+}
+
+// 对象可以作为参数传递
+let obj = { name: "孙悟空" }
+
+// 传递实参时，传递并不是变量本身，而是变量中存储的值
+fn(obj) // 孙悟空 猪八戒
+
+// 可以放开 fn 中对变量 a 的重新定义的注释，查看 obj 的变化
+console.log("obj = ", obj.name)
+
+let obj2 = { name: "沙和尚" }
+
+// 函数每次调用，都会重新创建默认值
+function fn2(a = { name: "沙和尚" }) {
+    console.log("a = ", a.name)
+    a.name = "唐僧"
+    console.log("a = ", a.name)
+}
+
+fn2() // 沙和尚 唐僧
+fn2() // 沙和尚 唐僧
+```
+
+### 函数作为参数
+
+在 JavaScript 中，函数也是一个对象（一等函数），别的对象能做的事情，函数也可以。
+
+```javascript
+function fn(a) {
+    console.log("a = ", a)
+    if (typeof a === "function") {
+        console.log("当前入参是一个函数")
+        // 调用函数
+        a()
+    }
+    // a()
+}
+
+// 对象
+let obj = { name: "孙悟空" }
+fn(obj)
+
+// 函数声明作为参数
+function fn2() {
+    console.log("我是函数声明")
+}
+fn(fn2)
+
+// 函数表达式作为参数（匿名函数）
+fn(function () {
+    console.log("我是函数表达式")
+})
+
+// 箭头函数参数
+fn(() => console.log("我是箭头函数"))
+```
+
+### 函数的返回值
+
+在函数中，可以通过`return 关键字`来指定函数的返回值。
+
+- 返回值就是函数的执行结果，函数调用完毕，返回值便会作为结果返回。
+- 任何值都可以作为返回值使用（包括对象和函数之类）。
+  - 如果 return 后不跟任何值，则相当于返回 undefined。
+  - 如果不写 return，那么函数的返回值依然是 undefined。
+
+```javascript
+function sum(a, b) {
+    // console.log(a + b)
+    // 计算完成后，将计算的结果返回而不是直接打印
+    return a + b
+}
+
+function fn() {
+    // return { name: "孙悟空" } // 返回对象
+    // return () => alert(123) // 返回函数
+
+    alert(123)
+    return // 返回 undefined
+    // return 之后的语句不会执行
+    alert(456)
+}
+
+let result = fn()
+
+// result = sum(123, 456)
+// result = sum(10, result)
+
+console.log("result = ", result)
+```
+
+### 箭头函数的返回值
+
+箭头函数的返回值可以直接写在箭头后，**如果直接在箭头后设置对象字面量为返回值时，对象字面量必须使用 () 括起来。**
+
+```javascript
+const sum = (a, b) => a + b
+
+const fn = () => ({ name: "孙悟空" }) // 返回值为对象字面量，需要使用 () 括起来
+
+let result = sum(123, 456)
+console.log(result)
+
+result = fn()
+console.log(result)
+```
+
+###  函数的作用域
+
+`作用域（scope）`：作用域指的是一个变量的可见区域。作用域有两种：
+
+- `全局作用域`：全局作用域在网页运行时创建，在网页关闭时销毁。
+  - 所有直接编写到 script 标签中的代码都位于全局作用域中。
+  - 全局作用域中的变量是全局变量，可以在任意位置访问。
+- `局部作用域`：块作用域是一种局部作用域。
+  - 块作用域在代码块执行时创建，代码块执行完毕时销毁。
+  - 在块作用域中声明的变量是局部变量，只能在块内部访问，外部无法访问。
+
+```javascript
+let a = "变量a"
+
+{
+    let b = "变量b"
+
+    {
+        {
+            console.log(b) // 变量b
+        }
+    }
+}
+
+{
+    console.log(b) // Uncaught ReferenceError: b is not defined
+}
+```
+
+`函数的作用域`：
+
+- 函数作用域也是一种局部作用域。
+- **函数作用域在函数调用时产生，调用结束后销毁。**
+- **函数每次调用都会产生一个全新的函数作用域。**
+- 在函数中定义的变量是局部变量，只能在函数内部访问，外部无法访问。
+
+```javascript
+function fn() {
+    let a = "fn中的变量a"
+    console.log(a)
+}
+
+fn() // 调用函数，正常输出 "fn中的变量a"
+
+console.log(a) // Uncaught ReferenceError: a is not defined
+```
+
+### 作用域链
+
+`作用域链`：当我们使用一个变量时，JavaScript 解释器会优先在当前作用域中寻找变量，如果找到了，则直接使用；如果没找到，则去上一层作用域中寻找，找到了则使用；如果没找到，则继续去上一层寻找，以此类推；如果一直到全局作用域都没找到，则报错 "xxx is not defined"。
+
+### window 对象
+
+`window 对象`：在浏览器中，浏览器提供了一个 window 对象，可以直接访问。
+
+- window 对象代表的是浏览器窗口，通过该对象可以对浏览器窗口进行各种操作。
+- window 对象还负责存储 JavaScript 中的内置对象和浏览器的宿主对象。
+- window 对象的属性，可以通过 window 对象访问，也可以直接访问。
+- 向 window 对象中添加的属性会自动成为全局变量。
+- 函数也可以认为是 window 对象的方法。
+  - 使用 function 声明的函数，都会作为 window 的方法保存。
+- var 用来声明变量，作用和 let 相同，但是 var 不具有块作用域。
+  - 在全局中使用 var 声明的变量，都会作为 window 对象的属性保存。
+  - 使用 let 声明的变量不会存储在 window 对象中，而存在一个特殊的地方（无法访问）。
+  - var 虽然没有块作用域，但有函数作用域。
+- 在局部作用域中，如果没有使用 var 或 let 声明变量，则变量会自动成为 window 对象的属性，也就是全局变量。
+
+```javascript
+window.a = 1
+console.log(a) // 等同于 console.log(window.a)
+
+var b = 20 // 等同于 window.b = 20
+console.log(window.b) // 20
+
+function fn() {
+    console.log("我是fn")
+}
+window.fn() // 等同于 fn()，输出 "我是fn"
+
+function fn2() {
+    // var d = 10 // var 虽然没有块作用域，但有函数作用域
+    d = 10 // 此变量会成为 window 对象的属性
+}
+fn2()
+console.log(d) // 10
+```
+
+### 提升
+
+`变量的提升`：使用 var 声明的变量，它会在所有代码执行前被声明，所以我们可以在变量赋值前就访问变量。
+
+- let 声明的变量实际也会提升，但是在赋值之前解释器禁止对该变量的访问。
+
+`函数的提升`：使用函数声明创建的函数，会在其他代码执行前被创建，所以我们可以在函数声明前调用函数。
+
+```javascript
+console.log(b) // 可以访问，但输出 undefined
+var b = 10
+
+/ fn() // 可以正常调用
+function fn() {
+    console.log("我是fn函数")
+}
+
+// fn2() // 无法调用，Uncaught TypeError: fn2 is not a function，函数的提升只适用函数声明创建的函数
+var fn2 = function () {
+}
+
+console.log(a) // 无法访问，Uncaught ReferenceError: Cannot access 'a' before initialization
+let a = 10
+```
+
+>变量和函数的提升同样适用于函数作用域。
+
+### 立即执行函数
 
 
 
