@@ -11993,9 +11993,7 @@ A4 A4 1A 17 13 0C 06
 - Redundant 行格式的记录头信息：
 
   - 多了 n_fields 和 1byte_offs_flag 这两个属性。
-
-
-    - 没有 record_type 这个属性。
+  - 没有 record_type 这个属性。
 
 ### 区、段与碎片区
 
