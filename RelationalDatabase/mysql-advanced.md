@@ -908,7 +908,7 @@ CREATE TABLE repeat_index_demo (
 
 - col1 既是主键，又给它定义为一个唯一索引，还给它定义了一个普通索引，可是主键本身就会生成聚簇索引，所以定义的唯一索引和普通索引是重复的，这种情况要避免。
 
-#### 总结
+#### 小结
 
 索引是一把双刃剑，可以提高查询效率，但也会降低插入和更新的速度，并占用磁盘空间。
 
@@ -9070,7 +9070,7 @@ MySQL 8.0 删除了 information_schema.INNODB_LOCKS，添加了`performance_sche
 
 ### 附录
 
-// TODO
+`// TODO`
 
 ## 多版本并发控制
 
@@ -9541,15 +9541,15 @@ INSERT INTO student(id, name) VALUES(3, '王五');
 
 ## 其他数据库日志
 
-// TODO
+`// TODO`
 
 ## 主从复制
 
-// TODO
+`// TODO`
 
 ## 数据库备份与恢复
 
-// TODO
+`// TODO`
 
 ## 本文参考
 
