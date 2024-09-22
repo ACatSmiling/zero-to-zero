@@ -1,6 +1,6 @@
-*`Author: ACatSmiling`*
-
-*`Since: 2022-05-29`*
+>**$\textcolor{RubineRed}{Author: ACatSmiling}$**
+>
+>**$\color{RubineRed}{Since: 2022-05-29}$**
 
 ## 索引的创建与设计原则
 
