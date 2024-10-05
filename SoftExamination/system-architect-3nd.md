@@ -7758,19 +7758,18 @@ A. 5							  B. 9							C. 10							D. 11
 
 下表记录了六个结点 A、B、C、D、E、F 之间的路径方向和距离。从 A 到 F 的最短距离是（）。
 
-<img src="system-architect-3nd/image-20240419220504074.png" alt="image-20240419220504074" style="zoom:30%;" />
+<img src="system-architect-3nd/image-20240419220504074.png" alt="image-20240419220504074" style="zoom:25%;" />
 
 A. 38							B. 40							C. 44							D. 46
 
 > 【答案】A
 >
-> 【解析】
 
 #### 网络与最大流量
 
 下图标出了某地区的运输网，各节点之间的运输能力如下表所示。那么，从节点 ① 到节点 ⑥ 的最大运输能力（流量）可以达到多少万吨/小时？（）
 
-<img src="system-architect-3nd/image-20240419232626563.png" alt="image-20240419232626563" style="zoom:50%;" />
+<img src="system-architect-3nd/image-20240419232626563.png" alt="image-20240419232626563" style="zoom:40%;" />
 
 A. 23							B. 25							C. 28							D. 30
 
@@ -7786,7 +7785,7 @@ A. 23							B. 25							C. 28							D. 30
 
 X、Y、Z 是某企业的三个分厂，每个分厂每天需要同一种原料 20 吨，下图给出了邻近供应 厂 A、B、C 的供应运输路线图，每一段路线上标明了每天最多能运输这种原料的吨数。根据该图可以算出，从 A、B、C 三厂每天最多能给该企业运来这种原料共（）吨。
 
-<img src="system-architect-3nd/image-20240419233241751.png" alt="image-20240419233241751" style="zoom:50%;" />
+<img src="system-architect-3nd/image-20240419233241751.png" alt="image-20240419233241751" style="zoom:40%;" />
 
 A. 45							B. 50							C. 55							D. 60
 
@@ -7796,7 +7795,7 @@ A. 45							B. 50							C. 55							D. 60
 
 某企业需要采用甲、乙、丙三种原材料生产 1、Ⅱ 两种产品。生产两种产品所需 原材料数量、单位产品可获得利润以及企业现有原材料数如下表所示，则公司可 以获得的最大利润是（）万元。取得最大利润时，原材料（）尚有剩余。
 
-<img src="system-architect-3nd/image-20240419233443771.png" alt="image-20240419233443771" style="zoom:40%;" />
+<img src="system-architect-3nd/image-20240419233443771.png" alt="image-20240419233443771" style="zoom:35%;" />
 
 A. 21							B. 34							C. 39							D. 48
 
@@ -7812,7 +7811,7 @@ A. 甲							B. 乙							C. 丙							D. 乙和丙
 
 某公司现有 400 万元用于投资甲、乙、丙三个项目，投资额以百万元为单位，已知甲、乙、丙三项投资的可能方案及相应获得的收益如下表所示，则该公司能够获得的最大收益值是（）百万元。
 
-<img src="system-architect-3nd/image-20240420164433697.png" alt="image-20240420164433697" style="zoom:50%;" />
+<img src="system-architect-3nd/image-20240420164433697.png" alt="image-20240420164433697" style="zoom:45%;" />
 
 A. 17							B. 18							C. 20							D. 21
 
@@ -7820,7 +7819,7 @@ A. 17							B. 18							C. 20							D. 21
 >
 > 【解析】
 >
-> <img src="system-architect-3nd/image-20240420164544854.png" alt="image-20240420164544854" style="zoom:50%;" />
+> <img src="system-architect-3nd/image-20240420164544854.png" alt="image-20240420164544854" style="zoom:45%;" />
 
 某公司打算向它的三个营业区增设 6 个销售店，每个营业区至少增设 1 个。各营业区年增加的利润与增设的营销店个数有关，具体关系如下表所示。可以调整各营业区增设的营销店的个数，使公司总利润增加额最大达到（）万元。
 
@@ -7850,7 +7849,7 @@ A. 520							B. 490							C. 470							D. 510
 
 假设市场上某种商品有两种品牌 A 和 B，当前的市场占有率各为 50%。根据历史经验估计，这种商品当月与下月市场占有率的变化可用转移矩阵 P 来描述：
 
-<img src="system-architect-3nd/image-20240420165412824.png" alt="image-20240420165412824" style="zoom:40%;" />
+<img src="system-architect-3nd/image-20240420165412824.png" alt="image-20240420165412824" style="zoom:35%;" />
 
 其中， p(A→B) 是 A 的市场占有份额中转移给 B 的概率，依次类推。这样，2 个月后的这种商品的市场占有率变化为（）。
 
@@ -7892,7 +7891,7 @@ A. 12，2						B. 14，4						C. 16，4						D. 18，6
 >
 > 主要是根据题意能画出图即可做出来：
 >
-> <img src="system-architect-3nd/image-20240420170309029.png" alt="image-20240420170309029" style="zoom:50%;" />
+> <img src="system-architect-3nd/image-20240420170309029.png" alt="image-20240420170309029" style="zoom:45%;" />
 >
 > 水路：7000 * 75% + (90000 * 10% + 7000）* 25% = 
 >
