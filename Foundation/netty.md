@@ -27,7 +27,7 @@
   * **主要用于服务器端监听客户端的连接请求。**当有客户端请求连接时，它能够接受连接并返回一个新的 SocketChannel 用于与该客户端进行通信。
   * 例如，在一个简单的网络服务器程序中，ServerSocketChannel 会在指定端口监听，一旦有客户端连接，就创建一个 SocketChannel 来处理与该客户端的交互。
 
->channel 有一点类似于 Stream，它就是读写数据的**双向通道**，可以从 Channel 将数据读入 Buffer，也可以将 Buffer 的数据写入 Channel，而之前的 Stream 要么是输入，要么是输出，Channel 比 stream 更为底层。
+>Channel 有一点类似于 Stream，它就是读写数据的**双向通道**，可以从 Channel 将数据读入 Buffer，也可以将 Buffer 的数据写入 Channel，而之前的 Stream 要么是输入，要么是输出，Channel 比 Stream 更为底层。
 >
 >```mermaid
 >graph LR
@@ -44,10 +44,8 @@
 
 * `ByteBuffer`
   * **最常用的缓冲区类型，用于存储字节数据。**它有多种操作方法，如 put() 用于向缓冲区写入字节数据，get() 用于从缓冲区读取字节数据。
+  * **ByteBuffer 有以下类型：HeapByteBuffer、DirectByteBuffer 和 MappedByteBuffer。**
   * 例如，在从文件读取数据到缓冲区时，可以使用 ByteBuffer 来存储读取的数据。
-  * MappedByteBuffer
-  * DirectByteBuffer
-  * HeapByteBuffer
 * `CharBuffer`
   * **用于存储字符数据，特别适用于处理文本数据。**在读取文本文件或者网络中的字符流时可以使用。
 * ShortBuffer、IntBuffer、LongBuffer、FloatBuffer、DoubleBuffer
@@ -64,9 +62,9 @@
    ```mermaid
    graph TD
    subgraph 多线程版
-   t1(thread) --> s1(socket1)
-   t2(thread) --> s2(socket2)
-   t3(thread) --> s3(socket3)
+   t1(Thread) --> s1(Socket1)
+   t2(Thread) --> s2(Socket2)
+   t3(Thread) --> s3(Socket3)
    end
    ```
 
@@ -79,10 +77,10 @@
    ```mermaid
    graph TD
    subgraph 线程池版
-   t4(thread) --> s4(socket1)
-   t5(thread) --> s5(socket2)
-   t4(thread) -.-> s6(socket3)
-   t5(thread) -.-> s7(socket4)
+   t4(Thread) --> s4(Socket1)
+   t5(Thread) --> s5(Socket2)
+   t4(Thread) -.-> s6(Socket3)
+   t5(Thread) -.-> s7(Socket4)
    end
    ```
 
@@ -94,119 +92,118 @@
    ```mermaid
    graph TD
    subgraph Selector 版
-   thread --> selector
-   selector --> c1(channel)
-   selector --> c2(channel)
-   selector --> c3(channel)
+   Thread --> Selector
+   Selector --> c1(Channel)
+   Selector --> c2(Channel)
+   Selector --> c3(Channel)
    end
    ```
 
    - Selector 的作用就是配合一个线程来管理多个 Channel，获取这些 Channel 上发生的事件，这些 Channel 工作在非阻塞模式下，不会让线程吊死在一个 Channel 上。适合连接数特别多，但流量低的场景（low traffic）。
-   - 调用 Selector 的 select() 会阻塞直到 Channel 发生了读写就绪事件，这些事件发生，select() 方法就会返回这些事件交给 thread 来处理。
+   - 调用 Selector 的 select() 会阻塞直到 Channel 发生了读写就绪等事件，当这些事件发生，select() 方法就会返回这些事件并交给 thread 来处理。
 
-Selector 的工作原理与使用场景：
-
-- **首先，需要将通道注册到选择器上，并指定感兴趣的事件类型。**例如，将一个 SocketChannel 注册到 Selector 上，同时指定关注读事件和写事件。
-
-  ```java
-  Selector selector = Selector.open();
-  SocketChannel socketChannel = SocketChannel.open();
-  socketChannel.configureBlocking(false);
-  socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-  ```
-
-- **然后，通过调用选择器的`select()`方法来阻塞等待事件的发生。**当有事件发生时，`select()`方法返回，通过获取选择器的`selectedKeys()`集合，可以得到发生事件的通道对应的`SelectionKey`，根据`SelectionKey`可以进一步处理相应通道的事件。
-
-  ```java
-  int readyChannels = selector.select();
-  if (readyChannels == 0) {
-     // 没有事件发生，继续等待
-     return;
-  }
-  Set<SelectionKey> selectedKeys = selector.selectedKeys();
-  Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-  while (keyIterator.hasNext()) {
-     SelectionKey key = keyIterator.next();
-     if (key.isReadable()) {
-         // 处理读事件
-     } else if (key.isWritable()) {
-         // 处理写事件
-     }
-     keyIterator.remove();
-  }
-  ```
-
-- 这种机制在网络服务器等需要同时处理多个客户端连接的场景中非常有用。通过一个选择器，服务器可以高效地处理多个客户端的读写请求，减少了线程的开销，提高了系统的性能和可扩展性。
-
-
-
-
+**Selector 的工作原理：**
 
 1. `注册通道（Channel）与事件兴趣集`
 
-   - **通道注册**：首先，通道（如 SocketChannel、ServerSocketChannel、DatagramChannel 等）需要注册到 Selector 上。在注册时，通道必须处于非阻塞模式。例如，对于 SocketChannel，通过调用`configureBlocking(false)`方法将其设置为非阻塞模式后，再使用`register()`方法将其注册到 Selector。
+   - **通道注册**：首先，Channel 需要注册到 Selector 上。**在注册时，Channel 必须处于非阻塞模式。**例如，对于 SocketChannel，通过调用`configureBlocking(false)`方法将其设置为非阻塞模式后，再使用`register()`方法将其注册到 Selector。
 
-   - **事件兴趣集定义**：在注册通道时，还需要指定对该通道感兴趣的事件类型。这些事件类型通过`SelectionKey`的常量来定义，主要包括：
+   - **事件兴趣集定义**：在注册 Channel 时，还需要指定对该 Channel 感兴趣的事件类型。这些事件类型通过`SelectionKey`的常量来定义，主要包括：
 
-     - `OP_READ`：表示对通道的读事件感兴趣，即当通道中有数据可以读取时触发该事件。
+     - `OP_READ`：表示对 Channel 的读事件感兴趣，即当 Channel 中有数据可以读取时触发该事件。
 
-     - `OP_WRITE`：表示对通道的写事件感兴趣，通常在通道可用于写入数据（例如缓冲区有空闲空间）时触发。
+     - `OP_WRITE`：表示对 Channel 的写事件感兴趣，通常在 Channel 可用于写入数据（例如缓冲区有空闲空间）时触发。
 
      - `OP_CONNECT`：用于可连接通道（如 SocketChannel），当连接成功或连接操作完成时触发。
 
      - `OP_ACCEPT`：用于 ServerSocketChannel，当有新的连接请求被接受时触发。
 
-     - 例如，将一个 SocketChannel 注册到 Selector 并表示对读和写事件感兴趣可以这样做：
+   - 例如，将一个 SocketChannel 注册到 Selector，并表示对读和写事件感兴趣：
 
-       ```java
-       Selector selector = Selector.open();
-       SocketChannel socketChannel = SocketChannel.open();
-       socketChannel.configureBlocking(false);
-       socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-       ```
+     ```java
+     Selector selector = Selector.open();
+     SocketChannel socketChannel = SocketChannel.open();
+     socketChannel.configureBlocking(false);
+     socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+     ```
 
 2. `事件轮询机制`
 
-   - **`select()`方法调用**：一旦通道注册完成，就可以通过 Selector 的`select()`方法来开始事件轮询。`select()`方法会阻塞当前线程，直到有一个或多个注册通道上的感兴趣事件发生，或者等待超时（可以设置超时时间）。例如：
+   - **`select()`方法调用**：一旦 Channel 注册完成，就可以通过 Selector 的 select() 方法来开始事件轮询。select() 方法会阻塞当前线程，直到有一个或多个注册 Channel 上的感兴趣事件发生，或者等待超时（可以设置超时时间）。例如：
 
      ```java
-     if (readyChannels > 0) {
-      Set<SelectionKey> selectedKeys = selector.selectedKeys();
-      Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-      while (keyIterator.hasNext()) {
-          SelectionKey key = keyIterator.next();
-          // 根据SelectionKey处理相应的事件
-          //...
-          keyIterator.remove();
-      }
+     int readyChannels = selector.select();
+     if (readyChannels == 0) {
+         // 没有事件发生，继续等待
+         return;
+     }
+     Set<SelectionKey> selectedKeys = selector.selectedKeys();
+     Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+     while (keyIterator.hasNext()) {
+         SelectionKey key = keyIterator.next();
+         if (key.isReadable()) {
+             // 处理读事件
+         } else if (key.isWritable()) {
+             // 处理写事件
+         }
+         keyIterator.remove();
      }
      ```
 
-   - **事件发生判断**：当`select()`方法返回后，返回值表示有多少个通道的事件已经就绪。如果返回值为 0，表示在等待时间内没有感兴趣的事件发生。当返回值大于 0 时，说明有通道事件发生，此时可以通过`selectedKeys()`方法获取一个包含所有发生事件的通道对应的`SelectionKey`集合。
+   - **事件发生判断**：当 select() 方法返回后，返回值表示有多少个 Channel 的事件已经就绪。如果返回值为 0，表示在等待时间内没有感兴趣的事件发生。当返回值大于 0 时，说明有 Channel 事件发生，此时可以通过`selectedKeys()`方法获取一个包含所有发生事件的 Channel 对应的 SelectionKey 集合。
 
-   - **处理事件对应的通道**：对于每个`SelectionKey`，可以通过`isReadable()`、`isWritable()`、`isConnectable()`和`isAcceptable()`方法来判断具体发生了哪种事件，然后根据事件类型对相应的通道进行操作。例如，如果`key.isReadable()`为真，则可以从对应的 SocketChannel 中读取数据；如果`key.isWritable()`为真，则可以向对应的 SocketChannel 写入数据。
+   - **处理事件对应的通道**：对于每个 SelectionKey，可以通过`isReadable()`、`isWritable()`、`isConnectable()`和`isAcceptable()`方法来判断具体发生了哪种事件，然后根据事件类型对相应的 Channel 进行操作。例如，如果 key.isReadable() 为真，则可以从对应的 SocketChannel 中读取数据；如果 key.isWritable() 为真，则可以向对应的 SocketChannel 写入数据。
 
 3. `底层实现原理（操作系统层面）`
 
-   - 在操作系统层面，Selector 利用了系统提供的多路复用 I/O 机制，如在 Linux 系统中的`epoll`、Unix 系统中的`kqueue`或者 Windows 系统中的`select`/`WSAAsyncSelect`等机制。这些机制允许一个进程（或线程）监视多个文件描述符（在 Java 中可以理解为通道对应的底层资源），当这些文件描述符上有事件发生时，系统会通知进程。Selector 将这些底层机制进行了封装，使得 Java 开发人员可以方便地在跨平台的环境中使用高效的单线程多通道 I/O 处理方式。例如，在 Linux 系统中，当`select()`方法被调用时，实际上是在内部调用了`epoll_wait`函数来等待事件的发生，当事件发生后，再将事件信息转换为 Java 中的`SelectionKey`对象供开发人员处理。
+   - **在操作系统层面，Selector 利用了系统提供的多路复用 I/O 机制。**例如，在 Linux 系统中的 epoll、Unix 系统中的 kqueue 或者 Windows 系统中的 select/WSAAsyncSelect 等机制。这些机制允许一个进程（或线程）监视多个文件描述符（在 Java 中可以理解为通道对应的底层资源），当这些文件描述符上有事件发生时，系统会通知进程。Selector 将这些底层机制进行了封装，使得 Java 开发人员可以方便地在跨平台的环境中使用高效的单线程多通道 I/O 处理方式。例如，在 Linux 系统中，当 select() 方法被调用时，实际上是在内部调用了 epoll_wait 函数来等待事件的发生，当事件发生后，再将事件信息转换为 Java 中的 SelectionKey 对象供开发人员处理。
 
+### ByteBuffer
 
+#### ByteBuffer 入门案例
 
-### 2. ByteBuffer
+ByteBuffer 的使用流程：
 
-有一普通文本文件 data.txt，内容为
+1. 获取 buffer。
+2. 向 buffer 中写入数据，例如调用 channel.read(buffer)。
+3. 调用 flip() 切换至读模式。
+4. 从 buffer 读取数据，例如调用 buffer.get()。
+5. 调用 clear() 或 compact() 切换至写模式。
+6. 重复 2 ~ 5 步骤。
 
-```
+假设有一普通文本文件 data.txt，内容为
+
+```tex
 1234567890abcd
 ```
 
-使用 FileChannel 来读取文件内容
+下面，使用 FileChannel 来读取文件内容：
 
 ```java
+package cn.zero.cloud.netty.nio;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/10/8 10:26
+ */
 @Slf4j
 public class ChannelDemo1 {
     public static void main(String[] args) {
-        try (RandomAccessFile file = new RandomAccessFile("helloword/data.txt", "rw")) {
+        URL resource = ChannelDemo1.class.getClassLoader().getResource("data.txt");
+        if (resource == null || StringUtils.isBlank(resource.getPath())) {
+            return;
+        }
+
+        try (RandomAccessFile file = new RandomAccessFile(resource.getPath(), "rw")) {
             FileChannel channel = file.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate(10);
             do {
@@ -218,91 +215,97 @@ public class ChannelDemo1 {
                 }
                 // 切换 buffer 读模式
                 buffer.flip();
-                while(buffer.hasRemaining()) {
-                    log.debug("{}", (char)buffer.get());
+                while (buffer.hasRemaining()) {
+                    log.debug("{}", (char) buffer.get());
                 }
                 // 切换 buffer 写模式
                 buffer.clear();
             } while (true);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("文件读取异常：", e);
         }
     }
 }
 ```
 
-输出
+输出结果：
 
+```java
+2024-10-08 12:44:42.112 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 读到字节数：10
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 1
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 2
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 3
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 4
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 5
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 6
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 7
+2024-10-08 12:44:42.116 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 8
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 9
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 0
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 读到字节数：4
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - a
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - b
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - c
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - d
+2024-10-08 12:44:42.117 [main] DEBUG cn.zero.cloud.netty.nio.ChannelDemo1 - 读到字节数：-1
 ```
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 读到字节数：10
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 1
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 2
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 3
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 4
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 5
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 6
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 7
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 8
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 9
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 0
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 读到字节数：4
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - a
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - b
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - c
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - d
-10:39:03 [DEBUG] [main] c.i.n.ChannelDemo1 - 读到字节数：-1
-```
 
+#### ByteBuffer 的结构
 
+ByteBuffer 有以下重要属性：
 
-#### 2.1  ByteBuffer 正确使用姿势
+* `capacity`
+* `position`
+* `limit`
 
-1. 向 buffer 写入数据，例如调用 channel.read(buffer)
-2. 调用 flip() 切换至**读模式**
-3. 从 buffer 读取数据，例如调用 buffer.get()
-4. 调用 clear() 或 compact() 切换至**写模式**
-5. 重复 1~4 步骤
-
-
-
-#### 2.2 ByteBuffer 结构
-
-ByteBuffer 有以下重要属性
-
-* capacity
-* position
-* limit
-
-一开始
+ByteBuffer 刚建立时：
 
 ![](netty/0021.png)
 
-写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态
+写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态：
 
 ![](netty/0018.png)
 
-flip 动作发生后，position 切换为读取位置，limit 切换为读取限制
+flip() 动作发生后，position 切换为读取位置，limit 切换为读取限制：
 
 ![](netty/0019.png)
 
-读取 4 个字节后，状态
+读取 4 个字节后，状态：
 
 ![](netty/0020.png)
 
-clear 动作发生后，状态
+clear() 动作发生后，状态：
 
 ![](netty/0021.png)
 
-compact 方法，是把未读完的部分向前压缩，然后切换至写模式
+如果是 compact() 方法，是把未读完的部分向前压缩，然后切换至写模式：
 
 ![](netty/0022.png)
 
-
-
-##### 💡 调试工具类
+##### 调试工具类
 
 ```java
+package cn.zero.cloud.netty.util;
+
+import io.netty.util.internal.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+
+import static io.netty.util.internal.MathUtil.isOutOfBounds;
+import static io.netty.util.internal.StringUtil.NEWLINE;
+
+/**
+ * 打印 ByteBuffer 内存结构
+ *
+ * @author Xisun Wang
+ * @since 2024/10/8 11:26
+ */
 public class ByteBufferUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ByteBufferUtil.class);
+
     private static final char[] BYTE2CHAR = new char[256];
     private static final char[] HEXDUMP_TABLE = new char[256 * 4];
     private static final String[] HEXPADDING = new String[16];
@@ -322,11 +325,7 @@ public class ByteBufferUtil {
         // Generate the lookup table for hex dump paddings
         for (i = 0; i < HEXPADDING.length; i++) {
             int padding = HEXPADDING.length - i;
-            StringBuilder buf = new StringBuilder(padding * 3);
-            for (int j = 0; j < padding; j++) {
-                buf.append("   ");
-            }
-            HEXPADDING[i] = buf.toString();
+            HEXPADDING[i] = "   ".repeat(Math.max(0, padding));
         }
 
         // Generate the lookup table for the start-offset header in each row (up to 64KiB).
@@ -347,11 +346,7 @@ public class ByteBufferUtil {
         // Generate the lookup table for byte dump paddings
         for (i = 0; i < BYTEPADDING.length; i++) {
             int padding = BYTEPADDING.length - i;
-            StringBuilder buf = new StringBuilder(padding);
-            for (int j = 0; j < padding; j++) {
-                buf.append(' ');
-            }
-            BYTEPADDING[i] = buf.toString();
+            BYTEPADDING[i] = " ".repeat(Math.max(0, padding));
         }
 
         // Generate the lookup table for byte-to-char conversion
@@ -366,29 +361,39 @@ public class ByteBufferUtil {
 
     /**
      * 打印所有内容
-     * @param buffer
+     *
+     * @param buffer 缓冲池
      */
     public static void debugAll(ByteBuffer buffer) {
-        int oldlimit = buffer.limit();
+        int oldLimit = buffer.limit();
         buffer.limit(buffer.capacity());
-        StringBuilder origin = new StringBuilder(256);
-        appendPrettyHexDump(origin, buffer, 0, buffer.capacity());
-        System.out.println("+--------+-------------------- all ------------------------+----------------+");
-        System.out.printf("position: [%d], limit: [%d]\n", buffer.position(), oldlimit);
-        System.out.println(origin);
-        buffer.limit(oldlimit);
+        StringBuilder dump = new StringBuilder(256);
+        appendPrettyHexDump(dump, buffer, 0, buffer.capacity());
+        printDebugLog(buffer, dump.toString());
+        buffer.limit(oldLimit);
     }
 
     /**
      * 打印可读取内容
-     * @param buffer
+     *
+     * @param buffer 缓冲池
      */
     public static void debugRead(ByteBuffer buffer) {
-        StringBuilder builder = new StringBuilder(256);
-        appendPrettyHexDump(builder, buffer, buffer.position(), buffer.limit() - buffer.position());
-        System.out.println("+--------+-------------------- read -----------------------+----------------+");
-        System.out.printf("position: [%d], limit: [%d]\n", buffer.position(), buffer.limit());
-        System.out.println(builder);
+        StringBuilder dump = new StringBuilder(256);
+        appendPrettyHexDump(dump, buffer, buffer.position(), buffer.limit() - buffer.position());
+        printDebugLog(buffer, buffer.toString());
+    }
+
+    /**
+     * 输出内容日志
+     *
+     * @param buffer 缓冲池
+     * @param dump   待打印的内容信息
+     */
+    private static void printDebugLog(ByteBuffer buffer, String dump) {
+        LOGGER.info("\n+--------+-------------------- read -----------------------+----------------+");
+        LOGGER.info("\nposition: {}, limit: {}", buffer.position(), buffer.limit());
+        LOGGER.info("\n{}", dump);
     }
 
     private static void appendPrettyHexDump(StringBuilder dump, ByteBuffer buf, int offset, int length) {
@@ -400,10 +405,14 @@ public class ByteBufferUtil {
         if (length == 0) {
             return;
         }
-        dump.append(
-                "         +-------------------------------------------------+" +
-                        NEWLINE + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |" +
-                        NEWLINE + "+--------+-------------------------------------------------+----------------+");
+
+        dump
+                .append("         +-------------------------------------------------+")
+                .append(NEWLINE)
+                .append("         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |")
+                .append(NEWLINE)
+                .append("+--------+-------------------------------------------------+----------------+");
+
 
         final int startIndex = offset;
         final int fullRows = length >>> 4;
@@ -451,8 +460,9 @@ public class ByteBufferUtil {
             dump.append('|');
         }
 
-        dump.append(NEWLINE +
-                "+--------+-------------------------------------------------+----------------+");
+        dump
+                .append(NEWLINE)
+                .append("+--------+-------------------------------------------------+----------------+");
     }
 
     private static void appendHexDumpRowPrefix(StringBuilder dump, int row, int rowStartIndex) {
@@ -472,105 +482,115 @@ public class ByteBufferUtil {
 }
 ```
 
-
-
-#### 2.3 ByteBuffer 常见方法
+#### ByteBuffer 的常见方法
 
 ##### 分配空间
 
-可以使用 allocate 方法为 ByteBuffer 分配空间，其它 buffer 类也有该方法
+**`allocate()`**：为 ByteBuffer 分配空间。
 
 ```java
-Bytebuffer buf = ByteBuffer.allocate(16);
+Bytebuffer buffer = ByteBuffer.allocate(16);
 ```
 
+##### 向 ByteBuffer 写入数据
 
+有两种方式：
 
-##### 向 buffer 写入数据
+* **`read()`**：通过 Channer 向 ByteBuffer 写入数据。
 
-有两种办法
+  ```java
+  int readBytes = channel.read(buffer);
+  ```
 
-* 调用 channel 的 read 方法
-* 调用 buffer 自己的 put 方法
+* **`put()`**：向 ByteBuffer 中写入数据。
 
-```java
-int readBytes = channel.read(buf);
-```
+  ```java
+  buffer.put((byte)127);
+  ```
 
-和
+##### 从 ByteBuffer 读取数据
 
-```java
-buf.put((byte)127);
-```
+有两种方式：
 
+* **`write()`**：通过 Channer 从 ByteBuffer 读取数据。
 
+  ```java
+  int writeBytes = channel.write(buffer);
+  ```
 
-##### 从 buffer 读取数据
+* **`get()`**：从 ByteBuffer 中读取数据。
 
-同样有两种办法
+  ```java
+  byte b = buffer.get();
+  ```
 
-* 调用 channel 的 write 方法
-* 调用 buffer 自己的 get 方法
+##### 重复读取数据
 
-```java
-int writeBytes = channel.write(buf);
-```
+get() 方法会让 position 读指针向后走，如果想重复读取数据：
 
-和
+* **`rewind()`**：将 position 重新置为 0。
+* **`get(int i)`**：获取索引 i 的内容，它不会移动读指针。
 
-```java
-byte b = buf.get();
-```
+##### 标记和回溯
 
-get 方法会让 position 读指针向后走，如果想重复读取数据
+**`mark()`**：在读取时，做一个标记。
 
-* 可以调用 rewind 方法将 position 重新置为 0
-* 或者调用 get(int i) 方法获取索引 i 的内容，它不会移动读指针
+**`reset()`**：即使 position 改变，只要调用 reset() 就能回到 mark 标记的位置。
 
-
-
-##### mark 和 reset
-
-mark 是在读取时，做一个标记，即使 position 改变，只要调用 reset 就能回到 mark 的位置
-
-> **注意**
->
-> rewind 和 flip 都会清除 mark 位置
-
-
+> 注意：**rewind() 和 flip() 都会清除 mark 的位置。**
 
 ##### 字符串与 ByteBuffer 互转
 
+示例：
+
 ```java
-ByteBuffer buffer1 = StandardCharsets.UTF_8.encode("你好");
-ByteBuffer buffer2 = Charset.forName("utf-8").encode("你好");
+package cn.zero.cloud.netty.nio;
 
-debug(buffer1);
-debug(buffer2);
+import cn.zero.cloud.netty.util.ByteBufferUtil;
 
-CharBuffer buffer3 = StandardCharsets.UTF_8.decode(buffer1);
-System.out.println(buffer3.getClass());
-System.out.println(buffer3.toString());
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * @author Xisun Wang
+ * @since 2024/10/8 14:12
+ */
+public class ChannelDemo2 {
+    public static void main(String[] args) {
+        // 方式一
+        // ByteBuffer buffer1 = Charset.forName("utf-8").encode("你好");
+        // 方式二
+        ByteBuffer buffer2 = StandardCharsets.UTF_8.encode("你好");
+
+        // ByteBufferUtil.debugAll(buffer1);
+        ByteBufferUtil.debugAll(buffer2);
+
+        CharBuffer buffer3 = StandardCharsets.UTF_8.decode(buffer2);
+        System.out.println(buffer3.getClass());
+        System.out.println(buffer3.toString());
+    }
+}
 ```
 
-输出
+输出结果：
 
-```
+```java
+2024-10-08 14:14:21.211 [main] DEBUG i.n.util.internal.logging.InternalLoggerFactory - Using SLF4J as the default logging framework
+2024-10-08 14:14:21.224 [main] INFO  cn.zero.cloud.netty.util.ByteBufferUtil - 
++--------+-------------------- all ------------------------+----------------+
+2024-10-08 14:14:21.225 [main] INFO  cn.zero.cloud.netty.util.ByteBufferUtil - 
+position: 0, limit: 6
+2024-10-08 14:14:21.228 [main] INFO  cn.zero.cloud.netty.util.ByteBufferUtil - 
          +-------------------------------------------------+
          |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |
 +--------+-------------------------------------------------+----------------+
-|00000000| e4 bd a0 e5 a5 bd                               |......          |
-+--------+-------------------------------------------------+----------------+
-         +-------------------------------------------------+
-         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |
-+--------+-------------------------------------------------+----------------+
-|00000000| e4 bd a0 e5 a5 bd                               |......          |
+|00000000| e4 bd a0 e5 a5 bd 00 00 00 00 00                |...........     |
 +--------+-------------------------------------------------+----------------+
 class java.nio.HeapCharBuffer
 你好
 ```
-
-
 
 ##### ⚠️ Buffer 的线程安全
 
