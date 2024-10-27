@@ -1641,7 +1641,251 @@ REST API 是 Kubernetes 系统的重要部分，组件之间的所有操作和�
 
 ## 深入 Pod
 
-`Todo`
+![1729868273763](kubernetes/1729868273763.jpg)
+
+### Pod 配置文件
+
+在搭建 Kubernetes 集群时，创建过一个 Nginx 服务用于测试，现在将其删除：
+
+```shell
+[root@k8s-master ~]# kubectl get pods
+NAME                     READY   STATUS             RESTARTS   AGE
+nginx-85b98978db-bhrd8   0/1     ImagePullBackOff   0          3d12h
+[root@k8s-master ~]# kubectl get deployment
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   0/1     1            0           49d
+# 删除 Nginx 对应的 deployment
+[root@k8s-master ~]# kubectl delete deployment nginx
+deployment.apps "nginx" deleted
+[root@k8s-master ~]# kubectl get deployment
+No resources found in default namespace.
+# pod 是通过 deployment 创建的，删除 deplpyment，对应的 pod 也就删除了
+[root@k8s-master ~]# kubectl get pods
+No resources found in default namespace.
+
+[root@k8s-master ~]# kubectl get services
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        58d
+nginx        NodePort    10.98.189.130   <none>        80:31173/TCP   49d
+# 删除 Nginx 对应的 service
+[root@k8s-master ~]# kubectl delete services nginx
+service "nginx" deleted
+[root@k8s-master ~]# kubectl get services
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   58d
+
+```
+
+定义一个 nginx-demo.yaml 配置文件：
+
+```yaml
+apiVersion: v1 # api 文档版本
+kind: Pod # 资源对象类型，也可以配置为像 Deployment、StatefulSet 这一类的对象
+metadata: # Pod 相关的元数据，用于描述 Pod 的数据
+  name: "nginx-demo" # Pod 的名称
+  namespace: default # 定义 Pod 的命名空间
+  labels: # 定义 Pod 的标签
+    app: "nginx-demo-app" # 标签的 key:value，可以按实际来自定义
+spec: # 规约，即期望当前 Pod 应按照下面的描述进行创建
+  containers: # 对于 Pod 中的容器描述
+  - name: nginx-demo # 容器的名称
+    image: "nginx:latest" # 指定容器的镜像
+    imagePullPolicy: IfNotPresent # 镜像拉取策略，指定如果本地有就用本地的，如果没有就拉取远程的
+    command: # 指定容器启动时执行的命令
+    - nginx
+    - -g
+    - 'daemon off;' # 当前 command 配置等同于命令：nginx -g 'daemon off;'
+    workingDir: /usr/share/nginx/html # 定义容器启动后的工作目录
+    resources:
+      limits: # 最多可以使用的资源
+        cpu: 200m # 限制 cpu 最多使用 0.2 个核心
+        memory: 256Mi # 限制内存最多使用 256 MB
+      requests: # 最少需要使用的资源
+        cpu: 100m # 限制 cpu 最少使用 0.1 个核心
+        memory: 128Mi # 限制内存最多使用 128 MB
+    ports:
+    - containerPort:  80 # 描述容器内要暴露什么端口
+      name:  http # 端口名称
+      protocol: TCP # 描述该端口是基于哪种协议通信的
+    env: # 环境变量
+    - name: JVM_OPTS # 环境变量名称
+      value: '-Xms128m -Xmx128m' # 环境变量的值
+  restartPolicy: OnFailure # 重启策略，只有失败的情况才会重启
+```
+
+> VS Code 中，可以安装`Kubernetes Templates`插件，用于快速创建配置文件。
+
+通过 nginx-demo.yaml 配置文件，创建 Pod：
+
+```shell
+[root@k8s-master pods]# cd /opt/k8s/pods/
+[root@k8s-master pods]# kubectl create -f nginx-demo.yaml
+pod/nginx-demo created
+```
+
+查看新建的 nginx-demo 这个 Pod 的信息：
+
+```shell
+# 查看 Pod 的简略信息
+[root@k8s-master pods]# kubectl get pods
+NAME         READY   STATUS    RESTARTS   AGE
+nginx-demo   1/1     Running   0          3m5s # 此时 STATUS 已经是 Running，刚创建时状态为 ContainerCreating
+
+# 查看 Pod 的详细信息
+[root@k8s-master pods]# kubectl get pods -o wide
+NAME         READY   STATUS    RESTARTS   AGE   IP            NODE        NOMINATED NODE   READINESS GATES
+nginx-demo   1/1     Running   0          46m   10.244.2.10   k8s-node2   <none>           <none>
+
+[root@k8s-master pods]# kubectl describe pod nginx-demo
+Name:         nginx-demo
+Namespace:    default
+Priority:     0
+Node:         k8s-node2/192.168.1.122
+Start Time:   Sun, 27 Oct 2024 09:17:02 +0800
+Labels:       app=nginx-demo-app
+Annotations:  <none>
+Status:       Running
+IP:           10.244.2.10
+IPs:
+  IP:  10.244.2.10
+Containers:
+  nginx-demo:
+    Container ID:  docker://52e0bb9cd83f20ebb50988bcac9878592c049a0b1b746672a80a7786c685ea72
+    Image:         nginx:latest
+    Image ID:      docker-pullable://nginx@sha256:04ba374043ccd2fc5c593885c0eacddebabd5ca375f9323666f28dfd5a9710e3
+    Port:          80/TCP
+    Host Port:     0/TCP
+    Command:
+      nginx
+      -g
+      daemon off;
+    State:          Running
+      Started:      Sun, 27 Oct 2024 09:17:03 +0800
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  256Mi
+    Requests:
+      cpu:     100m
+      memory:  128Mi
+    Environment:
+      JVM_OPTS:  -Xms128m -Xmx128m
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-k7zmc (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-k7zmc:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events: # Pods 的事件
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  17s   default-scheduler  Successfully assigned default/nginx-demo to k8s-node2 # 分配到 k8s-node2 节点
+  Normal  Pulled     17s   kubelet            Container image "nginx:latest" already present on machine
+  Normal  Created    17s   kubelet            Created container nginx-demo
+  Normal  Started    17s   kubelet            Started container nginx-demo
+```
+
+- 最下面的 Events，描述了 Pod 的创建过程。
+
+
+### 探针
+
+**`探针`**：容器内应用的监测机制，根据不同的探针，可以判断容器应用当前的状态。
+
+#### 探针的类型
+
+##### StartupProbe
+
+**`StartupProbe`**：**启动探针，用于检测容器内应用程序是否已经完成启动过程。**在容器启动阶段，有些应用可能需要较长时间来完成初始化，如加载大量配置文件、建立数据库连接等。StartupProbe 允许这个启动过程完成，避免在启动阶段因为 LivenessProbe 或 ReadinessProbe 检查失败而导致容器被错误地重启。**只有当 StartupProbe 成功后，LivenessProbe 和 ReadinessProbe 才会开始正常工作。**
+
+##### LivenessProbe
+
+**`LivenessProbe`**：**存活探针，用于检测容器是否还在正常运行状态。**如果容器在运行过程中出现故障，例如进入死循环、内存泄漏等导致应用程序无法正常工作的情况，LivenessProbe 能够检测到这种异常，并根据配置决定是否重启容器。这有助于保持应用程序的健康运行，及时从故障状态中恢复。
+
+##### ReadinessProbe
+
+**`ReadinessProbe`**：**就绪探针，用于判断容器是否已经准备好接收请求。**与 LivenessProbe 不同，它关注的是容器是否能够正常处理业务流量，而不是仅仅是否存活。当容器刚启动或者在运行过程中，由于某些原因（如正在加载配置文件、预热缓存等）暂时无法接收请求时，ReadinessProbe 可以检测到这种状态，并且控制服务发现组件（如 Kubernetes 的 Service）暂时不将流量发送到还没准备好的容器。
+
+#### 探测的方式
+
+三种探针，均支持以下三种探测方式：
+
+1. `exec`：以执行命令的方式进行监测。
+2. `tcpSocket`：以建立 TCP 连接的方式进行监测。
+3. `httpGet`：以发送 HTTP 请求的方式进行监测。
+
+下面以 livenessProbe 为例，给出这三种探测方式的使用说明。
+
+##### ExecAction
+
+示例：
+
+```yaml
+livenessProbe:
+  exec:
+    command: ["ps", "-ef", "|", "grep", "myapp", "|", "grep", "-v", "grep"]
+  initialDelaySeconds: 20
+  periodSeconds: 8
+  failureThreshold: 3
+```
+
+含义：表示在容器启动 20 秒后开始，每 8 秒执行一次 "ps -ef | grep myapp | grep -v grep" 命令，检查进程是否存在。如果连续 3 次执行这个命令的结果为进程不存在，就判定容器存活状态检查失败，可能会重启容器。
+
+##### TCPSocketAction
+
+示例：
+
+```yaml
+livenessProbe:
+  tcpSocket:
+    port: 3306
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 2
+```
+
+含义：表示在容器启动 10 秒后开始，每 5 秒检查一次容器内 3306 端口是否可以建立 TCP 连接。如果连续 2 次检查失败，就判定容器存活状态检查失败，可能会重启容器。
+
+##### HTTPGetAction
+
+示例：
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  failureThreshold: 3
+```
+
+含义：表示在容器启动 15 秒后开始，每隔 10 秒向容器内 8080 端口的 /healthz 路径发送一个 HTTP 请求。如果连续 3 次请求都没有得到预期的响应（如返回码不是 200 ~ 299 之间），就认为容器存活状态检查失败，可能会触发容器重启。
+
+#### 探针的参数配置
+
+探针的通用参数配置及含义：
+
+- `initialDelaySeconds`：初始化时间。
+- `timeoutSeconds`：超时时间。
+- `periodSeconds`：监测的间隔时间。
+- `sucessThreshold`：监测成功多少次，才表示成功。
+- `failureThreshold`：监测失败多少次，才表示失败。
 
 ## 资源调度
 
