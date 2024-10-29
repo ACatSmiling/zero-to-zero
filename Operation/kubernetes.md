@@ -1647,130 +1647,66 @@ REST API 是 Kubernetes 系统的重要部分，组件之间的所有操作和�
 
 #### 创建 Pod
 
-**一、创建 Pod**
+**方式一：使用配置文件创建。**
 
-1. 使用配置文件创建
-   - 首先，需要创建一个`Pod`的配置文件（通常是`.yaml`或`.yml`格式）。例如，创建一个简单的`nginx` `Pod`配置文件`nginx - pod.yaml`：
+1. 首先，需要创建一个 Pod 的配置文件（通常是`.yaml`或`.yml`格式）。例如，创建一个简单的 Nginx Pod 配置文件 nginx-pod.yaml：
 
-```yaml
+   ```yaml
    apiVersion: v1
    kind: Pod
    metadata:
-     name: nginx - pod
+     name: nginx-pod
    spec:
      containers:
-     - name: nginx - container
+     - name: nginx-container
        image: nginx:latest
-```
+   ```
 
-- 然后使用`kubectl create`命令来创建`Pod`：
+2. `kubectl create`：来创建 Pod：
 
-收起
+   ```shell
+   $ kubectl create -f nginx-pod.yaml
+   ```
 
+3. `kubectl apply`：
 
+**方式二：使用命令行参数创建（不推荐用于复杂配置）。**
 
-bash
+1. **`kubectl run`**：快速创建一个简单的 Pod。例如，创建一个名为 busybox-pod 的  Pod，运行 busybox 镜像：
 
+   ```shell
+   $ kubectl run busybox-pod --image=busybox:latest
+   ```
 
+#### 查看 Pod
 
-复制
+1. **`kubectl get pods`**：查看集群中所有命名空间下的所有 Pod 列表。示例：
 
-```bash
-   kubectl create -f nginx - pod.yaml
-```
-
-1. 使用命令行参数创建（不推荐用于复杂配置）
-   - 可以通过`kubectl run`命令快速创建一个简单的`Pod`。例如，创建一个名为`busybox - pod`的`Pod`，运行`busybox`镜像：
-
-收起
-
-
-
-bash
-
-
-
-复制
-
-```bash
-   kubectl run busybox - pod --image = busybox:latest
-```
-
-**二、查看 Pod 信息**
-
-1. 查看所有 Pod 列表
-   - 可以使用以下命令查看集群中所有命名空间下的`Pod`列表：
-
-收起
-
-
-
-bash
-
-
-
-复制
-
-```bash
-   kubectl get pods
-```
-
-- 这个命令会显示`Pod`的名称、状态、重启次数等基本信息。例如：
-
-收起
-
-
-
-plaintext
-
-
-
-复制
-
-```plaintext
+   ```shell
    NAME          READY   STATUS    RESTARTS   AGE
-   nginx - pod   1/1     Running   0          10m
-```
+   nginx-pod     1/1     Running   0          10m
+   ```
 
-1. 查看单个 Pod 详细信息
-   - 使用`kubectl describe pod`命令可以查看单个`Pod`的详细信息，包括容器状态、事件等。例如，查看`nginx - pod`的详细信息：
+   - 这个命令会显示 Pod 的名称、状态、重启次数等基本信息。
 
-收起
+2. **`kubectl describe pod`**：查看单个 Pod 的详细信息，包括容器状态、事件等。示例：
 
+   ```shell
+   $ kubectl describe pod nginx-pod
+   ```
 
+   - 输出内容会包含`Pod`的基本信息（如名称、命名空间、标签等）、容器信息（如容器名称、镜像、端口等）、事件信息（如容器启动、停止等事件）等。
 
-bash
+3. **`kubectl logs`**：查看 Pod 中容器的日志。示例：
 
+   ```shell
+   # 查看 nginx-pod 中 nginx-container 容器的日志
+   $ kubectl logs nginx-pod -c nginx-container
+   ```
 
+   - 这对于调试容器中的应用程序非常有用，例如查看应用程序输出的错误信息或状态信息。
 
-复制
-
-```bash
-   kubectl describe pod nginx - pod
-```
-
-- 输出内容会包含`Pod`的基本信息（如名称、命名空间、标签等）、容器信息（如容器名称、镜像、端口等）、事件信息（如容器启动、停止等事件）等。
-
-1. 查看 Pod 的日志
-   - 如果想查看`Pod`中容器的日志，可以使用`kubectl logs`命令。例如，查看`nginx - pod`中`nginx - container`容器的日志：
-
-收起
-
-
-
-bash
-
-
-
-复制
-
-```bash
-   kubectl logs nginx - pod - c nginx - container
-```
-
-- 这对于调试容器中的应用程序非常有用，例如查看应用程序输出的错误信息或状态信息。
-
-**三、更新 Pod**
+#### 更新 Pod
 
 1. 更新容器镜像
    - 如果需要更新`Pod`中的容器镜像，可以使用`kubectl set image`命令。例如，将`nginx - pod`中的`nginx - container`容器的镜像从`nginx:latest`更新为`nginx:1.23`：
@@ -1792,7 +1728,7 @@ bash
 - 这个操作会触发容器的重新创建，以使用新的镜像。
 
 1. 更新其他资源（如资源请求 / 限制）
-   - 如果要更新`Pod`的资源请求或限制（例如 CPU 和内存），需要先修改`Pod`的配置文件，然后使用`kubectl apply`命令。例如，修改`nginx - pod.yaml`文件中的资源请求部分：
+   - 如果要更新`Pod`的资源请求或限制（例如 CPU 和内存），需要先修改`Pod`的配置文件，然后使用`kubectl apply`命令。例如，修改`nginx-pod.yaml`文件中的资源请求部分：
 
 收起
 
@@ -1835,43 +1771,21 @@ bash
    kubectl apply -f nginx - pod.yaml
 ```
 
-**四、删除 Pod**
+#### 删除 Pod
 
-1. 删除单个 Pod
-   - 使用`kubectl delete pod`命令来删除单个`Pod`。例如，删除`nginx - pod`：
+1. `kubectl delete pod`：删除单个 Pod。示例：
 
-收起
+   ```shell
+   $ kubectl delete pod nginx-pod
+   ```
 
+   - 可以通过`--force`和`--grace - period = 0`选项来强制删除`Pod`，但这种方式可能会导致数据丢失或未完成的操作被中断，应该谨慎使用。
 
+2. 通过标签选择器来删除多个 Pod。例如，如果有一组带有 "app=my-app" 标签的 Pod，可以使用以下命令删除它们：
 
-bash
-
-
-
-复制
-
-```bash
-   kubectl delete pod nginx - pod
-```
-
-- 可以通过`--force`和`--grace - period = 0`选项来强制删除`Pod`，但这种方式可能会导致数据丢失或未完成的操作被中断，应该谨慎使用。
-
-1. 删除多个 Pod
-   - 可以通过标签选择器来删除多个`Pod`。例如，如果有一组带有`app = my - app`标签的`Pod`，可以使用以下命令删除它们：
-
-收起
-
-
-
-bash
-
-
-
-复制
-
-```bash
-   kubectl delete pods -l app = my - app
-```
+   ```shell
+   $ kubectl delete pods -l app=my-app
+   ```
 
 ### Pod 配置文件
 
