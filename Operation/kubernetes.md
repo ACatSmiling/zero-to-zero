@@ -1658,17 +1658,46 @@ REST API 是 Kubernetes 系统的重要部分，组件之间的所有操作和�
      name: nginx-pod
    spec:
      containers:
-     - name: nginx-container
+     - name: nginx-container # 单容器 Pod
        image: nginx:latest
    ```
 
-2. `kubectl create`：来创建 Pod：
+2. **`kubectl create`**：不存在则新建，存在则报错。
 
    ```shell
    $ kubectl create -f nginx-pod.yaml
    ```
 
-3. `kubectl apply`：
+3. **`kubectl apply`**：不存在则新建，存在则更新。
+
+   ```shell
+   $ kubectl apply -f nginx-pod.yaml
+   ```
+
+4. 创建多容器 Pod：
+
+   ```yaml
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: multi-container-pod
+     labels:
+       app: multi-app-label
+   spec:
+     containers:
+       - name: container-1 # 容器 1
+       image: nginx:latest
+       ports:
+         - containerPort: 80
+       - name: container-2 # 容器 2
+         image: redis:latest
+   ```
+
+   ```shell
+   $ kubectl create -f multi-container-pod.yaml
+   # 或者
+   $ kubectl apply -f multi-container-pod.yaml
+   ```
 
 **方式二：使用命令行参数创建（不推荐用于复杂配置）。**
 
@@ -1683,109 +1712,595 @@ REST API 是 Kubernetes 系统的重要部分，组件之间的所有操作和�
 1. **`kubectl get pods`**：查看集群中所有命名空间下的所有 Pod 列表。示例：
 
    ```shell
+   [root@k8s-master pods]# kubectl get pods
    NAME          READY   STATUS    RESTARTS   AGE
    nginx-pod     1/1     Running   0          10m
    ```
 
-   - 这个命令会显示 Pod 的名称、状态、重启次数等基本信息。
+   - 输出结果通常包含以下列：
+
+     - **NAME**：Pod 的名称，用于在集群中唯一标识 Pod。
+     - **READY**：显示准备就绪的容器数量与总容器数量的比例。
+     - **STATUS**：Pod 的当前状态，常见的状态有`Pending`（等待调度或资源分配）、`Running`（正在运行）、`Succeeded`（成功完成任务，通常用于一次性任务的 Pod）、`Failed`（运行失败）。
+     - **RESTARTS**：容器重启的次数。
+     - **AGE**：Pod 自创建以来的时间。
+
+   - `<pod-name>`：查看指定 Pod。示例：
+
+     ```shell
+     [root@k8s-master pods]# kubectl get pods nginx-pod
+     NAME        READY   STATUS    RESTARTS   AGE
+     nginx-pod   1/1     Running   0          9h
+     ```
+
+   - `-n, --namespace`：查看特定命名空间中的 Pod。示例：
+
+     ```shell
+     [root@k8s-master pods]# kubectl get pods -n kube-system
+     NAME                                 READY   STATUS    RESTARTS         AGE
+     coredns-6d8c4cb4d-d6rrb              1/1     Running   7 (4d11h ago)    11d
+     coredns-6d8c4cb4d-zsx7n              1/1     Running   7 (4d11h ago)    11d
+     etcd-k8s-master                      1/1     Running   19 (4d11h ago)   66d
+     kube-apiserver-k8s-master            1/1     Running   17 (4d11h ago)   66d
+     kube-controller-manager-k8s-master   1/1     Running   22 (4d11h ago)   66d
+     kube-proxy-6xntx                     1/1     Running   14 (4d11h ago)   59d
+     kube-proxy-m2nbx                     1/1     Running   21 (4d11h ago)   66d
+     kube-proxy-vzsp7                     1/1     Running   12 (4d11h ago)   59d
+     kube-scheduler-k8s-master            1/1     Running   22 (4d11h ago)   66d
+     ```
+
+   - `-l`：按照标签来查看 Pod。示例：
+
+     ```shell
+     [root@k8s-master pods]# kubectl get pods -l app=nginx-pod-app
+     NAME        READY   STATUS    RESTARTS   AGE
+     nginx-pod   1/1     Running   0          8h
+     ```
+
+   - `-o wide`：以宽格式查看，获取更详细的信息，包括 Pod 所在的节点 IP 和节点名称等。示例：
+
+     ```shell
+     [root@k8s-master pods]#  kubectl get pods -o wide
+     NAME        READY   STATUS    RESTARTS   AGE   IP            NODE        NOMINATED NODE   READINESS GATES
+     nginx-pod   1/1     Running   0          10m   10.244.2.11   k8s-node2   <none>           <none>
+     ```
+
+   - `-o custom-columns`：自定义显示的列。示例：
+
+     ```shell
+     # 只显示 Pod 的名称和状态
+     [root@k8s-master pods]# kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase
+     NAME        STATUS
+     nginx-pod   Running
+     ```
+
+   - `-o yaml|json`：以 YAML 或 JSON 格式呈现 Pod 的完整配置信息。示例：
+
+     ```shell
+     [root@k8s-master pods]# kubectl get pod nginx-pod -o yaml
+     apiVersion: v1
+     kind: Pod
+     metadata:
+       creationTimestamp: "2024-11-03T02:56:23Z"
+       labels:
+         app: nginx-pod-app
+       name: nginx-pod
+       namespace: default
+       resourceVersion: "404257"
+       uid: 25c1720e-9653-4516-840a-56694aec429c
+     spec:
+       containers:
+       - command:
+         - nginx
+         - -g
+         - daemon off;
+         env:
+         - name: JVM_OPTS
+           value: -Xms128m -Xmx128m
+         image: nginx:latest
+         imagePullPolicy: IfNotPresent
+         name: nginx-pod
+         ports:
+         - containerPort: 80
+           name: http
+           protocol: TCP
+         resources:
+           limits:
+             cpu: 200m
+             memory: 256Mi
+           requests:
+             cpu: 100m
+             memory: 128Mi
+         terminationMessagePath: /dev/termination-log
+         terminationMessagePolicy: File
+         volumeMounts:
+         - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+           name: kube-api-access-2qcsr
+           readOnly: true
+         workingDir: /usr/share/nginx/html
+       dnsPolicy: ClusterFirst
+       enableServiceLinks: true
+       nodeName: k8s-node2
+       preemptionPolicy: PreemptLowerPriority
+       priority: 0
+       restartPolicy: OnFailure
+       schedulerName: default-scheduler
+       securityContext: {}
+       serviceAccount: default
+       serviceAccountName: default
+       terminationGracePeriodSeconds: 30
+       tolerations:
+       - effect: NoExecute
+         key: node.kubernetes.io/not-ready
+         operator: Exists
+         tolerationSeconds: 300
+       - effect: NoExecute
+         key: node.kubernetes.io/unreachable
+         operator: Exists
+         tolerationSeconds: 300
+       volumes:
+       - name: kube-api-access-2qcsr
+         projected:
+           defaultMode: 420
+           sources:
+           - serviceAccountToken:
+               expirationSeconds: 3607
+               path: token
+           - configMap:
+               items:
+               - key: ca.crt
+                 path: ca.crt
+               name: kube-root-ca.crt
+           - downwardAPI:
+               items:
+               - fieldRef:
+                   apiVersion: v1
+                   fieldPath: metadata.namespace
+                 path: namespace
+     status:
+       conditions:
+       - lastProbeTime: null
+         lastTransitionTime: "2024-11-03T02:56:23Z"
+         status: "True"
+         type: Initialized
+       - lastProbeTime: null
+         lastTransitionTime: "2024-11-03T02:56:24Z"
+         status: "True"
+         type: Ready
+       - lastProbeTime: null
+         lastTransitionTime: "2024-11-03T02:56:24Z"
+         status: "True"
+         type: ContainersReady
+       - lastProbeTime: null
+         lastTransitionTime: "2024-11-03T02:56:23Z"
+         status: "True"
+         type: PodScheduled
+       containerStatuses:
+       - containerID: docker://986ebb51cd36474dcb6f9789e13e3ed6ddb064e4a799fd282389c7eddf013fe4
+         image: nginx:latest
+         imageID: docker-pullable://nginx@sha256:04ba374043ccd2fc5c593885c0eacddebabd5ca375f9323666f28dfd5a9710e3
+         lastState: {}
+         name: nginx-pod
+         ready: true
+         restartCount: 0
+         started: true
+         state:
+           running:
+             startedAt: "2024-11-03T02:56:23Z"
+       hostIP: 192.168.1.122
+       phase: Running
+       podIP: 10.244.2.11
+       podIPs:
+       - ip: 10.244.2.11
+       qosClass: Burstable
+       startTime: "2024-11-03T02:56:23Z"
+       
+     [root@k8s-master pods]# kubectl get pod nginx-pod -o json
+     {
+         "apiVersion": "v1",
+         "kind": "Pod",
+         "metadata": {
+             "creationTimestamp": "2024-11-03T02:56:23Z",
+             "labels": {
+                 "app": "nginx-pod-app"
+             },
+             "name": "nginx-pod",
+             "namespace": "default",
+             "resourceVersion": "404257",
+             "uid": "25c1720e-9653-4516-840a-56694aec429c"
+         },
+         "spec": {
+             "containers": [
+                 {
+                     "command": [
+                         "nginx",
+                         "-g",
+                         "daemon off;"
+                     ],
+                     "env": [
+                         {
+                             "name": "JVM_OPTS",
+                             "value": "-Xms128m -Xmx128m"
+                         }
+                     ],
+                     "image": "nginx:latest",
+                     "imagePullPolicy": "IfNotPresent",
+                     "name": "nginx-pod",
+                     "ports": [
+                         {
+                             "containerPort": 80,
+                             "name": "http",
+                             "protocol": "TCP"
+                         }
+                     ],
+                     "resources": {
+                         "limits": {
+                             "cpu": "200m",
+                             "memory": "256Mi"
+                         },
+                         "requests": {
+                             "cpu": "100m",
+                             "memory": "128Mi"
+                         }
+                     },
+                     "terminationMessagePath": "/dev/termination-log",
+                     "terminationMessagePolicy": "File",
+                     "volumeMounts": [
+                         {
+                             "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                             "name": "kube-api-access-2qcsr",
+                             "readOnly": true
+                         }
+                     ],
+                     "workingDir": "/usr/share/nginx/html"
+                 }
+             ],
+             "dnsPolicy": "ClusterFirst",
+             "enableServiceLinks": true,
+             "nodeName": "k8s-node2",
+             "preemptionPolicy": "PreemptLowerPriority",
+             "priority": 0,
+             "restartPolicy": "OnFailure",
+             "schedulerName": "default-scheduler",
+             "securityContext": {},
+             "serviceAccount": "default",
+             "serviceAccountName": "default",
+             "terminationGracePeriodSeconds": 30,
+             "tolerations": [
+                 {
+                     "effect": "NoExecute",
+                     "key": "node.kubernetes.io/not-ready",
+                     "operator": "Exists",
+                     "tolerationSeconds": 300
+                 },
+                 {
+                     "effect": "NoExecute",
+                     "key": "node.kubernetes.io/unreachable",
+                     "operator": "Exists",
+                     "tolerationSeconds": 300
+                 }
+             ],
+             "volumes": [
+                 {
+                     "name": "kube-api-access-2qcsr",
+                     "projected": {
+                         "defaultMode": 420,
+                         "sources": [
+                             {
+                                 "serviceAccountToken": {
+                                     "expirationSeconds": 3607,
+                                     "path": "token"
+                                 }
+                             },
+                             {
+                                 "configMap": {
+                                     "items": [
+                                         {
+                                             "key": "ca.crt",
+                                             "path": "ca.crt"
+                                         }
+                                     ],
+                                     "name": "kube-root-ca.crt"
+                                 }
+                             },
+                             {
+                                 "downwardAPI": {
+                                     "items": [
+                                         {
+                                             "fieldRef": {
+                                                 "apiVersion": "v1",
+                                                 "fieldPath": "metadata.namespace"
+                                             },
+                                             "path": "namespace"
+                                         }
+                                     ]
+                                 }
+                             }
+                         ]
+                     }
+                 }
+             ]
+         },
+         "status": {
+             "conditions": [
+                 {
+                     "lastProbeTime": null,
+                     "lastTransitionTime": "2024-11-03T02:56:23Z",
+                     "status": "True",
+                     "type": "Initialized"
+                 },
+                 {
+                     "lastProbeTime": null,
+                     "lastTransitionTime": "2024-11-03T02:56:24Z",
+                     "status": "True",
+                     "type": "Ready"
+                 },
+                 {
+                     "lastProbeTime": null,
+                     "lastTransitionTime": "2024-11-03T02:56:24Z",
+                     "status": "True",
+                     "type": "ContainersReady"
+                 },
+                 {
+                     "lastProbeTime": null,
+                     "lastTransitionTime": "2024-11-03T02:56:23Z",
+                     "status": "True",
+                     "type": "PodScheduled"
+                 }
+             ],
+             "containerStatuses": [
+                 {
+                     "containerID": "docker://986ebb51cd36474dcb6f9789e13e3ed6ddb064e4a799fd282389c7eddf013fe4",
+                     "image": "nginx:latest",
+                     "imageID": "docker-pullable://nginx@sha256:04ba374043ccd2fc5c593885c0eacddebabd5ca375f9323666f28dfd5a9710e3",
+                     "lastState": {},
+                     "name": "nginx-pod",
+                     "ready": true,
+                     "restartCount": 0,
+                     "started": true,
+                     "state": {
+                         "running": {
+                             "startedAt": "2024-11-03T02:56:23Z"
+                         }
+                     }
+                 }
+             ],
+             "hostIP": "192.168.1.122",
+             "phase": "Running",
+             "podIP": "10.244.2.11",
+             "podIPs": [
+                 {
+                     "ip": "10.244.2.11"
+                 }
+             ],
+             "qosClass": "Burstable",
+             "startTime": "2024-11-03T02:56:23Z"
+         }
+     }
+     ```
 
 2. **`kubectl describe pod`**：查看单个 Pod 的详细信息，包括容器状态、事件等。示例：
 
    ```shell
-   $ kubectl describe pod nginx-pod
+   [root@k8s-master pods]# kubectl describe pod nginx-pod
+   Name:         nginx-pod
+   Namespace:    default
+   Priority:     0
+   Node:         k8s-node2/192.168.1.122
+   Start Time:   Sun, 03 Nov 2024 10:56:23 +0800
+   Labels:       app=nginx-pod-app
+   Annotations:  <none>
+   Status:       Running
+   IP:           10.244.2.11
+   IPs:
+     IP:  10.244.2.11
+   Containers:
+     nginx-pod:
+       Container ID:  docker://986ebb51cd36474dcb6f9789e13e3ed6ddb064e4a799fd282389c7eddf013fe4
+       Image:         nginx:latest
+       Image ID:      docker-pullable://nginx@sha256:04ba374043ccd2fc5c593885c0eacddebabd5ca375f9323666f28dfd5a9710e3
+       Port:          80/TCP
+       Host Port:     0/TCP
+       Command:
+         nginx
+         -g
+         daemon off;
+       State:          Running
+         Started:      Sun, 03 Nov 2024 10:56:23 +0800
+       Ready:          True
+       Restart Count:  0
+       Limits:
+         cpu:     200m
+         memory:  256Mi
+       Requests:
+         cpu:     100m
+         memory:  128Mi
+       Environment:
+         JVM_OPTS:  -Xms128m -Xmx128m
+       Mounts:
+         /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-2qcsr (ro)
+   Conditions:
+     Type              Status
+     Initialized       True 
+     Ready             True 
+     ContainersReady   True 
+     PodScheduled      True 
+   Volumes:
+     kube-api-access-2qcsr:
+       Type:                    Projected (a volume that contains injected data from multiple sources)
+       TokenExpirationSeconds:  3607
+       ConfigMapName:           kube-root-ca.crt
+       ConfigMapOptional:       <nil>
+       DownwardAPI:             true
+   QoS Class:                   Burstable
+   Node-Selectors:              <none>
+   Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+   Events:                      <none>
    ```
 
-   - 输出内容会包含`Pod`的基本信息（如名称、命名空间、标签等）、容器信息（如容器名称、镜像、端口等）、事件信息（如容器启动、停止等事件）等。
+   - 输出内容通常包含以下信息：
+     - **Pod 的基本信息**：包括名称、命名空间、标签、注释等。
+     - **容器信息**：包括容器名称、镜像、端口、资源请求和限制等，还会显示容器的状态，以及容器启动和停止的相关信息。
+     - **卷（Volumes）信息**：如果 Pod 挂载了卷，会在这里显示卷的类型、来源等信息。
+     - **事件信息**：记录了 Pod 生命周期内发生的事件，例如调度事件、容器启动和停止事件等。
 
 3. **`kubectl logs`**：查看 Pod 中容器的日志。示例：
 
    ```shell
-   # 查看 nginx-pod 中 nginx-container 容器的日志
-   $ kubectl logs nginx-pod -c nginx-container
+   [root@k8s-master pods]# kubectl logs nginx-pod
+   2024/11/03 02:56:23 [notice] 1#1: using the "epoll" event method
+   2024/11/03 02:56:23 [notice] 1#1: nginx/1.27.1
+   2024/11/03 02:56:23 [notice] 1#1: built by gcc 12.2.0 (Debian 12.2.0-14) 
+   2024/11/03 02:56:23 [notice] 1#1: OS: Linux 3.10.0-1160.el7.x86_64
+   2024/11/03 02:56:23 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+   2024/11/03 02:56:23 [notice] 1#1: start worker processes
+   2024/11/03 02:56:23 [notice] 1#1: start worker process 6
+   2024/11/03 02:56:23 [notice] 1#1: start worker process 7
    ```
 
-   - 这对于调试容器中的应用程序非常有用，例如查看应用程序输出的错误信息或状态信息。
+   - `<pod-name> -c <container-name>`：如果 Pod 中有多个容器，需要指定容器名称。示例：
+
+      ```shell
+      # 查看 nginx-pod 中 nginx-pod 容器的日志
+      [root@k8s-master pods]# kubectl logs nginx-pod -c nginx-pod
+      2024/11/03 02:56:23 [notice] 1#1: using the "epoll" event method
+      2024/11/03 02:56:23 [notice] 1#1: nginx/1.27.1
+      2024/11/03 02:56:23 [notice] 1#1: built by gcc 12.2.0 (Debian 12.2.0-14) 
+      2024/11/03 02:56:23 [notice] 1#1: OS: Linux 3.10.0-1160.el7.x86_64
+      2024/11/03 02:56:23 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+      2024/11/03 02:56:23 [notice] 1#1: start worker processes
+      2024/11/03 02:56:23 [notice] 1#1: start worker process 6
+      2024/11/03 02:56:23 [notice] 1#1: start worker process 7
+      ```
+
+   - `-f`：实时日志查看。示例：
+
+     ```shell
+     [root@k8s-master pods]# kubectl logs -f nginx-pod
+     2024/11/03 02:56:23 [notice] 1#1: using the "epoll" event method
+     2024/11/03 02:56:23 [notice] 1#1: nginx/1.27.1
+     2024/11/03 02:56:23 [notice] 1#1: built by gcc 12.2.0 (Debian 12.2.0-14) 
+     2024/11/03 02:56:23 [notice] 1#1: OS: Linux 3.10.0-1160.el7.x86_64
+     2024/11/03 02:56:23 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+     2024/11/03 02:56:23 [notice] 1#1: start worker processes
+     2024/11/03 02:56:23 [notice] 1#1: start worker process 6
+     2024/11/03 02:56:23 [notice] 1#1: start worker process 7
+     
+     ```
 
 #### 更新 Pod
 
-1. 更新容器镜像
-   - 如果需要更新`Pod`中的容器镜像，可以使用`kubectl set image`命令。例如，将`nginx - pod`中的`nginx - container`容器的镜像从`nginx:latest`更新为`nginx:1.23`：
+1. **`kubectl set image`**：更新容器镜像。
 
-收起
+   ```shell
+   $ kubectl set image pod/<pod-name> <container-name>=<new-image>
+   ```
 
+   - 参数说明：
 
+     - `<pod-name>`：要更新的 Pod 名称。
+     - `<container-name>`：Pod 中要更新镜像的容器名称。
+     - `<new-image>`：新的容器镜像。
 
-bash
+   - 注意事项：
 
+     - **更新过程**：当执行此命令后，Kubernetes 会自动触发容器的重新创建过程，以使用新的镜像。这个过程可能会导致短暂的服务中断，具体取决于应用程序的特性和更新策略。一些应用程序可能能够平滑地过渡到新镜像，而另一些可能需要一些额外的配置来确保数据的完整性和服务的连续性。
+     - **滚动更新（Deployment）**：如果 Pod 是由 Deployment 管理的，那么更新镜像会触发 Deployment 进行滚动更新。滚动更新会逐步替换旧的 Pod 副本为新的副本，以确保服务的可用性，可以通过设置`maxSurge`和`maxUnavailable`等参数来控制滚动更新的速度和方式。
+     - **版本兼容性**：在更新镜像时，要确保新镜像与现有应用程序的配置和数据格式兼容。例如，如果应用程序的数据库模式在新镜像中有变化，可能需要先进行数据库迁移等操作，否则可能会导致应用程序无法正常运行。
 
+   - 示例：
 
-复制
+     ```shell
+     # 将名为 my-pod 的 Pod，其中名为 my-container 的容器，由当前使用的 nginx:1.19 镜像，更新为 nginx:1.23
+     $ kubectl set image pod/my-pod my-container=nginx:1.23
+     ```
 
-```bash
-   kubectl set image pod/nginx - pod nginx - container = nginx:1.23
-```
+2. **更新资源请求和限制（CPU、内存等）**
 
-- 这个操作会触发容器的重新创建，以使用新的镜像。
+   - **修改配置文件并应用更新（推荐）**
 
-1. 更新其他资源（如资源请求 / 限制）
-   - 如果要更新`Pod`的资源请求或限制（例如 CPU 和内存），需要先修改`Pod`的配置文件，然后使用`kubectl apply`命令。例如，修改`nginx-pod.yaml`文件中的资源请求部分：
+     - 步骤一：修改配置文件。
 
-收起
+       ```yaml
+       # 更新前配置，CPU 为 0.2，内存为 256M
+       apiVersion: v1
+       kind: Pod
+       metadata:
+         name: my-pod
+       spec:
+         containers:
+         - name: my - container
+           image: nginx:latest
+           resources:
+             requests:
+               cpu: "0.2"
+               memory: "256Mi"
+       ```
 
+       ```yaml
+       # 更新后配置，CPU 为 0.3，内存为 512M
+       apiVersion: v1
+       kind: Pod
+       metadata:
+         name: my-pod
+       spec:
+         containers:
+         - name: my - container
+           image: nginx:latest
+           resources:
+             requests:
+               cpu: "0.3"
+               memory: "512Mi"
+       ```
 
+     - 步骤二：应用更新。
 
-yaml
+       ```shell
+       # Kubernetes 会根据新的配置调整 Pod 的资源分配
+       $ kubectl apply -f my-pod.yaml
+       ```
 
+   - **`kubectl edit`**：临时修改。示例：
 
+     ```shell
+     $ kubectl edit pod my-pod
+     ```
 
-复制
-
-```yaml
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     name: nginx - pod
-   spec:
-     containers:
-     - name: nginx - container
-       image: nginx:latest
-       resources:
-         requests:
-           cpu: "0.5"
-           memory: "512Mi"
-```
-
-- 然后应用更新：
-
-收起
-
-
-
-bash
-
-
-
-复制
-
-```bash
-   kubectl apply -f nginx - pod.yaml
-```
+     - kubectk edit 命令，会打开一个文本编辑器（默认是 vi 或 vim），显示 Pod 的配置信息。
+     - 在编辑器中修改资源请求和限制的相关内容，保存并退出后，Kubernetes 会尝试根据修改后的配置更新 Pod。不过这种方式的修改是直接作用于集群中的资源，没有经过配置文件的版本控制，所以在生产环境中使用时要谨慎，并且最好在修改后将更新后的配置保存到配置文件中，以方便后续的管理和维护。
 
 #### 删除 Pod
 
-1. `kubectl delete pod`：删除单个 Pod。示例：
+1. **`kubectl delete pod <pod-name>`**：删除单个 Pod。示例：
 
    ```shell
    $ kubectl delete pod nginx-pod
    ```
 
-   - 可以通过`--force`和`--grace - period = 0`选项来强制删除`Pod`，但这种方式可能会导致数据丢失或未完成的操作被中断，应该谨慎使用。
+   - `--force`和`--grace-period=0`：强制删除 Pod，但这种方式可能会导致数据丢失或未完成的操作被中断，应该谨慎使用。示例：
 
-2. 通过标签选择器来删除多个 Pod。例如，如果有一组带有 "app=my-app" 标签的 Pod，可以使用以下命令删除它们：
+     ```shell
+     $ kubectl delete pod my-pod --force --grace-period=0
+     ```
 
-   ```shell
-   $ kubectl delete pods -l app=my-app
-   ```
+     - 正常情况下，当执行删除命令时，Kubernetes 会先发送`SIGTERM`信号给容器内的主进程，等待一段时间（默认是 30 秒，即`grace-period`），让进程进行清理操作（如保存数据、关闭连接等），然后再发送`SIGKILL`信号强制终止进程。如果使用了强制删除选项，就会跳过 SIGTERM 等待阶段，直接发送 SIGKILL 信号。
+
+   - `-l`：通过标签选择器来删除多个 Pod。示例：
+
+     ```shell
+     # 删除带有 "app=my-app" 标签的 Pod
+     $ kubectl delete pods -l app=my-app
+     ```
+
+   - `--all`和`-n`：删除指定命名空间下的所有 Pod。示例：
+
+     ```shell
+     # 删除 my-namespace 下的所有 Pod
+     $ kubectl delete pods --all -n my-namespace
+     ```
+
+>在删除 Pod 时，要确保清楚自己的操作可能带来的影响。特别是对于一些有状态的应用，可能会导致数据丢失或服务中断。如果这些 Pod 是由更高层次的资源（如 Deployment、StatefulSet 等）管理的，删除后这些资源可能会自动重新创建 Pod，这也需要考虑对系统整体运行的影响。
 
 ### Pod 配置文件
 
@@ -1820,19 +2335,19 @@ kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   58d
 
 ```
 
-定义一个 nginx-po.yaml 配置文件：
+定义一个 nginx-pod.yaml 配置文件：
 
 ```yaml
 apiVersion: v1 # api 文档版本
 kind: Pod # 资源对象类型，也可以配置为像 Deployment、StatefulSet 这一类的对象
 metadata: # Pod 相关的元数据，用于描述 Pod 的数据
-  name: "nginx-demo" # Pod 的名称
+  name: "nginx-pod" # Pod 的名称
   namespace: default # 定义 Pod 的命名空间
   labels: # 定义 Pod 的标签
-    app: "nginx-demo-app" # 标签的 key:value，可以按实际来自定义
+    app: "nginx-pod-app" # 标签的 key:value，可以按实际来自定义
 spec: # 规约，即期望当前 Pod 应按照下面的描述进行创建
   containers: # 对于 Pod 中的容器描述
-  - name: nginx-demo # 容器的名称
+  - name: nginx-pod # 容器的名称
     image: "nginx:latest" # 指定容器的镜像
     imagePullPolicy: IfNotPresent # 镜像拉取策略，指定如果本地有就用本地的，如果没有就拉取远程的
     command: # 指定容器启动时执行的命令
@@ -1863,37 +2378,37 @@ spec: # 规约，即期望当前 Pod 应按照下面的描述进行创建
 
 ```shell
 [root@k8s-master pods]# cd /opt/k8s/pods/
-[root@k8s-master pods]# kubectl create -f nginx-po.yaml
-pod/nginx-demo created
+[root@k8s-master pods]# kubectl create -f nginx-pod.yaml
+pod/nginx-pod created
 ```
 
-查看新建的 nginx-demo 这个 Pod 的信息：
+查看新建的 nginx-pod 这个 Pod 的信息：
 
 ```shell
 # 查看 Pod 的简略信息
 [root@k8s-master pods]# kubectl get pods
 NAME         READY   STATUS    RESTARTS   AGE
-nginx-demo   1/1     Running   0          3m5s # 此时 STATUS 已经是 Running，刚创建时状态为 ContainerCreating
+nginx-pod    1/1     Running   0          3m5s # 此时 STATUS 已经是 Running，刚创建时状态为 ContainerCreating
 
 # 查看 Pod 的详细信息
 [root@k8s-master pods]# kubectl get pods -o wide
 NAME         READY   STATUS    RESTARTS   AGE   IP            NODE        NOMINATED NODE   READINESS GATES
-nginx-demo   1/1     Running   0          46m   10.244.2.10   k8s-node2   <none>           <none>
+nginx-pod    1/1     Running   0          46m   10.244.2.10   k8s-node2   <none>           <none>
 
-[root@k8s-master pods]# kubectl describe pod nginx-demo
-Name:         nginx-demo
+[root@k8s-master pods]# kubectl describe pod nginx-pod
+Name:         nginx-pod
 Namespace:    default
 Priority:     0
 Node:         k8s-node2/192.168.1.122
 Start Time:   Sun, 27 Oct 2024 09:17:02 +0800
-Labels:       app=nginx-demo-app
+Labels:       app=nginx-pod-app
 Annotations:  <none>
 Status:       Running
 IP:           10.244.2.10
 IPs:
   IP:  10.244.2.10
 Containers:
-  nginx-demo:
+  nginx-pod:
     Container ID:  docker://52e0bb9cd83f20ebb50988bcac9878592c049a0b1b746672a80a7786c685ea72
     Image:         nginx:latest
     Image ID:      docker-pullable://nginx@sha256:04ba374043ccd2fc5c593885c0eacddebabd5ca375f9323666f28dfd5a9710e3
@@ -1937,10 +2452,10 @@ Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists fo
 Events: # Pods 的事件
   Type    Reason     Age   From               Message
   ----    ------     ----  ----               -------
-  Normal  Scheduled  17s   default-scheduler  Successfully assigned default/nginx-demo to k8s-node2 # 分配到 k8s-node2 节点
+  Normal  Scheduled  17s   default-scheduler  Successfully assigned default/nginx-pod to k8s-node2 # 分配到 k8s-node2 节点
   Normal  Pulled     17s   kubelet            Container image "nginx:latest" already present on machine
-  Normal  Created    17s   kubelet            Created container nginx-demo
-  Normal  Started    17s   kubelet            Started container nginx-demo
+  Normal  Created    17s   kubelet            Created container nginx-pod
+  Normal  Started    17s   kubelet            Started container nginx-pod
 ```
 
 - 最下面的 Events，描述了 Pod 的创建过程。
@@ -2030,6 +2545,29 @@ livenessProbe:
 - `periodSeconds`：监测的间隔时间。
 - `sucessThreshold`：监测成功多少次，才表示成功。
 - `failureThreshold`：监测失败多少次，才表示失败。
+
+### Pod 的生命周期
+
+1. **Pending（挂起）阶段**
+   - **状态描述**：当一个 Pod 被创建后，它首先会进入 Pending 状态。在这个阶段，Pod 正在等待被调度到一个合适的节点上运行。这可能是因为集群中没有足够的资源（如 CPU、内存、存储等）来立即启动 Pod，或者是因为需要等待一些外部依赖（如存储卷的准备完成）。
+   - **示例场景**：假设一个 Kubernetes 集群的节点资源已经被大量占用，此时创建一个对资源要求较高的 Pod。这个 Pod 就会处于 Pending 状态，直到有足够的资源或者有节点释放出足够的资源来满足它的需求。
+   - **关键事件**：在这个阶段，Kubernetes 调度器会不断评估集群中的节点资源情况，寻找能够满足 Pod 资源请求的节点。同时，系统会检查 Pod 所依赖的各种资源是否准备就绪。
+2. **Running（运行）阶段**
+   - **状态描述**：一旦 Pod 被调度到一个节点并且其所有的容器都已经成功启动，Pod 就会进入 Running 状态。在这个状态下，Pod 中的容器正在按照配置执行相应的任务。容器内的应用程序可以正常接收请求、处理数据等。
+   - **示例场景**：对于一个运行 Web 应用的 Pod，当它处于 Running 状态时，用户可以通过服务（Service）或者直接通过节点 IP 和端口（如果暴露了的话）来访问这个 Web 应用。
+   - **关键事件**：容器启动过程中的初始化操作是这个阶段的关键。例如，对于一个基于 Java 的应用容器，可能会在启动时执行类加载、数据库连接初始化等操作。同时，容器会开始监听配置的端口，准备接收外部请求。
+3. **Succeeded（成功完成）阶段**
+   - **状态描述**：这个阶段适用于那些执行一次性任务的 Pod。当 Pod 中的所有容器都正常退出，并且退出码为 0（表示成功完成任务）时，Pod 就会进入 Succeeded 状态。这种 Pod 通常用于执行批处理任务、数据迁移任务等。
+   - **示例场景**：假设有一个 Pod 用于将数据从一个数据库迁移到另一个数据库。当数据迁移任务完成后，容器正常退出，Pod 就会进入 Succeeded 状态。
+   - **关键事件**：容器内任务的完成和正常退出是这个阶段的关键。例如，在数据迁移的例子中，任务完成后的清理操作（如关闭数据库连接、释放资源等）完成后，容器才会正常退出。
+4. **Failed（失败）阶段**
+   - **状态描述**：如果 Pod 中的任何一个容器以非零退出码退出，或者容器无法启动（例如，由于镜像拉取失败、配置错误、资源不足等原因），Pod 就会进入 Failed 状态。
+   - **示例场景**：如果一个容器依赖的配置文件在容器启动时找不到，或者容器申请的内存超过了节点所能提供的最大内存，容器就会启动失败，导致 Pod 进入 Failed 状态。
+   - **关键事件**：容器启动失败或者运行过程中出现错误导致异常退出是这个阶段的关键。在这种情况下，需要查看容器的日志和相关的事件信息来确定失败的原因，例如通过`kubectl describe pod`命令来查看 Pod 的详细信息，包括容器的启动事件和错误消息。
+5. **Unknown（未知）阶段**
+   - **状态描述**：当 Kubernetes 无法获取 Pod 的状态信息时，Pod 会进入 Unknown 状态。这可能是由于网络问题、与节点通信中断或者 API 服务器出现故障等原因导致的。
+   - **示例场景**：如果一个节点突然离线，该节点上运行的 Pod 状态就可能会变成 Unknown。
+   - **关键事件**：恢复与 Pod 的通信或者重新获取 Pod 的状态信息是处理这个阶段的关键。通常，Kubernetes 会尝试重新建立与节点的连接，以获取 Pod 的准确状态。
 
 ## 资源调度
 
