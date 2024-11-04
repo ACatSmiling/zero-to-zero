@@ -2566,6 +2566,160 @@ Pod 是 Kubernetes 中最小的可部署和可管理的计算单元，它有着�
    - **状态描述**：当 Kubernetes 无法获取 Pod 的状态信息时，Pod 会进入 Unknown 状态。这可能是由于网络问题、与节点通信中断或者 API 服务器出现故障等原因导致的。
    - **应对措施**：需要检查节点的状态，尝试恢复节点与集群控制平面的通信，以获取 Pod 的准确状态。如果节点已经不可恢复，可以考虑将 Pod 调度到其他节点上重新运行。
 
+图示：
+
+<img src="kubernetes/image-20241104213744908.png" alt="image-20241104213744908" style="zoom:80%;" />
+
+#### PostStart 钩子函数
+
+**`PostStart`**：**是一个容器生命周期钩子函数，它在容器创建后、主进程启动前被调用。**主要用于执行一些需要在容器主进程运行之前完成的初始化任务。例如，初始化网络连接、加载配置文件或者预热缓存等操作。这些操作对于容器主进程的正常运行可能是必需的，通过 PostStart 可以确保这些前置任务先完成。
+
+配置示例：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+  - name: my-container
+    image: nginx:latest
+    lifecycle: # 生命周期配置
+      postStart: # PostStart 钩子函数
+        exec: # 可以是 exec、tcpSocket 或者 httpGet
+          command: ["/bin/sh", "-c", "echo 'PostStart hook executed'"]
+```
+
+执行特性：
+
+- **异步执行**：PostStart 钩子函数是异步执行的，容器主进程不会等待它完成就会启动。这意味着它可以在后台独立运行。但如果 PostStart 执行时间过长或者出错，可能会影响容器的启动。例如，如果 PostStart 执行的命令一直无法完成，容器可能会一直处于启动过程中。（也因为 PostStart 钩子函数与 Pod 主容器中的 command 的先后顺序难以保证，PostStart 钩子函数一般用的比较少，如果有要求在 Pod 主容器之前执行的操作，可以放在初始化阶段执行）
+- **错误处理与重启策略相关**：如果 PostStart 执行失败，Kubernetes 会根据容器的重启策略来决定是否重启容器。若重启策略允许，容器可能会被重新启动以再次尝试执行 PostStart 和主进程。
+
+#### PreStop 钩子函数
+
+**`PreStop`**：**是另一个容器生命周期钩子函数，它在容器终止之前被调用。**主要用于执行一些清理操作，例如优雅地关闭数据库连接、释放资源（如文件锁、网络连接等）、保存容器状态或数据等。这有助于确保容器在停止过程中能够有序地清理自己的资源，避免数据丢失或资源泄漏。
+
+配置示例：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+  - name: my-container
+  image: nginx:latest
+  lifecycle: # 生命周期配置
+    preStop: # PreStop 钩子函数
+      exec: # 可以是 exec、tcpSocket 或者 httpGet
+        command: ["/bin/sh", "-c", "echo 'PreStop hook executed'; sleep 10"]
+```
+
+执行特性：
+
+- **同步执行**：PreStop 钩子函数是同步执行的，容器主进程会等待 PreStop 完成后才会完全终止。这是为了确保清理操作能够顺利完成。不过，如果 PreStop 执行的命令陷入死循环或者长时间无法完成，容器可能会一直处于停止过程中，直到 PreStop 执行完成或者达到 Pod 的终止宽限期（`grace-period`）。
+- **终止宽限期**：Kubernetes 在发送终止信号给容器后，会等待一段时间（终止宽限期），**默认是 30 秒**。在这个期间内，PreStop 钩子函数会执行。如果 PreStop 执行时间超过终止宽限期，Kubernetes 会发送`SIGKILL`信号强制终止容器主进程。但通常建议合理设置 PreStop 执行的命令，使其在终止宽限期内完成。
+
+#### 钩子函数应用
+
+将 nginx-pod.yaml 中，添加 PostStart 和 PreStop 的配置：
+
+```yaml
+apiVersion: v1 # api 文档版本
+kind: Pod # 资源对象类型，也可以配置为像 Deployment、StatefulSet 这一类的对象
+metadata: # Pod 相关的元数据，用于描述 Pod 的数据
+  name: "nginx-pod" # Pod 的名称
+  namespace: default # 定义 Pod 的命名空间
+  labels: # 定义 Pod 的标签
+    app: "nginx-pod-app" # 标签的 key:value，可以按实际来自定义
+spec: # 规约，即期望当前 Pod 应按照下面的描述进行创建
+  containers: # 对于 Pod 中的容器描述
+  - name: nginx-pod # 容器的名称
+    image: "nginx:latest" # 指定容器的镜像
+    imagePullPolicy: IfNotPresent # 镜像拉取策略，指定如果本地有就用本地的，如果没有就拉取远程的
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - sh
+          - -c
+          - "echo '<h1>pre stop</h1>' > /usr/share/nginx/html/prestop.html"
+      preStop:
+        exec:
+          command:
+          - sh
+          - -c
+          - "sleep 50; echo 'sleep finished...' > /usr/share/nginx/html/prestop.html"
+    command: # 指定容器启动时执行的命令
+    - nginx
+    - -g
+    - 'daemon off;' # 当前 command 配置等同于命令：nginx -g 'daemon off;'
+    workingDir: /usr/share/nginx/html # 定义容器启动后的工作目录
+    resources:
+      limits: # 最多可以使用的资源
+        cpu: 200m # 限制 cpu 最多使用 0.2 个核心
+        memory: 256Mi # 限制内存最多使用 256 MB
+      requests: # 最少需要使用的资源
+        cpu: 100m # 限制 cpu 最少使用 0.1 个核心
+        memory: 128Mi # 限制内存最多使用 128 MB
+    ports:
+    - containerPort:  80 # 描述容器内要暴露什么端口
+      name:  http # 端口名称
+      protocol: TCP # 描述该端口是基于哪种协议通信的
+    env: # 环境变量
+    - name: JVM_OPTS # 环境变量名称
+      value: '-Xms128m -Xmx128m' # 环境变量的值
+  restartPolicy: OnFailure # 重启策略，只有失败的情况才会重启
+```
+
+首先，创建 Pod，查看 PostStart 钩子函数的执行情况：
+
+```shell
+[root@k8s-master pods]# kubectl create -f nginx-pod.yaml 
+pod/nginx-pod created
+[root@k8s-master pods]# kubectl get pods -o wide
+NAME        READY   STATUS    RESTARTS   AGE   IP            NODE        NOMINATED NODE   READINESS GATES
+nginx-pod   1/1     Running   0          8s    10.244.2.12   k8s-node2   <none>           <none>
+# 可以看到，PostStart 钩子函数的命令已执行
+[root@k8s-master pods]# curl 10.244.2.12/prestop.html
+<h1>pre stop</h1>
+```
+
+然后，开启两个窗口，一个窗口删除 Pod，另一个窗口监控 Pod 的变化：
+
+```shell
+# 窗口一，删除 Pod
+[root@k8s-master pods]# time kubectl delete pod nginx-pod
+pod "nginx-pod" deleted
+
+real    0m31.454s # 删除操作实际花费时间 31.454 秒
+user    0m0.049s
+sys     0m0.013s
+```
+
+```shell
+[root@k8s-master pods]# kubectl get pods -w
+NAME        READY   STATUS    RESTARTS   AGE
+nginx-pod   1/1     Running   0          38s
+nginx-pod   1/1     Terminating   0          42s
+nginx-pod   0/1     Terminating   0          73s # Pod 从开始删除到删除完成，时间为 31 秒
+nginx-pod   0/1     Terminating   0          73s
+nginx-pod   0/1     Terminating   0          73s
+
+```
+
+因为终止宽限期默认为 30s，虽然 PreStop 钩子函数设置 sleep 50s，但是 30s 后，容器主进程被强制终止。如果将终止宽限期设置为 40s，重复上面的过程，可以发现，删除 Pod 操作花费的时间是 40s 左右。
+
+```yaml
+...
+spec:
+  terminationGracePeriodSeconds: 40 # 设置终止宽限期为 40s，默认的是 30s
+  containers:
+  ...
+```
+
 ## 资源调度
 
 `Todo`
