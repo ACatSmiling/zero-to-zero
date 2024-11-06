@@ -3763,7 +3763,97 @@ wget.x86_64                                                         1.14-18.el7_
 
 ### Shell 编程
 
-// todo
+#### Shell 概述
+
+**`Shell（壳）`**：是一种命令行解释器，它是用户与操作系统内核之间的接口。用户通过在 Shell 中输入命令，Shell 会将这些命令解释并传递给操作系统内核去执行相应的操作，然后将结果返回给用户。它就像是一个 "翻译官"，让用户能够以一种较为方便的方式来控制计算机系统。
+
+<img src="linux/image-20241106212817811.png" alt="image-20241106212817811" style="zoom:67%;" />
+
+**Shell 的功能：**
+
+- **命令执行**：这是 Shell 最基本的功能。用户可以在 Shell 环境中输入各种命令，如文件操作命令（ls 用于列出文件和目录，cp 用于复制文件等）、进程管理命令（ps 用于查看进程，kill 用于终止进程）、系统管理命令（systemctl 用于管理系统服务等）。这些命令可以帮助用户完成诸如文件管理、系统监控、软件安装等多种任务。
+- **脚本编程**：Shell 支持脚本编程，用户可以将一系列命令组合成一个 Shell 脚本文件（通常以`.sh`为扩展名）。通过编写 Shell 脚本，可以实现自动化的任务流程。例如，编写一个备份文件的脚本，它可以自动地将指定目录下的文件备份到另一个位置，并且可以设置备份的时间间隔、备份文件的命名规则等。
+- **环境变量管理**：Shell 可以用于设置、查看和修改环境变量。环境变量是一些在系统中全局或局部可用的变量，它们可以影响系统的行为和应用程序的运行。例如，PATH 环境变量用于指定系统在哪些目录中查找可执行文件。用户可以通过 export 命令来设置新的环境变量，或者通过 echo $PATH 来查看当前 PATH 环境变量的值。
+- **输入输出重定向和管道操作**：Shell 支持输入输出重定向和管道操作，这大大增强了命令的灵活性。输入输出重定向可以将命令的输入或输出导向不同的设备或文件。例如，> 可以将命令的输出重定向到一个文件中，2> 可以将错误输出重定向到一个文件。管道操作（|）可以将一个命令的输出作为另一个命令的输入，从而实现多个命令的组合和数据的流转。例如，ls -l | grep "test" 可以先列出文件详细信息，然后筛选出包含 test 的行。
+
+**常见的 Shell 类型：**
+
+- `Bash（Bourne-Again Shell）`：这是目前大多数 Linux 系统默认使用的 Shell。它是`Bourne Shell（sh）`的增强版，具有丰富的功能，如命令补全、历史记录、别名等。Bash 兼容大部分 sh 的语法，并且提供了许多扩展功能，例如条件判断、循环语句等用于编写复杂的脚本。
+
+- `Zsh（Z Shell）`：是一个功能强大的 Shell，它在 Bash 的基础上提供了更多的特性，如更好的自动补全功能、主题支持等。Zsh 的配置文件通常比 Bash 更灵活，用户可以通过各种插件来扩展 Zsh 的功能。
+
+- `Fish（Friendly Interactive Shell）`：注重用户体验，具有直观的自动补全和语法提示功能。它的语法相对简单，并且有很好的交互式体验，例如在输入命令时，它会实时显示命令的帮助信息和可能的选项。
+
+- 通过以下命令，可以查看当前支持的，以及默认的 Shell：
+
+  ```shell
+  # 当前支持的 Shell 类型
+  [zeloud@centos ~]$ cat /etc/shells 
+  /bin/sh
+  /bin/bash
+  /usr/bin/sh
+  /usr/bin/bash
+  
+  # 当前默认的 Shell，即 Bash Shell
+  [zeloud@centos ~]$ echo $SHELL
+  /bin/bash
+  ```
+
+#### Shell 脚本入门
+
+格式：脚本首行以`#!/bin/bash`开头，指定解析器。
+
+示例：
+
+```shell
+#!/bin/bash
+
+echo "Hello, Shell!"
+```
+
+Shell 脚本的执行方式：
+
+1. `sh/bash 脚本的相对路径或绝对路径/脚本名称`。示例：
+
+   ```shell
+   [zeloud@centos ~]$ sh hello.sh 
+   Hello, Shell!
+   [zeloud@centos ~]$ sh /home/zeloud/hello.sh 
+   Hello, Shell!
+   ```
+
+2. `将脚本赋予可执行权限`。示例：
+
+   ```shell
+   [zeloud@centos ~]$ ll
+   total 4
+   -rw-rw-r--. 1 zeloud zeloud 34 Nov  6 23:19 hello.sh
+   [zeloud@centos ~]$ chmod +x hello.sh 
+   [zeloud@centos ~]$ ll
+   total 4
+   -rwxrwxr-x. 1 zeloud zeloud 34 Nov  6 23:19 hello.sh
+   # 使用 "相对路径或绝对路径/脚本名称" 的方式，可以直接执行脚本
+   [zeloud@centos ~]$ /home/zeloud/hello.sh 
+   Hello, Shell!
+   # 如果位于脚本所在的路径下，不能直接使用 "脚本名称" 的方式执行脚本，因为会把脚本名称当作是一个命令，可以使用 "./脚本名称" 的方式执行脚本
+   [zeloud@centos ~]$ ./hello.sh 
+   Hello, Shell!
+   ```
+
+3. `source/. 脚本的相对路径或绝对路径/脚本名称`。示例：
+
+   ```shell
+   [zeloud@centos ~]$ source hello.sh 
+   Hello, Shell!
+   [zeloud@centos ~]$ . hello.sh 
+   Hello, Shell!
+   ```
+
+> 方式一和方式二的执行方式，都是在当前 Shell 中，启动了一个子 Shell，然后将脚本文件传入进去执行，当脚本内容结束，子 Shell 关闭，回到当前 Shell 中。
+>
+> 方式三没有启动子 Shell，而是直接将脚本文件在当前 Shell 中执行。这也是在修改环境变量时，每次修改完 /etc/profile 文件之后，需要使用 source 命令执行一下的原因。
+>
+> 开启子 Shell 与不开启子 Shell 的区别在于：**环境变量的继承关系**。例如，在子 Shell 中设置的当前变量，在父 Shell 中是不可见的。
 
 ## 本文参考
 
