@@ -3854,6 +3854,292 @@ Shell 脚本的执行方式：
 > 方式三没有启动子 Shell，而是直接将脚本文件在当前 Shell 中执行。这也是在修改环境变量时，每次修改完 /etc/profile 文件之后，需要使用 source 命令执行一下的原因。
 >
 > 开启子 Shell 与不开启子 Shell 的区别在于：**环境变量的继承关系**。例如，在子 Shell 中设置的当前变量，在父 Shell 中是不可见的。
+>
+> ```shell
+> # 当前 Shell 只有一个 bash
+> [zeloud@centos ~]$ ps -f
+> UID        PID  PPID  C STIME TTY          TIME CMD
+> zeloud    1367  1366  0 12:35 pts/0    00:00:00 -bash
+> zeloud    1429  1367  0 12:53 pts/0    00:00:00 ps -f
+> # 开启一个子 Shell
+> [zeloud@centos ~]$ bash
+> # 多了一个 bash
+> [zeloud@centos ~]$ ps -f
+> UID        PID  PPID  C STIME TTY          TIME CMD
+> zeloud    1367  1366  0 12:35 pts/0    00:00:00 -bash
+> zeloud    1430  1367  0 12:53 pts/0    00:00:00 bash
+> zeloud    1445  1430  0 12:53 pts/0    00:00:00 ps -f
+> # exit 退出的是子 Shell
+> [zeloud@centos ~]$ exit
+> exit
+> [zeloud@centos ~]$ ps -f
+> UID        PID  PPID  C STIME TTY          TIME CMD
+> zeloud    1367  1366  0 12:35 pts/0    00:00:00 -bash
+> zeloud    1446  1367  0 12:54 pts/0    00:00:00 ps -f
+> # 此时，再执行 exit，就退出了当前的连接窗口
+> [zeloud@centos ~]$ exit
+> logout
+> ```
+
+#### 变量
+
+##### 系统预定义变量
+
+常用的系统变量：`$HOME`，`$PWD`，`$SHELL`，`$USER`、`$PATH`等。
+
+```shell
+# 当前主目录
+[zeloud@centos ~]$ echo $HOME
+/home/zeloud
+# 当前用户
+[zeloud@centos ~]$ echo $USER
+zeloud
+# 默认使用的 Shell
+[zeloud@centos ~]$ echo $SHELL
+/bin/bash
+# 当前工作目录
+[zeloud@centos ~]$ echo $PWD
+/home/zeloud
+# 当前环境变量路径
+[zeloud@centos ~]$ echo $PATH
+/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/zeloud/.local/bin:/home/zeloud/bin
+```
+
+查看所有的系统预定义变量：
+
+```shell
+[zeloud@centos home]$ set
+
+[zeloud@centos home]$ env | less
+
+[zeloud@centos home]$ printenv | less
+
+# 查看特定系统预定义变量，等同于 echo $USER
+[zeloud@centos home]$ printenv USER
+zeloud
+```
+
+##### 自定义变量
+
+基本语法：
+
+- 定义变量：`变量名=变量值`。注意：= 号前后不能有空格。
+- 撤销变量：`unset 变量名`。
+- 声明静态变量：`readonly 变量名`。注意：静态变量不能 unset。
+
+示例：
+
+```shell
+[zeloud@centos ~]$ echo $my_var
+
+[zeloud@centos ~]$ my_var=hello
+[zeloud@centos ~]$ echo $my_var
+hello
+
+[zeloud@centos ~]$ my_var='hello, shell!'
+[zeloud@centos ~]$ echo $my_var
+hello, shell!
+
+# 不是 6，而是字符串 1+5
+[zeloud@centos ~]$ my_var=1+5
+[zeloud@centos ~]$ echo $my_var
+1+5
+
+# 撤销变量
+[zeloud@centos ~]$ b=2
+[zeloud@centos ~]$ echo $b
+2
+[zeloud@centos ~]$ unset b
+[zeloud@centos ~]$ echo $b
+
+
+# 如果需要计算，则使用运算符
+[zeloud@centos ~]$ my_var=$((1+5))
+[zeloud@centos ~]$ echo $my_var
+6
+
+# 只读变量设置
+[zeloud@centos ~]$ readonly a=1
+[zeloud@centos ~]$ a=2
+-bash: a: readonly variable
+```
+
+##### 特殊变量
+
+###### \$n
+
+`$n`：n 为数字，\$0 代表该脚本名称，\$1 ~ \$9 代表第一个到第九个参数，第十个以上的参数，需要使用大括号包含，例如，\${10}。
+
+示例：
+
+```shell
+#!/bin/bash
+
+# 单引号里面的内容，会原样输出
+echo '==========$n=========='
+echo "script name: $0"
+echo "1st parameter: $1"
+echo "2nd parameter: $2"
+```
+
+```shell
+[zeloud@centos ~]$ vim parameter.sh
+[zeloud@centos ~]$ chmod +x parameter.sh 
+[zeloud@centos ~]$ ll
+total 4
+-rwxrwxr-x. 1 zeloud zeloud 116 Nov  7 16:25 parameter.sh
+[zeloud@centos ~]$ ./parameter.sh 1 2
+==========$n==========
+script name: ./parameter.sh
+1st parameter: 1
+2nd parameter: 2
+```
+
+###### \$#
+
+`$#`：获取所有输入参数的个数，常用于循环，判断参数的个数是否正确，以及加强脚本的健壮性。
+
+示例：
+
+```shell
+#!/bin/bash
+
+echo '==========$#=========='
+echo "number of parameter: $#"
+```
+
+```shell
+[zeloud@centos ~]$ ./parameter.sh 
+==========$#==========
+number of parameter: 0
+[zeloud@centos ~]$ ./parameter.sh 1
+==========$#==========
+number of parameter: 1
+[zeloud@centos ~]$ ./parameter.sh 1 2
+==========$#==========
+number of parameter: 2
+[zeloud@centos ~]$ ./parameter.sh 1 2 3
+==========$#==========
+number of parameter: 3
+```
+
+###### \$* 和 \$@
+
+`$*`：表示命令行中所有的参数，\$* 会把所有的参数当作一个整体。
+
+`$@`：表示命令行中所有的参数，\$@ 会把每个参数区分对待，然后可以循环遍历。
+
+示例：
+
+```shell
+#!/bin/bash
+
+echo '==========$*=========='
+echo $*
+
+echo '==========$@=========='
+echo $@
+```
+
+```shell
+[zeloud@centos ~]$ ./parameter.sh 1 2 3 4 5
+==========$*==========
+1 2 3 4 5
+==========$@==========
+1 2 3 4 5
+```
+
+###### \$?
+
+`$?`：表示最后一次执行的命令的返回状态。如果这个变量的值为 0，表明上一个命令正确执行；如果这个变量的值为非 0（具体返回什么值，取决于执行的命令），表明上一个命令非正确执行。
+
+示例：
+
+```shell
+[zeloud@centos ~]$ ./hello.sh 
+Hello, Shell!
+[zeloud@centos ~]$ echo $?
+0
+
+[zeloud@centos ~]$ hello.sh
+-bash: hello.sh: command not found
+[zeloud@centos ~]$ echo $?
+127
+```
+
+#### 运算符
+
+语法：`$((运算式))`或者`$[运算式]`。
+
+示例：
+
+```shell
+# 使用 expr 命令，注意，对于乘法运算，需要转义
+[zeloud@centos ~]$ expr 5 \* 2
+10
+# 运算符
+[zeloud@centos ~]$ a=$((5*2))
+[zeloud@centos ~]$ echo $a
+10
+# 命令替换
+[zeloud@centos ~]$ b=$(expr 5 \* 2)
+[zeloud@centos ~]$ echo $b
+10
+# 命令替换
+[zeloud@centos ~]$ c=`expr 5 \* 2`
+[zeloud@centos ~]$ echo $c
+10
+
+[zeloud@centos ~]$ s=$(((2+3)*4))
+[zeloud@centos ~]$ echo $s
+20
+```
+
+```shell
+#!/bin/bash
+
+sum=$(($1 + $2))
+echo sum=$sum
+```
+
+```shell
+[zeloud@centos ~]$ vim add.sh
+[zeloud@centos ~]$ chmod +x add.sh 
+[zeloud@centos ~]$ ./add.sh 11 22
+sum=33
+```
+
+#### 条件判断
+
+语法：`test condition`，或者`[ condition ]`（condition 前后要添加一个空格）。
+
+示例：
+
+```shell
+[zeloud@centos ~]$ a=hello
+# 定义一个判断语句，语法一
+[zeloud@centos ~]$ test $a = hello
+# 通过捕获上一条命令的返回值，得到判断语句的结果，0 表示 true
+[zeloud@centos ~]$ echo $?
+0
+[zeloud@centos ~]$ test $a = Hello
+# 1 表示 false
+[zeloud@centos ~]$ echo $?
+1
+
+# 语法二
+[zeloud@centos ~]$ b=shell
+[zeloud@centos ~]$ [ $b = shell ]
+[zeloud@centos ~]$ echo $?
+0
+[zeloud@centos ~]$ [ $b = Shell ]
+[zeloud@centos ~]$ echo $?
+1
+```
+
+
+
+
 
 ## 本文参考
 
