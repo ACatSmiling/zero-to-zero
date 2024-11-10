@@ -4137,9 +4137,149 @@ sum=33
 1
 ```
 
+注意，如果是使用语法二，书写 condition 时，需要添加空格，否则会得到错误的结果。示例：
 
+```shell
+[zeloud@centos ~]$ b=shell
+# $b=Shell 被当作整体，返回了 true
+[zeloud@centos ~]$ [ $b=Shell ]
+[zeloud@centos ~]$ echo $?
+0
+# $b = Shell 是判断 $b 的值是否为 Shell，这是一个合格的条件判断表达式，返回 false
+[zeloud@centos ~]$ [ $b = Shell ]
+[zeloud@centos ~]$ echo $?
+1
+```
 
+对于语法二，如果条件为空，会返回 false：
 
+```shell
+# 条件为空，返回 false
+[zeloud@centos ~]$ [    ]
+[zeloud@centos ~]$ echo $?
+1
+# 条件为空，返回 true
+[zeloud@centos ~]$ [ dasdsaf ]
+[zeloud@centos ~]$ echo $?
+0
+```
+
+常用的判断条件：
+
+1. **两个整数之间的比较：**
+   - `-eq`：equal，等于。
+   - `-ne`：not equal，不等于。 
+   - `-lt`：less than，小于。
+   - `-le`：less equal，小于等于。
+   - `-gt`：greater than，大于。
+   - `-ge`：greater equal，大于等于。
+   - 如果是字符串之间的比较，用`=`判断相等，用`!=`判断不相等。
+2. **按照文件权限进行判断：**
+   - `-r`：read，有读的权限。
+   - `-w`：write，有写的权限。
+   - `-x`：execute，有执行的权限。
+3. **按照文件类型进行判断：**
+   - `-e`：existence，文件存在。
+   - `-f`：file，文件存在且是一个常规的文件。
+   - `-d`：directory，文件存在且是一个目录。
+4. **多条件判断：**
+   - `&&`：逻辑与，前一条命令执行成功时，才执行后一条命令。
+   - `||`：逻辑或，前一条命令执行失败时，才执行后一条命令。
+
+示例：
+
+```shell
+# 判断 23 是否大于等于 22
+[zeloud@centos ~]$ [ 23 -ge 22 ]
+[zeloud@centos ~]$ echo $?
+0
+# 判断 hello.sh 是否具有可执行的权限
+[zeloud@centos ~]$ [ -x hello.sh ]
+[zeloud@centos ~]$ echo $?
+0
+# 判断 /home/zeloud/hello.sh 文件是否存在
+[zeloud@centos ~]$ [ -e /home/zeloud/hello.sh ]
+[zeloud@centos ~]$ echo $?
+0
+# 多条件判断
+[zeloud@centos ~]$ [ 1 -lt 2 ] && echo Ok || echo NotOk
+Ok
+[zeloud@centos ~]$ [ 1 -gt 2 ] && echo Ok || echo NotOk
+NotOk
+[zeloud@centos ~]$ a=15
+[zeloud@centos ~]$ [ $a -lt 20 ] && echo "$a < 20" || echo "$a >= 20"
+15 < 20
+[zeloud@centos ~]$ a=27
+[zeloud@centos ~]$ [ $a -lt 20 ] && echo "$a < 20" || echo "$a >= 20"
+27 >= 20
+```
+
+#### 流程控制
+
+##### if 判断
+
+语法：
+
+1. 单分支：
+
+   - 语法：
+
+     ```shell
+     if [ condition ];then
+         程序
+     fi
+     ```
+
+     ```shell
+     if [ condition ]
+     then
+         程序
+     fi
+     ```
+
+   - 示例：
+
+     ```shell
+     [zeloud@centos ~]$ a=20
+     [zeloud@centos ~]$ if [ $a -gt 18 ] && [ $a -lt 35 ]; then echo OK; fi
+     OK
+     # 等价于 &&
+     [zeloud@centos ~]$ if [ $a -gt 18 -a $a -lt 35 ]; then echo OK; fi
+     OK
+     ```
+
+     ```shell
+     #!/bin/bash
+     
+     # 添加一个 x，相当于给定默认值，防止没有传参时出现错误
+     if [ "$1"x = "zeloud"x ]; then
+         echo "welcome, $1"
+     fi
+     ```
+
+     ```shell
+     [zeloud@centos ~]$ chmod +x if_test.sh
+     [zeloud@centos ~]$ ./if_test.sh 
+     [zeloud@centos ~]$ ./if_test.sh a
+     [zeloud@centos ~]$ ./if_test.sh zeloud
+     welcome, zeloud
+     ```
+
+2. 多分支：
+
+   ```shell
+   if [ condition ]
+   then
+       程序
+   elif [ condition ]
+   then
+       程序
+   else
+       程序
+   fi
+   ```
+
+3. s
 
 ## 本文参考
 
