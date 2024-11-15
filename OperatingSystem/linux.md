@@ -4220,7 +4220,7 @@ NotOk
 
 语法：
 
-1. 单分支：
+1. **单分支**：
 
    - 语法：
 
@@ -4265,21 +4265,55 @@ NotOk
      welcome, zeloud
      ```
 
-2. 多分支：
+2. **多分支**：
 
-   ```shell
-   if [ condition ]
-   then
-       程序
-   elif [ condition ]
-   then
-       程序
-   else
-       程序
-   fi
-   ```
+   - 语法：
 
-3. s
+     ```shell
+     if [ condition ]
+     then
+         程序
+     elif [ condition ]
+     then
+         程序
+     else
+         程序
+     fi
+     ```
+
+   - 示例：
+
+     ```shell
+     #!/bin/bash
+     
+     if [ $1 -lt 18 ]
+     then
+       echo "未成年人"
+     else
+       echo "成年人"
+     fi
+     ```
+
+     ```shell
+     #!/bin/bash
+     
+     if [ $1 -lt 18 ]
+     then
+       echo "未成年人"
+     elif [ $1 -lt 35 ]
+     then
+       echo "青年人"
+     elif [ $1 -lt 60 ]
+     then
+       echo "中年人"
+     else
+       echo "老年人"
+     fi
+     ```
+
+##### case 语句
+
+
 
 ## 本文参考
 
