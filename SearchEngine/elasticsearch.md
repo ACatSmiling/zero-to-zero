@@ -107,11 +107,31 @@ Stack Overflow：解决 Bug 问题的网站，全英文，编程人员交流的�
 
 ### Docker 单机
 
+开发环境部署：
 
+```shell
+# 拉取镜像
+$ docker pull elasticsearch:8.19.4
+
+# 创建自定义网络
+$ docker network create esnetwork
+
+# 创建容器服务
+$ docker run -d --restart always \
+  --name elasticsearch \
+  --net esnetwork \
+  -p 19200:9200 -p 19300:9300 \
+  -e "ELASTIC_PASSWORD=elastic" \
+  -e "discovery.type=single-node" \
+  elasticsearch:8.19.4
+```
+
+- 首次启动时，通过 -e 参数设置`ELASTIC_PASSWORD`，即`elastic`超级用户的初始密码，避免启动时自动生成随机密码。
+- 如果容器已初始化（数据卷中已有数据），可以进入容器内，使用`elasticsearch-reset-password -u elastic -i`命令，修改新密码。
 
 ### Docker 集群
 
-
+参考：https://www.elastic.co/guide/en/elasticsearch/reference/8.19/docker.html
 
 ## Elasticsearch 基本操作
 
@@ -132,79 +152,116 @@ Elasticsearch 是面向文档型数据库，一条数据在这里就是一个文
 - **ES 里的 Index 可以看做一个库，Types 相当于表，Documents 相当于表的行。**
 - Types 的概念已经被逐渐弱化，Elasticsearch 6.X 中，一个 Index 下已经只能包含一个 type，Elasticsearch 7.X 中，Type 的概念已经被删除了。
 
-### HTTP 操作
+### HTTPS 操作
 
 #### 索引操作
+
+对比关系型数据库，创建索引就等同于创建数据库。
+
+ES 中索引操作的请求类型，不支持 POST 请求，如果发送了 POST 请求，会报错：
+
+```json
+{
+    "error": "Incorrect HTTP method for uri [/shopping] and method [POST], allowed: [GET, PUT, DELETE, HEAD]",
+    "status": 405
+}
+```
 
 ##### 创建索引
 
 向 ES 服务器`发 PUT 请求`：
 
+![image-20251005233806119](elasticsearch/image-20251005233806119.png)
 
+如果再次发送相同的 PUT 请求，会返回错误：
 
->对比关系型数据库，创建索引就等同于创建数据库。
+![image-20251006225237657](elasticsearch/image-20251006225237657.png)
 
-##### 查看全部索引
-
-向 ES 服务器`发 GET 请求`：
-
-
+> 说明：Elasticsearch 8.x 默认启用了 HTTPS 安全配置（`xpack.security.enabled: true`，Docker 部署时，SSL 证书通常在容器内的`/usr/share/elasticsearch/config/certs/`目录），要求所有 API 访问必须通过 HTTPS 协议。如果使用 HTTP 协议，Elasticsearch 出于安全考虑，会关闭连接。因此，会收到 "Empty reply from server" 错误，或者发送 PUT 请求 时，容器出现以下日志：
+>
+> ```json
+> {"@timestamp":"2025-10-05T15:05:42.569Z", "log.level": "WARN", "message":"received plaintext http traffic on an https channel, closing connection Netty4HttpChannel{localAddress=/172.18.0.2:9200, remoteAddress=/192.168.1.22:5054}", "ecs.version": "1.2.0","service.name":"ES_ECS","event.dataset":"elasticsearch.server","process.thread.name":"elasticsearch[eb4179f13590][transport_worker][T#3]","log.logger":"org.elasticsearch.http.netty4.Netty4HttpServerTransport","elasticsearch.cluster.uuid":"y-7YygIDQquhbCZ0yv6JYg","elasticsearch.node.id":"iY_--xinSy-JIcgIX1BoEQ","elasticsearch.node.name":"eb4179f13590","elasticsearch.cluster.name":"docker-cluster"}
+> ```
 
 ##### 查看单个索引
 
 向 ES 服务器`发 GET 请求`：
 
+![image-20251006225327289](elasticsearch/image-20251006225327289.png)
 
+##### 查看全部索引
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251006230012127](elasticsearch/image-20251006230012127.png)
 
 ##### 删除索引
 
 向 ES 服务器`发 DELETE 请求`：
 
+![image-20251006230105307](elasticsearch/image-20251006230105307.png)
 
+此时，再次执行查看全部索引请求，会返回空。
 
 #### 文档操作
 
-##### 创建文档
+索引创建好后，接下来就可以创建文档，并添加数据。**文档可以类比为关系型数据库中的表数据，添加的数据格式为 JSON 格式。**
 
-索引创建好后，接下来就可以创建文档，并添加数据。这里的文档可以类比为关系型数据库中的表数据，添加的**数据格式为 JSON 格式**。
+##### 创建文档
 
 向 ES 服务器`发 POST 请求`：
 
+![image-20251007000417176](elasticsearch/image-20251007000417176.png)
 
+在返回结果中，有一个`_id`字段，这个是 Elasticsearch 自动生成的一个随机字符串，表示当前创建的文档的唯一标识。对于相同的请求体，多次 POST 请求，都会创建一个文档，并返回不同的 _id。即，创建文档的请求，是非幂等性的。
 
-##### 查看文档
+在创建文档时，可以指定文档的 _id 值，这比随机生成的字符串，更容易记忆和使用：
 
-查看文档时，**需要指明文档的唯一性标识**，类似于 MySQL 中数据的主键查询。
+![image-20251007001011739](elasticsearch/image-20251007001011739.png)
+
+##### 查看单个文档
+
+查看文档时，**需要指明文档的唯一性标识 _id**，类似于 MySQL 中数据的主键查询。
 
 向 ES 服务器`发 GET 请求`：
 
+![image-20251007001224337](elasticsearch/image-20251007001224337.png)
 
+##### 查看所有文档
 
-##### 修改文档
+![image-20251007001500045](elasticsearch/image-20251007001500045.png)
+
+##### 修改文档（全量更新）
 
 和新增文档一样，输入相同的 URL 地址请求，如果请求体变化，会将原有的数据内容覆盖。
 
-向 ES 服务器`发 POST 请求`：
+向 ES 服务器`发 PUT 请求`：
 
+![image-20251007133559096](elasticsearch/image-20251007133559096.png)
 
+- 为保持幂等性，使用 PUT 请求。
+- 如果文档不存在，会创建新文档（相当于插入操作）。
+- 如果文档存在，会用新内容完全替换原有文档（_version 版本号自动递增）。
 
-##### 修改字段
+修改之后，再次查看 _id 为 1001 的文档信息，会发现文档数据发生了变化：
+
+![image-20251007133632325](elasticsearch/image-20251007133632325.png)
+
+##### 修改字段（局部更新）
 
 修改数据时，也可以只修改某一条数据的局部信息。
 
 向 ES 服务器`发 POST 请求`：
 
-请求体内容为：
+![image-20251007134423859](elasticsearch/image-20251007134423859.png)
 
-```json
-{
-    "doc": {
-        "price": 3000.00
-    }
-}
-```
+- 非幂等性，使用 POST 请求。
+- 必须使用`_update`端点和`doc`关键字包裹要更新的字段。
+- 文档必须已存在，否则会返回错误。
 
+修改之后，再次查看 _id 为 1001 的文档信息，会发现文档的 prices 字段数据发生了变化：
 
+![image-20251007134527186](elasticsearch/image-20251007134527186.png)
 
 ##### 删除文档
 
@@ -212,7 +269,15 @@ Elasticsearch 是面向文档型数据库，一条数据在这里就是一个文
 
 向 ES 服务器`发 DELETE 请求`：
 
+![image-20251007145700248](elasticsearch/image-20251007145700248.png)
 
+删除之后，就查询不到 _id 为 1001 的文档信息：
+
+![image-20251007145820716](elasticsearch/image-20251007145820716.png)
+
+如果删除一个不存在的文档，会提示数据 not_found：
+
+![image-20251007145930858](elasticsearch/image-20251007145930858.png)
 
 ##### 条件删除文档
 
@@ -293,29 +358,89 @@ Elasticsearch 提供了基于 JSON 提供完整的查询 DSL 来定义查询。
 
 ##### 查询所有文档
 
+对于全量查询，除了上文发送的不带请求体的 GET 请求之外，也可以在请求体中加入`match_all`参数。
+
 向 ES 服务器`发 GET 请求`：
 
+![image-20251007183241356](elasticsearch/image-20251007183241356.png)
 
+##### 分页查询
+
+参数：
+
+- `from`：当前页的起始索引，默认从 0 开始，$from = (pageNum - 1) * size$。
+- `size`：每页显示多少条。
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251007184310264](elasticsearch/image-20251007184310264.png)
+
+##### 指定查询字段
+
+默认情况下，Elasticsearch 在搜索的结果中，会把文档中保存在 \_source 的所有字段都返回。如果我们只想获取其中的部分字段，我们可以添加 \_source 的过滤。
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251007184426204](elasticsearch/image-20251007184426204.png)
+
+##### 单字段排序
+
+`sort 排序`可以让我们按照不同的字段进行排序，并且通过 order 指定排序的方式：
+
+- desc：降序。
+- asc：升序。
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251007184823326](elasticsearch/image-20251007184823326.png)
+
+##### 多字段排序
+
+假定我们想要结合使用 prices 和 title 进行查询，并且匹配的结果首先按照 prices 排序，然后按照 title 排序。
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251007202649053](elasticsearch/image-20251007202649053.png)
+
+> ES 中有多种数据类型，但并非所有数据类型都适合排序（Sorting）和聚合（Aggregation）操作，示例中，prices 是 dobule 类型，title 是 text 类型，而 text 类型是不适合排序和聚合的类型，因此，在查询时出现了错误。
 
 ##### 匹配查询
 
-match 匹配类型查询，会把查询条件进行分词，然后进行查询，多个词条之间是 or 的关系。
+`match`匹配类型查询，**会把查询条件进行分词**，然后进行查询，多个词条之间是 or 的关系。
 
 向 ES 服务器`发 GET 请求`：
 
+![image-20251007204130758](elasticsearch/image-20251007204130758.png)
 
+改变查询条件，更好的感受查询条件分词的效果：
+
+![image-20251008000020952](elasticsearch/image-20251008000020952.png)
+
+可以看到，虽然查询条件是 "米华"，查询结果能把 title 包含 "米" 和 "华" 的都查询出来，这也就是`全文检索匹配`的概念。
+
+##### 完全匹配查询
+
+使用`match_phrase`，可以做到完全匹配查询，不会分词。
+
+向 ES 服务器`发 GET 请求`：
+
+![image-20251008000302528](elasticsearch/image-20251008000302528.png)
 
 ##### 字段匹配查询
 
-multi_match 与 match 类似，不同的是它可以在多个字段中查询。
+`multi_match`与 match 类似，不同的是它可以在多个字段中查询。
 
 向 ES 服务器发 GET 请求：
 
+![image-20251007204623124](elasticsearch/image-20251007204623124.png)
 
+> 注意：示例中查询的内容是字符串，fields 中指定的字段类型也需要是文本类的，如果指定非文本类的字段，可能发生类型转换的错误。
+>
+> ![image-20251007204856223](elasticsearch/image-20251007204856223.png)
 
 ##### 关键字精确查询
 
-term 查询，精确的关键词匹配查询，不对查询条件进行分词。
+`term`查询，精确的关键词匹配查询，不对查询条件进行分词。
 
 向 ES 服务器发 GET 请求：
 
@@ -323,15 +448,7 @@ term 查询，精确的关键词匹配查询，不对查询条件进行分词。
 
 ##### 多关键字精确查询
 
-terms 查询和 term 查询一样，但它允许你指定多值进行匹配，如果这个字段包含了指定值中的任何一个值，那么这个文档满足条件。
-
-向 ES 服务器`发 GET 请求`：
-
-
-
-##### 指定查询字段
-
-默认情况下，Elasticsearch 在搜索的结果中，会把文档中保存在 \_source 的所有字段都返回。如果我们只想获取其中的部分字段，我们可以添加 \_source 的过滤。
+`terms`查询和 term 查询一样，但它允许你指定多值进行匹配，如果这个字段包含了指定值中的任何一个值，那么这个文档满足条件。
 
 向 ES 服务器`发 GET 请求`：
 
@@ -350,15 +467,15 @@ terms 查询和 term 查询一样，但它允许你指定多值进行匹配，�
 
 ##### 组合查询
 
-`bool 查询`把各种其它查询通过`must（必须 ）`、`must_not（必须不）`、`should（应该）`的方式进行组合。
+`bool`查询把各种其它查询通过`must（必须）`、`must_not（必须不）`、`should（应该）`的方式进行组合。
 
 向 ES 服务器`发 GET 请求`：
 
-
+![image-20251007210321778](elasticsearch/image-20251007210321778.png)
 
 ##### 范围查询
 
-`range 查询`找出那些落在指定区间内的数字或者时间。range 查询允许以下字符：
+`range`查询找出那些落在指定区间内的数字或者时间。range 查询允许以下字符：
 
 | 操作符 | 说明 |
 | ------ | ---- |
@@ -369,7 +486,7 @@ terms 查询和 term 查询一样，但它允许你指定多值进行匹配，�
 
 向 ES 服务器`发 GET 请求`：
 
-
+![image-20251008094554551](elasticsearch/image-20251008094554551.png)
 
 #####  模糊查询
 
@@ -384,23 +501,6 @@ terms 查询和 term 查询一样，但它允许你指定多值进行匹配，�
 
 为了找到相似的术语，`fuzzy 查询`会在指定的编辑距离内创建一组搜索词的所有可能的变体或扩展，然后查询返回每个扩展的完全匹配。 通过 fuzziness 修改编辑距离，一般使用默认值 AUTO，根据术语的长度生成编辑距离。
 
-
-
-##### 单字段排序
-
-`sort 排序`可以让我们按照不同的字段进行排序，并且通过 order 指定排序的方式：
-
-- desc：降序。
-- asc：升序。
-
-向 ES 服务器`发 GET 请求`：
-
-
-
-##### 多字段排序
-
-假定我们想要结合使用 age 和 \_score 进行查询，并且匹配的结果首先按照年龄排序，然后按照相关性得分排序。
-
 向 ES 服务器`发 GET 请求`：
 
 
@@ -409,7 +509,7 @@ terms 查询和 term 查询一样，但它允许你指定多值进行匹配，�
 
 在进行关键字搜索时，搜索出的内容中的关键字会显示不同的颜色，称之为高亮。
 
-ES 可以对查询内容中的关键字部分，进行标签和样式（高亮）的设置。在使用 match 查询的同时，加上一个 highlight 属性：
+ES 可以对查询内容中的关键字部分，进行标签和样式（高亮）的设置。在使用 match 查询的同时，加上一个`highlight`属性：
 
 - pre_tags：前置标签。
 - post_tags：后置标签。
@@ -418,31 +518,51 @@ ES 可以对查询内容中的关键字部分，进行标签和样式（高亮�
 
 向 ES 服务器`发 GET 请求`：
 
-
-
-##### 分页查询
-
-参数：
-
-- from：当前页的起始索引，默认从 0 开始，$from = (pageNum - 1) * size$。
-- size：每页显示多少条。
-
-向 ES 服务器`发 GET 请求`：
-
-
+![image-20251008001149827](elasticsearch/image-20251008001149827.png)
 
 ##### 聚合查询
 
 聚合允许使用者对 ES 文档进行统计分析，类似与关系型数据库中的 group by，当然还有很多其他的聚合，例如取最大值、平均值等等。
 
-- 对某个字段取最大值 max
-- 
+- 对某个字段取最大值 max：
 
+  ![image-20251008100020152](elasticsearch/image-20251008100020152.png)
 
+- 对某个字段取最小值 min：
+
+  ![image-20251008100112907](elasticsearch/image-20251008100112907.png)
+
+- 对某个字段求和 sum：
+
+  ![image-20251008100241646](elasticsearch/image-20251008100241646.png)
+
+- 对某个字段求平均值 avg：
+
+  ![image-20251008111607966](elasticsearch/image-20251008111607966.png)
+
+- 对某个字段的值进行去重之后再取总数：
+
+  ![image-20251008111806563](elasticsearch/image-20251008111806563.png)
+
+- stats 聚合，对某个字段一次性返回 count，max，min，avg 和 sum 五个指标：
+
+  ![image-20251008111942504](elasticsearch/image-20251008111942504.png)
+
+聚合查询的时候，会把原始数据一并返回，如果不需要原始数据，可以按如下方式发送请求：
+
+![image-20251008221753766](elasticsearch/image-20251008221753766.png)
 
 ##### 桶聚合查询
 
+桶聚和相当于 SQL 中的 GROUP BY 语句。
 
+- terms 聚合，分组统计：
+
+  ![image-20251008193308582](elasticsearch/image-20251008193308582.png)
+
+- 在 terms 分组下再进行聚合：
+
+  ![image-20251008193752707](elasticsearch/image-20251008193752707.png)
 
 ## Elasticsearch 进阶
 
